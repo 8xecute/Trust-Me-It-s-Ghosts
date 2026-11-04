@@ -1,9 +1,14 @@
+import { OnlineGame } from './OnlineGame';
 import { useEffect, useRef, useState } from 'react';
 import { createGame } from './rendering/game';
 import { actionsFor, initialObjects, transition, type Action } from './game/objects';
 
 const labels: Record<Action,string> = {inspect:'ตรวจดู',open:'เปิด',close:'ปิด',collect:'เก็บหลักฐาน'};
 export function App() {
+  const [online,setOnline]=useState(false);
+  return <><button onClick={()=>setOnline(!online)}>{online?'เล่นคนเดียว':'เล่นออนไลน์'}</button>{online?<OnlineGame/>:<SoloGame/>}</>;
+}
+function SoloGame() {
   const canvas = useRef<HTMLDivElement>(null);
   const gameRef = useRef<ReturnType<typeof createGame> | null>(null);
   const [ghost,setGhost] = useState<{manifestation:number;ghostHealth:number;playerHealth:number;disposition:string}|null>(null);

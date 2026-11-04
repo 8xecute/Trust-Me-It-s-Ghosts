@@ -11,19 +11,20 @@ const httpServer = createServer((_request, response) => {
 
 // Development-only origins. Configure trusted origins before deployment.
 const io = new Server(httpServer, {
-  cors: { origin: /^http:\/\/(localhost|127\.0\.0\.1):\d+$/ },
+  cors: { origin: process.env.CLIENT_ORIGIN || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/ },
 });
 
 const rooms = new Rooms();
 const worlds = new WorldStore();
+const expirations = new Map<string, ReturnType<typeof setTimeout>>();
 io.on('connection', (socket) => {
   type Ack = (result: unknown) => void;
   const handle = (ack: unknown, fn: () => void) => { if (typeof ack !== 'function') return; try { fn(); } catch (error) { (ack as Ack)({ok:false,error:error instanceof Error ? error.message : 'เกิดข้อผิดพลาด'}); } };
   socket.on('room:create', (ack: unknown) => handle(ack, () => {
-    const room=rooms.create(socket.id); worlds.create(room.code); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code)});
+    const room=rooms.create(socket.id); worlds.create(room.code); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code),token:rooms.token(socket.id)});
   }));
   socket.on('room:join', (code: unknown, ack: unknown) => handle(ack, () => {
-    const room=rooms.join(socket.id,code); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code)}); io.to(room.code).emit('game:snapshot',worlds.snapshot(room.code)); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
+    const room=rooms.join(socket.id,code); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code),token:rooms.token(socket.id)}); io.to(room.code).emit('game:snapshot',worlds.snapshot(room.code)); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
   }));
   socket.on('room:ready', (ready: unknown, ack: unknown) => handle(ack, () => {
     const room=rooms.ready(socket.id,ready); (ack as Ack)({ok:true,room}); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
@@ -39,7 +40,26 @@ io.on('connection', (socket) => {
     const code=rooms.roomCode(socket.id); if(!code) throw Error('ไม่ได้อยู่ในห้อง');
     (ack as Ack)({ok:true,snapshot:worlds.snapshot(code)});
   }));
-  socket.on('disconnect', () => { const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id); const room=rooms.leave(socket.id); if(code && player) worlds.removePlayer(code,player); if(room) { io.to(room.code).emit('room:update',{...room,canStart:canStart(room)}); io.to(room.code).emit('game:snapshot',worlds.snapshot(room.code)); } else if(code) worlds.delete(code); });
+  socket.on('room:resume', (token: unknown, ack: unknown) => handle(ack, () => {
+    const {room,id}=rooms.resume(socket.id,token);
+    clearTimeout(expirations.get(id));
+    expirations.delete(id);
+    socket.join(room.code);
+    (ack as Ack)({ok:true,room,playerId:id,snapshot:worlds.snapshot(room.code)});
+    io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
+  }));
+  socket.on('disconnect', () => {
+    const session=rooms.detach(socket.id); if(!session) return;
+    io.to(session.code).emit('room:update',{...session.room,canStart:canStart(session.room)});
+    expirations.set(session.id,setTimeout(() => {
+      expirations.delete(session.id);
+      const room=rooms.expire(session.code,session.id);
+      if(room?.players.some(p=>p.id===session.id)) return;
+      worlds.removePlayer(session.code,session.id);
+      if(room) {io.to(session.code).emit('room:update',{...room,canStart:canStart(room)});io.to(session.code).emit('game:snapshot',worlds.snapshot(session.code));}
+      else worlds.delete(session.code);
+    }, 120000).unref());
+  });
 });
 
 httpServer.listen(port, () => console.log(`Server listening on http://localhost:${port}`));

@@ -7,6 +7,11 @@ import { initialObjects } from '../game/objects';
 import { Encounter } from '../game/encounter';
 import { startGhostEncounter, runGhostPhase, playerGhostAction, type GhostEncounter } from '@baan/shared';
 
+export interface OnlineMap {
+  read(): { self: {x:number;y:number}; others: {x:number;y:number}[]; ghost: GhostEncounter|null } | null;
+  move(target: {x:number;y:number}): void;
+}
+
 class LocationScene extends Phaser.Scene {
   private grid = { width: location.width, height: location.height, blocked: [
     ...location.walls, ...location.obstacles,
@@ -24,7 +29,8 @@ class LocationScene extends Phaser.Scene {
   private roof!: Phaser.GameObjects.Graphics;
   private marker!: Phaser.GameObjects.Ellipse;
   private following = true;
-  constructor(private onSelect: (id: string | null) => void) { super('location'); }
+  private peers: Phaser.GameObjects.Arc[] = [];
+  constructor(private onSelect: (id: string | null) => void, private online?: OnlineMap) { super('location'); }
   create() {
     let g = this.add.graphics().setDepth(-1000);
     const polygon = (points: { x: number; y: number }[], fill: number, stroke: number) => {
@@ -98,7 +104,8 @@ class LocationScene extends Phaser.Scene {
       const target = {x: Math.round(cell.x), y: Math.round(cell.y)};
       const object = initialObjects.find(o => o.x === target.x && o.y === target.y);
       this.onSelect(object?.id ?? null);
-      if (!object) { if (this.encounter.mode === 'encounter') this.encounterStep(target); else this.movement.moveTo(target); }
+      if (!object && this.online) this.online.move(target);
+      else if (!object) { if (this.encounter.mode === 'encounter') this.encounterStep(target); else this.movement.moveTo(target); }
     });
   }
   private setMode(mode: 'exploration' | 'encounter') {
@@ -141,6 +148,7 @@ class LocationScene extends Phaser.Scene {
     if (this.ghostState?.phase === 'player' && this.encounter.move(this.grid, 'player', target)) { this.movement.position = {...this.encounter.tokens[0].position}; this.reportTurn(); }
   }
   private step(dx: number, dy: number) {
+    if (this.online) { const self=this.online.read()?.self; if(self) this.online.move({x:self.x+dx,y:self.y+dy}); return; }
     if (this.encounter.mode === 'encounter') this.encounterStep({x:this.movement.position.x+dx,y:this.movement.position.y+dy});
     else this.movement.stepDirection(dx,dy);
   }
@@ -159,6 +167,25 @@ class LocationScene extends Phaser.Scene {
     else if (just('RIGHT') || just('D')) this.step(1, 0);
     else if (just('DOWN') || just('S')) this.step(0, 1);
     else if (just('LEFT') || just('A')) this.step(-1, 0);
+    if (this.online) {
+      const snapshot = this.online.read();
+      if (snapshot) {
+        this.movement.position = snapshot.self;
+        this.ghostState = snapshot.ghost;
+        this.ghostToken.setVisible(!!snapshot.ghost && snapshot.ghost.phase !== 'resolved');
+        if (snapshot.ghost) {
+          const ghost = gridToScreen(snapshot.ghost.ghost.x,snapshot.ghost.ghost.y);
+          this.ghostToken.setPosition(ghost.x,ghost.y-18).setDepth(ghost.y);
+        }
+        this.overlay.setVisible(!!snapshot.ghost && snapshot.ghost.phase !== 'resolved');
+        snapshot.others.forEach((cell,index) => {
+          const pos = gridToScreen(cell.x,cell.y);
+          const peer = this.peers[index] ??= this.add.circle(0,0,10,0x78caff);
+          peer.setPosition(pos.x,pos.y-12).setDepth(pos.y).setVisible(true);
+        });
+        this.peers.slice(snapshot.others.length).forEach(peer => peer.setVisible(false));
+      }
+    }
     this.elapsed += delta;
     if (this.elapsed >= 150) { this.elapsed = 0; if (this.encounter.mode === 'exploration') this.movement.advance(); }
     const p = gridToScreen(this.movement.position.x, this.movement.position.y);
@@ -167,6 +194,6 @@ class LocationScene extends Phaser.Scene {
   }
 }
 
-export function createGame(parent: HTMLElement, onSelect: (id: string | null) => void) {
-  return new Phaser.Game({ type: Phaser.AUTO, parent, width: 960, height: 540, backgroundColor: '#182d2d', scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [new LocationScene(onSelect)] });
+export function createGame(parent: HTMLElement, onSelect: (id: string | null) => void, online?: OnlineMap) {
+  return new Phaser.Game({ type: Phaser.AUTO, parent, width: 960, height: 540, backgroundColor: '#182d2d', scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [new LocationScene(onSelect, online)] });
 }
