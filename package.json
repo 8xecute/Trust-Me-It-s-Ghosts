@@ -1,0 +1,17 @@
+{
+  "name": "rueang-phi-wai-jai-phom",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @baan/shared && concurrently -k -n shared,server,client \"npm run dev -w @baan/shared\" \"npm run dev -w @baan/server\" \"npm run dev -w @baan/client\"",
+    "build": "npm run build -w @baan/shared && npm run build -w @baan/server && npm run build -w @baan/client",
+    "typecheck": "npm run build -w @baan/shared && npm run typecheck -w @baan/server && npm run typecheck -w @baan/client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  }
+}
