@@ -1,0 +1,194 @@
+{
+  "id": "sample-house",
+  "title": "เรือนเงียบ",
+  "scenes": [
+    {
+      "id": "yard",
+      "name": "ลานบ้าน"
+    },
+    {
+      "id": "porch",
+      "name": "ชานบ้าน"
+    }
+  ],
+  "locations": [
+    {
+      "id": "yard-location",
+      "name": "ลานบ้าน",
+      "sceneId": "yard"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "caretaker",
+      "name": "ผู้ดูแล",
+      "sceneId": "yard"
+    }
+  ],
+  "dialogue": [
+    {
+      "id": "greeting",
+      "npcId": "caretaker",
+      "text": "ยินดีต้อนรับ",
+      "choices": [
+        {
+          "id": "ask-note",
+          "text": "ถามผู้ดูแลเรื่องบันทึก",
+          "conditions": []
+        }
+      ]
+    },
+    {
+      "id": "note-hint",
+      "npcId": "caretaker",
+      "text": "ลองตรวจกล่องที่ลานบ้านดูนะ"
+    },
+    {
+      "id": "note-found",
+      "npcId": "caretaker",
+      "text": "คุณพบบันทึกแล้ว ลองคุยกับผีให้สงบดู"
+    },
+    {
+      "id": "porch-welcome",
+      "npcId": "caretaker",
+      "text": "พักที่ชานบ้านได้ก่อนกลับไปสำรวจ"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-1",
+      "name": "บันทึกเก่า"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "investigate",
+      "description": "สำรวจลานบ้าน"
+    },
+    {
+      "id": "discover",
+      "description": "ค้นหาบันทึก"
+    }
+  ],
+  "endings": [
+    {
+      "id": "resolved",
+      "description": "การสำรวจเสร็จสิ้น"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "arrive",
+      "event": "enter-yard",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "yard"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "investigate"
+        },
+        {
+          "type": "showDialogue",
+          "id": "greeting"
+        }
+      ],
+      "narration": "ลานบ้านเงียบลงเมื่อทีมมาถึง"
+    },
+    {
+      "id": "find-note",
+      "event": "collect:clue",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "investigate"
+        }
+      ],
+      "actions": [
+        {
+          "type": "grantEvidence",
+          "id": "evidence-1"
+        },
+        {
+          "type": "completeObjective",
+          "id": "discover"
+        }
+      ],
+      "narration": "ทีมพบบันทึกเก่าในกล่อง"
+    },
+    {
+      "id": "finish",
+      "event": "pacified",
+      "once": true,
+      "conditions": [
+        {
+          "type": "evidence",
+          "id": "evidence-1"
+        }
+      ],
+      "actions": [
+        {
+          "type": "end",
+          "id": "resolved"
+        }
+      ],
+      "narration": "ผีสงบลง การสำรวจสิ้นสุดแล้ว"
+    },
+    {
+      "id": "reply-found",
+      "event": "choice:ask-note",
+      "once": true,
+      "priority": 10,
+      "exclusiveGroup": "note-reply",
+      "conditions": [
+        {
+          "type": "evidence",
+          "id": "evidence-1"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "note-found"
+        }
+      ]
+    },
+    {
+      "id": "reply-hint",
+      "event": "choice:ask-note",
+      "once": true,
+      "priority": 0,
+      "exclusiveGroup": "note-reply",
+      "conditions": [],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "note-hint"
+        }
+      ]
+    },
+    {
+      "id": "dm-welcome",
+      "event": "dm:welcome",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "yard"
+        }
+      ],
+      "narration": "ผู้ดูแลเดินเข้ามาต้อนรับทีม",
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "greeting"
+        }
+      ]
+    }
+  ]
+}

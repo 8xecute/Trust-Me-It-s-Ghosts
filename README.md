@@ -2,7 +2,7 @@
 
 **Trust Me, It’s Ghosts Co., Ltd.**
 
-A starting point for a Thai cooperative ghost-hunting browser game. This scaffold contains a static placeholder scene and a connection indicator; it does not implement gameplay.
+A Thai cooperative ghost-hunting browser game with solo and online play.
 
 ## Development
 
@@ -15,7 +15,7 @@ npm run dev
 
 Open the Vite URL printed in the terminal (normally http://localhost:5173). The Socket.IO server listens on port 3001 by default. Set `PORT` for the server and `VITE_SERVER_URL` for the client if needed; restart the relevant process after changing them.
 
-Run `npm run build` to build all packages, or `npm run typecheck` to check types. Run the built server with `npm run start -w @baan/server`. The server permits development origins on localhost or 127.0.0.1; configure an explicit production origin before deployment.
+Set `VITE_SERVER_URL` to the public HTTPS server origin before running `npm run build`. Run `npm run typecheck` to check types and `npm start` to start the built server. For Render settings and production smoke tests, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Structure
 

@@ -1,3 +1,4 @@
+import { prepareVillageArt, villageArt } from './villageArt';
 import Phaser from 'phaser';
 import { location } from '../data/location';
 import { gridToScreen, screenToGrid, TILE_WIDTH, TILE_HEIGHT } from './isometric';
@@ -21,17 +22,21 @@ class LocationScene extends Phaser.Scene {
   private movement = new Movement(this.grid, { x: 4, y: 7 });
   private encounter = new Encounter([{id: 'player', position: {x:4,y:7}}]);
   private ghostState: GhostEncounter | null = null;
-  private ghostToken!: Phaser.GameObjects.Arc;
+  private ghostToken!: Phaser.GameObjects.Image;
+  private fog!: Phaser.GameObjects.Image;
+  private ghostAura!: Phaser.GameObjects.Image;
+  private ghostVisible = false;
   private overlay!: Phaser.GameObjects.Graphics;
   private token!: Phaser.GameObjects.Container;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private elapsed = 0;
-  private roof!: Phaser.GameObjects.Graphics;
+  private roof!: Phaser.GameObjects.Container;
   private marker!: Phaser.GameObjects.Ellipse;
   private following = true;
-  private peers: Phaser.GameObjects.Arc[] = [];
+  private peers: Phaser.GameObjects.Image[] = [];
   constructor(private onSelect: (id: string | null) => void, private online?: OnlineMap) { super('location'); }
   create() {
+    prepareVillageArt(this);
     let g = this.add.graphics().setDepth(-1000);
     const polygon = (points: { x: number; y: number }[], fill: number, stroke: number) => {
       g.fillStyle(fill).lineStyle(2, stroke).beginPath().moveTo(points[0].x, points[0].y);
@@ -40,8 +45,13 @@ class LocationScene extends Phaser.Scene {
     };
     for (let y = 0; y < location.height; y++) for (let x = 0; x < location.width; x++) {
       const p = gridToScreen(x, y);
-      polygon([{x:p.x,y:p.y-TILE_HEIGHT/2},{x:p.x+TILE_WIDTH/2,y:p.y},{x:p.x,y:p.y+TILE_HEIGHT/2},{x:p.x-TILE_WIDTH/2,y:p.y}], (x+y)%2 ? 0x526d4d : 0x5a7653, 0x425b40);
+      polygon([{x:p.x,y:p.y-TILE_HEIGHT/2},{x:p.x+TILE_WIDTH/2,y:p.y},{x:p.x,y:p.y+TILE_HEIGHT/2},{x:p.x-TILE_WIDTH/2,y:p.y}], (x===4 || y===7) ? 0x776d51 : (x+y)%2 ? 0x3f614b : 0x496a50, 0x324b3e);
     }
+    const lantern = gridToScreen(6,5);
+    this.add.image(lantern.x,lantern.y-14,villageArt.glow).setTint(0xffbd68).setAlpha(0.45).setDepth(-998);
+    const mist = gridToScreen(5,4);
+    this.fog = this.add.image(mist.x,mist.y,villageArt.glow).setTint(0xacc8bb).setScale(4,1.15).setAlpha(0.19).setDepth(9000);
+    this.tweens.add({targets:this.fog,x:mist.x+65,duration:7400,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
     this.overlay = this.add.graphics().setDepth(-999).setVisible(false).lineStyle(2, 0xf5df9c, 0.85);
     for (let y = 0; y < location.height; y++) for (let x = 0; x < location.width; x++) {
       const p = gridToScreen(x,y);
@@ -70,32 +80,35 @@ class LocationScene extends Phaser.Scene {
     polygon([up(a,35),up(b,35),up(c,35),up(d,35)], 0xa17a4e, 0x503929);
     polygon([up(d,35),up(c,35),up(c,100),up(d,100)], 0x8d6746, 0x503929);
     polygon([up(b,35),up(c,35),up(c,100),up(b,100)], 0x785438, 0x503929);
-    this.roof = this.add.graphics().setDepth(c.y + 1);
-    g = this.roof;
+    const roofPanels = this.add.graphics();
+    const roofTrim = this.add.graphics();
+    this.roof = this.add.container(0,0,[roofPanels,roofTrim]).setDepth(c.y+0.5);
+    g = roofPanels;
     const ridgeA = {x:(a.x+d.x)/2,y:(a.y+d.y)/2-160};
     const ridgeB = {x:(b.x+c.x)/2,y:(b.y+c.y)/2-160};
     polygon([up(a,100),ridgeA,ridgeB,up(b,100)], 0x674337, 0x392d27);
     polygon([ridgeA,up(d,100),up(c,100),ridgeB], 0x805044, 0x392d27);
+    g = roofTrim;
+    g.lineStyle(3,0xb38056).lineBetween(ridgeA.x,ridgeA.y,ridgeB.x,ridgeB.y);
+    for (let i=1;i<8;i++) {
+      const t=i/8;
+      g.lineStyle(1,0xc09370,0.55).lineBetween(
+        Phaser.Math.Linear(ridgeA.x,ridgeB.x,t), Phaser.Math.Linear(ridgeA.y,ridgeB.y,t),
+        Phaser.Math.Linear(d.x,c.x,t), Phaser.Math.Linear(d.y,c.y,t)-100);
+    }
     g.lineStyle(3, 0xd4b986).lineBetween(ridgeA.x,ridgeA.y,ridgeA.x,ridgeA.y-10);
-    // Obstacles in the foreground are deliberately separate from map data.
     for (const cell of location.obstacles) {
-      const p = gridToScreen(cell.x, cell.y);
-      g = this.add.graphics().setDepth(p.y);
-      g.fillStyle(0x6b5134).fillRect(p.x-4,p.y-12,8,16);
-      g.fillStyle(0x294a32).fillCircle(p.x,p.y-23,17);
-      g.fillStyle(0x3d6240).fillCircle(p.x-6,p.y-28,10);
+      const p = gridToScreen(cell.x,cell.y);
+      this.add.image(p.x,p.y,villageArt.banana).setOrigin(0.5,0.92).setDepth(p.y);
     }
     for (const object of initialObjects) {
-      const p = gridToScreen(object.x, object.y);
-      this.add.rectangle(p.x, p.y-12, 26, 22, object.evidenceId ? 0xe6c678 : 0xa16f42).setStrokeStyle(2, 0x36291e).setDepth(p.y);
+      const p = gridToScreen(object.x,object.y);
+      this.add.image(p.x,p.y,object.evidenceId ? villageArt.evidence : villageArt.crate).setOrigin(0.5,0.88).setDepth(p.y);
     }
-    this.ghostToken = this.add.circle(0,0,14,0xb9e9e5,0.8).setStrokeStyle(2,0xffffff).setVisible(false);
+    this.ghostAura = this.add.image(0,0,villageArt.glow).setScale(0.7).setAlpha(0.55).setVisible(false);
+    this.ghostToken = this.add.image(0,0,villageArt.ghost).setOrigin(0.5,1).setVisible(false);
     const pos = gridToScreen(this.movement.position.x, this.movement.position.y);
-    this.token = this.add.container(pos.x, pos.y, [
-      this.add.ellipse(0, 0, 24, 10, 0x172a24, 0.6),
-      this.add.circle(0, -15, 10, 0xe7bd7b).setStrokeStyle(2, 0x503929),
-      this.add.circle(0, -26, 7, 0xf3d7ad).setStrokeStyle(2, 0x503929),
-    ]);
+    this.token = this.add.container(pos.x,pos.y,[this.add.image(0,0,villageArt.player).setOrigin(0.5,0.88)]);
     this.marker = this.add.ellipse(pos.x, pos.y - 15, 30, 40, 0xffe3a1, 0.28).setStrokeStyle(2, 0xffe3a1, 0.8).setDepth(10000);
     this.cameras.main.startFollow(this.token);
     this.keys = this.input.keyboard!.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,I,J,K,L,F,R,Q,E') as Record<string, Phaser.Input.Keyboard.Key>;
@@ -122,8 +135,24 @@ class LocationScene extends Phaser.Scene {
   }
   private reportTurn() { this.game.events.emit('turn-update', {...this.encounter.turn}); }
   private drawGhost() {
-    const s=this.ghostState; this.ghostToken.setVisible(!!s && s.manifestation>0 && s.phase !== 'resolved');
-    if (s) { const p=gridToScreen(s.ghost.x,s.ghost.y); this.ghostToken.setPosition(p.x,p.y-18).setDepth(p.y); this.game.events.emit('ghost-update',s); }
+    if (this.ghostState) this.game.events.emit('ghost-update',this.ghostState);
+  }
+  private renderGhost(time:number) {
+    const ghost=this.ghostState;
+    const visible=!!ghost && ghost.manifestation>0 && ghost.phase!=='resolved';
+    this.ghostToken.setVisible(visible);
+    this.ghostAura.setVisible(visible);
+    if (visible!==this.ghostVisible) {
+      this.ghostVisible=visible;
+      this.cameras.main.flash(280,visible?124:77,visible?166:132,visible?155:105);
+      this.fog.setAlpha(visible?0.3:0.19);
+    }
+    if (!visible || !ghost) return;
+    const p=gridToScreen(ghost.ghost.x,ghost.ghost.y);
+    const color=ghost.disposition==='hostile'?0xde9db5:0x91e6bb;
+    const bob=Math.sin(time/380)*4;
+    this.ghostAura.setPosition(p.x,p.y-22).setDepth(p.y-0.1).setTint(color);
+    this.ghostToken.setPosition(p.x,p.y-6+bob).setDepth(p.y+0.1).setTint(color);
   }
   private endTurn() {
     if (!this.ghostState || this.ghostState.phase !== 'player') return;
@@ -172,24 +201,20 @@ class LocationScene extends Phaser.Scene {
       if (snapshot) {
         this.movement.position = snapshot.self;
         this.ghostState = snapshot.ghost;
-        this.ghostToken.setVisible(!!snapshot.ghost && snapshot.ghost.phase !== 'resolved');
-        if (snapshot.ghost) {
-          const ghost = gridToScreen(snapshot.ghost.ghost.x,snapshot.ghost.ghost.y);
-          this.ghostToken.setPosition(ghost.x,ghost.y-18).setDepth(ghost.y);
-        }
         this.overlay.setVisible(!!snapshot.ghost && snapshot.ghost.phase !== 'resolved');
         snapshot.others.forEach((cell,index) => {
           const pos = gridToScreen(cell.x,cell.y);
-          const peer = this.peers[index] ??= this.add.circle(0,0,10,0x78caff);
-          peer.setPosition(pos.x,pos.y-12).setDepth(pos.y).setVisible(true);
+          const peer = this.peers[index] ??= this.add.image(0,0,villageArt.player).setOrigin(0.5,0.88).setTint(0x9bd6ed);
+          peer.setPosition(pos.x,pos.y).setDepth(pos.y+0.2).setVisible(true);
         });
-        this.peers.slice(snapshot.others.length).forEach(peer => peer.setVisible(false));
+        for (let i=snapshot.others.length;i<this.peers.length;i++) this.peers[i].setVisible(false);
       }
     }
+    this.renderGhost(_time);
     this.elapsed += delta;
     if (this.elapsed >= 150) { this.elapsed = 0; if (this.encounter.mode === 'exploration') this.movement.advance(); }
     const p = gridToScreen(this.movement.position.x, this.movement.position.y);
-    this.token.setPosition(p.x, p.y).setDepth(p.y);
+    this.token.setPosition(p.x, p.y).setDepth(p.y+0.3);
     this.marker.setPosition(p.x, p.y - 15);
   }
 }

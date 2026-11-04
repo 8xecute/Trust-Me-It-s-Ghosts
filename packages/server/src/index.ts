@@ -3,15 +3,26 @@ import { Server } from 'socket.io';
 import { Rooms, canStart } from './rooms.js';
 import { WorldStore } from './world.js';
 
-const port = Number(process.env.PORT ?? 3001);
-const httpServer = createServer((_request, response) => {
+import { readServerConfig } from './config.js';
+
+const {port,origin} = readServerConfig(process.env);
+const httpServer = createServer((request, response) => {
+  if (request.url === '/healthz') {
+    response.writeHead(200, {'Content-Type':'application/json','Cache-Control':'no-store'});
+    response.end(JSON.stringify({ok:true}));
+    return;
+  }
   response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
   response.end('เซิร์ฟเวอร์ บริษัท เรื่องผีไว้ใจผม จำกัด');
 });
 
-// Development-only origins. Configure trusted origins before deployment.
+// Socket.IO CORS covers polling. Check the Origin header on the upgrade as well.
 const io = new Server(httpServer, {
-  cors: { origin: process.env.CLIENT_ORIGIN || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/ },
+  cors: { origin },
+  allowRequest: (request, callback) => {
+    const requested = request.headers.origin;
+    callback(null, requested === undefined || (typeof origin === 'string' ? requested === origin : origin.test(requested)));
+  },
 });
 
 const rooms = new Rooms();
@@ -35,6 +46,11 @@ io.on('connection', (socket) => {
     const result=worlds.apply(code,player,action);
     (ack as Ack)({ok:true,...result});
     if (!result.duplicate) io.to(code).emit('game:snapshot',result.snapshot);
+  }));
+  socket.on('dm:panel', (ack: unknown) => handle(ack, () => {
+    const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
+    if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
+    (ack as Ack)({ok:true,panel:worlds.dmPanel(code,player)});
   }));
   socket.on('game:snapshot', (ack: unknown) => handle(ack, () => {
     const code=rooms.roomCode(socket.id); if(!code) throw Error('ไม่ได้อยู่ในห้อง');
@@ -62,4 +78,4 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(port, () => console.log(`Server listening on http://localhost:${port}`));
+httpServer.listen(port,'0.0.0.0', () => console.log(`Server listening on http://localhost:${port}`));

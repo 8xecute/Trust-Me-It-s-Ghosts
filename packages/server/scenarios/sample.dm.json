@@ -1,0 +1,32 @@
+{
+  "scenes": {
+    "yard": {
+      "script": "ให้ผู้ดูแลทักทายและรอให้ทีมสำรวจลานบ้าน",
+      "secret": "กล่องในลานมีบันทึกเก่า",
+      "next": [
+        "porch"
+      ],
+      "dialogue": [
+        "greeting",
+        "note-hint"
+      ],
+      "events": [
+        {
+          "id": "dm:welcome",
+          "text": "ให้ผู้ดูแลทักทาย"
+        }
+      ]
+    },
+    "porch": {
+      "script": "ให้ทีมพักก่อนกลับไปสำรวจ",
+      "secret": "ฉากนี้ไม่มีหลักฐานเพิ่ม",
+      "next": [
+        "yard"
+      ],
+      "dialogue": [
+        "porch-welcome"
+      ],
+      "events": []
+    }
+  }
+}

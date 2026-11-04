@@ -3,3 +3,4 @@ export * from './rules.js';
 export * from './scenarios.js';
 export * from './turn.js';
 export * from './ghost.js';
+export * from './scenario.js';

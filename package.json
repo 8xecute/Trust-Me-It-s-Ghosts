@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "npm run build -w @baan/shared && concurrently -k -n shared,server,client \"npm run dev -w @baan/shared\" \"npm run dev -w @baan/server\" \"npm run dev -w @baan/client\"",
     "build": "npm run build -w @baan/shared && npm run build -w @baan/server && npm run build -w @baan/client",
-    "typecheck": "npm run build -w @baan/shared && npm run typecheck -w @baan/server && npm run typecheck -w @baan/client"
+    "typecheck": "npm run build -w @baan/shared && npm run typecheck -w @baan/server && npm run typecheck -w @baan/client",
+    "start": "npm run start -w @baan/server"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
