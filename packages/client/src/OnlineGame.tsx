@@ -10,7 +10,7 @@ import { createGame } from './rendering/game';
 type Cell = {x:number;y:number};
 type Snapshot = {
   revision:number;
-  caseMap?:{site:CaseSite;opportunity?:string;battle?:CaseBattleView};
+  caseMap?:{site:CaseSite;opportunity?:string;withdrawalBlocked?:boolean;battle?:CaseBattleView};
   tactics?:Parameters<typeof TacticalTechniques>[0]['tactics'] & {concealed?:boolean;scanned?:number};
   characters?:Record<string,Character>;
   case001?: {
@@ -47,6 +47,7 @@ const sessionKey = 'ghosts-room-session';
 
 export function OnlineGame() {
   const canvas = useRef<HTMLDivElement>(null);
+  const withdrawalDialog = useRef<HTMLDialogElement>(null);
   const socket = useRef<Socket|null>(null);
   const self = useRef('');
   const latest = useRef<Snapshot|null>(null);
@@ -151,6 +152,7 @@ export function OnlineGame() {
     return ()=>{live=false;};
   },[!!character,connected,room?.code]);
   const battle=world?.caseMap?.battle;
+  const withdrawalBlocked=!!world?.caseMap?.withdrawalBlocked;
   const targetEnemy=battle?.enemies.find(entry=>entry.id===enemy) ?? battle?.enemies[0];
   const combatAction=(type:string,payload:object={})=>action(type,{...payload,enemyId:targetEnemy?.id});
   const myStats = world?.turns[self.current];
@@ -230,11 +232,31 @@ export function OnlineGame() {
           <button disabled={!connected || battle.active!==self.current} onClick={()=>action('escape')}>ถอยออกจากสนาม</button>
           <button disabled={!connected || battle.active!==self.current} onClick={()=>action('endTurn')}>จบเทิร์น</button>
         </section>}
+        {world.caseMap && !world.case001.report && <dialog ref={withdrawalDialog} className="case-withdrawal-dialog"
+          aria-labelledby="case-withdrawal-title" aria-describedby="case-withdrawal-impact">
+          <h3 id="case-withdrawal-title">ถอนทีมและปิดคดีหรือไม่</h3>
+          <p id="case-withdrawal-impact">การยืนยันจะจบคดีของทุกคนในห้องทันที ทีมจะกลับมาสืบคดีนี้ต่อไม่ได้</p>
+          <p>ช่วยผู้สูญหายแล้ว {world.case001.rescued}/3 · คลายผนึกแล้ว {world.case001.seals}/3</p>
+          {withdrawalBlocked && <p role="status">ยังถอนทีมไม่ได้จนกว่าการเผชิญหน้าจะจบ</p>}
+          {!connected && <p role="status">กำลังรอการเชื่อมต่อ</p>}
+          <form method="dialog">
+            <button autoFocus>เล่นต่อ</button>
+            <button type="button" disabled={!connected || withdrawalBlocked} onClick={()=>{
+              withdrawalDialog.current?.close();
+              action('caseAction',{actionId:'finish'});
+            }}>ยืนยันถอนทีม</button>
+          </form>
+        </dialog>}
         {world.case001.report ? <pre style={{whiteSpace:'pre-wrap'}}>{world.case001.report.text}</pre> :
           world.case001.actions.filter(option=>!battle || ['seal1','seal2','seal3','ritual','suppress','show-clue'].includes(option.id))
           .filter(option=>option.id!=='hint' || character?.profession==='paranormal_investigator')
           .filter(option=>option.id!=='sense' || character?.profession==='medium').map(option=><div key={option.id}>
-            <button disabled={!connected || isHumanDm || (!!battle && battle.active!==self.current)} onClick={()=>action('caseAction',{actionId:option.id})}>{option.label} · {option.minutes} นาที</button>
+            <button disabled={!connected || isHumanDm || (!!battle && battle.active!==self.current) || (option.id==='finish' && withdrawalBlocked)}
+              onClick={()=>{
+                if(option.id==='finish' && world.caseMap) withdrawalDialog.current?.showModal();
+                else action('caseAction',{actionId:option.id});
+              }}>{option.label} · {option.minutes} นาที</button>
+            {option.id==='finish' && withdrawalBlocked && <p>ยังถอนทีมไม่ได้จนกว่าการเผชิญหน้าจะจบ</p>}
             {option.check && character && !isHumanDm && <>
               <button disabled={!connected || character.focus<1} onClick={()=>action('caseAction',{actionId:option.id,boost:'focus'})}>ใช้สมาธิ +2</button>
               {option.background && character.background===option.background &&

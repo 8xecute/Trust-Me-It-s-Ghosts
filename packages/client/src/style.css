@@ -65,3 +65,16 @@ textarea { display: block; width: 100%; margin: 6px 0; resize: vertical; }
   .game-panel button { min-width: 44px; }
   .game-shell pre { overflow-wrap: anywhere; }
 }
+
+.case-withdrawal-dialog {
+  width: min(28rem, calc(100% - 2rem));
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+.case-withdrawal-dialog::backdrop { background: rgb(0 0 0 / 65%); }
+.case-withdrawal-dialog h3 { margin-top: 0; }
+.case-withdrawal-dialog form { display: flex; flex-wrap: wrap; gap: 8px; }
+.case-withdrawal-dialog button[type="button"] { border-color: #cf8f79; }

@@ -9,7 +9,7 @@ import { startGhostEncounter, playerGhostAction, runGhostPhase, type GhostEncoun
 export type Cell = {x:number;y:number};
 export type WorldAction = {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective'} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown} | {id:string;type:'caseStart'} | {id:string;type:'caseAction';actionId:string;boost?:unknown} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'|'dmRequestRoll'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
 export interface World { caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:{id:string;playerId:string;die:number|null}|null; }
-type Snapshot = Omit<World,'case001'|'caseMap'|'backgroundUses'|'biographies'> & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;opportunity?:string;battle?:ReturnType<typeof battleView>}};
+type Snapshot = Omit<World,'case001'|'caseMap'|'backgroundUses'|'biographies'> & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;opportunity?:string;withdrawalBlocked?:boolean;battle?:ReturnType<typeof battleView>}};
 const scenario = parseScenarioJSON(readFileSync(new URL('../scenarios/sample.json', import.meta.url), 'utf8'));
 type DmScript = {script:string; secret:string; next:string[]; dialogue:string[]; events:{id:string;text:string}[]};
 const dmScripts: Record<string,DmScript> = JSON.parse(readFileSync(new URL('../scenarios/sample.dm.json', import.meta.url), 'utf8')).scenes;
@@ -57,7 +57,7 @@ export class WorldStore {
    world.players=Object.fromEntries(Object.entries(world.players).filter(([id])=>id!==world.humanDmId && (caseMap.sites[id] ?? 'A')===site));
   }
   return {...world,case001:localCase && caseView(localCase,!!world.characters),
-   ...(caseMap && site && localCase ? {caseMap:{site,opportunity:caseOpportunity(localCase,caseMap),battle:battleView(caseMap,site)}} : {}),dm:getScriptedDmView(scenario,world.scenario)};
+   ...(caseMap && site && localCase ? {caseMap:{site,opportunity:caseOpportunity(localCase,caseMap),withdrawalBlocked:!!caseMap.battle,battle:battleView(caseMap,site)}} : {}),dm:getScriptedDmView(scenario,world.scenario)};
  }
  delete(code:string){this.worlds.delete(code);this.seen.delete(code);}
  apply(code:string,player:string,input:unknown):{snapshot:Snapshot;duplicate:boolean} {
@@ -121,6 +121,7 @@ export class WorldStore {
     if(w.characters && !character) throw Error('สร้างตัวละครก่อน');
     const site=w.caseMap?.sites[player] ?? (w.caseMap?'A':w.case001.site);
     const battle=w.caseMap?.battle;
+    if(battle && a.actionId==='finish') throw Error('ยังถอนทีมไม่ได้จนกว่าการเผชิญหน้าจะจบ');
     const inBattle=battle?.site===site;
     const priorCase={...w.case001,site};
     if(inBattle) {

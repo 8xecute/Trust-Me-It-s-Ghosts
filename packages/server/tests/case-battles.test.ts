@@ -23,6 +23,12 @@ test('EN01 retains location and occupancy through movement, escape and snapshot 
   assert.equal(started.caseMap?.battle?.enemies.length,1);
   assert.equal(worlds.snapshot('test','b').caseMap?.battle,undefined);
   assert.deepEqual(Object.keys(worlds.snapshot('test','b').players),['b']);
+  const beforeWithdrawal=worlds.snapshot('test','b');
+  assert.equal(beforeWithdrawal.caseMap?.withdrawalBlocked,true);
+  const withdraw={id:'withdraw',type:'caseAction',actionId:'finish'};
+  assert.throws(()=>worlds.apply('test','b',withdraw),/ยังถอนทีมไม่ได้จนกว่าการเผชิญหน้าจะจบ/);
+  assert.deepEqual(worlds.snapshot('test','b'),beforeWithdrawal);
+  assert.deepEqual(worlds.snapshot('test','a'),started);
   assert.throws(()=>act('blocked','move',{target:{x:2,y:2}}));
   const moved=act('move','move',{target:{x:4,y:9}});
   assert.equal(moved.turns.a.ap,2);
@@ -31,6 +37,12 @@ test('EN01 retains location and occupancy through movement, escape and snapshot 
   assert.deepEqual(escaped.players.a,{x:4,y:9});
   assert.equal(escaped.caseMap?.opportunity,undefined);
   assert.deepEqual(worlds.snapshot('test','a'),escaped);
+  assert.equal(worlds.snapshot('test','b').caseMap?.withdrawalBlocked,false);
+  const closed=worlds.apply('test','b',withdraw);
+  assert.match(closed.snapshot.case001?.report?.text ?? '',/ตอนจบ D/);
+  assert.equal(worlds.apply('test','b',withdraw).duplicate,true);
+  assert.throws(()=>worlds.apply('test','b',{...withdraw,id:'withdraw-again'}));
+  assert.deepEqual(worlds.snapshot('test','b'),closed.snapshot);
 });
 
 function fixture(site:Site,count:number):World {
