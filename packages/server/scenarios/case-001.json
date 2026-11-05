@@ -46,6 +46,20 @@
     ]
   ],
   "travelMinutes": 10,
+  "investigationChecks": {
+    "clue:E01": {"background":"rural_native","attribute":"mind"},
+    "clue:E02": {"background":"journalist","attribute":"mind"},
+    "clue:E03": {"background":"skeptic","attribute":"mind"},
+    "clue:E08": {"background":"journalist","attribute":"mind","deception":true},
+    "open": {"background":"technician","attribute":"knowledge"},
+    "escort": {"background":"rescuer","attribute":"body"}
+  },
+  "spiritSense": {
+    "site":"D",
+    "evidence":"E03",
+    "question":"ถามวิญญาณถึงความเกี่ยวข้องกับผ้ายันต์",
+    "answer":"แม่แก้วตอบว่าผ้ายันต์เกี่ยวข้องกับพิธีที่ผูกเธอไว้"
+  },
   "briefing": "ช่วงสามคืนที่ผ่านมา มีชาวบ้านหายตัวไปสามคนบริเวณสวนกล้วยท้ายหมู่บ้าน ทุกคืนหลังเที่ยงคืนจะมีเสียงผู้หญิงร้องไห้ บางคนเห็นหญิงสาวชุดเขียวยืนอยู่ใต้ต้นกล้วยใหญ่ ขอให้ทีมตรวจสอบ ค้นหาผู้สูญหาย และทำให้พื้นที่ปลอดภัย",
   "endingNarration": {
     "A": "แสงแรกของเช้าสาดผ่านใบกล้วย แม่แก้วยิ้มก่อนค่อย ๆ สลาย ‘ขอบคุณที่ฟังข้า’ รถตู้รับเสียงแจ้งเตือนจากสำนักงานใหญ่ ‘ปิดคดีสำเร็จค่ะ กรุณาส่งใบเบิกค่าเดินทางภายในสามวันทำการ’ — ‘ปราบผียังต้องทำเอกสารอีกเหรอเนี่ย!’",

@@ -4,3 +4,6 @@ export * from './scenarios.js';
 export * from './turn.js';
 export * from './ghost.js';
 export * from './scenario.js';
+export * from './character.js';
+export * from './tactics.js';
+export * from './caseMaps.js';

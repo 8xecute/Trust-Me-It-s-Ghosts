@@ -4,15 +4,16 @@ type HudProps = {
   hp?:number;
   sanity?:number;
   focused?:boolean;
+  focus?:number;
   ap?:number;
   haunt?:number;
 };
 
-export function GameHud({hp,sanity,focused,ap,haunt}:HudProps) {
+export function GameHud({hp,sanity,focus,focused,ap,haunt}:HudProps) {
   const stats = [
     {label:'พลังชีวิต',value:hp ?? '—'},
     {label:'สติ',value:sanity ?? '—'},
-    {label:'สมาธิ',value:focused === undefined ? '—' : focused ? 'พร้อม +2' : 'ยังไม่ตั้งสมาธิ'},
+    {label:'สมาธิ',value:focus ?? (focused === undefined ? '—' : focused ? 'พร้อม +2' : 'ยังไม่ตั้งสมาธิ')},
     {label:'แต้มการกระทำ',value:ap === undefined ? '—' : `${ap}/${MAX_AP}`},
     {label:'ความหลอน',value:haunt === undefined ? '—' : `${haunt}/10`},
   ];

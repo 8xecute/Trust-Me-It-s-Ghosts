@@ -28,15 +28,25 @@ const io = new Server(httpServer, {
 const rooms = new Rooms();
 const worlds = new WorldStore();
 const expirations = new Map<string, ReturnType<typeof setTimeout>>();
+function broadcastSnapshot(code:string) {
+  for(const socketId of io.sockets.adapter.rooms.get(code) ?? []) {
+    const player=rooms.playerId(socketId);
+    if(player) io.to(socketId).emit('game:snapshot',worlds.snapshot(code,player));
+  }
+}
 io.on('connection', (socket) => {
   type Ack = (result: unknown) => void;
   const handle = (ack: unknown, fn: () => void) => { if (typeof ack !== 'function') return; try { fn(); } catch (error) { (ack as Ack)({ok:false,error:error instanceof Error ? error.message : 'เกิดข้อผิดพลาด'}); } };
-  socket.on('room:create', (ack: unknown) => handle(ack, () => {
-    const room=rooms.create(socket.id); worlds.create(room.code); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code),token:rooms.token(socket.id)});
-  }));
-  socket.on('room:join', (code: unknown, ack: unknown) => handle(ack, () => {
-    const room=rooms.join(socket.id,code); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code),token:rooms.token(socket.id)}); io.to(room.code).emit('game:snapshot',worlds.snapshot(room.code)); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
-  }));
+  const createRoom = (ack: unknown, version?:2) => handle(ack, () => {
+    const room=rooms.create(socket.id,version); worlds.create(room.code,room.version); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!),token:rooms.token(socket.id)});
+  });
+  socket.on('room:create', ack => createRoom(ack));
+  socket.on('room:create:v2', ack => createRoom(ack,2));
+  const joinRoom = (code: unknown, ack: unknown, version?:2) => handle(ack, () => {
+    const room=rooms.join(socket.id,code,version); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!),token:rooms.token(socket.id)}); broadcastSnapshot(room.code); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
+  });
+  socket.on('room:join', (code, ack) => joinRoom(code,ack));
+  socket.on('room:join:v2', (code, ack) => joinRoom(code,ack,2));
   socket.on('room:ready', (ready: unknown, ack: unknown) => handle(ack, () => {
     const room=rooms.ready(socket.id,ready); (ack as Ack)({ok:true,room}); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
   }));
@@ -45,7 +55,12 @@ io.on('connection', (socket) => {
     if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
     const result=worlds.apply(code,player,action);
     (ack as Ack)({ok:true,...result});
-    if (!result.duplicate) io.to(code).emit('game:snapshot',result.snapshot);
+    if (!result.duplicate) broadcastSnapshot(code);
+  }));
+  socket.on('character:biography', (ack: unknown) => handle(ack, () => {
+    const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
+    if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
+    (ack as Ack)({ok:true,biography:worlds.biography(code,player)});
   }));
   socket.on('dm:panel', (ack: unknown) => handle(ack, () => {
     const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
@@ -54,14 +69,14 @@ io.on('connection', (socket) => {
   }));
   socket.on('game:snapshot', (ack: unknown) => handle(ack, () => {
     const code=rooms.roomCode(socket.id); if(!code) throw Error('ไม่ได้อยู่ในห้อง');
-    (ack as Ack)({ok:true,snapshot:worlds.snapshot(code)});
+    (ack as Ack)({ok:true,snapshot:worlds.snapshot(code,rooms.playerId(socket.id)!)});
   }));
   socket.on('room:resume', (token: unknown, ack: unknown) => handle(ack, () => {
     const {room,id}=rooms.resume(socket.id,token);
     clearTimeout(expirations.get(id));
     expirations.delete(id);
     socket.join(room.code);
-    (ack as Ack)({ok:true,room,playerId:id,snapshot:worlds.snapshot(room.code)});
+    (ack as Ack)({ok:true,room,playerId:id,snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!)});
     io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
   }));
   socket.on('disconnect', () => {
@@ -72,7 +87,7 @@ io.on('connection', (socket) => {
       const room=rooms.expire(session.code,session.id);
       if(room?.players.some(p=>p.id===session.id)) return;
       worlds.removePlayer(session.code,session.id);
-      if(room) {io.to(session.code).emit('room:update',{...room,canStart:canStart(room)});io.to(session.code).emit('game:snapshot',worlds.snapshot(session.code));}
+      if(room) {io.to(session.code).emit('room:update',{...room,canStart:canStart(room)});broadcastSnapshot(session.code);}
       else worlds.delete(session.code);
     }, 120000).unref());
   });

@@ -6,26 +6,31 @@ import { Movement } from '../game/movement';
 import { changeZoom, toggleRoof } from './view';
 import { initialObjects } from '../game/objects';
 import { Encounter } from '../game/encounter';
-import { startGhostEncounter, runGhostPhase, playerGhostAction, type GhostEncounter } from '@baan/shared';
+import { startGhostEncounter, runGhostPhase, playerGhostAction, type GhostEncounter, caseLayout, type CaseSite } from '@baan/shared';
 
 export interface OnlineMap {
-  read(): { self: {x:number;y:number}; others: {x:number;y:number}[]; ghost: GhostEncounter|null } | null;
+  read(): { self: {x:number;y:number}; others: {x:number;y:number}[]; ghost: GhostEncounter|null; encounterActive?:boolean; danger?:{x:number;y:number}[]; objectives?:{x:number;y:number}[]; enemies?:{position:{x:number;y:number}}[] } | null;
   move(target: {x:number;y:number}): void;
 }
 
 class LocationScene extends Phaser.Scene {
-  private grid = { width: location.width, height: location.height, blocked: [
-    ...location.walls, ...location.obstacles,
-    ...Array.from({ length: location.house.width * location.house.depth }, (_, i) => ({ x: location.house.x + i % location.house.width, y: location.house.y + Math.floor(i / location.house.width) })),
-    ...initialObjects.map(({x,y}) => ({x,y})),
-  ] };
-  private movement = new Movement(this.grid, { x: 4, y: 7 });
+  private get layout() {return this.site ? caseLayout(this.site) : location;}
+  private get objects() {return this.site ? [] : initialObjects;}
+  private enemies: Phaser.GameObjects.Image[]=[];
+  private get grid() {return { width: this.layout.width, height: this.layout.height, blocked: [
+    ...this.layout.walls, ...this.layout.obstacles,
+    ...Array.from({ length: this.layout.house.width * this.layout.house.depth }, (_, i) => ({ x: this.layout.house.x + i % this.layout.house.width, y: this.layout.house.y + Math.floor(i / this.layout.house.width) })),
+    ...this.objects.map(({x,y}) => ({x,y})),
+  ] };}
+  private movement: Movement;
   private encounter = new Encounter([{id: 'player', position: {x:4,y:7}}]);
   private ghostState: GhostEncounter | null = null;
   private ghostToken!: Phaser.GameObjects.Image;
   private fog!: Phaser.GameObjects.Image;
   private ghostAura!: Phaser.GameObjects.Image;
   private ghostVisible = false;
+  private danger?: Phaser.GameObjects.Graphics;
+  private dangerKey = '';
   private overlay!: Phaser.GameObjects.Graphics;
   private token!: Phaser.GameObjects.Container;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
@@ -34,7 +39,7 @@ class LocationScene extends Phaser.Scene {
   private marker!: Phaser.GameObjects.Ellipse;
   private following = true;
   private peers: Phaser.GameObjects.Image[] = [];
-  constructor(private onSelect: (id: string | null) => void, private online?: OnlineMap) { super('location'); }
+  constructor(private onSelect: (id: string | null) => void, private online?: OnlineMap, private site?:CaseSite) { super('location'); this.movement=new Movement(this.grid,{x:4,y:7}); }
   create() {
     prepareVillageArt(this);
     let g = this.add.graphics().setDepth(-1000);
@@ -43,7 +48,7 @@ class LocationScene extends Phaser.Scene {
       for (const p of points.slice(1)) g.lineTo(p.x, p.y);
       g.closePath().fillPath().strokePath();
     };
-    for (let y = 0; y < location.height; y++) for (let x = 0; x < location.width; x++) {
+    for (let y = 0; y < this.layout.height; y++) for (let x = 0; x < this.layout.width; x++) {
       const p = gridToScreen(x, y);
       polygon([{x:p.x,y:p.y-TILE_HEIGHT/2},{x:p.x+TILE_WIDTH/2,y:p.y},{x:p.x,y:p.y+TILE_HEIGHT/2},{x:p.x-TILE_WIDTH/2,y:p.y}], (x===4 || y===7) ? 0x776d51 : (x+y)%2 ? 0x3f614b : 0x496a50, 0x324b3e);
     }
@@ -53,7 +58,7 @@ class LocationScene extends Phaser.Scene {
     this.fog = this.add.image(mist.x,mist.y,villageArt.glow).setTint(0xacc8bb).setScale(4,1.15).setAlpha(0.19).setDepth(9000);
     this.tweens.add({targets:this.fog,x:mist.x+65,duration:7400,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
     this.overlay = this.add.graphics().setDepth(-999).setVisible(false).lineStyle(2, 0xf5df9c, 0.85);
-    for (let y = 0; y < location.height; y++) for (let x = 0; x < location.width; x++) {
+    for (let y = 0; y < this.layout.height; y++) for (let x = 0; x < this.layout.width; x++) {
       const p = gridToScreen(x,y);
       this.overlay.beginPath().moveTo(p.x,p.y-16).lineTo(p.x+32,p.y).lineTo(p.x,p.y+16).lineTo(p.x-32,p.y).closePath().strokePath();
     }
@@ -63,14 +68,14 @@ class LocationScene extends Phaser.Scene {
     this.game.events.on('focus-action', this.focusAction, this);
     this.game.events.on('check-action', this.checkAction, this);
     this.events.once('shutdown', () => { this.game.events.off('set-mode', this.setMode, this); this.game.events.off('end-turn', this.endTurn, this); this.game.events.off('ghost-action', this.ghostAction, this); this.game.events.off('focus-action', this.focusAction, this); this.game.events.off('check-action', this.checkAction, this); });
-    for (const cell of location.walls) {
+    for (const cell of this.layout.walls) {
       g = this.add.graphics();
       const p = gridToScreen(cell.x, cell.y);
       g.setDepth(p.y);
       polygon([{x:p.x-32,y:p.y-12},{x:p.x,y:p.y+4},{x:p.x,y:p.y-16},{x:p.x-32,y:p.y-32}], 0x6b7464, 0x414d40);
     }
     g = this.add.graphics();
-    const h = location.house;
+    const h = this.layout.house;
     const a = gridToScreen(h.x-.5,h.y-.5), b = gridToScreen(h.x+h.width-.5,h.y-.5);
     const c = gridToScreen(h.x+h.width-.5,h.y+h.depth-.5), d = gridToScreen(h.x-.5,h.y+h.depth-.5);
     g.setDepth(c.y);
@@ -97,11 +102,11 @@ class LocationScene extends Phaser.Scene {
         Phaser.Math.Linear(d.x,c.x,t), Phaser.Math.Linear(d.y,c.y,t)-100);
     }
     g.lineStyle(3, 0xd4b986).lineBetween(ridgeA.x,ridgeA.y,ridgeA.x,ridgeA.y-10);
-    for (const cell of location.obstacles) {
+    for (const cell of this.layout.obstacles) {
       const p = gridToScreen(cell.x,cell.y);
       this.add.image(p.x,p.y,villageArt.banana).setOrigin(0.5,0.92).setDepth(p.y);
     }
-    for (const object of initialObjects) {
+    for (const object of this.objects) {
       const p = gridToScreen(object.x,object.y);
       this.add.image(p.x,p.y,object.evidenceId ? villageArt.evidence : villageArt.crate).setOrigin(0.5,0.88).setDepth(p.y);
     }
@@ -115,7 +120,7 @@ class LocationScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       const cell = screenToGrid(pointer.worldX, pointer.worldY);
       const target = {x: Math.round(cell.x), y: Math.round(cell.y)};
-      const object = initialObjects.find(o => o.x === target.x && o.y === target.y);
+      const object = this.objects.find(o => o.x === target.x && o.y === target.y);
       this.onSelect(object?.id ?? null);
       if (!object && this.online) this.online.move(target);
       else if (!object) { if (this.encounter.mode === 'encounter') this.encounterStep(target); else this.movement.moveTo(target); }
@@ -201,7 +206,25 @@ class LocationScene extends Phaser.Scene {
       if (snapshot) {
         this.movement.position = snapshot.self;
         this.ghostState = snapshot.ghost;
-        this.overlay.setVisible(!!snapshot.ghost && snapshot.ghost.phase !== 'resolved');
+        this.overlay.setVisible(snapshot.encounterActive ?? (!!snapshot.ghost && snapshot.ghost.phase !== 'resolved'));
+        const dangerKey = JSON.stringify([snapshot.danger,snapshot.objectives]);
+        if(dangerKey!==this.dangerKey) {
+          this.dangerKey=dangerKey;
+          const marker=this.danger ??= this.add.graphics().setDepth(1);
+          marker.clear().fillStyle(0xe36b66,0.55);
+          for(const cell of [...(snapshot.danger ?? []),...(snapshot.objectives ?? [])]) {
+            if(snapshot.objectives?.includes(cell)) marker.fillStyle(0xffd674,0.68);
+            const p=gridToScreen(cell.x,cell.y);
+            marker.fillPoints([{x:p.x,y:p.y-TILE_HEIGHT/2},{x:p.x+TILE_WIDTH/2,y:p.y},
+              {x:p.x,y:p.y+TILE_HEIGHT/2},{x:p.x-TILE_WIDTH/2,y:p.y}],true);
+          }
+        }
+        (snapshot.enemies ?? []).forEach(({position},index)=>{
+          const p=gridToScreen(position.x,position.y);
+          const enemy=this.enemies[index] ??= this.add.image(0,0,villageArt.ghost).setOrigin(0.5,1);
+          enemy.setPosition(p.x,p.y-6+Math.sin(_time/380+index)*4).setDepth(p.y+0.1).setVisible(true);
+        });
+        for(let i=snapshot.enemies?.length ?? 0;i<this.enemies.length;i++) this.enemies[i].setVisible(false);
         snapshot.others.forEach((cell,index) => {
           const pos = gridToScreen(cell.x,cell.y);
           const peer = this.peers[index] ??= this.add.image(0,0,villageArt.player).setOrigin(0.5,0.88).setTint(0x9bd6ed);
@@ -219,6 +242,6 @@ class LocationScene extends Phaser.Scene {
   }
 }
 
-export function createGame(parent: HTMLElement, onSelect: (id: string | null) => void, online?: OnlineMap) {
-  return new Phaser.Game({ type: Phaser.AUTO, parent, width: 960, height: 540, backgroundColor: '#182d2d', scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [new LocationScene(onSelect, online)] });
+export function createGame(parent: HTMLElement, onSelect: (id: string | null) => void, online?: OnlineMap, site?:CaseSite) {
+  return new Phaser.Game({ type: Phaser.AUTO, parent, width: 960, height: 540, backgroundColor: '#182d2d', scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [new LocationScene(onSelect, online, site)] });
 }

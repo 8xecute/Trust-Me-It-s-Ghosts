@@ -70,4 +70,53 @@ test('production room lifecycle over polling and WebSocket', {timeout:20000}, as
   assert.equal(resumed.playerId,joined.playerId);
   assert.deepEqual(resumed.snapshot.players[created.playerId],moved.target);
   assert.equal((await req(a,'dm:panel')).ok,false);
+  const v2a = connect('polling'), v2b = connect('websocket');
+  await Promise.all([once(v2a,'connect'),once(v2b,'connect')]);
+  const v2 = await req(v2a,'room:create:v2');
+  assert.equal(v2.room.version,2);
+  assert.equal((await req(v2b,'room:join',v2.room.code)).ok,false);
+  const v2join = await req(v2b,'room:join:v2',v2.room.code);
+  assert.equal(v2join.room.version,2);
+  const createdCharacter = await req(v2b,'game:action',{
+    id:'character-smoke',type:'createCharacter',profession:'occult_engineer',bonus:'knowledge',talent:'spirit_scanner',background:'technician',biography:{personal_secret:'owner-only'},
+  });
+  assert.equal(createdCharacter.snapshot.characters[v2join.playerId].stats.knowledge,4);
+  const v2detach = once(v2a,'room:update');
+  v2b.disconnect();
+  await v2detach;
+  const v2c = connect('websocket');
+  await once(v2c,'connect');
+  const v2resume = await req(v2c,'room:resume',v2join.token);
+  assert.equal(v2resume.room.version,2);
+  assert.equal(v2resume.playerId,v2join.playerId);
+  assert.equal(v2resume.snapshot.characters[v2join.playerId].profession,'occult_engineer');
+  assert.equal(v2resume.snapshot.characters[v2join.playerId].talent,'spirit_scanner');
+  assert.equal(v2resume.snapshot.characters[v2join.playerId].background,'technician');
+  assert.equal(JSON.stringify(v2resume.snapshot).includes('owner-only'),false);
+  assert.equal(JSON.stringify((await req(v2a,'game:snapshot')).snapshot).includes('owner-only'),false);
+  assert.deepEqual((await req(v2a,'character:biography')).biography,{});
+  assert.deepEqual((await req(v2c,'character:biography')).biography,{personal_secret:'owner-only'});
+  assert.equal((await req(v2a,'game:action',{id:'profile',type:'createCharacter',profession:'medium',bonus:'body'})).ok,true);
+  const v2dm=connect('websocket');
+  await once(v2dm,'connect');
+  assert.equal((await req(v2dm,'room:join:v2',v2.room.code)).ok,true);
+  assert.equal((await req(v2dm,'game:action',{id:'role',type:'claimDm'})).ok,true);
+  assert.equal((await req(v2a,'game:action',{id:'case',type:'caseStart'})).ok,true);
+  assert.equal((await req(v2a,'dm:panel')).ok,false);
+  const casePanel=await req(v2dm,'dm:panel');
+  assert.equal(casePanel.panel.caseMode,true);
+  const current=await req(v2dm,'game:action',{id:'arrival',type:'caseDm',targetId:v2.playerId,actionId:'talk:arrival'});
+  assert.equal(current.ok,true);
+  assert.match(current.snapshot.case001.notice,/ประเสริฐ/);
+  assert.equal(JSON.stringify((await req(v2a,'game:snapshot')).snapshot).includes(casePanel.panel.investigators[0].secret),false);
+  const watched=new Promise(resolve=>{
+    v2c.on('game:snapshot',function observe(snapshot){
+      if(Object.keys(snapshot.players).length===1){v2c.off('game:snapshot',observe);resolve(snapshot);}
+    });
+  });
+  const traveled=await req(v2a,'game:action',{id:'travel-b',type:'caseAction',actionId:'travel:B'});
+  assert.equal(traveled.snapshot.caseMap.site,'B');
+  const otherLocation=await watched;
+  assert.equal(otherLocation.caseMap.site,'A');
+  assert.deepEqual(Object.keys(otherLocation.players),[v2join.playerId]);
 });
