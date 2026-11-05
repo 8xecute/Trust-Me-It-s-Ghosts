@@ -1,3 +1,4 @@
+import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
 import { TacticalTechniques } from './TacticalTechniques';
 import { CharacterCreator } from './CharacterCreator';
 import { GameHud, FieldJournal } from './GameHud';
@@ -54,6 +55,8 @@ export function OnlineGame() {
   const [room,setRoom] = useState<Room|null>(null);
   const [world,setWorld] = useState<Snapshot|null>(null);
   const [code,setCode] = useState('');
+  const [previewPlayer,setPreviewPlayer] = useState('');
+  const [preview,setPreview] = useState<PlayerPreview>();
   const [dmPanel,setDmPanel] = useState<DmPanel|CaseDmPanel|null>(null);
   const [status,setStatus] = useState('');
   const [connected,setConnected] = useState(false);
@@ -134,6 +137,15 @@ export function OnlineGame() {
     return ()=>{current=false;};
   },[connected,isHumanDm,world?.revision]);
 
+  useEffect(()=>{
+    if(!connected || !isHumanDm || !previewPlayer) {setPreview(undefined);return;}
+    let live=true;
+    socket.current?.timeout(5000).emit('dm:preview',previewPlayer,(error:Error|null,reply:{ok:boolean;preview?:PlayerPreview})=>{
+      if(live) setPreview(!error && reply?.ok ? reply.preview : undefined);
+    });
+    return ()=>{live=false;};
+  },[connected,isHumanDm,previewPlayer,world?.revision]);
+
   const base=initialObjects.find(object=>object.id===selected);
   const object=base && {...base,...world?.objects[base.id]};
   const encounter=world?.encounter;
@@ -157,10 +169,16 @@ export function OnlineGame() {
   const combatAction=(type:string,payload:object={})=>action(type,{...payload,enemyId:targetEnemy?.id});
   const myStats = world?.turns[self.current];
   if(isHumanDm && room) return <main className="game-shell online-shell">
-    <h1>ห้องผู้ดำเนินเรื่อง</h1>
+    <p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ผู้ดำเนินเรื่อง</p>
+    <h1>ห้องควบคุมภารกิจ</h1>
     <p role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p>
     <p>รหัสห้อง {room.code} · ผู้สืบสวน {investigators.length}/{limit}</p>
     <ul>{investigators.map((player,index)=><li key={player.id}>ผู้เล่น {index+1} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
+    <label>เลือกมุมมองผู้สืบสวน <select value={previewPlayer} onChange={event=>setPreviewPlayer(event.target.value)}>
+      <option value="">เลือกผู้สืบสวน</option>
+      {investigators.map((player,index)=><option key={player.id} value={player.id}>ผู้เล่น {index+1}</option>)}
+    </select></label>
+    {preview && preview.players[previewPlayer] && <DmPlayerView playerId={previewPlayer} preview={preview}/>}
     {world?.case001 ? <section className="game-panel">
       <h2>{world.case001.title}</h2>
       <p>{world.case001.location} · {world.case001.time} · ช่วยแล้ว {world.case001.rescued}/3</p>
@@ -191,9 +209,10 @@ export function OnlineGame() {
       </section>}
   </main>;
   return <main className="game-shell online-shell">
-    <h1>เล่นออนไลน์</h1>
+    <p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ปฏิบัติการภาคสนาม</p>
+    <h1>{world?.case001 ? 'แฟ้มคดี 001' : room ? 'เตรียมทีมสำรวจ' : 'รวมทีมรับคดี'}</h1>
     <p className="turn-chip" role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p>
-    {!room ? <><button disabled={!connected} onClick={()=>request('room:create:v2')}>สร้างห้อง</button>
+    {!room ? <><button className="primary" disabled={!connected} onClick={()=>request('room:create:v2')}>สร้างห้อง</button>
       <form onSubmit={event=>{event.preventDefault();request('room:join:v2',[code]);}}>
         <label>รหัสห้อง <input value={code} onChange={event=>setCode(event.target.value)} maxLength={6}/></label>
         <button disabled={!connected || code.trim().length!==6}>เข้าห้อง</button>
@@ -241,7 +260,7 @@ export function OnlineGame() {
           {!connected && <p role="status">กำลังรอการเชื่อมต่อ</p>}
           <form method="dialog">
             <button autoFocus>เล่นต่อ</button>
-            <button type="button" disabled={!connected || withdrawalBlocked} onClick={()=>{
+            <button className="danger" type="button" disabled={!connected || withdrawalBlocked} onClick={()=>{
               withdrawalDialog.current?.close();
               action('caseAction',{actionId:'finish'});
             }}>ยืนยันถอนทีม</button>
@@ -268,7 +287,7 @@ export function OnlineGame() {
             </>}
           </div>)}
       </section> : <>
-      <button disabled={!connected || !!active || investigators.length<2 || investigators.length>limit ||
+      <button className="primary" disabled={!connected || !!active || investigators.length<2 || investigators.length>limit ||
           (room.version===2 && room.players.some(p=>p.id!==world?.humanDmId && !world?.characters?.[p.id]))}
         onClick={()=>action('caseStart')}>เริ่มคดี 001</button>
       {!world?.humanDmId && <button disabled={!connected} onClick={()=>action('claimDm')}>รับบทผู้ดำเนินเรื่อง</button>}

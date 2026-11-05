@@ -62,6 +62,11 @@ io.on('connection', (socket) => {
     if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
     (ack as Ack)({ok:true,biography:worlds.biography(code,player)});
   }));
+  socket.on('dm:preview', (target: unknown, ack: unknown) => handle(ack, () => {
+    const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
+    if(!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
+    (ack as Ack)({ok:true,preview:worlds.dmPreview(code,player,target)});
+  }));
   socket.on('dm:panel', (ack: unknown) => handle(ack, () => {
     const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
     if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');

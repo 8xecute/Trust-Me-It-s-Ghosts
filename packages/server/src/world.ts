@@ -45,6 +45,12 @@ export class WorldStore {
    scenes:scenario.scenes.filter(scene=>script.next.includes(scene.id)),
   };
  }
+ dmPreview(code:string,player:string,target:unknown) {
+  const world=this.get(code);
+  if(world.humanDmId!==player || !world.players[player]) throw Error('เฉพาะผู้ดำเนินเรื่อง');
+  if(typeof target!=='string' || target===player || !world.players[target]) throw Error('ไม่พบผู้สืบสวน');
+  return this.snapshot(code,target);
+ }
  biography(code:string,player:string) { return this.get(code).biographies?.[player] ?? {}; }
  snapshot(code:string, viewer?:string): Snapshot {
   const {case001,caseMap,backgroundUses,biographies,...world} = structuredClone(this.get(code));

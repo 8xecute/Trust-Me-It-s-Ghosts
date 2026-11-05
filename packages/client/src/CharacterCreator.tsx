@@ -20,8 +20,8 @@ export function CharacterCreator({ character, biography, disabled, onCreate }: {
   const [draft, setDraft] = useState<Biography>({});
   const talents = professionTechniques[profession].talents;
   const stats = professions[profession].stats;
-  return <section className="game-panel" aria-label="ตัวละคร">
-    <h2>{character ? professions[character.profession].name : 'สร้างตัวละคร'}</h2>
+  return <details className="game-panel character-panel" aria-label="ตัวละคร" open={!character}>
+    <summary>{character ? `ตัวละครของคุณ · ${professions[character.profession].name}` : 'สร้างตัวละครของคุณ'}</summary>
     <ul>{attributes.map(stat => <li key={stat}>{labels[stat]} {character?.stats[stat] ?? stats[stat] + Number(stat === bonus)}</li>)}</ul>
     {character ? <>
       <p>พลังชีวิต {character.hp} · สติ {character.sanity} · สมาธิ {character.focus}</p>
@@ -52,7 +52,7 @@ export function CharacterCreator({ character, biography, disabled, onCreate }: {
             <textarea maxLength={500} value={draft[field] ?? ''} onChange={event=>setDraft({...draft,[field]:event.target.value})}/>
           </label>)}
         </details>
-        <button disabled={disabled}>ยืนยันตัวละคร</button>
+        <button className="primary" disabled={disabled}>ยืนยันตัวละคร</button>
       </form>}
-  </section>;
+  </details>;
 }
