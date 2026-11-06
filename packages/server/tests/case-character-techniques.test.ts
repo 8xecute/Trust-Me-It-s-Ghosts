@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createCharacter, type Background } from '@baan/shared';
-import { applyCaseAction, newCase, type CaseState } from '../src/case001.js';
+import { applyCaseAction, newCase, type CaseState } from '../src/case001/case001.js';
 
 test('all six backgrounds apply only to a matching server-defined check', () => {
   const setups: [Background, string, Partial<CaseState>][]=[

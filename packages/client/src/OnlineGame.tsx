@@ -1,83 +1,78 @@
-import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
-import { TacticalTechniques } from './TacticalTechniques';
-import { CharacterCreator } from './CharacterCreator';
-import { GameHud, FieldJournal } from './GameHud';
+import { D20Card } from './ui/case/D20Card';
+import { CaseNotebook } from './ui/case/CaseNotebook';
+import { NarrativeJournal } from './ui/case/NarrativeJournal';
+import type { PlayerPreview } from './ui/gm/DmPlayerView';
+import { CharacterCreator, CoreStats } from './ui/characters/CharacterCreator';
+import { GameHud } from './ui/combat/GameHud';
 import { useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { Background, Biography, CaseSite, Character, GhostEncounter, TurnState, ScriptedDmView } from '@baan/shared';
-import { initialObjects, actionsFor } from './game/objects';
-import { createGame } from './rendering/game';
+import type { Biography } from '@baan/shared';
+import { CaseScene } from './ui/case/CaseScene';
+import { CastPortraits, portraitUrl, visibleCast } from './ui/characters/CastPortraits';
+import { EncounterBoard } from './ui/combat/EncounterBoard';
+import { castProfiles } from '@baan/shared';
 
-type Cell = {x:number;y:number};
-type Snapshot = {
-  revision:number;
-  caseMap?:{site:CaseSite;opportunity?:string;withdrawalBlocked?:boolean;battle?:CaseBattleView};
-  tactics?:Parameters<typeof TacticalTechniques>[0]['tactics'] & {concealed?:boolean;scanned?:number};
-  characters?:Record<string,Character>;
-  case001?: {
-    title:string;location:string;time:string;notice:string;haunt:number;rescued:number;escorting:number;
-    evidence:number;seals:number;progress:number;containment?:number;ghost:string|null;report:{text:string}|null;
-    actions:{id:string;label:string;minutes:number;check?:'ritual'|'spirit'|'investigation';background?:Background;deception?:boolean}[];
-  };
-  humanDmId?:string|null;
-  diceRequest?:{id:string;playerId:string;die:number|null}|null;
-  dm?: ScriptedDmView;
-  players:Record<string,Cell>;
-  objects:Record<string,Partial<(typeof initialObjects)[number]>>;
-  evidence:string[];
-  inventory:Record<string,string[]>;
-  activePlayer:string|null;
-  turns:Record<string,TurnState>;
-  encounter:GhostEncounter|null;
-  lastCheck:{playerId:string;die:number;total:number;outcome:'success'|'partial'|'failure'}|null;
-};
-type CaseBattleView = Parameters<typeof TacticalTechniques>[0]['tactics'] & {
-  id:string;title:string;active:string|null;phase?:'chains'|'flood_memory'|'choice';objective:boolean;
-  enemies:{id:string;name:string;position:Cell;hp:number;telegraph?:Parameters<typeof TacticalTechniques>[0]['tactics']['telegraph']}[];danger:Cell[];projections:Cell[];flooded:Cell[];
-};
-type CaseDmPanel = {caseMode:true;investigators:{id:string;site:string;script:string;secret:string;choices:{id:string;label:string}[]}[]};
-type DmPanel = {
-  sceneId:string; script:string; secret:string;
-  events:{id:string;text:string}[];
-  dialogue:{id:string;text:string}[];
-  scenes:{id:string;name:string}[];
-};
-type Room = {code:string; version?:2; players:{id:string;ready:boolean}[]};
-type Reply = {ok:boolean; error?:string; room?:Room; playerId?:string; token?:string; snapshot?:Snapshot};
+import { DmWorkspace } from './ui/gm/DmWorkspace';
+import { DmHistory } from './ui/case/DmHistory';
+import { Lobby } from './ui/lobby/Lobby';
+import type { CaseDmPanel, PublicRoom, Reply, Room, Snapshot } from './network/onlineTypes';
+
 const sessionKey = 'ghosts-room-session';
+const savedSessionKey = 'ghosts-saved-room-session';
+function actionCategory(id:string) {
+  if(id.startsWith('travel:')) return 'travel';
+  if(id.startsWith('talk:') || ['lore','confront','detain','surrender','sense'].includes(id)) return 'talk';
+  if(['seal1','seal2','seal3','ritual','suppress','pacify','negotiate','show-clue','return','cut','unsafe-bracelet','study'].includes(id)) return 'ritual';
+  if(['finish','advance','record-truth','bribe'].includes(id)) return 'mission';
+  return 'explore';
+}
+const actionGroups = [
+  {id:'explore',label:'สำรวจ'},
+  {id:'talk',label:'สนทนา'},
+  {id:'travel',label:'เดินทาง'},
+  {id:'ritual',label:'พิธีกรรม'},
+  {id:'mission',label:'จัดการภารกิจ'},
+];
 
 export function OnlineGame() {
-  const canvas = useRef<HTMLDivElement>(null);
   const withdrawalDialog = useRef<HTMLDialogElement>(null);
   const socket = useRef<Socket|null>(null);
   const self = useRef('');
   const latest = useRef<Snapshot|null>(null);
   const [room,setRoom] = useState<Room|null>(null);
   const [world,setWorld] = useState<Snapshot|null>(null);
-  const [code,setCode] = useState('');
   const [previewPlayer,setPreviewPlayer] = useState('');
   const [preview,setPreview] = useState<PlayerPreview>();
-  const [dmPanel,setDmPanel] = useState<DmPanel|CaseDmPanel|null>(null);
+  const [publicRooms,setPublicRooms]=useState<PublicRoom[]>([]);
+  const [dmPanel,setDmPanel] = useState<CaseDmPanel|null>(null);
   const [status,setStatus] = useState('');
+  const [leaving,setLeaving]=useState(false);
   const [connected,setConnected] = useState(false);
   const [biography,setBiography] = useState<Biography>();
-  const [enemy,setEnemy] = useState('');
-  const [selected,setSelected] = useState<string|null>(null);
+  const [caseTab,setCaseTab]=useState<'actions'|'story'|'journal'>('actions');
+  const [actionGroup,setActionGroup] = useState('explore');
 
-  function receive(snapshot:Snapshot) {
+  function receive(snapshot:Snapshot,persistent?:boolean) {
+    if(persistent) {
+      const token=sessionStorage.getItem(sessionKey);
+      if(token) localStorage.setItem(savedSessionKey,token);
+    }
     if (!latest.current || snapshot.revision >= latest.current.revision) {
       latest.current=snapshot;
       setWorld(snapshot);
     }
   }
-  function request(event:string,args:unknown[]=[]) {
+  function request(event:string,args:unknown[]=[],onSuccess?:()=>void,onSettled?:(error?:string)=>void) {
     const connection=socket.current;
-    if (!connection?.connected) {setStatus('กำลังรอการเชื่อมต่อ');return;}
+    if (!connection?.connected) {setStatus('กำลังรอการเชื่อมต่อ');onSettled?.('กำลังรอการเชื่อมต่อ');return;}
     connection.timeout(5000).emit(event,...args,(error:Error|null,reply:Reply)=>{
       if(error || !reply?.ok) {
-        setStatus(error ? 'เซิร์ฟเวอร์ไม่ตอบกลับ' : reply?.error ?? 'ทำรายการไม่ได้');
+        const message=error ? 'เซิร์ฟเวอร์ไม่ตอบกลับ' : reply?.error ?? 'ทำรายการไม่ได้';
+        setStatus(message);
+        onSettled?.(message);
         if(event==='room:resume' && !error) {
           sessionStorage.removeItem(sessionKey);
+          if(reply?.error!=='ห้องนี้เปิดอยู่ในอีกหน้าต่าง' && localStorage.getItem(savedSessionKey)===args[0]) localStorage.removeItem(savedSessionKey);
           latest.current=null;
           self.current='';
           setWorld(null);
@@ -88,12 +83,17 @@ export function OnlineGame() {
       if(reply.token) sessionStorage.setItem(sessionKey,reply.token);
       if(reply.playerId) self.current=reply.playerId;
       if(reply.room) setRoom(reply.room);
-      if(reply.snapshot) receive(reply.snapshot);
+      if(reply.snapshot) receive(reply.snapshot,reply.persistent);
       setStatus('');
+      onSuccess?.();
+      onSettled?.();
     });
   }
-  function action(type:string, payload:object={}) {
-    request('game:action',[{id:crypto.randomUUID(),type,...payload}]);
+  function action(type:string, payload:object={},onSuccess?:()=>void,onSettled?:(error?:string)=>void) {
+    request('game:action',[{id:crypto.randomUUID(),type,...payload}],onSuccess,onSettled);
+  }
+  function caseRequest(payload:{actionId:string;boost?:string}) {
+    action('caseAction',{...payload,site:world?.caseMap?.site});
   }
   useEffect(()=>{
     const connection=io(import.meta.env.VITE_SERVER_URL?.trim() || 'http://localhost:3001',{autoConnect:false});
@@ -108,30 +108,15 @@ export function OnlineGame() {
     connection.on('connect_error',()=>{setConnected(false);setStatus('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้');});
     connection.on('game:snapshot',receive);
     connection.on('room:update',setRoom);
+    connection.on('lobby:rooms',setPublicRooms);
     connection.connect();
     return ()=>{connection.removeAllListeners();connection.disconnect();socket.current=null;};
   },[]);
-  useEffect(()=>{
-    if(!room?.code || (world?.case001 && !world.caseMap) || world?.humanDmId===self.current || !canvas.current) return;
-    const game=createGame(canvas.current,setSelected,{
-      read:()=>{
-        const snapshot=latest.current;
-        if(!snapshot?.players[self.current]) return null;
-        const battle=snapshot.caseMap?.battle;
-        if(snapshot.caseMap) return {self:snapshot.players[self.current],others:Object.entries(snapshot.players).filter(([id])=>id!==self.current).map(([,cell])=>cell),ghost:null,
-          encounterActive:!!battle,enemies:battle?.enemies,danger:[...(battle?.danger ?? []),...(battle?.flooded ?? [])],objectives:battle?.projections};
-        return {self:snapshot.players[self.current],others:Object.entries(snapshot.players).filter(([id])=>id!==self.current && id!==snapshot.humanDmId).map(([,cell])=>cell),encounterActive:snapshot.encounter?.phase==='player', ghost:snapshot.tactics?.concealed && (snapshot.tactics.scanned ?? 0)<snapshot.tactics.round ? null : snapshot.encounter, danger:snapshot.tactics?.telegraph?.cells};
-      },
-      move:target=>action('move',{target}),
-    },world?.caseMap?.site);
-    return ()=>game.destroy(true);
-  },[room?.code,!!world?.case001,world?.caseMap?.site,world?.humanDmId===self.current]);
-
   const isHumanDm = !!world?.humanDmId && world.humanDmId === self.current;
   useEffect(()=>{
     if (!connected || !isHumanDm) { setDmPanel(null); return; }
     let current = true;
-    socket.current?.timeout(5000).emit('dm:panel',(error:Error|null,reply:{ok:boolean;panel?:DmPanel|CaseDmPanel})=>{
+    socket.current?.timeout(5000).emit('dm:panel',(error:Error|null,reply:{ok:boolean;panel?:CaseDmPanel})=>{
       if (current) setDmPanel(!error && reply?.ok ? reply.panel ?? null : null);
     });
     return ()=>{current=false;};
@@ -146,15 +131,19 @@ export function OnlineGame() {
     return ()=>{live=false;};
   },[connected,isHumanDm,previewPlayer,world?.revision]);
 
-  const base=initialObjects.find(object=>object.id===selected);
-  const object=base && {...base,...world?.objects[base.id]};
-  const encounter=world?.encounter;
-  const active=encounter && encounter.phase!=='resolved';
-  const myTurn=world?.activePlayer===self.current;
   const investigators=room?.players.filter(player=>player.id!==world?.humanDmId) ?? [];
-  const limit=room?.version===2?6:4;
-  const allReady=investigators.length>=2 && investigators.length<=limit && (room?.version===2?investigators:room?.players ?? []).every(player=>player.ready);
+  function playerName(id:string) {
+    if(id===world?.humanDmId) return 'ผู้ดำเนินเรื่อง';
+    const index=investigators.findIndex(player=>player.id===id);
+    return world?.characters?.[id]?.playerName ?? (index<0 ? id : 'ผู้สืบสวน '+(index+1));
+  }
+  const limit=6;
+  const canStart=connected && investigators.length>=2 && investigators.length<=limit &&
+    investigators.every(player=>world?.characters?.[player.id]);
   const character=world?.characters?.[self.current];
+  const battle=world?.caseMap?.battle;
+  const waitingForRoll=!!world?.pendingCheck || !!(world?.manualDm && world.diceRequest?.die===null);
+  const cast=investigators.flatMap(player=>world?.characters?.[player.id]?.profession ?? []);
   useEffect(()=>{
     if(!character || !connected) return;
     let live=true;
@@ -163,178 +152,186 @@ export function OnlineGame() {
     });
     return ()=>{live=false;};
   },[!!character,connected,room?.code]);
-  const battle=world?.caseMap?.battle;
-  const withdrawalBlocked=!!world?.caseMap?.withdrawalBlocked;
-  const targetEnemy=battle?.enemies.find(entry=>entry.id===enemy) ?? battle?.enemies[0];
-  const combatAction=(type:string,payload:object={})=>action(type,{...payload,enemyId:targetEnemy?.id});
-  const myStats = world?.turns[self.current];
-  if(isHumanDm && room) return <main className="game-shell online-shell">
-    <p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ผู้ดำเนินเรื่อง</p>
-    <h1>ห้องควบคุมภารกิจ</h1>
-    <p role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p>
-    <p>รหัสห้อง {room.code} · ผู้สืบสวน {investigators.length}/{limit}</p>
-    <ul>{investigators.map((player,index)=><li key={player.id}>ผู้เล่น {index+1} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
-    <label>เลือกมุมมองผู้สืบสวน <select value={previewPlayer} onChange={event=>setPreviewPlayer(event.target.value)}>
-      <option value="">เลือกผู้สืบสวน</option>
-      {investigators.map((player,index)=><option key={player.id} value={player.id}>ผู้เล่น {index+1}</option>)}
-    </select></label>
-    {preview && preview.players[previewPlayer] && <DmPlayerView playerId={previewPlayer} preview={preview}/>}
-    {world?.case001 ? <section className="game-panel">
-      <h2>{world.case001.title}</h2>
-      <p>{world.case001.location} · {world.case001.time} · ช่วยแล้ว {world.case001.rescued}/3</p>
-      <p>{world.case001.notice}</p>
-      {world.case001.report && <pre>{world.case001.report.text}</pre>}
-      {connected && dmPanel && 'caseMode' in dmPanel && dmPanel.investigators.map((entry,index)=><details key={entry.id}>
-        <summary>ผู้สืบสวน {index+1} · สถานที่ {entry.site}</summary>
-        <p><strong>บทฉาก</strong> {entry.script}</p>
-        <p><strong>ข้อมูลลับ</strong> {entry.secret}</p>
-        {entry.choices.map(choice=><button key={choice.id} onClick={()=>action('caseDm',{targetId:entry.id,actionId:choice.id})}>{choice.label}</button>)}
-        <button disabled={!!world.case001?.report || world.diceRequest?.die===null} onClick={()=>action('dmRequestRoll',{targetId:entry.id})}>ขอทอย D20</button>
-      </details>)}
-    </section> : <section className="game-panel" aria-label="แผงผู้ดำเนินเรื่อง">
-        <h2>แผงผู้ดำเนินเรื่อง</h2>
-        <button disabled={!connected || !!active || !!world?.case001 || investigators.length>=6} onClick={()=>action('releaseDm')}>คืนบทผู้ดำเนินเรื่อง</button>
-        {connected && dmPanel && !('caseMode' in dmPanel) && <>
-          <p><strong>บทฉาก</strong> {dmPanel.script}</p>
-          <p><strong>ข้อมูลลับ</strong> {dmPanel.secret}</p>
-          <p>เหตุการณ์</p>
-          {dmPanel.events.map(event=><button key={event.id} onClick={()=>action('dmEvent',{targetId:event.id})}>{event.text}</button>)}
-          <p>บทสนทนา NPC</p>
-          {dmPanel.dialogue.map(line=><button key={line.id} onClick={()=>action('dmDialogue',{targetId:line.id})}>{line.text}</button>)}
-          <p>เปลี่ยนฉาก</p>
-          {dmPanel.scenes.map(scene=><button key={scene.id} disabled={!!active} onClick={()=>action('dmScene',{targetId:scene.id})}>{scene.name}</button>)}
-          <p>ขอให้ผู้เล่นทอย D20</p>
-          {investigators.map((player,index)=><button key={player.id} disabled={world?.diceRequest?.die===null} onClick={()=>action('dmRequestRoll',{targetId:player.id})}>ผู้เล่น {index+1}</button>)}
-        </>}
-      </section>}
-  </main>;
-  return <main className="game-shell online-shell">
-    <p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ปฏิบัติการภาคสนาม</p>
-    <h1>{world?.case001 ? 'แฟ้มคดี 001' : room ? 'เตรียมทีมสำรวจ' : 'รวมทีมรับคดี'}</h1>
-    <p className="turn-chip" role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p>
-    {!room ? <><button className="primary" disabled={!connected} onClick={()=>request('room:create:v2')}>สร้างห้อง</button>
-      <form onSubmit={event=>{event.preventDefault();request('room:join:v2',[code]);}}>
-        <label>รหัสห้อง <input value={code} onChange={event=>setCode(event.target.value)} maxLength={6}/></label>
-        <button disabled={!connected || code.trim().length!==6}>เข้าห้อง</button>
-      </form></> : <>
-      <p>รหัสห้อง {room.code} · รุ่น {room.version ?? 1} · สมาชิก {room.players.length}/{room.version===2?7:4}</p>
-      <ul>{room.players.map((player,index)=><li key={player.id}>ผู้เล่น {index+1}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
+  const caseActions=(world?.case001?.actions ?? [])
+    .filter(option=>!battle || option.dice || ['seal1','seal2','seal3','ritual','suppress','show-clue'].includes(option.id))
+    .filter(option=>option.id!=='hint' || character?.profession==='paranormal_investigator')
+    .filter(option=>option.id!=='sense' || character?.profession==='medium');
+  const groups=actionGroups.filter(group=>caseActions.some(option=>actionCategory(option.id)===group.id));
+  const visibleGroup=groups.some(group=>group.id===actionGroup) ? actionGroup : groups[0]?.id;
+  useEffect(()=>{
+    if(isHumanDm && !investigators.some(player=>player.id===previewPlayer)) setPreviewPlayer(investigators[0]?.id ?? '');
+  },[isHumanDm,room?.players,previewPlayer]);
+
+  function leaveRoom() {
+    if(leaving || !window.confirm('ออกจากห้องนี้? คุณจะกลับเข้าคดีที่เริ่มแล้วด้วยตัวละครเดิมไม่ได้')) return;
+    setLeaving(true);
+    request('room:leave',[],()=>{
+      const token=sessionStorage.getItem(sessionKey);
+      sessionStorage.removeItem(sessionKey);
+      if(token && localStorage.getItem(savedSessionKey)===token) localStorage.removeItem(savedSessionKey);
+      latest.current=null;
+      self.current='';
+      setRoom(null);
+      setWorld(null);
+      setBiography(undefined);
+      setPreview(undefined);
+      setPreviewPlayer('');
+      setCaseTab('actions');
+    },()=>setLeaving(false));
+  }
+
+  if(isHumanDm && room) return <DmWorkspace room={room} world={world} investigators={investigators}
+    leaveRoom={leaveRoom} leaving={leaving} preview={preview} previewPlayer={previewPlayer} setPreviewPlayer={setPreviewPlayer} dmPanel={dmPanel}
+    action={action} playerName={playerName} canStart={canStart} status={status} connected={connected} limit={limit}/>;
+
+  const savedToken=room ? null : localStorage.getItem(savedSessionKey);
+  return <main className={`game-shell online-shell player-shell${room ? '' : ' lobby-shell'}`}>
+    <header className="online-heading"><div><p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ปฏิบัติการภาคสนาม</p><h1>{world?.case001 ? 'แฟ้มคดี 001' : room ? 'เตรียมทีมสำรวจ' : 'รวมทีมรับคดี'}</h1></div><p className="turn-chip" role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p></header>
+    {!room ? <Lobby connected={connected} publicRooms={publicRooms}
+      resumeRoom={savedToken ? ()=>{
+        sessionStorage.setItem(sessionKey,savedToken);
+        request('room:resume',[savedToken]);
+      } : undefined}
+      createRoom={()=>request('room:create:v2')} joinRoom={roomCode=>request('room:join:v2',[roomCode])}/> : <>
+      <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>ออกจากห้อง</button>
+      <details className="session-members" open={!world?.case001 && (room.version!==2 || !!character)}>
+        <summary>ทีมของคุณ · ห้อง {room.code} · {room.players.length} คน</summary>
+      <ul>{room.players.map((player,index)=><li key={player.id}>{world?.characters?.[player.id] ? (world.characters[player.id].playerName ?? castProfiles[world.characters[player.id].profession].name) : 'ผู้เล่น '+(index+1)}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
       <button disabled={!connected} onClick={()=>request('room:ready',[!room.players.find(p=>p.id===self.current)?.ready])}>สลับสถานะพร้อม</button>
-      {room.version===2 && !isHumanDm && <CharacterCreator character={character} biography={biography} disabled={!connected}
-        onCreate={(profession,bonus,talent,background,biography)=>action('createCharacter',{profession,bonus,talent,background,biography})}/>}
-      {world?.case001 ? <section className="game-panel" aria-label="คดี 001">
-        <GameHud haunt={world.case001.haunt} hp={character?.hp} sanity={character?.sanity} focus={character?.focus} ap={battle?myStats?.ap:undefined}/>
-        <h2>{world.case001.title}</h2>
-        <p>{world.case001.location} · {world.case001.time} · ความหลอน {world.case001.haunt}/10</p>
-        <p aria-live="polite">{world.case001.notice}</p>
-        <p>ช่วยแล้ว {world.case001.rescued}/3 · กำลังพาออก {world.case001.escorting} · หลักฐาน {world.case001.evidence}/8</p>
-        <p>ผนึก {world.case001.seals}/3 · พิธีปลดปล่อย {world.case001.progress}/6 {world.case001.containment!==undefined && `· พิธีสะกด ${world.case001.containment}/4`} · {world.case001.ghost ?? 'ยังไม่พบวิญญาณ'}</p>
-        {world.diceRequest && <p aria-live="polite">
-          {world.diceRequest.die===null ? 'ผู้ดำเนินเรื่องขอทอย D20' : `ผลทอย D20: ${world.diceRequest.die}`}
-          {world.diceRequest.die===null && world.diceRequest.playerId===self.current &&
-            <button disabled={!connected} onClick={()=>action('dmRoll',{requestId:world.diceRequest?.id})}>ทอย D20</button>}
-        </p>}
-        {world.caseMap && <div ref={canvas} className="game"/>}
-        {world.caseMap?.opportunity && <button disabled={!connected} onClick={()=>action('start')}>เริ่มเผชิญหน้า {world.caseMap.opportunity}</button>}
-        {battle && character && <section className="game-panel" aria-label="การเผชิญหน้าในคดี">
-          <h3>{battle.title} · รอบ {battle.round}</h3>
-          <p>{battle.active===self.current?'เทิร์นของคุณ':'รอผู้สืบสวนคนอื่น'}</p>
-          {battle.phase && <p>{({chains:'พันธนาการ',flood_memory:'ความทรงจำน้ำป่า',choice:'ทางเลือกสุดท้าย'})[battle.phase]}</p>}
-          {targetEnemy && <label>เป้าหมาย <select value={targetEnemy.id} onChange={event=>setEnemy(event.target.value)}>
-            {battle.enemies.map(e=><option key={e.id} value={e.id}>{e.name} · พลัง {e.hp}</option>)}
-          </select></label>}
-          <TacticalTechniques character={character} self={self.current} players={world.players} active
-            myTurn={battle.active===self.current} connected={connected} tactics={{...battle,telegraph:targetEnemy?.telegraph}} action={combatAction}/>
-          {battle.objective && <button disabled={!connected || battle.active!==self.current} onClick={()=>action('caseObjective')}>คลายจุดอาคม (2 AP)</button>}
-          <button disabled={!connected || battle.active!==self.current || !targetEnemy} onClick={()=>combatAction('strike')}>โจมตี (2 AP)</button>
-          <button disabled={!connected || battle.active!==self.current || !targetEnemy} onClick={()=>combatAction('pacify')}>เจรจา (2 AP)</button>
-          <button disabled={!connected || battle.active!==self.current} onClick={()=>action('escape')}>ถอยออกจากสนาม</button>
-          <button disabled={!connected || battle.active!==self.current} onClick={()=>action('endTurn')}>จบเทิร์น</button>
+      </details>
+      {room.version===2 && !world?.case001 && <CharacterCreator character={character} biography={biography}
+        taken={cast} disabled={!connected}
+        onCreate={(profession,talent,background,playerName)=>action('createCharacter',{profession,talent,background,playerName})}/>}
+      {world?.case001 ? <section className="case-screen" aria-label="คดี 001">
+
+        <header className="case-heading">
+          <div><p className="eyebrow">แฟ้มภารกิจ · คดี 001</p><h2>{world.case001.title}</h2>
+            <p>{world.case001.location}</p></div>
+          <div className="case-clock"><span>เวลาในภารกิจ</span><strong>{world.case001.time}</strong></div>
+        </header>
+        {character ? <section className="case-character game-panel" aria-label="สถานะตัวละครของคุณ">
+          <img className="case-character-portrait" src={portraitUrl(character.profession)} alt={castProfiles[character.profession].name}/>
+          <div className="case-character-heading">
+            <p className="eyebrow">ตัวละครของคุณ</p>
+            <h3>{character.playerName ?? castProfiles[character.profession].name}</h3>
+          </div>
+          <div className="case-character-stats">
+            <h4>สถานะปัจจุบัน</h4>
+            <GameHud exploring={!battle} haunt={world.case001.haunt} hp={character.hp} sanity={character.sanity} focus={character.focus} ap={battle ? world.turns[self.current]?.ap : undefined}/>
+            {character.coreStats && <>
+              <h4>ค่าสเตตัสพื้นฐาน</h4>
+              <CoreStats stats={character.coreStats}/>
+            </>}
+            <CharacterCreator character={character} biography={biography}
+              showCoreStats={!character.coreStats} taken={cast} disabled={!connected}
+              onCreate={(profession,talent,background,playerName)=>action('createCharacter',{profession,talent,background,playerName})}/>
+          </div>
+        </section> : <GameHud exploring={!battle} haunt={world.case001.haunt} ap={battle ? world.turns[self.current]?.ap : undefined}/>}
+
+        <p className="objective-compact"><strong>เป้าหมาย:</strong> {world.case001.notebook?.objective}</p>
+        {world.pendingCheck && world.diceRequest?.die!==null &&
+          <p className="narration-card d20-wait" role="status">ส่งคำขอทดสอบแล้ว · รอ DM ส่งการ์ด D20</p>}
+        {world.diceRequest?.playerId===self.current && world.diceRequest.die===null &&
+          <D20Card key={'request-'+world.diceRequest.id} card={world.diceRequest} connected={connected}
+            onRoll={(requestId,settled)=>action('dmRoll',{requestId},undefined,settled)}/>}
+        {world.latestRoll && <D20Card key={'result-'+world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
+        {world.case001.report && <section className="narration-card case-report" aria-label="รายงานคดี">
+          <h3>รายงานคดี</h3><pre className="story-text">{world.case001.report.text}</pre>
         </section>}
-        {world.caseMap && !world.case001.report && <dialog ref={withdrawalDialog} className="case-withdrawal-dialog"
+        <div className={battle ? 'case-workspace case-workspace-encounter' : 'case-workspace'}><div className="case-world-pane">
+        {world.caseMap && <>
+          {battle ? <EncounterBoard site={world.caseMap.site} battle={battle} players={world.players}
+            characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} action={connected ? action : undefined}/> :
+            <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro}/>}
+          <CastPortraits roles={cast} speakers={battle ? [] : [...(world.case001.speakers ?? []),...visibleCast(caseActions)]}/>
+          <section className="narration-card case-response" aria-label="เหตุการณ์ล่าสุด" aria-live="polite">
+            <h3>เหตุการณ์ล่าสุด</h3>
+            <p className="story-text">{world.case001.notice}</p>
+            {world.lastCheck && !(!battle && world.latestRoll?.result && world.latestRoll.playerId===world.lastCheck.playerId && world.latestRoll.die===world.lastCheck.die && world.latestRoll.result.total===world.lastCheck.total && world.latestRoll.result.outcome===world.lastCheck.outcome) && <p className="roll-result" data-outcome={world.lastCheck.outcome}><strong>D20 {world.lastCheck.die} · รวม {world.lastCheck.total}</strong> · {
+              world.lastCheck.outcome==='success'?'สำเร็จ':world.lastCheck.outcome==='partial'?'สำเร็จบางส่วน':'ไม่สำเร็จ'
+            }</p>}
+          </section>
+        </>}
+        </div><aside className="case-actions-pane" aria-label="คำสั่งภารกิจ">
+        <nav className="workspace-tabs" aria-label="หน้าต่างคดี">{([['actions','คำสั่ง'],['story','บทเล่า'],['journal','สมุดคดี']] as const).map(([id,label])=><button key={id} type="button" aria-pressed={caseTab===id} onClick={()=>setCaseTab(id)}>{label}{id==='story' && world.narrative?.pending ? ' · '+world.narrative.pending : ''}</button>)}</nav>
+        <div hidden={caseTab!=='story'}>        {world.narrative?.current ? <NarrativeJournal view={world.narrative} onNext={world.manualDm ? undefined : sequence=>action('narrativeNext',{sequence})}/> : <section className="narration-card" aria-label="เหตุการณ์ล่าสุด">
+          <h3>บทเล่า</h3><p className="note">อ่านบทที่ทีมได้รับแล้วในเหตุการณ์ล่าสุด หรือย้อนอ่านจากสมุดคดี</p>
+        </section>}
+        <details className="mission-progress"><summary>ความคืบหน้าคดี</summary>
+          <dl className="progress-list">
+            <div><dt>ผู้สูญหายที่ปลอดภัย</dt><dd>{world.case001.rescued}/3</dd></div>
+            <div><dt>กำลังพาออกจากพื้นที่</dt><dd>{world.case001.escorting} คน</dd></div>
+            <div><dt>หลักฐานที่พบ</dt><dd>{world.case001.evidence}/8</dd></div>
+            <div><dt>ผนึกที่คลายแล้ว</dt><dd>{world.case001.seals}/3</dd></div>
+            <div><dt>พิธีปลดปล่อย</dt><dd>{world.case001.progress}/6</dd></div>
+            {world.case001.containment!==undefined && <div><dt>พิธีสะกด</dt><dd>{world.case001.containment}/4</dd></div>}
+          </dl><p>{world.case001.ghost ?? 'ยังไม่พบวิญญาณ'}</p>
+        </details>
+</div>
+        <div hidden={caseTab!=='journal'}>
+          <CaseNotebook view={world.case001.notebook}/>
+          {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName}/>}
+        </div>
+        <div hidden={caseTab!=='actions'}>
+        <h3 className="pane-heading">คุณต้องการทำอะไร</h3>
+        {world.manualDm && !battle && !world.case001.report && !world.awaitingReport && <form className="narration-card" onSubmit={event=>{
+          event.preventDefault();
+          const form=event.currentTarget;
+          const text=new FormData(form).get('question');
+          action('askGm',{text,site:world.caseMap?.site},()=>form.reset());
+        }}>
+          <label>ถามผู้ดำเนินเรื่อง <textarea name="question" required maxLength={1000}
+            placeholder="พิมพ์สิ่งที่อยากถาม หรือเสนอว่าทีมควรไปที่ไหน"/></label>
+          <button disabled={!connected || !world.humanDmId || (world.pendingQuestionCount ?? 0)>=5}>ส่งคำถาม</button>
+          {!!world.pendingQuestionCount && <p role="status">รอคำตอบ {world.pendingQuestionCount} ข้อ</p>}
+          <p className="note">ผู้ดำเนินเรื่องเป็นคนพาทีมไปฉากถัดไป</p>
+        </form>}
+        {world.manualDm && !world.humanDmId && <button disabled={!connected || !!battle}
+          onClick={()=>action('claimDm')}>รับช่วงเป็นผู้ดำเนินเรื่อง</button>}
+        {world.caseMap?.opportunity && <button disabled={!connected || !character?.hp} onClick={()=>action('start')}>เปิดกระดานเผชิญหน้า</button>}
+        {world.caseMap && !world.awaitingReport && !world.case001.report && <dialog ref={withdrawalDialog} className="case-withdrawal-dialog"
           aria-labelledby="case-withdrawal-title" aria-describedby="case-withdrawal-impact">
           <h3 id="case-withdrawal-title">ถอนทีมและปิดคดีหรือไม่</h3>
           <p id="case-withdrawal-impact">การยืนยันจะจบคดีของทุกคนในห้องทันที ทีมจะกลับมาสืบคดีนี้ต่อไม่ได้</p>
           <p>ช่วยผู้สูญหายแล้ว {world.case001.rescued}/3 · คลายผนึกแล้ว {world.case001.seals}/3</p>
-          {withdrawalBlocked && <p role="status">ยังถอนทีมไม่ได้จนกว่าการเผชิญหน้าจะจบ</p>}
           {!connected && <p role="status">กำลังรอการเชื่อมต่อ</p>}
           <form method="dialog">
             <button autoFocus>เล่นต่อ</button>
-            <button className="danger" type="button" disabled={!connected || withdrawalBlocked} onClick={()=>{
+            <button className="danger" type="button" disabled={!connected} onClick={()=>{
               withdrawalDialog.current?.close();
-              action('caseAction',{actionId:'finish'});
+              caseRequest({actionId:'finish'});
             }}>ยืนยันถอนทีม</button>
           </form>
         </dialog>}
-        {world.case001.report ? <pre style={{whiteSpace:'pre-wrap'}}>{world.case001.report.text}</pre> :
-          world.case001.actions.filter(option=>!battle || ['seal1','seal2','seal3','ritual','suppress','show-clue'].includes(option.id))
-          .filter(option=>option.id!=='hint' || character?.profession==='paranormal_investigator')
-          .filter(option=>option.id!=='sense' || character?.profession==='medium').map(option=><div key={option.id}>
-            <button disabled={!connected || isHumanDm || (!!battle && battle.active!==self.current) || (option.id==='finish' && withdrawalBlocked)}
+        {world.awaitingReport ? <p>คดีสิ้นสุดแล้ว · รอผู้ดำเนินเรื่องเปิดบทสรุป</p> : world.case001.report ? null :
+          <><nav className="action-tabs" aria-label="หมวดคำสั่ง">
+            {groups.map(group=><button key={group.id} aria-pressed={visibleGroup===group.id}
+              onClick={()=>setActionGroup(group.id)}>{group.label}
+              <span>{caseActions.filter(option=>actionCategory(option.id)===group.id).length}</span>
+            </button>)}
+          </nav><div className="action-list">
+          {caseActions.filter(option=>actionCategory(option.id)===visibleGroup).map(option=><div className="action-option" key={option.id}>
+            <button disabled={!connected || isHumanDm || (!!battle && battle.active!==self.current) || (option.id==='finish' && !!world.caseMap?.withdrawalBlocked) || (!!option.check && waitingForRoll)}
               onClick={()=>{
                 if(option.id==='finish' && world.caseMap) withdrawalDialog.current?.showModal();
-                else action('caseAction',{actionId:option.id});
-              }}>{option.label} · {option.minutes} นาที</button>
-            {option.id==='finish' && withdrawalBlocked && <p>ยังถอนทีมไม่ได้จนกว่าการเผชิญหน้าจะจบ</p>}
-            {option.check && character && !isHumanDm && <>
-              <button disabled={!connected || character.focus<1} onClick={()=>action('caseAction',{actionId:option.id,boost:'focus'})}>ใช้สมาธิ +2</button>
+                else caseRequest({actionId:option.id});
+              }}><span className="action-copy">{option.speaker && <small>{option.speaker}</small>}{option.label}{option.dice && <small>{option.dice.stat} · DC {option.dice.dc}{option.dice.ap>0 && ' · '+option.dice.ap+' AP'}</small>}</span>
+                <span className="action-meta">{world.pendingCheck===option.id ? 'รอการ์ด D20' : <>{option.check ? (world.manualDm && !battle ? 'ขอทอย D20 · ' : 'ทอย D20 · ') : ''}{option.minutes>0 && option.minutes+' นาที'}</>}</span></button>
+            {option.id.startsWith('travel:') && <p className="note">คำสั่งนี้พาทั้งทีมไปฉากถัดไป</p>}
+            {option.check && character && !isHumanDm && <details><summary>เพิ่มโอกาสสำเร็จ</summary>
+              <button disabled={!connected || waitingForRoll || character.focus<1} onClick={()=>caseRequest({actionId:option.id,boost:'focus'})}>ใช้สมาธิ +2</button>
               {option.background && character.background===option.background &&
-                <button disabled={!connected} onClick={()=>action('caseAction',{actionId:option.id,boost:'background'})}>ใช้ภูมิหลัง +2</button>}
+                <button disabled={!connected || waitingForRoll} onClick={()=>caseRequest({actionId:option.id,boost:'background'})}>ใช้ภูมิหลัง +2</button>}
               {option.deception && character.talent==='detect_deception' && <button disabled={!connected || character.focus<1}
-                onClick={()=>action('caseAction',{actionId:option.id,boost:'deception'})}>จับพิรุธ (สมาธิ 1)</button>}
+                onClick={()=>caseRequest({actionId:option.id,boost:'deception'})}>จับพิรุธ (สมาธิ 1)</button>}
               {option.id==='open' && character.profession==='occult_engineer' && <button disabled={!connected}
-                onClick={()=>action('caseAction',{actionId:option.id,boost:'diagnostic'})}>ตรวจกลไก +2</button>}
-            </>}
-          </div>)}
+                onClick={()=>caseRequest({actionId:option.id,boost:'diagnostic'})}>ตรวจกลไก +2</button>}
+            </details>}
+          </div>)}</div></>}
+        </div></aside></div>
       </section> : <>
-      <button className="primary" disabled={!connected || !!active || investigators.length<2 || investigators.length>limit ||
-          (room.version===2 && room.players.some(p=>p.id!==world?.humanDmId && !world?.characters?.[p.id]))}
-        onClick={()=>action('caseStart')}>เริ่มคดี 001</button>
+      <p className="lobby-intro">{world?.humanDmId ? (canStart ? 'รอผู้ดำเนินเรื่องเริ่มคดี' : 'ต้องมีผู้สืบสวน 2–6 คนที่ยืนยันตัวละครแล้ว') : 'รอคนรับบทผู้ดำเนินเรื่อง'}</p>
       {!world?.humanDmId && <button disabled={!connected} onClick={()=>action('claimDm')}>รับบทผู้ดำเนินเรื่อง</button>}
-      {world?.diceRequest && <p aria-live="polite">
-        {world.diceRequest.die===null ? 'รอผู้เล่นทอย D20' : `ผลทอย D20: ${world.diceRequest.die}`}
-        {world.diceRequest.die===null && world.diceRequest.playerId===self.current &&
-          <button disabled={!connected} onClick={()=>action('dmRoll',{requestId:world.diceRequest?.id})}>ทอย D20</button>}
-      </p>}
-      <GameHud hp={character?.hp ?? (myTurn ? encounter?.playerHealth : undefined)} sanity={character?.sanity} focus={character?.focus} focused={active ? myStats?.focused : undefined} ap={active ? myStats?.ap : undefined}/>
-      <div ref={canvas} className="game"/>
-      {world?.dm && <section className="game-panel narration-panel" aria-label="ผู้ดำเนินเรื่อง">
-        <h2>{world.dm.title}</h2>
-        <div aria-live="polite">
-          {world.dm.narration && <p>{world.dm.narration}</p>}
-          {world.dm.dialogue && <blockquote><strong>{world.dm.dialogue.speaker}</strong><p>{world.dm.dialogue.text}</p></blockquote>}
-          {world.dm.ending && <p>{world.dm.ending}</p>}
-        </div>
-        {world.dm.dialogue?.choices.map(choice => <button key={choice.id} disabled={!connected}
-          onClick={() => action('chooseDialogue',{dialogueId:world.dm?.dialogue?.id,choiceId:choice.id})}>{choice.text}</button>)}
-        <ul>{world.dm.objectives.map(objective => <li key={objective.id}>{objective.complete ? 'สำเร็จแล้ว' : 'ยังไม่สำเร็จ'} · {objective.description}</li>)}</ul>
-      </section>}
-      <p>ใช้ลูกศรหรือ WASD หรือคลิกช่องที่อยู่ติดกันเพื่อเดิน</p>
-      {!active && <button disabled={!connected || !allReady} onClick={()=>action('start')}>เริ่มเผชิญหน้า</button>}
-      {active && <section className="game-panel encounter-controls">
-        <p className={myTurn ? "turn-chip current-turn" : "turn-chip"}>{myTurn?'เทิร์นของคุณ':'รอผู้เล่นคนอื่น'} · AP {world?.turns[self.current]?.ap ?? 0}/3</p>
-        <p>พลังผี {encounter.ghostHealth}</p>
-        {room.version===2 ? <>
-          <button disabled={!connected || !myTurn || !character || (myStats?.ap ?? 0)<1} onClick={()=>action('tacticalCheck')}>ทดสอบไหวพริบ DC 12 (1 AP)</button>
-          <button disabled={!connected || !myTurn || !character?.focus || (myStats?.ap ?? 0)<1} onClick={()=>action('tacticalCheck',{boost:'focus'})}>ทดสอบไหวพริบพร้อมสมาธิ (1 AP, สมาธิ 1)</button>
-          {character && world?.tactics && <TacticalTechniques character={character} self={self.current} players={world.players}
-            active={!!active} myTurn={myTurn} connected={connected} tactics={world.tactics} action={action}/>}
-        </> : <>
-        <button disabled={!connected || !myTurn || (world?.turns[self.current]?.ap ?? 0)<1 || world?.turns[self.current]?.focused} onClick={()=>action('focus')}>ตั้งสมาธิ (1 AP)</button>
-        <button disabled={!connected || !myTurn || (world?.turns[self.current]?.ap ?? 0)<1} onClick={()=>action('check')}>ทดสอบทักษะ DC 12 (1 AP)</button>
-        </>}
-        {world?.lastCheck && <p>ทอย {world.lastCheck.die} รวม {world.lastCheck.total} · {world.lastCheck.outcome==='success'?'สำเร็จ':world.lastCheck.outcome==='partial'?'สำเร็จบางส่วน':'ไม่สำเร็จ'}</p>}
-        <button disabled={!connected || !myTurn} onClick={()=>action('endTurn')}>จบเทิร์น</button>
-        <button disabled={!connected || !myTurn} onClick={()=>action('pacify')}>{room.version===2?'เจรจากับผี (2 AP)':'ปลอบผี'}</button>
-        <button disabled={!connected || !myTurn} onClick={()=>action('strike')}>{room.version===2?'โจมตีผี (2 AP)':'โจมตีผี'}</button>
-        <button disabled={!connected || !myTurn} onClick={()=>action('escape')}>หนี</button>
-      </section>}
-      {encounter?.outcome && <p>{({escaped:'หนีสำเร็จ',pacified:'ผีสงบแล้ว',defeated:'ผีพ่ายแพ้ชั่วคราว'})[encounter.outcome]}</p>}
-      {object && <section className="game-panel context-panel"><h2>{object.name}</h2>
-        <p>{({open:'เปิดอยู่',closed:'ปิดอยู่',locked:'ล็อกอยู่',static:'วัตถุทั่วไป'})[object.state]}</p>
-        {actionsFor(object).filter(type=>type!=='inspect').map(type=><button key={type} disabled={!connected} onClick={()=>action(type,{objectId:object.id})}>{{open:'เปิด',close:'ปิด',collect:'เก็บหลักฐาน',inspect:'ตรวจดู'}[type]}</button>)}
-      </section>}
-      <FieldJournal clues={world?.evidence ?? []} items={world?.inventory[self.current] ?? []}/>
       </>}
     </>}
   </main>;

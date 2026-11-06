@@ -1,0 +1,246 @@
+{
+  "schema_version": "combat-lite-enemies-1.1",
+  "status": "playtest_proposal_not_canon",
+  "base_party_size": 2,
+  "base_rules": "data/combat_lite_rules_v1_1.json",
+  "enemy_archetypes": [
+    {
+      "enemyId": "DROWNED_ECHO",
+      "storyEnemyId": "DROWNED_ECHO",
+      "name_th": "ผีเงาจมน้ำ",
+      "role": "MINOR",
+      "sceneIds": [
+        "C4"
+      ],
+      "scalesWithParty": true,
+      "baseHPFor2": 8,
+      "PDEF": 12,
+      "MDEF": 13,
+      "ATK": 3,
+      "INIT": 2,
+      "MOVE": 3,
+      "mainActionsPerTurn": 1,
+      "manifestation": "MANIFESTED",
+      "anchor": "BLACK_THREAD_RESIDUE",
+      "bossHazard": false,
+      "attacks": [
+        {
+          "id": "WET_CLAW",
+          "name_th": "เล็บเปียกน้ำ",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 2,
+          "range": 1
+        },
+        {
+          "id": "UNDERFLOOR_HAND",
+          "name_th": "มือจากใต้พื้น",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 1,
+          "range": 2,
+          "condition": "ROOTED",
+          "requires": "wet_floor_or_shadow"
+        },
+        {
+          "id": "CHOKING_SOUND",
+          "name_th": "เสียงสำลัก",
+          "targetDefense": "MDEF",
+          "damageResource": "Sanity",
+          "damage": 1,
+          "range": 3
+        }
+      ],
+      "resolutions": [
+        "DISPERSE_MANIFESTATION",
+        "SOOTHE_RESIDUE",
+        "ESCAPE_AREA"
+      ],
+      "notes": "Tutorial only; not kidnapper; no other minor ghost added."
+    },
+    {
+      "enemyId": "NANG_TANI_D",
+      "storyEnemyId": "NANG_TANI",
+      "name_th": "แม่แก้ว — สวนกล้วย",
+      "role": "BOSS",
+      "sceneIds": [
+        "D3",
+        "D4"
+      ],
+      "scalesWithParty": true,
+      "baseHPFor2": 12,
+      "PDEF": 14,
+      "MDEF": 16,
+      "ATK": 5,
+      "INIT": 3,
+      "MOVE": 4,
+      "mainActionsPerTurn": 1,
+      "manifestation": "MANIFESTED",
+      "anchor": "BRASS_BRACELET_COERCIVE_BINDING_FOCUS",
+      "bossHazard": true,
+      "hazardAttackId": "ROOT_BURST",
+      "attacks": [
+        {
+          "id": "BANANA_ROOT_STRIKE",
+          "name_th": "รากกล้วยฟาด",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 2,
+          "range": 2
+        },
+        {
+          "id": "ROOT_BIND",
+          "name_th": "รากพันธนาการ",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 1,
+          "range": 3,
+          "condition": "ROOTED"
+        },
+        {
+          "id": "MOURNING_CRY",
+          "name_th": "เสียงคร่ำครวญ",
+          "targetDefense": "MDEF",
+          "damageResource": "Sanity",
+          "damage": 2,
+          "range": 4
+        }
+      ],
+      "resolutions": [
+        "TEMPORARY_DISPERSAL",
+        "NEGOTIATION",
+        "RETREAT"
+      ],
+      "onHPZero": {
+        "result": "TEMPORARY_DISPERSAL",
+        "state": "KAEW_TEMP_DISPERSED"
+      }
+    },
+    {
+      "enemyId": "NANG_TANI_FINAL",
+      "storyEnemyId": "NANG_TANI",
+      "name_th": "แม่แก้ว — Final",
+      "role": "BOSS",
+      "sceneIds": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6"
+      ],
+      "scalesWithParty": true,
+      "baseHPFor2": 14,
+      "PDEF": 14,
+      "MDEF": 16,
+      "ATK": 5,
+      "INIT": 3,
+      "MOVE": 4,
+      "mainActionsPerTurn": 1,
+      "manifestation": "MANIFESTED",
+      "anchor": "BRASS_BRACELET_COERCIVE_BINDING_FOCUS",
+      "bossHazard": true,
+      "hazardAttackId": "ROOT_BURST",
+      "attacks": [
+        {
+          "id": "BANANA_ROOT_STRIKE",
+          "name_th": "รากกล้วยฟาด",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 2,
+          "range": 2
+        },
+        {
+          "id": "ROOT_BIND",
+          "name_th": "รากพันธนาการ",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 1,
+          "range": 3,
+          "condition": "ROOTED"
+        },
+        {
+          "id": "MOURNING_CRY",
+          "name_th": "เสียงคร่ำครวญ",
+          "targetDefense": "MDEF",
+          "damageResource": "Sanity",
+          "damage": 2,
+          "range": 4
+        },
+        {
+          "id": "FLOOD_MEMORY",
+          "name_th": "ความทรงจำน้ำท่วม",
+          "targetDefense": "MDEF",
+          "damageResource": "Sanity",
+          "damage": 2,
+          "range": 4,
+          "telegraphOneBossTurnBeforeUse": true
+        }
+      ],
+      "resolutions": [
+        "DISPERSE_BODY",
+        "STOP_RITUAL",
+        "NEGOTIATE",
+        "RETREAT"
+      ],
+      "hpMultiplierIfDDefeatedAndNotFullyRecovered": 0.75,
+      "spawnRules": {
+        "must_be_ritual_active_or_scene_justified": true,
+        "no_forced_spawn_when_ritual_stopped_before_reform": true,
+        "not_forced_combat_when_peaceful": true
+      }
+    },
+    {
+      "enemyId": "WICHAI",
+      "storyEnemyId": "WICHAI",
+      "name_th": "วิชัย",
+      "role": "HUMAN",
+      "sceneIds": [
+        "E5"
+      ],
+      "scalesWithParty": false,
+      "baseHPFor2": 8,
+      "PDEF": 12,
+      "MDEF": 12,
+      "ATK": 2,
+      "INIT": 2,
+      "MOVE": 4,
+      "mainActionsPerTurn": 1,
+      "manifestation": "HUMAN",
+      "bossHazard": false,
+      "attacks": [
+        {
+          "id": "HUMAN_STRIKE",
+          "name_th": "โจมตีทั่วไป",
+          "targetDefense": "PDEF",
+          "damageResource": "HP",
+          "damage": 1,
+          "range": 1
+        }
+      ],
+      "resolutions": [
+        "SURRENDER",
+        "CAPTURE",
+        "FLEE",
+        "DEFEAT"
+      ],
+      "spawnRules": {
+        "require_character_present_and_free_to_confront": true,
+        "no_teleport": true
+      }
+    }
+  ],
+  "hazards": [
+    {
+      "id": "ROOT_BURST",
+      "name_th": "รากผุดจากดิน",
+      "damage": 1,
+      "damageResource": "HP",
+      "range": "visible_marked_tiles",
+      "telegraphLead": "one_full_boss_round",
+      "resolve": "start_of_next_boss_turn",
+      "scaling": "boss_hazard_schedule",
+      "maxPerTargetPerResolution": 1
+    }
+  ]
+}

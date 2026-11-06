@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {applyCaseAction,newCase} from '../src/case001.js';
+import {applyCaseAction,newCase} from '../src/case001/case001.js';
 import {WorldStore} from '../src/world.js';
 
 const toGrove=['travel:B','lore','travel:C','clue:E02','travel:D','clue:E03','clue:E04','study'];

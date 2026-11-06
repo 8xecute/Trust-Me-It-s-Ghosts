@@ -1,0 +1,235 @@
+import { useState } from 'react';
+import type { CaseDmPanel, GmChapter, Room, Snapshot } from '../../network/onlineTypes';
+import { D20Card, D20Result } from '../case/D20Card';
+import { DmHistory } from '../case/DmHistory';
+import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
+
+function GmGuide({chapters,current}:{chapters:GmChapter[];current:string}) {
+  const [selected,setSelected]=useState('');
+  const chapter=chapters.find(item=>item.id===(selected || current)) ?? chapters[0];
+  if(!chapter) return null;
+  return <section className="gm-guide" aria-label="คู่มือเตรียมบท">
+    <label>อ่านบท <select value={selected} onChange={event=>setSelected(event.target.value)}>
+      <option value="">ตามฉากปัจจุบัน</option>
+      {chapters.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}
+    </select></label>
+    <header><h3>{chapter.title}</h3><p>{chapter.goal}</p></header>
+    {(['main','support'] as const).map(track=>{
+      const beats=chapter.beats.filter(beat=>(beat.track ?? 'main')===track);
+      return beats.length>0 && <section key={chapter.id+track} className="gm-script-track">
+        <h4>{track==='main'?'บทหลัก':'บทเสริมและบทตอบตามสถานการณ์'} <small>{beats.length}</small></h4>
+        <ol className="gm-beats">
+          {beats.map((beat,index)=><li key={beat.id}>
+            <details open={track==='main' && index===0}>
+              <summary><small>{beat.id}</small> {beat.title}</summary>
+              <p className="gm-trigger"><strong>อ่านเมื่อ</strong> {beat.when}</p>
+              {!!beat.read.length && <div className="gm-read">
+                {beat.read.map((line,i)=><p key={i}>{line}</p>)}
+              </div>}
+              {beat.fullScript && <details><summary>บทเต็ม v4.1 · เฉพาะ DM</summary><pre>{beat.fullScript}</pre></details>}
+            </details>
+          </li>)}
+        </ol>
+      </section>;
+    })}
+  </section>;
+}
+
+export function DmWorkspace({
+  room, world, investigators, preview, previewPlayer, setPreviewPlayer, dmPanel,
+  action, playerName, canStart, status, connected, limit, leaveRoom, leaving,
+}: {
+  room:Room;
+  world:Snapshot|null;
+  investigators:Room['players'];
+  preview?:PlayerPreview;
+  previewPlayer:string;
+  setPreviewPlayer:(id:string)=>void;
+  dmPanel:CaseDmPanel|null;
+  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
+  playerName:(id:string)=>string;
+  canStart:boolean;
+  status:string;
+  connected:boolean;
+  limit:number;
+  leaveRoom:()=>void;
+  leaving:boolean;
+}) {
+  const [dmTab,setDmTab]=useState<'guide'|'queue'|'questions'|'dice'|'team'|'history'>('queue');
+  const dicePlayers=dmPanel?.investigators ?? [];
+  const pendingDice=dicePlayers.filter(entry=>entry.check && entry.diceRequest?.die!==null);
+  const battle=world?.caseMap?.battle;
+  const currentScene=world?.caseMap?.site;
+  const queue=(dmPanel?.narration ?? []).filter(card=>card.current ?? card.site===currentScene);
+  const otherScenes=(dmPanel?.narration ?? []).filter(card=>!(card.current ?? card.site===currentScene));
+  const speakerNames=dmPanel?.speakers ?? [];
+  const lead=dmPanel?.investigators.find(entry=>entry.id===previewPlayer && entry.site===currentScene)
+    ?? dmPanel?.investigators.find(entry=>entry.site===currentScene);
+  const answers=lead?.choices.filter(choice=>choice.answer) ?? [];
+  const roles=[...new Set(answers.map(choice=>choice.speaker ?? 'ผู้บรรยาย'))];
+  return <main className="game-shell online-shell dm-shell">
+    <header className="online-heading"><div><p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ผู้ดำเนินเรื่อง</p><h1>ห้องควบคุมภารกิจ</h1></div><p className="turn-chip" role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p></header>
+    <p className="room-reference">รหัสห้อง <strong>{room.code}</strong> · ผู้สืบสวน {investigators.length}/{limit}</p>
+    <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>ออกจากห้อง</button>
+    <details className="session-members"><summary>ทีมผู้สืบสวน · {investigators.length} คน</summary><ul>{investigators.map(player=><li key={player.id}>{playerName(player.id)} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul></details>
+    <div className="dm-workspace"><div className="dm-preview-pane">
+    <label className="dm-view-selector">เลือกมุมมองผู้สืบสวน <select value={previewPlayer} onChange={event=>setPreviewPlayer(event.target.value)}>
+      <option value="">เลือกผู้สืบสวน</option>
+      {investigators.map(player=><option key={player.id} value={player.id}>{playerName(player.id)}</option>)}
+    </select></label>
+    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
+    </div><div className="dm-controls-pane">
+    <h2 className="pane-heading">เครื่องมือดำเนินเรื่อง</h2>
+    {world?.case001 ? <section className="game-panel">
+      <h2>{world.case001.title}</h2>
+      <p>{world.case001.location} · {world.case001.time} · ช่วยแล้ว {world.case001.rescued}/3</p>
+      {world.latestRoll && <D20Card key={world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
+      <nav className="workspace-tabs gm-tabs" aria-label="เครื่องมือผู้ดำเนินเรื่อง">
+        {([
+          ['guide','คู่มือบท'],['queue','คิวบทเล่า '+queue.length],
+          ['questions','คำถาม '+(dmPanel?.questions?.length ?? 0)],['dice','D20'+(pendingDice.length ? ' · '+pendingDice.length : '')],['team','ทีม / NPC'],['history','บันทึก'],
+        ] as const).map(([id,label])=><button key={id} type="button" aria-pressed={dmTab===id} onClick={()=>setDmTab(id)}>{label}</button>)}
+      </nav>
+      {!!pendingDice.length && dmTab!=='dice' && <button className="gm-alert" type="button" onClick={()=>setDmTab('dice')}>คำขอทอย D20 รอส่งการ์ด · {pendingDice.length}</button>}
+      {world.manualDm && dmPanel && <>
+      <section hidden={dmTab!=='guide'} className="gm-pane">
+        <p className="note">คู่มือนี้มีไว้ให้ DM อ่านและสวมบทบาท ข้อความในคู่มือจะไม่ส่งไปถึงผู้เล่น</p>
+        {!!queue.length && <button type="button" onClick={()=>setDmTab('queue')}>เปิดคิวพร้อมส่ง · {queue.length}</button>}
+        {dmPanel.guide && <GmGuide chapters={dmPanel.guide}
+          current={world.case001.report ? 'ENDINGS' : (battle?.phase || currentScene==='E' && world.case001.seals===3) ? 'FINAL' : world.caseMap?.site ?? 'A'}/>}
+        {dmPanel.investigators[0]?.secret && <details className="dm-private">
+          <summary>ข้อมูลลับของฉากปัจจุบัน</summary><p>{dmPanel.investigators[0].secret}</p>
+        </details>}
+      </section>
+      <section hidden={dmTab!=='queue'} className="gm-pane">
+        <h3>ดำเนินฉาก · {world.case001.location}</h3>
+        <p><strong>บทที่สวมได้ตอนนี้</strong> · {speakerNames.length ? speakerNames.join(' / ') : 'ผู้บรรยาย'}</p>
+        <button type="button" onClick={()=>setDmTab('guide')}>เปิดคู่มือฉาก</button>
+        <h3>บทเล่าที่รอส่ง</h3>
+        <p className="note">อ่านหรือสวมบทก่อน แล้วกดส่งเมื่อพร้อมให้ผู้เล่นเห็นข้อความนี้</p>
+        {!queue.length && <p>ตอนนี้ไม่มีบทพร้อมส่ง</p>}
+        {queue.map((card,index)=><details className="gm-publish" key={card.id} open={index===0}>
+          <summary>{index===0?'แนะนำให้อ่านถัดไป':'บทในคิว'} · {card.eventId.startsWith('entry:')?'เปิดฉาก':card.eventId.startsWith('ending:')?'ตอนจบ':'ฉาก '+card.site}{index!==0 && ' · '+card.text.slice(0,52)}</summary>
+          <p className="note">อ่านในบท · {card.speakers?.length ? 'ผู้บรรยาย / '+card.speakers.join(' / ') : 'ผู้บรรยาย'}</p>
+          <p className="story-text">{card.text}</p>
+          {card.recipients && <p className="note">ผู้รับ · {card.recipients.map(playerName).join(', ')}</p>}
+          <button type="button" className="primary" disabled={!connected} onClick={()=>action('dmPublish',{cardId:card.id})}>ส่งข้อความนี้ให้ผู้เล่น</button>
+        </details>)}
+        {!!roles.length && <section>
+          <h3>ส่งบทพูดจากตัวละครในฉาก</h3>
+          <p className="note">เลือกตัวละคร แล้วอ่านบทหรือส่งข้อความให้ทั้งทีม</p>
+          {roles.map(role=><details key={role} className="gm-publish">
+            <summary>{role}</summary>
+            {answers.filter(choice=>(choice.speaker ?? 'ผู้บรรยาย')===role).map(choice=><details key={choice.id}>
+              <summary>{choice.label}</summary>
+              <p className="story-text">{choice.answer}</p>
+              <button disabled={!connected} onClick={()=>action('caseDm',{targetId:lead?.id,actionId:choice.id})}>ส่งบทนี้ให้ทีม</button>
+            </details>)}
+          </details>)}
+        </section>}
+        {!!otherScenes.length && <details><summary>บทพักจากฉากอื่น · {otherScenes.length}</summary>
+          <p className="note">บทเหล่านี้จะกลับเข้าคิวเมื่อทีมกลับไปฉากนั้น</p>
+          <ul>{otherScenes.map(card=><li key={card.id}>ฉาก {card.site} · {card.text.slice(0,75)}</li>)}</ul>
+        </details>}
+      </section>
+      <section hidden={dmTab!=='questions'} className="gm-pane dm-event-list">
+        {!dmPanel.questions?.length && <p className="note">ตอนนี้ไม่มีคำถามรออยู่</p>}
+        <details open><summary>คำถามจากผู้เล่น · {dmPanel.questions?.length ?? 0} รายการ</summary>
+          {dmPanel.questions?.map((card,index)=><details key={card.id} open={index===0}>
+            <summary>{playerName(card.playerId)} · {card.label}</summary>
+            {card.open ? <>
+              <details open><summary>บทตอบตามสคริปต์ที่ใช้ได้</summary>
+                {dmPanel.investigators.find(entry=>entry.id===card.playerId)?.choices.filter(choice=>choice.answer).map(choice=><details key={choice.id}>
+                  <summary>{choice.speaker ? choice.speaker+' · ' : ''}{choice.label}</summary>
+                  <p className="story-text">{choice.answer}</p>
+                  <button disabled={!connected} onClick={()=>action('dmAnswer',{cardId:card.id,actionId:choice.id})}>ส่งคำตอบนี้ให้ทีม</button>
+                </details>)}
+              </details>
+              <details><summary>ตอบด้วยคำพูดของ DM</summary>
+              <form onSubmit={event=>{
+                event.preventDefault();
+                const form=event.currentTarget;
+                const text=new FormData(form).get('reply');
+                const speaker=new FormData(form).get('speaker') || undefined;
+                action('dmReply',{cardId:card.id,text,speaker},()=>form.reset());
+              }}>
+                <label>พูดในบท <select name="speaker">
+                  <option value="">ผู้บรรยาย</option>
+                  {speakerNames.map(name=><option key={name}>{name}</option>)}
+                </select></label>
+                <label>คำตอบหรือสรุปที่เล่าไปแล้ว <textarea name="reply" required maxLength={1000}/></label>
+                <button disabled={!connected}>ส่งคำตอบให้ทีม</button>
+              </form>
+              </details>
+            </> : <p>คำถามนี้อยู่คนละฉาก หรือทีมยังไม่พร้อมคุย</p>}
+            <button disabled={!connected} onClick={()=>action('dmDismiss',{cardId:card.id})}>ปิดคำถาม</button>
+          </details>)}
+        </details>
+      </section></>}
+      <section hidden={dmTab!=='dice'} className="gm-pane gm-dice">
+        <h3>การ์ดทอย D20 รายคน</h3>
+        <p className="note">ส่งให้ผู้เล่นที่เลือก ผู้เล่นกดทอยเองและระบบบันทึกผลให้</p>
+        {!!dmPanel?.diceGuide?.length && <details><summary>เงื่อนไขจุดทอย CASE 001 v4.1</summary>
+          {dmPanel.diceGuide.map(check=><details key={check.id}><summary>{check.scene_id} · {check.title} · {check.stat} DC {check.dc}</summary>
+            <p><strong>ทอยเมื่อ</strong> {check.trigger}</p><p><strong>ข้อมูลพื้นฐาน</strong> {check.baseline}</p>
+            <p><strong>ข้ามการทอย</strong> {check.bypass}</p><p><strong>ทางสำรอง</strong> {check.fallback}</p>
+          </details>)}
+        </details>}
+        {!dicePlayers.length && <p>ยังไม่มีผู้สืบสวน</p>}
+        {[...dicePlayers].sort((a,b)=>Number(!!b.check && b.diceRequest?.die!==null)-Number(!!a.check && a.diceRequest?.die!==null)).map(entry=>{
+          const card=entry.diceRequest;
+          const waiting=world.manualDm ? card?.die===null : world.diceRequest?.die===null;
+          return <article className="gm-roll-entry" key={entry.id}>
+            <h4>{playerName(entry.id)}</h4>
+            {entry.check && <p><strong>ทดสอบ:</strong> {entry.check.label}{entry.check.dice && ' · '+entry.check.dice.stat+' · DC '+entry.check.dice.dc}</p>}
+            {waiting ? <p role="status">ส่งแล้ว · รอผู้เล่นทอย</p> :
+              <button type="button" className={entry.check?'primary':undefined} disabled={!connected || !!world.case001?.report}
+                onClick={()=>action('dmRequestRoll',{targetId:entry.id,checkId:entry.check?.id})}>
+                {entry.check?'ส่งการ์ดตามคำขอ':'ส่งการ์ดทอยทั่วไป'}
+              </button>}
+            {entry.check && <button type="button" disabled={!connected}
+              onClick={()=>action('dmCancelCheck',{targetId:entry.id,checkId:entry.check?.id})}>ยกเลิกคำขอ</button>}
+            {card && card.die!==null && card.id!==world.latestRoll?.id && <p className="note">{entry.check?'ผลทอยก่อนหน้า':'ผลล่าสุด'} · <D20Result card={card}/></p>}
+          </article>;
+        })}
+      </section>
+      <div hidden={dmTab!=='history'} className="gm-pane">
+      {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName} roomCode={room?.code}/>}
+      <details><summary>บันทึกสถานการณ์</summary><p>{world.case001.notice}</p></details>
+      {world.case001.report && <pre className="story-text">{world.case001.report.text}</pre>}
+      </div>
+      <section hidden={dmTab!=='team'} className="gm-pane">
+      {dmPanel && <section className="gm-travel">        {dmPanel.wichai && <details><summary>สเตตัสวิชัย</summary>
+          <p>HP {dmPanel.wichai.baseHPFor2} · PDEF {dmPanel.wichai.PDEF} · MDEF {dmPanel.wichai.MDEF} · ATK {dmPanel.wichai.ATK} · INIT {dmPanel.wichai.INIT} · MOVE {dmPanel.wichai.MOVE}</p>
+        </details>}
+        <h3>พาทีมเดินทาง</h3>
+        {dmPanel.travel.length ? dmPanel.travel.map(option=><button key={option.id} disabled={!connected}
+          onClick={()=>action('dmTravel',{actionId:option.id,site:world.caseMap?.site})}>{option.label}</button>) :
+          <p className="note">ตอนนี้ทีมยังเปลี่ยนฉากไม่ได้</p>}
+</section>}
+      {connected && dmPanel && 'caseMode' in dmPanel && dmPanel.investigators.map(entry=><details key={entry.id} open={entry.id===previewPlayer}>
+        <summary>{playerName(entry.id)} · สถานที่ {entry.site}</summary>
+        <details><summary>คิวบทเล่าของผู้เล่น · รอ {entry.narrative?.pending ?? 0} รายการ</summary>
+         <p><strong>กำลังแสดง</strong> {entry.narrative?.current?.text ?? 'ยังไม่มีบทเล่า'}</p>
+         {!!entry.narrative?.pending && <button disabled={!connected} onClick={()=>action('dmNarrativeNext',{targetId:entry.id,sequence:entry.narrative!.current!.sequence})}>เปิดบทถัดไปให้ผู้เล่นคนนี้</button>}
+         <ol>{entry.narrative?.history.filter(beat=>beat.sequence>(entry.narrative?.current?.sequence ?? 0)).map(beat=><li key={beat.sequence}>พื้นที่ {beat.site} · {beat.text}</li>)}</ol>
+        </details>
+        <details className="dm-event-list"><summary>เหตุการณ์และเงื่อนไข · เฉพาะผู้ดำเนินเรื่อง</summary>
+         {entry.events?.map(event=><details key={event.id}><summary>{event.label} · {{ready:'เงื่อนไขครบ',blocked:'ยังใช้ไม่ได้',fired:'เกิดขึ้นแล้ว'}[event.status]}</summary>
+          <p>{event.text}</p>{event.reasons.length?<ul>{event.reasons.map((reason,index)=><li key={index}>{reason}</li>)}</ul>:<p>ระบบจะตรวจอีกครั้งเมื่อมีการกระทำที่เกี่ยวข้อง</p>}
+         </details>)}
+        </details>
+        {entry.choices.filter(choice=>!choice.answer || !world.manualDm).map(choice=>
+          <button key={choice.id} onClick={()=>action('caseDm',{targetId:entry.id,actionId:choice.id})}>{choice.label}</button>)}
+      </details>)}
+      </section>
+    </section> : <section className="game-panel" aria-label="แผงผู้ดำเนินเรื่อง">
+        <h2>แผงผู้ดำเนินเรื่อง</h2>
+        <p>ให้ผู้สืบสวน 2–6 คนเลือกตัวละครก่อนเริ่มคดี</p>
+        <button className="primary" disabled={!canStart} onClick={()=>action('caseStart',{mode:'story'})}>เริ่มคดี 001</button>
+        <button disabled={!connected} onClick={()=>action('releaseDm')}>คืนบทผู้ดำเนินเรื่อง</button>
+        {dmPanel?.guide && <GmGuide chapters={dmPanel.guide} current="A"/>}
+      </section>}
+    </div></div>
+  </main>;
+}
