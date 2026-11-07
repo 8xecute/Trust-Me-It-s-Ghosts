@@ -222,3 +222,17 @@ test('DM chooses a validated DC and the server resolves the shared result',()=>{
  assert.equal(rollCount(),1);
  assert.throws(()=>send('a','dmRoll',{requestId:card.id}));
 });
+
+test('DM selected stat and DC govern a pending legacy scene action',()=>{
+ const {send,panel,view}=storyRoom();
+ send('dm','dmTravel',{actionId:'travel:B',site:'A'});
+ send('dm','dmTravel',{actionId:'travel:C',site:'B'});
+ send('a','caseAction',{actionId:'clue:E01',site:'C'});
+ const check=panel().investigators.find(entry=>entry.id==='a')!.check!;
+ send('dm','dmRequestRoll',{targetId:'a',checkId:check.id,stat:'BODY',difficulty:17});
+ const card=view('a').diceRequest!;
+ assert.deepEqual(card.dice,{stat:'BODY',dc:17,ap:0});
+ send('a','dmRoll',{requestId:card.id});
+ assert.deepEqual(view('b').latestRoll!.result,{total:13,outcome:'failure'});
+ assert.equal(view('a').case001!.evidence,0);
+});

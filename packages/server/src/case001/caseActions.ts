@@ -11,9 +11,9 @@ export function completeCaseRound(w:World) {
  syncCaseBattle(w);
 }
 
-export function executeCaseAction(w:World,player:string,a:{actionId:string;boost?:unknown},roll:()=>number,coordinated=false) {
+export function executeCaseAction(w:World,player:string,a:{actionId:string;boost?:unknown;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats},roll:()=>number,coordinated=false) {
  if(a.actionId.startsWith('guided-talk:')) {speakGuided(w.case001!,a.actionId);return;}
- if(isStoryCheck(a.actionId)) {runStoryCheck(w,player,a.actionId,a.boost,roll);return;}
+ if(isStoryCheck(a.actionId)) {runStoryCheck(w,player,a.actionId,a.boost,roll,a.dcOverride);return;}
  const first=w.case001?.narrativeEvents?.length ?? 0;
 
     if(!w.case001 || w.humanDmId===player) throw Error('เฉพาะผู้สืบสวนในคดี');
@@ -37,7 +37,7 @@ export function executeCaseAction(w:World,player:string,a:{actionId:string;boost
     const backgroundKey=player+':'+site+':'+(boost ?? a.actionId);
     let usedBoost=false;
     w.case001=applyCaseAction(priorCase,a.actionId,roll,character && {
-     character,boost,playerId:w.sceneMode && a.actionId.startsWith('travel:') ? undefined : player,inEncounter:inBattle || coordinated,backgroundUsed:w.backgroundUses?.has(backgroundKey) ?? false,
+     character,boost,dcOverride:a.dcOverride,statOverride:a.statOverride,playerId:w.sceneMode && a.actionId.startsWith('travel:') ? undefined : player,inEncounter:inBattle || coordinated,backgroundUsed:w.backgroundUses?.has(backgroundKey) ?? false,
      onBoost:()=>{usedBoost=true;},
      onCheck:w.sceneMode ? ({die,total,outcome})=>{w.lastCheck={playerId:player,die,total,outcome};} : undefined,
     });

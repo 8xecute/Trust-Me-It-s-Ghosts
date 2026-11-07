@@ -207,8 +207,17 @@ export function DmWorkspace({
             {entry.check && <p><strong>ทดสอบ:</strong> {entry.check.label}{entry.check.dice && ' · '+entry.check.dice.stat+' · DC '+entry.check.dice.dc}</p>}
             {waiting ? <p role="status">ส่งแล้ว · รอผู้เล่นทอย</p> :
               entry.check ?
-              <button type="button" className="primary" disabled={!connected || !!world.case001?.report}
-                onClick={()=>action('dmRequestRoll',{targetId:entry.id,checkId:entry.check?.id})}>ส่งการ์ดตามคำขอ</button> :
+              <form key={entry.check.id} onSubmit={event=>{
+                event.preventDefault();const data=new FormData(event.currentTarget);
+                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
+              }}>
+                {entry.check.dice ? <p className="note">ใช้ {entry.check.dice.stat} ตามจุดทอยในบท · DC แนะนำ {entry.check.dice.dc}</p> :
+                  <label>ค่าสถานะ <select name="stat" defaultValue="PER"><option value="BODY">ร่างกาย BODY</option><option value="PER">การสังเกต PER</option><option value="INT">เชาวน์ปัญญา INT</option><option value="SOC">การเข้าสังคม SOC</option><option value="SPI">จิตวิญญาณ SPI</option><option value="RES">ความต้านทาน RES</option></select></label>}
+                <label>ความยากก่อนส่งการ์ด <select name="difficulty" defaultValue={entry.check.dice?.dc ?? 14}>
+                  <option value="11">ง่าย · DC 11</option><option value="14">ปกติ · DC 14</option><option value="17">ยาก · DC 17</option><option value="20">ยากมาก · DC 20</option><option value="22">พิเศษ · DC 22</option>
+                </select></label>
+                <button type="submit" className="primary" disabled={!connected || !!world.case001?.report}>ส่งการ์ดตามคำขอ</button>
+              </form> :
               <form onSubmit={event=>{
                 event.preventDefault();
                 const data=new FormData(event.currentTarget);

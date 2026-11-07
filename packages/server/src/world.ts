@@ -249,7 +249,7 @@ export class WorldStore {
   if(w.basicMode && (a.type==='useTalent' || a.type==='usePassive' || ('boost' in a && a.boost!==undefined && a.boost!=='focus'))) throw Error('พักความสามารถพิเศษไว้ในโหมดพื้นฐาน ใช้ Stat และสมาธิได้');
   const dedupe=player+':'+a.id; const seen=this.seen.get(code)!; if(seen.has(dedupe)) return {snapshot:this.snapshot(code,player),duplicate:true};
   if(w.case001?.guided?.transition && (a.type!=='guided' || !['confirm','cancel','propose'].includes(a.command))) delete w.case001.guided.transition;
-  if ('die' in a || 'roll' in a || 'total' in a || 'outcome' in a || 'dc' in a || 'modifier' in a) throw Error('คำขอไม่ถูกต้อง');
+  if ('die' in a || 'roll' in a || 'total' in a || 'outcome' in a || 'dc' in a || 'dcOverride' in a || 'statOverride' in a || 'modifier' in a) throw Error('คำขอไม่ถูกต้อง');
   if(a.type==='dmTravel' && w.case001?.guided) throw Error('ยืนยันเปลี่ยนบทผ่านสมุดคดี');
   if(a.type==='dmTravel') {
    if(!w.dmSession || w.humanDmId!==requester || w.caseMap?.battle || a.site!==w.case001?.site) throw Error('ผู้ดำเนินเรื่องยังพาทีมเดินทางไม่ได้');
@@ -489,17 +489,24 @@ export class WorldStore {
      if(a.type!=='dmRequestRoll' || w.case001?.report || (w.dmSession ? w.dmSession.rolls[a.targetId]?.die===null : w.diceRequest?.die===null) || !panel.investigators?.some(target=>target.id===a.targetId)) throw Error('ขอทอยไม่ได้');
      const check=w.dmSession?.checks[a.targetId];
      if(check ? a.checkId!==check.id || !checkAvailable(w,a.targetId,check) : a.checkId!==undefined) throw Error('คำขอทอยจากฉากเปลี่ยนไปแล้ว');
-     if(check && ('difficulty' in a || 'stat' in a)) throw Error('ใช้ค่า DC จากบทที่กำหนด');
+     if(check && a.difficulty!==undefined && ![11,14,17,20,22].includes(a.difficulty as number)) throw Error('ระดับความยากไม่ถูกต้อง');
+     if(check?.dice && a.stat!==undefined && a.stat!==check.dice.stat) throw Error('จุดทอยตามบทต้องใช้ค่าสถานะที่กำหนด');
      let manualDice: DmRollCard['dice'];
      if(!check && ('difficulty' in a || 'stat' in a)) {
       const stats=w.characters?.[a.targetId]?.coreStats;
       if(!stats || typeof a.stat!=='string' || !Object.hasOwn(stats,a.stat) || ![11,14,17,20,22].includes(a.difficulty as number)) throw Error('ค่าสถานะหรือระดับความยากไม่ถูกต้อง');
       manualDice={stat:a.stat as keyof typeof stats,dc:a.difficulty as number,ap:0};
      }
-     const card={id:randomUUID(),playerId:a.targetId,die:null,...(check ? {label:check.label,dice:check.dice} : manualDice ? {dice:manualDice} : {})};
+     if(check && !check.dice && a.difficulty!==undefined) {
+      const stats=w.characters?.[a.targetId]?.coreStats;
+      if(!stats || typeof a.stat!=='string' || !Object.hasOwn(stats,a.stat)) throw Error('เลือกค่าสถานะก่อนส่งการ์ด');
+      manualDice={stat:a.stat as keyof typeof stats,dc:a.difficulty as number,ap:0};
+     }
+     const selectedDice=check?.dice ? {...check.dice,dc:(a.difficulty as number|undefined) ?? check.dice.dc} : manualDice;
+     const card={id:randomUUID(),playerId:a.targetId,die:null,...(check ? {label:check.label} : {}),...(selectedDice ? {dice:selectedDice} : {})};
      if(w.dmSession) {
       w.dmSession.rolls[a.targetId]=card;
-      recordDm(w.dmSession,'roll-requested',player,[a.targetId],check?.label ?? 'จ่ายการ์ดทอย D20');
+      recordDm(w.dmSession,'roll-requested',player,[a.targetId],(check?.label ?? 'จ่ายการ์ดทอย D20')+(selectedDice ? ' · '+selectedDice.stat+' · DC '+selectedDice.dc : ''));
      } else w.diceRequest=card;
      break;
     }
@@ -529,7 +536,7 @@ export class WorldStore {
     if(w.dmSession) {
      if(check) {
       delete w.dmSession.checks[player];
-      executeCaseAction(w,player,check,()=>die);
+      executeCaseAction(w,player,{...check,dcOverride:request.dice?.dc,statOverride:request.dice?.stat},()=>die);
       if(isStoryCheck(check.actionId)) rollAnswer=storyCheckResponse(w,check.actionId,request.id);
      }
      let result=check && w.lastCheck?.playerId===player && w.lastCheck.die===die ? w.lastCheck : null;

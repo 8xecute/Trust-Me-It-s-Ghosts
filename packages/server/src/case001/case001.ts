@@ -352,7 +352,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
    : option;
  });
 }
-export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>number, actor?: {character:Character;boost?:'focus'|'background'|'deception'|'diagnostic';backgroundUsed:boolean;onBoost:()=>void;inEncounter?:boolean;playerId?:string;onCheck?:(result:ReturnType<typeof resolveCheck>)=>void}):CaseState {
+export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>number, actor?: {character:Character;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats;boost?:'focus'|'background'|'deception'|'diagnostic';backgroundUsed:boolean;onBoost:()=>void;inEncounter?:boolean;playerId?:string;onCheck?:(result:ReturnType<typeof resolveCheck>)=>void}):CaseState {
  const option=caseOptions(current,!!actor).find(option=>option.id===id);
  if(!option) throw Error('ทำรายการนี้ในคดีไม่ได้');
  const s=structuredClone(current);
@@ -372,7 +372,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
  const check=(dc:number, attribute:Attribute='knowledge', partial=false, core?:'SOC'|'INT'|'PER') => {
   if(actor) {
    if(attribute==='spirit' && actor.character.sanity===0) throw Error('ตื่นตระหนกจนทดสอบจิตวิญญาณไม่ได้');
-   const result=resolveCheck({dc,attribute:characterAttribute(actor.character,attribute,core),boost:actor.boost==='diagnostic' || actor.boost==='deception' ? 'focus' : actor.boost,partial},rollD20);
+   const result=resolveCheck({dc:actor.dcOverride ?? dc,attribute:characterAttribute(actor.character,attribute,actor.statOverride ?? core),boost:actor.boost==='diagnostic' || actor.boost==='deception' ? 'focus' : actor.boost,partial},rollD20);
    if(actor.boost) actor.onBoost();
    actor.onCheck?.(result);
    s.notice+=' · ทอย '+result.die+' รวม '+result.total;

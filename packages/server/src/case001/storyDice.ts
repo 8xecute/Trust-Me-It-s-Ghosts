@@ -98,19 +98,21 @@ export function storyCheckOptions(w:World,player:string) {
  }));
 }
 
-export function runStoryCheck(w:World,player:string,actionId:string,boost:unknown,roll:()=>number) {
+export function runStoryCheck(w:World,player:string,actionId:string,boost:unknown,roll:()=>number,dcOverride?:number) {
  const entry=availableChecks(w,player).find(({check,stat})=>actionId==='dice:'+check.id+':'+stat);
  if(!entry) throw Error('การทดสอบนี้ทำไม่ได้ในสถานการณ์ปัจจุบัน');
  const {check,stat,context}=entry;
+ const dc=dcOverride ?? check.dc;
+ if(!Number.isInteger(dc) || ![11,14,17,20,22].includes(dc)) throw Error('ระดับความยากไม่ถูกต้อง');
  const s=w.case001!, character=w.characters![player];
  if(boost!==undefined && boost!=='focus') throw Error('การทดสอบนี้ใช้โบนัสสมาธิได้เท่านั้น');
  if(boost==='focus' && (character.focus<1 || character.sanity===0)) throw Error('สมาธิไม่พอ');
  const die=roll();
  if(!Number.isInteger(die)||die<1||die>20) throw Error('ผลทอยไม่ถูกต้อง');
  const total=die+character.coreStats![stat]+(boost==='focus'?2:0);
- const outcome=total>=check.dc?'full':total>=check.dc-check.partial_margin?'partial':'failure';
+ const outcome=total>=dc?'full':total>=dc-check.partial_margin?'partial':'failure';
  const attempts=(s.storyChecks ??= {});
- (attempts[check.id] ??= []).push({actor:player,stat,dc:check.dc,die,total,outcome,context});
+ (attempts[check.id] ??= []).push({actor:player,stat,dc,die,total,outcome,context});
  if(boost==='focus') character.focus--;
  if(check.id==='C4_DROWNED_ECHO_VISION') w.turns[player].ap-=2;
  w.lastCheck={playerId:player,die,total,outcome:outcome==='full'?'success':outcome};

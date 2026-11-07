@@ -641,3 +641,4 @@ body:has(.dm-shell) { background: radial-gradient(ellipse at 72% 0%, #282b43 0%,
 .dm-sent-list p { white-space:pre-wrap; margin:6px 0; }
 @media(max-width:640px) { .player-main-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:6px; } .player-main-tabs button { font-size:.85rem; padding:8px 4px; } .player-status-strip { gap:4px 10px; font-size:.8rem; } .player-status-strip strong { flex:1 1 calc(100% - 60px); } .player-status-strip img { height:36px; width:28px; } .player-shell .case-actions-pane { max-height:58dvh; padding:12px; } }
 .player-main-tabs button[aria-pressed="true"] { background:#e6b56e; color:#211609; border-color:#e6b56e; font-weight:700; }
+.gm-dice form { scroll-margin-top:150px; }
