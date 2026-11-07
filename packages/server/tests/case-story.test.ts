@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createCharacter } from '@baan/shared';
-import { applyCaseAction, caseView, newCase, tick, type CaseState } from '../src/case001.js';
+import { applyCaseAction, caseView, newCase, tick, type CaseState } from '../src/case001/case001.js';
 import { WorldStore } from '../src/world.js';
 
 const investigator={character:createCharacter('ritual_specialist','body'),backgroundUsed:false,onBoost:()=>{}};
@@ -11,6 +11,8 @@ test('Case story gates testimony, tracks EV15–18 once, and publishes an earned
   let s={...newCase(true),site:'B' as const};
   assert.equal(s.story!.firedTriggers.includes('EV01'),true);
   assert.throws(()=>action(s,'talk:accuse-gate'));
+  s=action(s,'talk:history');
+  assert.doesNotMatch(s.notice,/ชื่อวิชัย/);
   let next=action(s,'talk:gate-history');
   assert.ok(next.story!.firedTriggers.includes('EV15'));
   next=action(next,'talk:accuse-gate');

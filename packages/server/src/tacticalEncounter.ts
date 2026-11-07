@@ -1,12 +1,15 @@
+import { characterAttribute, liteAttack, liteDefense } from '@baan/shared';
 import {
   ghostDecision, ghostMovementBudget, manifestationDamage, professionTechniques, resolveCheck, spendAction, startTurn,
   type Attribute, type GhostGrid,
 } from '@baan/shared';
+import type { CaseAttack, CaseCombatStats } from './case001/caseCombatStats.js';
 import type { Cell, World } from './world.js';
 
-type Telegraph = { kind: 'wail' | 'lash'; cells: Cell[]; interceptedBy?: string };
+type Telegraph = { kind: 'wail' | 'lash'; cells: Cell[]; attack?:CaseAttack; interceptedBy?: string };
 export interface GhostProfile {
   movement: number;
+  combat?:CaseCombatStats;
   special?: 'wail'|'lash';
   restrains?: boolean;
   armor: number;
@@ -45,7 +48,7 @@ const same = (a: Cell, b: Cell) => distance(a,b)===0;
 const reject = (message='เป้าหมายหรือจังหวะไม่ถูกต้อง'): never => { throw Error(message); };
 
 function check(w: World, actor: string, stat: Attribute, roll: () => number, boost?: 'focus', dc=12) {
-  const result = resolveCheck({dc, attribute:w.characters![actor].stats[stat], boost},roll);
+  const result = resolveCheck({dc, attribute:characterAttribute(w.characters![actor],stat), boost},roll);
   w.lastCheck = {playerId:actor, ...result};
   return result.outcome==='success';
 }
@@ -257,7 +260,7 @@ function moveGhost(w: World, cell: Cell, roll: () => number) {
   return !t.profile?.boss;
 }
 
-export function advanceTactics(w: World, grid: GhostGrid, roll: () => number) {
+export function advanceTactics(w: World, grid: GhostGrid, roll: () => number, resetTurns = true) {
   const t=w.tactics!, e=w.encounter!;
   const targets=Object.entries(w.players).filter(([id])=>id!==w.humanDmId && (w.characters?.[id]?.hp ?? 0)>0);
   if (!targets.length) return;
@@ -266,13 +269,33 @@ export function advanceTactics(w: World, grid: GhostGrid, roll: () => number) {
   const pending=t.telegraph;
   delete t.telegraph;
   const canAct=!t.dispersed && (t.calmUntil ?? 0)<t.round;
+  const combat=t.profile?.combat;
+  const range=distance(nearest,e.ghost);
+  const attacks=combat?.attacks.filter(option=>!option.requires && option.range>=range &&
+    (option.id!=='FLOOD_MEMORY' || w.caseMap?.battle?.phase==='flood_memory')) ?? [];
+  const attack=(t.nextSpecial==='wail' ? attacks.find(option=>option.id==='FLOOD_MEMORY') : undefined) ??
+    attacks.find(option=>(option.targetDefense==='MDEF')===(t.nextSpecial==='wail')) ?? attacks[0];
   if (canAct && pending) {
     const victims=pending.interceptedBy && targets.some(([id])=>id===pending.interceptedBy) ?
       targets.filter(([id])=>id===pending.interceptedBy) : targets.filter(([,cell])=>pending.cells.some(point=>same(point,cell)));
-    for (const [id,cell] of victims.slice(0,pending.kind==='lash'?1:2)) {
+    for (const [id,cell] of victims.slice(0,combat || pending.kind==='lash' ? 1 : 2)) {
       const target=w.characters![id];
       const penalty=(t.weakened ?? 0)>=t.round ||
         Object.values(t.zones).some(zone=>Math.abs(cell.x-zone.center.x)<=1 && Math.abs(cell.y-zone.center.y)<=1);
+      if(combat && pending.attack) {
+        const attack=pending.attack;
+        const guard=(t.defense[id] ?? 0)>=t.round;
+        const defense=target.coreStats ? liteDefense(target.coreStats,attack.targetDefense,guard) :
+          10+characterAttribute(target,attack.targetDefense==='PDEF'?'body':'spirit')+(guard?2:0);
+        if(guard) delete t.defense[id];
+        const hit=liteAttack({roll:roll(),bonus:combat.ATK-(penalty?2:0),defense,
+          damage:attack.damage,physical:false,manifestation:'HUMAN'});
+        if(!hit.hit) continue;
+        if(attack.damageResource==='Sanity') target.sanity=Math.max(0,target.sanity-hit.damage);
+        else target.hp=Math.max(0,target.hp-hit.damage);
+        if(attack.condition==='ROOTED') t.restrained[id]=t.round+1;
+        continue;
+      }
       const result=resolveCheck({dc:12+((t.defense[id] ?? 0)>=t.round?2:0),attribute:2-(penalty?2:0)},roll);
       if(result.outcome!=='success') continue;
       if(pending.kind==='wail') target.sanity=Math.max(0,target.sanity-1);
@@ -281,11 +304,11 @@ export function advanceTactics(w: World, grid: GhostGrid, roll: () => number) {
         if(t.profile?.restrains!==false) t.restrained[id]=t.round+1;
       }
     }
-  } else if (canAct && distance(nearest,e.ghost)<=1) {
+  } else if (canAct && (combat ? !!attack && hasLineOfEffect(e.ghost,nearest,grid) : range<=1)) {
     t.concealed=false;
-    const kind=t.profile?.special ?? t.nextSpecial ?? 'wail';
+    const kind=attack ? (attack.targetDefense==='MDEF'?'wail':'lash') : t.profile?.special ?? t.nextSpecial ?? 'wail';
     t.nextSpecial=kind==='wail'?'lash':'wail';
-    t.telegraph={kind,cells:(kind==='wail'?targets.filter(([,cell])=>distance(cell,e.ghost)<=2).slice(0,2):targets.slice(0,1)).map(([,cell])=>({...cell}))};
+    t.telegraph={kind,attack,cells:(kind==='wail'?targets.filter(([,cell])=>distance(cell,e.ghost)<=(attack?.range ?? 2) && (!attack || hasLineOfEffect(e.ghost,cell,grid))).slice(0,2):targets.slice(0,1)).map(([,cell])=>({...cell}))};
   } else if (canAct) {
     const budget=ghostMovementBudget(t.profile?.movement ?? 1,(t.immobilized ?? 0)>=t.round,!!t.profile?.boss);
     const movementGrid={...grid,blocked:[...grid.blocked,...Object.values(w.players)]};
@@ -304,7 +327,7 @@ export function advanceTactics(w: World, grid: GhostGrid, roll: () => number) {
     e.manifestation=1;
     delete t.dispersed;
   }
-  for(const id of Object.keys(w.turns)) w.turns[id]=(w.characters?.[id]?.hp ?? 0)>0 ? startTurn() : {ap:0,focused:false};
+  if(resetTurns) for(const id of Object.keys(w.turns)) w.turns[id]=(w.characters?.[id]?.hp ?? 0)>0 ? startTurn() : {ap:0,focused:false};
 }
 
 export function stabilize(w: World, actor: string, input: unknown, roll: () => number) {
@@ -325,7 +348,7 @@ export function negotiateV2(w: World, actor: string, roll: () => number) {
   if(!e || !t || e.phase!=='player' || !character?.hp || !character.sanity ||
     distance(w.players[actor],e.ghost)!==1 || t.dispersed || (t.concealed && (t.scanned ?? 0)<t.round)) return reject();
   const paid=spendAction(w.turns[actor],character.focus,{ap:2,focus:0}) ?? reject('AP ไม่พอ');
-  if(check(w,actor,'spirit',roll)) soothe(w);
+  if(check(w,actor,'spirit',roll,undefined,t.profile?.combat?.MDEF ?? 12)) soothe(w);
   e.turn=paid.turn;
 }
 
@@ -335,7 +358,17 @@ export function strikeV2(w: World, actor: string, roll: () => number) {
     (t.concealed && (t.scanned ?? 0)<t.round)) return reject();
   const paid=spendAction(w.turns[actor],character.focus,{ap:2,focus:0}) ?? reject('AP ไม่พอ');
   const exposed=!!t.exposed && t.exposed.actor!==actor && t.exposed.until>=t.round;
-  const result=resolveCheck({dc:12,attribute:character.stats.body,equipment:exposed?2:0,partial:true},roll);
+  const combat=t.profile?.combat;
+  if(combat) {
+    const die=roll(), bonus=characterAttribute(character,'body')+(exposed?2:0);
+    const result=liteAttack({roll:die,bonus,defense:combat.PDEF,damage:1,physical:true,manifestation:combat.manifestation});
+    if(exposed) delete t.exposed;
+    w.lastCheck={playerId:actor,die,total:die+bonus,outcome:result.hit?'success':'failure'};
+    e.turn=paid.turn;
+    if(result.damage) dispel(w,result.damage);
+    return;
+  }
+  const result=resolveCheck({dc:12,attribute:characterAttribute(character,'body'),equipment:exposed?2:0,partial:true},roll);
   if(exposed) delete t.exposed;
   w.lastCheck={playerId:actor,...result};
   e.turn=paid.turn;

@@ -1,3 +1,5 @@
+import type { LiteStats } from './combatLite.js';
+
 export const attributes = ['body', 'mind', 'spirit', 'knowledge'] as const;
 export type Attribute = typeof attributes[number];
 type Stats = Record<Attribute, number>;
@@ -60,6 +62,15 @@ export type Talent = typeof professionTechniques[Profession]['talents'][number][
 export const biographyFields = ['background_story','motivation','fear','past_mistake','personal_secret'] as const;
 export type Biography = Partial<Record<typeof biographyFields[number], string>>;
 
+export const castProfiles: Record<Profession,{name:string;biography:Biography}> = {
+  ritual_specialist:{name:'หมอพิธี',biography:{background_story:'รับหน้าที่อ่านร่องรอยพิธีและหาวิธีคลายอาคมให้ทีม'}},
+  paranormal_investigator:{name:'นักสืบเหนือธรรมชาติ',biography:{background_story:'ตามรอยหลักฐานและเทียบคำให้การ เพื่อแยกข้อเท็จจริงออกจากข่าวลือ'}},
+  containment_specialist:{name:'บอดี้การ์ด',biography:{background_story:'คอยคุ้มกันเพื่อนร่วมทีมเมื่อต้องเข้าไปในพื้นที่เสี่ยง'}},
+  medium:{name:'ร่างทรง',biography:{background_story:'รับฟังวิญญาณและช่วยทีมทำความเข้าใจสิ่งที่ผู้ตายยังติดค้าง'}},
+  occult_engineer:{name:'นักศึกษาฝึกงาน',biography:{background_story:'นักศึกษาที่ติดตามทีมภาคสนามและช่วยดูแลอุปกรณ์ตรวจสอบ'}},
+  field_medic:{name:'คนขับรถ (อดีตนายพราน)',biography:{background_story:'อดีตนายพรานผู้ขับรถพาทีมเข้าพื้นที่และคอยช่วยพาคนกลับอย่างปลอดภัย'}},
+};
+
 export function validateBiography(input: unknown): Biography {
   if (input===undefined) return {};
   if (!input || typeof input!=='object' || Array.isArray(input)) throw Error('ประวัติส่วนตัวไม่ถูกต้อง');
@@ -74,27 +85,66 @@ export function validateBiography(input: unknown): Biography {
   return biography;
 }
 
+export const coreStatLabels = {
+  BODY: 'ร่างกาย', PER: 'การสังเกต', INT: 'เชาวน์ปัญญา',
+  SOC: 'การเข้าสังคม', SPI: 'จิตวิญญาณ', RES: 'ความต้านทาน',
+} satisfies Record<keyof LiteStats, string>;
+
+export const characterPresets = {
+  paranormal_investigator: {BODY:2, PER:4, INT:5, SOC:4, SPI:1, RES:2},
+  ritual_specialist: {BODY:2, PER:2, INT:4, SOC:2, SPI:3, RES:5},
+  medium: {BODY:2, PER:3, INT:2, SOC:4, SPI:5, RES:2},
+  containment_specialist: {BODY:5, PER:2, INT:1, SOC:3, SPI:2, RES:5},
+  occult_engineer: {BODY:3, PER:3, INT:3, SOC:3, SPI:3, RES:3},
+  field_medic: {BODY:4, PER:5, INT:2, SOC:2, SPI:1, RES:4},
+} satisfies Record<Profession, LiteStats>;
+
+const legacyCoreStat = {body:'BODY', mind:'PER', spirit:'SPI', knowledge:'INT'} as const;
+
+export function characterAttribute(character: Character, legacy: Attribute, core: keyof LiteStats = legacyCoreStat[legacy]) {
+  return character.coreStats?.[core] ?? character.stats[legacy];
+}
+
+export const maxPlayerNameLength = 32;
+
+export function validatePlayerName(value:unknown):string|undefined {
+  if(value===undefined) return;
+  if(typeof value!=='string') throw Error('ชื่อผู้เล่นไม่ถูกต้อง');
+  const name=value.trim();
+  if(name.length>maxPlayerNameLength || /[\u0000-\u001f\u007f-\u009f]/u.test(name)) {
+    throw Error('ชื่อผู้เล่นต้องไม่เกิน '+maxPlayerNameLength+' ตัวอักษรและอยู่ในบรรทัดเดียว');
+  }
+  return name || undefined;
+}
+
 export interface Character {
+  playerName?: string;
+  coreStats?: LiteStats;
   talent?: Talent;
   background?: Background;
   profession: Profession;
-  bonus: Attribute;
+  bonus?: Attribute;
   stats: Stats;
   hp: number;
   sanity: number;
   focus: number;
 }
 
-export function createCharacter(profession: unknown, bonus: unknown, selection?: { talent: unknown; background: unknown }): Character {
+export function createCharacter(profession: unknown, bonus: unknown, selection?: { talent: unknown; background: unknown }, usePreset = false): Character {
   if (typeof profession !== 'string' || !Object.hasOwn(professions, profession)) {
     throw Error('อาชีพไม่ถูกต้อง');
   }
   const role = profession as Profession;
   const stat = attributes.find(attribute => attribute === bonus);
   const stats = { ...professions[role].stats };
-  if (!stat || stats[stat] >= 4) throw Error('เลือกเพิ่มหนึ่งแต้มให้ค่าสถานะที่ยังไม่ถึง 4');
-  stats[stat]++;
-  const base = { profession: role, bonus: stat, stats, hp: 10, sanity: 10, focus: 4 };
+  if (!usePreset) {
+    if (!stat || stats[stat] >= 4) throw Error('เลือกเพิ่มหนึ่งแต้มให้ค่าสถานะที่ยังไม่ถึง 4');
+    stats[stat]++;
+  }
+  const base = {
+    profession: role, stats, hp: 10, sanity: 10, focus: 4,
+    ...(usePreset ? {coreStats:{...characterPresets[role]}} : {bonus:stat}),
+  };
   if (!selection) return base;
   const talent = professionTechniques[role].talents.find(entry => entry.id === selection.talent);
   if (!talent) throw Error('เลือกพรสวรรค์ของอาชีพนี้หนึ่งอย่าง');

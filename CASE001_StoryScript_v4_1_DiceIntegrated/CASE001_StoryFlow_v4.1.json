@@ -1,0 +1,861 @@
+{
+  "schema_version": "1.0",
+  "case_id": "BS-001",
+  "case_title_th": "เสียงร้องจากสวนกล้วย",
+  "project_title_th": "บริษัท เรื่องผีไว้ใจผม จำกัด",
+  "version": "4.1",
+  "status": "playtest_draft_not_canon",
+  "source_of_truth": "CASE001_StoryScript_v4.1.md",
+  "note": "v4.1 preserves Story v4.0 and adds 16 optional investigation/dialogue checks with Full/Partial/Failure; Combat Lite v1.1 continues to govern combat. The markdown is authoritative for dialogue.",
+  "main_path": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "FINAL",
+    "ENDING"
+  ],
+  "local_start_time": "23:00",
+  "ritual_entrench_time": "03:00",
+  "cast": [
+    {
+      "id": "PRASERT",
+      "name": "ประเสริฐ",
+      "importance": 3,
+      "first_phase": "A",
+      "knows": [
+        "old_floodgate_opening",
+        "past_coverup",
+        "missing_persons"
+      ],
+      "does_not_know": [
+        "wichai_kidnapped_people",
+        "ritual_details"
+      ]
+    },
+    {
+      "id": "WICHAI",
+      "name": "วิชัย",
+      "importance": 4,
+      "first_phase": "B",
+      "knows": [
+        "kidnapping",
+        "land_scheme",
+        "ritual",
+        "maekaew_saved_him"
+      ],
+      "does_not_know": [
+        "source_of_mysterious_book"
+      ]
+    },
+    {
+      "id": "TON",
+      "name": "ต้น",
+      "importance": 2,
+      "first_phase": "B",
+      "knows": [
+        "wichai_carried_black_bundle",
+        "wet_shadow_rumor"
+      ],
+      "does_not_know": [
+        "kidnapping_directly"
+      ]
+    },
+    {
+      "id": "BUNMEE",
+      "name": "ยายบุญมี",
+      "importance": 3,
+      "first_phase": "C",
+      "knows": [
+        "maekaew_rescued_wichai",
+        "evacuation_story",
+        "suspicious_old_records"
+      ],
+      "does_not_know": [
+        "current_kidnapping",
+        "ritual"
+      ]
+    },
+    {
+      "id": "MAEKAEW",
+      "name": "แม่แก้ว / นางตานี",
+      "importance": 4,
+      "first_phase": "D",
+      "knows": [
+        "wichai_identity",
+        "her_unconsented_binding",
+        "her_initial_hauntings"
+      ],
+      "restriction": "ritual_prevents_directly_naming_controller"
+    },
+    {
+      "id": "DON",
+      "name": "ดล",
+      "importance": 2,
+      "first_phase": "E",
+      "knows": [
+        "land_documents",
+        "wichai_captured_him"
+      ]
+    },
+    {
+      "id": "NID",
+      "name": "นิด",
+      "importance": 1,
+      "first_phase": "E",
+      "knows": [
+        "black_threads_at_shrine",
+        "wichai_captured_her"
+      ]
+    },
+    {
+      "id": "PHOEM",
+      "name": "เพิ่ม",
+      "importance": 1,
+      "first_phase": "E",
+      "knows": [
+        "ritual_box",
+        "wichai_captured_him"
+      ]
+    }
+  ],
+  "enemy_archetypes": [
+    {
+      "id": "DROWNED_ECHO",
+      "name": "ผีเงาจมน้ำ",
+      "phase": "C",
+      "purpose": [
+        "tutorial_combat",
+        "red_herring"
+      ],
+      "is_kidnapper": false,
+      "separate_named_npc": false
+    },
+    {
+      "id": "NANG_TANI",
+      "name": "แม่แก้ว",
+      "phase": [
+        "D",
+        "FINAL"
+      ],
+      "purpose": [
+        "confrontation",
+        "final_boss"
+      ],
+      "temporary_body_disperse": true,
+      "returns_while_unresolved": true
+    }
+  ],
+  "state_schema": {
+    "PHASE": {
+      "type": "enum",
+      "values": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "FINAL",
+        "ENDING"
+      ],
+      "initial": "A"
+    },
+    "TIME_MINUTES": {
+      "type": "integer",
+      "initial": 1380,
+      "semantics": "minutes_since_midnight; after 23:59 add to 1440; handle midnight rollover"
+    },
+    "TON_TRUST": {
+      "type": "enum",
+      "values": [
+        "low",
+        "high"
+      ],
+      "initial": "low"
+    },
+    "FLOOD_TRUTH": {
+      "type": "enum",
+      "values": [
+        "unknown",
+        "partial",
+        "evidence"
+      ],
+      "initial": "unknown"
+    },
+    "KNOWS_WICHAI_SAVED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "GHOST_ENCOUNTER": {
+      "type": "enum",
+      "values": [
+        "not_started",
+        "won",
+        "pacified",
+        "escaped",
+        "lost"
+      ],
+      "initial": "not_started"
+    },
+    "GHOST_CLUE": {
+      "type": "enum",
+      "values": [
+        "none",
+        "trace",
+        "vision"
+      ],
+      "initial": "none"
+    },
+    "SUSPECT_WICHAI": {
+      "type": "enum",
+      "values": [
+        "unknown",
+        "suspected",
+        "confirmed"
+      ],
+      "initial": "unknown"
+    },
+    "KAEW_TRUST": {
+      "type": "enum",
+      "values": [
+        "low",
+        "neutral",
+        "high"
+      ],
+      "initial": "neutral"
+    },
+    "KAEW_D_RESULT": {
+      "type": "enum",
+      "values": [
+        "not_met",
+        "talked",
+        "won",
+        "fled",
+        "lost"
+      ],
+      "initial": "not_met"
+    },
+    "KAEW_TEMP_DISPERSED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "HOSTAGES_FOUND": {
+      "type": "integer",
+      "min": 0,
+      "max": 3,
+      "initial": 0
+    },
+    "HOSTAGES_SAFE": {
+      "type": "integer",
+      "min": 0,
+      "max": 3,
+      "initial": 0
+    },
+    "WICHAI_STATUS": {
+      "type": "enum",
+      "values": [
+        "free",
+        "captured",
+        "escaped",
+        "dead"
+      ],
+      "initial": "free"
+    },
+    "RITUAL_STATUS": {
+      "type": "enum",
+      "values": [
+        "active",
+        "weakened",
+        "stopped",
+        "entrenched"
+      ],
+      "initial": "active"
+    },
+    "KAEW_FINAL": {
+      "type": "enum",
+      "values": [
+        "hostile",
+        "calm",
+        "sealed",
+        "controlled",
+        "departed"
+      ],
+      "initial": "controlled"
+    },
+    "FLOOD_EVIDENCE_COLLECTED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "LAND_EVIDENCE_COLLECTED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "BRIBE_ACCEPTED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "CHECK_RESULTS": {
+      "type": "object",
+      "initial": {},
+      "semantics": "check id -> full|partial|failure, only if attempted"
+    },
+    "CLUE_LEVELS": {
+      "type": "object",
+      "initial": {},
+      "semantics": "clue id -> BASIC|PARTIAL|FULL; never downgrade; independent of physical discovery"
+    },
+    "RITUAL_PLAN": {
+      "type": "enum",
+      "values": [
+        "unknown",
+        "basic",
+        "prepared"
+      ],
+      "initial": "unknown",
+      "semantics": "analysis quality, not ritual actual status"
+    },
+    "WICHAI_COOPERATING": {
+      "type": "boolean",
+      "initial": false,
+      "semantics": "Wichai collaborates only when physically present and free"
+    }
+  },
+  "scenes": [
+    {
+      "id": "A1",
+      "phase": "A",
+      "title": "เข้าเขตหมู่บ้าน",
+      "must_offer": true,
+      "npc": [
+        "PRASERT"
+      ],
+      "main_dialogue": "ประเสริฐแจ้งมีคนหาย 3 คน",
+      "conditional_dialogue_keys": [
+        "ask_missing",
+        "ask_last_seen",
+        "ask_ghost",
+        "ask_green_woman",
+        "ask_police",
+        "accuse_prasert",
+        "refuse_job"
+      ]
+    },
+    {
+      "id": "A2",
+      "phase": "A",
+      "title": "เสียงจากวิทยุ",
+      "trigger": "after_first_investigation_or_dialogue",
+      "must_offer": true,
+      "npc": [],
+      "clue": "still_people_inside",
+      "investigation_checks": [
+        "A2_RADIO_ECHO"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "A3",
+      "phase": "A",
+      "title": "ประเสริฐบอกทาง",
+      "must_offer": true,
+      "transitions": [
+        "B1"
+      ]
+    },
+    {
+      "id": "B1",
+      "phase": "B",
+      "title": "ต้อนรับที่บ้านผู้ใหญ่",
+      "must_offer": true,
+      "npc": [
+        "PRASERT",
+        "WICHAI",
+        "TON"
+      ]
+    },
+    {
+      "id": "B2",
+      "phase": "B",
+      "title": "สอบวิชัย",
+      "must_offer": true,
+      "npc": [
+        "WICHAI"
+      ],
+      "conditional_dialogue_keys": [
+        "ask_missing",
+        "ask_land",
+        "ask_night_trip",
+        "ask_maekaew",
+        "ask_saved_as_child",
+        "accuse",
+        "confront_with_evidence"
+      ],
+      "investigation_checks": [
+        "B2_WICHAI_TELL"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "B3",
+      "phase": "B",
+      "title": "คำให้การต้น",
+      "must_offer": true,
+      "npc": [
+        "TON"
+      ],
+      "branches": [
+        {
+          "if": "ton_alone_and_reassured",
+          "effects": {
+            "TON_TRUST": "high"
+          },
+          "reveal": "wichai_bundle_and_cart"
+        },
+        {
+          "if": "ton_threatened",
+          "effects": {
+            "TON_TRUST": "low"
+          },
+          "reveal": "none"
+        }
+      ],
+      "fallback_clue": "C2",
+      "investigation_checks": [
+        "B3_TON_DISCLOSURE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "B4",
+      "phase": "B",
+      "title": "เอกสารน้ำท่วม",
+      "optional": true,
+      "npc": [
+        "PRASERT"
+      ],
+      "reveal": "flood_partial",
+      "investigation_checks": [
+        "B4_FLOOD_PHOTO"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "B5",
+      "phase": "B",
+      "title": "ชี้ไปบ้านดล",
+      "must_offer": true,
+      "transitions": [
+        "C1"
+      ]
+    },
+    {
+      "id": "C1",
+      "phase": "C",
+      "title": "บ้านดล",
+      "must_offer": true
+    },
+    {
+      "id": "C2",
+      "phase": "C",
+      "title": "สมุดดล",
+      "must_offer": true,
+      "clues": [
+        "land_sales",
+        "black_thread"
+      ],
+      "fallback_to": "B2",
+      "investigation_checks": [
+        "C2_LAND_PATTERN"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "C3",
+      "phase": "C",
+      "title": "เสียงเคาะ",
+      "must_offer": true,
+      "investigation_checks": [
+        "C3_SPIRIT_RESIDUE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "C4",
+      "phase": "C",
+      "title": "ผีเงาจมน้ำ",
+      "must_offer": true,
+      "combat_trigger": "investigate_energy_after_warning",
+      "can_escape": true,
+      "branches": [
+        {
+          "result": "won",
+          "GHOST_CLUE": "trace"
+        },
+        {
+          "result": "pacified",
+          "GHOST_CLUE": "vision"
+        },
+        {
+          "result": "escaped",
+          "GHOST_CLUE": "none"
+        },
+        {
+          "result": "lost",
+          "GHOST_CLUE": "none"
+        }
+      ],
+      "is_kidnapper": false,
+      "investigation_checks": [
+        "C4_DROWNED_ECHO_VISION"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "C5",
+      "phase": "C",
+      "title": "ยายบุญมี",
+      "must_offer": true,
+      "npc": [
+        "BUNMEE"
+      ],
+      "conditional_dialogue_keys": [
+        "ask_maekaew",
+        "ask_death",
+        "ask_saved_child",
+        "ask_floodgate",
+        "ask_silence",
+        "ask_kidnapper",
+        "accuse_bunmee",
+        "request_escort"
+      ],
+      "note": "may reveal Wichai as saved child immediately",
+      "investigation_checks": [
+        "C5_EVACUATION_RECORDS"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "D1",
+      "phase": "D",
+      "title": "สวนกล้วย",
+      "must_offer": true
+    },
+    {
+      "id": "D2",
+      "phase": "D",
+      "title": "ศาลและด้ายดำ",
+      "must_offer": true,
+      "clues": [
+        "ritual_threads",
+        "missing_names"
+      ],
+      "note": "one ritual only",
+      "investigation_checks": [
+        "D2_BINDING_PATTERN"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "D3",
+      "phase": "D",
+      "title": "พบแม่แก้ว",
+      "must_offer": true,
+      "npc": [
+        "MAEKAEW"
+      ],
+      "conditional_dialogue_keys": [
+        "introduce",
+        "ask_kidnapping",
+        "ask_haunting",
+        "ask_threads",
+        "ask_controller",
+        "ask_wichai",
+        "mention_bunmee",
+        "offer_help",
+        "threaten"
+      ],
+      "investigation_checks": [
+        "D3_KAEW_CONTACT"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "D4",
+      "phase": "D",
+      "title": "เผชิญหน้าแม่แก้ว",
+      "optional": true,
+      "npc": [
+        "MAEKAEW"
+      ],
+      "branches": [
+        {
+          "result": "talked",
+          "KAEW_D_RESULT": "talked"
+        },
+        {
+          "result": "won",
+          "KAEW_D_RESULT": "won",
+          "KAEW_TEMP_DISPERSED": true
+        },
+        {
+          "result": "fled",
+          "KAEW_D_RESULT": "fled"
+        },
+        {
+          "result": "lost",
+          "KAEW_D_RESULT": "lost"
+        }
+      ],
+      "note": "temporary spirit body disperse, not permanent death"
+    },
+    {
+      "id": "D5",
+      "phase": "D",
+      "title": "รอยล้อไปเรือนไม้",
+      "must_offer": true,
+      "transitions": [
+        "E1"
+      ],
+      "investigation_checks": [
+        "D5_CART_TRACKS"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "E1",
+      "phase": "E",
+      "title": "เรือนไม้ร้าง",
+      "must_offer": true,
+      "player_order_flexible": [
+        "rescue_hostages",
+        "investigate_ritual",
+        "ambush_wichai",
+        "retreat"
+      ]
+    },
+    {
+      "id": "E2",
+      "phase": "E",
+      "title": "ห้องขัง",
+      "must_offer": true,
+      "npc": [
+        "DON",
+        "NID",
+        "PHOEM"
+      ],
+      "note": "found != safe"
+    },
+    {
+      "id": "E3",
+      "phase": "E",
+      "title": "สอบคนหาย",
+      "optional": true,
+      "npc": [
+        "DON",
+        "NID",
+        "PHOEM"
+      ],
+      "reveal": "kidnapper_is_wichai",
+      "investigation_checks": [
+        "E3_HOSTAGES_ORDER"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "E4",
+      "phase": "E",
+      "title": "กำไลพิธี",
+      "must_offer": true,
+      "clues": [
+        "brass_bracelet",
+        "ritual_core",
+        "land_documents",
+        "flood_records"
+      ],
+      "investigation_checks": [
+        "E4_BRACELET_DECODE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "E5",
+      "phase": "E",
+      "title": "วิชัยเผชิญหน้า",
+      "conditional": "WICHAI_STATUS == free && WICHAI_is_physically_here",
+      "npc": [
+        "WICHAI"
+      ],
+      "conditional_dialogue_keys": [
+        "accuse_kidnap",
+        "ask_ritual",
+        "ask_maekaew_cooperation",
+        "ask_childhood",
+        "ask_land_debts",
+        "ask_book_source",
+        "offer_arrest",
+        "threaten",
+        "bribe"
+      ],
+      "investigation_checks": [
+        "E5_WICHAI_NEGOTIATE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "H1",
+      "phase": "ANY_BEFORE_ENDING",
+      "title": "เผยความจริงน้ำท่วม",
+      "conditional": "FLOOD_EVIDENCE_COLLECTED && appropriate_confrontation",
+      "npc": [
+        "PRASERT",
+        "BUNMEE"
+      ],
+      "investigation_checks": [
+        "H1_FLOOD_TIMELINE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "F1",
+      "phase": "FINAL",
+      "title": "อาคมกำไลปะทุ",
+      "conditional": "RITUAL_STATUS != stopped"
+    },
+    {
+      "id": "F2",
+      "phase": "FINAL",
+      "title": "แม่แก้วกลับมา",
+      "conditional": "maekaew_spirit_still_unresolved",
+      "variants_from_state": "KAEW_D_RESULT"
+    },
+    {
+      "id": "F3",
+      "phase": "FINAL",
+      "title": "Boss Phase 1 พันธนาการ",
+      "conditional": "ritual_forces_hostile_or_player_attacks",
+      "combat": true
+    },
+    {
+      "id": "F4",
+      "phase": "FINAL",
+      "title": "Boss Phase 2 คืนที่น้ำท่วม",
+      "conditional": "boss_reaches_memory_phase",
+      "combat": true
+    },
+    {
+      "id": "F5",
+      "phase": "FINAL",
+      "title": "Phase 3 อิสรภาพ",
+      "conditional": "RITUAL_STATUS == stopped",
+      "branches": [
+        "calm",
+        "fight",
+        "seal",
+        "depart"
+      ],
+      "investigation_checks": [
+        "F5_KAEW_RECONCILE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated"
+    },
+    {
+      "id": "F6",
+      "phase": "FINAL",
+      "title": "ถึงเวลาตีสาม",
+      "conditional": "TIME_MINUTES >= 1620 && RITUAL_STATUS != stopped",
+      "effect": {
+        "RITUAL_STATUS": "entrenched"
+      },
+      "note": "not automatic failure or hostage death"
+    }
+  ],
+  "clues": [
+    {
+      "id": "E01",
+      "name": "รอยรองเท้ามนุษย์/รอยขนย้าย",
+      "phase": "C",
+      "points_to": "D"
+    },
+    {
+      "id": "E02",
+      "name": "สมุดบันทึกดล",
+      "phase": "C",
+      "points_to": "land_scheme"
+    },
+    {
+      "id": "E03",
+      "name": "ผ้ายันต์/ร่องพิธีที่ศาล",
+      "phase": "D",
+      "points_to": "single_binding_ritual"
+    },
+    {
+      "id": "E04",
+      "name": "ด้ายดำพร้อมชื่อคนหาย",
+      "phase": "D",
+      "points_to": "ritual_targets"
+    },
+    {
+      "id": "E05",
+      "name": "กำไลทองเหลืองสลักชื่อแก้ว",
+      "phase": "E",
+      "points_to": "ritual_core"
+    },
+    {
+      "id": "E06",
+      "name": "รอยล้อรถเข็นและกระสอบ",
+      "phase": "D",
+      "points_to": "E"
+    },
+    {
+      "id": "E07",
+      "name": "บันทึกเปิดประตูผันน้ำ/ข้อมูลอพยพ",
+      "phase": "B_or_E",
+      "points_to": "past_coverup"
+    },
+    {
+      "id": "E08",
+      "name": "คำให้การ NPC",
+      "phase": "multiple",
+      "points_to": "kidnapping_and_past"
+    }
+  ],
+  "ending_priority": [
+    {
+      "ending": "D",
+      "when": "ritual remains dangerous and party ends unable to contain crisis"
+    },
+    {
+      "ending": "C",
+      "when": "main danger stopped but rescue/evidence/current justice incomplete"
+    },
+    {
+      "ending": "B",
+      "when": "ritual stopped, all hostages safe, current case resolved, maekaew still dangerous or sealed"
+    },
+    {
+      "ending": "A",
+      "when": "ritual stopped, all 3 hostages safe, sufficient evidence for current and past, maekaew voluntarily nonviolent"
+    }
+  ],
+  "invariants": [
+    "Do not add another minor ghost battle besides C.",
+    "The drowned echo did not kidnap the missing villagers.",
+    "Wichai is the current kidnapper.",
+    "Mae Kaew saved only Wichai during the 1991 flood.",
+    "The flood diversion gate is OPENED in the 1991 incident in this draft.",
+    "There is only ONE coercive binding ritual centered on the brass bracelet.",
+    "Mae Kaew body can disperse temporarily at D; she is not permanently destroyed.",
+    "Wichai does not teleport to E if captured or dead elsewhere.",
+    "All 3 hostages are alive at game start.",
+    "03:00 entrenchment is not automatic game over.",
+    "Information required to progress has at least one alternate source.",
+    "Dialogue from the full script must be conditional on actual NPC knowledge and player action.",
+    "All 16 investigation checks are optional and conditional on player actions; do not roll upon entering a scene automatically.",
+    "Failed check cannot remove baseline facts, prior observed information, or guaranteed testimony from cooperative NPCs.",
+    "All check outcomes are source-limited: no forced omniscience from ghosts or fabricated evidence.",
+    "Do not treat missing ritual analysis as evidence that the brass bracelet is not the binding focus.",
+    "Check results do not replace Combat Lite attack rules, which have no partial hit."
+  ],
+  "dice_check_file": "CASE001_DiceChecks_v4.1.json"
+}

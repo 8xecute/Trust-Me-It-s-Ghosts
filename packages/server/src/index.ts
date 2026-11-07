@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { Rooms, canStart } from './rooms.js';
+import { openRoomSaves } from './roomSaves.js';
 import { WorldStore } from './world.js';
 
 import { readServerConfig } from './config.js';
@@ -26,24 +27,36 @@ const io = new Server(httpServer, {
 });
 
 const rooms = new Rooms();
-const worlds = new WorldStore();
+const worlds = new WorldStore(undefined,true,true);
+const saveDirectory=process.env.CASE_SAVE_DIR?.trim();
+const saveRoom=saveDirectory ? openRoomSaves(saveDirectory,rooms,worlds) : undefined;
+function saveStartedRoom(code:string) {
+ if(!saveRoom || !worlds.hasStarted(code)) return;
+ try {saveRoom(code);}
+ catch (error) {console.error('Unable to save room '+code,error);}
+}
 const expirations = new Map<string, ReturnType<typeof setTimeout>>();
+const publicRooms=()=>rooms.publicRooms(code=>!worlds.hasStarted(code) && !!io.sockets.adapter.rooms.get(code)?.size);
+const broadcastRooms=()=>io.emit('lobby:rooms',publicRooms());
 function broadcastSnapshot(code:string) {
   for(const socketId of io.sockets.adapter.rooms.get(code) ?? []) {
     const player=rooms.playerId(socketId);
-    if(player) io.to(socketId).emit('game:snapshot',worlds.snapshot(code,player));
+    if(player) io.to(socketId).emit('game:snapshot',worlds.snapshot(code,player),!!saveRoom && worlds.hasStarted(code));
   }
 }
 io.on('connection', (socket) => {
+  socket.emit('lobby:rooms',publicRooms());
   type Ack = (result: unknown) => void;
   const handle = (ack: unknown, fn: () => void) => { if (typeof ack !== 'function') return; try { fn(); } catch (error) { (ack as Ack)({ok:false,error:error instanceof Error ? error.message : 'เกิดข้อผิดพลาด'}); } };
   const createRoom = (ack: unknown, version?:2) => handle(ack, () => {
     const room=rooms.create(socket.id,version); worlds.create(room.code,room.version); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!),token:rooms.token(socket.id)});
+    broadcastRooms();
   });
   socket.on('room:create', ack => createRoom(ack));
   socket.on('room:create:v2', ack => createRoom(ack,2));
   const joinRoom = (code: unknown, ack: unknown, version?:2) => handle(ack, () => {
-    const room=rooms.join(socket.id,code,version); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!),token:rooms.token(socket.id)}); broadcastSnapshot(room.code); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
+    worlds.assertCanJoin(code);
+    const room=rooms.join(socket.id,code,version); worlds.addPlayer(room.code,rooms.playerId(socket.id)!); socket.join(room.code); (ack as Ack)({ok:true,room,playerId:rooms.playerId(socket.id),snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!),token:rooms.token(socket.id)}); broadcastRooms(); broadcastSnapshot(room.code); io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
   });
   socket.on('room:join', (code, ack) => joinRoom(code,ack));
   socket.on('room:join:v2', (code, ack) => joinRoom(code,ack,2));
@@ -53,8 +66,11 @@ io.on('connection', (socket) => {
   socket.on('game:action', (action: unknown, ack: unknown) => handle(ack, () => {
     const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
     if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
+    const started=worlds.hasStarted(code);
     const result=worlds.apply(code,player,action);
-    (ack as Ack)({ok:true,...result});
+    if(!result.duplicate) saveStartedRoom(code);
+    if(!started && worlds.hasStarted(code)) broadcastRooms();
+    (ack as Ack)({ok:true,...result,persistent:!!saveRoom && worlds.hasStarted(code)});
     if (!result.duplicate) broadcastSnapshot(code);
   }));
   socket.on('character:biography', (ack: unknown) => handle(ack, () => {
@@ -81,12 +97,34 @@ io.on('connection', (socket) => {
     clearTimeout(expirations.get(id));
     expirations.delete(id);
     socket.join(room.code);
+    broadcastRooms();
     (ack as Ack)({ok:true,room,playerId:id,snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!)});
     io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
   }));
+  socket.on('room:leave', (ack: unknown) => handle(ack, () => {
+    const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
+    if(code && player) {
+      worlds.removePlayer(code,player);
+      const room=rooms.leave(socket.id);
+      socket.leave(code);
+      if(room) {
+        saveStartedRoom(code);
+        io.to(code).emit('room:update',{...room,canStart:canStart(room)});
+        broadcastSnapshot(code);
+      } else {
+        try {saveRoom?.close(code);}
+        catch (error) {console.error('Unable to close saved room '+code,error);}
+        worlds.delete(code);
+      }
+      broadcastRooms();
+    }
+    (ack as Ack)({ok:true});
+  }));
   socket.on('disconnect', () => {
     const session=rooms.detach(socket.id); if(!session) return;
+    broadcastRooms();
     io.to(session.code).emit('room:update',{...session.room,canStart:canStart(session.room)});
+    if(saveRoom && worlds.hasStarted(session.code)) return;
     expirations.set(session.id,setTimeout(() => {
       expirations.delete(session.id);
       const room=rooms.expire(session.code,session.id);
@@ -94,6 +132,7 @@ io.on('connection', (socket) => {
       worlds.removePlayer(session.code,session.id);
       if(room) {io.to(session.code).emit('room:update',{...room,canStart:canStart(room)});broadcastSnapshot(session.code);}
       else worlds.delete(session.code);
+      broadcastRooms();
     }, 120000).unref());
   });
 });

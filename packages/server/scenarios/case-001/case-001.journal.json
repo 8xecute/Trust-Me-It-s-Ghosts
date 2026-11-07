@@ -1,0 +1,203 @@
+{
+  "items": [
+    {
+      "id": "E01",
+      "status": "confirmed",
+      "text": "พบรอยเท้าหลังบ้านดล",
+      "source": "รอยเท้าที่ตรวจพบ",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E01"
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "status": "suspected",
+      "text": "บันทึกของดลชี้ถึงแรงกดดันซื้อที่ดินและสิ่งที่เขาเห็น ควรตรวจสอบกับแหล่งอื่น",
+      "source": "สมุดบันทึกของดล",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E02"
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "status": "confirmed",
+      "text": "พบผ้ายันต์ถูกเผาที่ศาลเก่า",
+      "source": "วัตถุที่ตรวจพบ",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E03"
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "status": "confirmed",
+      "text": "พบด้ายดำพันต้นกล้วย",
+      "source": "วัตถุที่ตรวจพบ",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E04"
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "status": "confirmed",
+      "text": "พบกำไลทองเหลืองสลักชื่อแก้ว",
+      "source": "กำไลที่เก็บได้",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E05"
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "status": "confirmed",
+      "text": "พบรอยล้อรถเข็นนำไปทางเรือนร้าง",
+      "source": "รอยล้อที่ตรวจพบ",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E06"
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "status": "confirmed",
+      "text": "พบเอกสารหมู่บ้านเกี่ยวกับการจัดซื้อ ที่ดิน และประตูน้ำ",
+      "source": "เอกสารที่ตรวจพบ",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E07"
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "status": "confirmed",
+      "text": "ต้นให้การว่าเห็นวิชัย ต้องเปรียบเทียบกับหลักฐานอิสระอื่น",
+      "source": "คำให้การของต้น",
+      "when": [
+        {
+          "type": "evidence",
+          "id": "E08"
+        }
+      ]
+    },
+    {
+      "id": "memory-fragment",
+      "status": "suspected",
+      "text": "ภาพความทรงจำเกี่ยวข้องกับน้ำท่วม แต่ยังไม่ยืนยันตัวบุคคลหรือผู้สั่งการ",
+      "source": "ภาพความทรงจำที่ทีมพบ",
+      "when": [
+        {
+          "type": "objective",
+          "id": "memory-fragment"
+        }
+      ]
+    },
+    {
+      "id": "gate-truth",
+      "status": "confirmed",
+      "text": "ทีมได้รับข้อมูลเรื่องผู้ร่วมปิดประตูน้ำในอดีต",
+      "source": "เอกสารหรือคำให้การที่ทีมค้นพบ",
+      "when": [
+        {
+          "type": "objective",
+          "id": "gate-truth"
+        }
+      ]
+    },
+    {
+      "id": "wichai-memory",
+      "status": "confirmed",
+      "text": "ได้รับคำบอกเล่าว่าแม่แก้วเคยช่วยวิชัยจากน้ำ",
+      "source": "คำให้การหรือความทรงจำที่เปิดเผยแล้ว",
+      "when": [
+        {
+          "type": "objective",
+          "id": "wichai-memory"
+        }
+      ]
+    },
+    {
+      "id": "missing-question",
+      "status": "unknown",
+      "text": "ผู้สูญหายอยู่ที่ใด และจะพาออกมาอย่างปลอดภัยได้อย่างไร",
+      "source": "คำถามจากภารกิจ",
+      "when": [],
+      "unless": [
+        {
+          "type": "objective",
+          "id": "captives-located"
+        },
+        {
+          "type": "objective",
+          "id": "rescued"
+        }
+      ]
+    },
+    {
+      "id": "cause-question",
+      "status": "unknown",
+      "text": "สาเหตุของเหตุผิดปกติคืออะไร และจะแก้ไขอย่างไร",
+      "source": "คำถามจากภารกิจ",
+      "when": [],
+      "unless": [
+        {
+          "type": "objective",
+          "id": "ritual-known"
+        },
+        {
+          "type": "objective",
+          "id": "case-closed"
+        }
+      ]
+    }
+  ],
+  "goals": [
+    {
+      "text": "อ่านรายงานและทบทวนผลการตัดสินใจของทีม",
+      "when": [
+        {
+          "type": "objective",
+          "id": "case-closed"
+        }
+      ]
+    },
+    {
+      "text": "หยุดพิธีและเลือกวิธีช่วยวิญญาณตามเบาะแสที่พบ",
+      "when": [
+        {
+          "type": "objective",
+          "id": "ritual-known"
+        }
+      ]
+    },
+    {
+      "text": "พาผู้สูญหายออกจากพื้นที่ไปยังจุดปลอดภัย",
+      "when": [
+        {
+          "type": "objective",
+          "id": "captives-located"
+        }
+      ]
+    },
+    {
+      "text": "สำรวจร่องรอยและเปรียบเทียบคำให้การเรื่องคนหาย",
+      "when": []
+    }
+  ]
+}

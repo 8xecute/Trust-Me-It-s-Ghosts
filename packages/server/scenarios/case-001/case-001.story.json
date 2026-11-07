@@ -1,0 +1,1385 @@
+{
+  "id": "BS-001",
+  "title": "เสียงร้องจากสวนกล้วย",
+  "scenes": [
+    {
+      "id": "A",
+      "name": "A"
+    },
+    {
+      "id": "B",
+      "name": "B"
+    },
+    {
+      "id": "C",
+      "name": "C"
+    },
+    {
+      "id": "D",
+      "name": "D"
+    },
+    {
+      "id": "E",
+      "name": "E"
+    }
+  ],
+  "locations": [
+    {
+      "id": "A",
+      "name": "A",
+      "sceneId": "A"
+    },
+    {
+      "id": "B",
+      "name": "B",
+      "sceneId": "B"
+    },
+    {
+      "id": "C",
+      "name": "C",
+      "sceneId": "C"
+    },
+    {
+      "id": "D",
+      "name": "D",
+      "sceneId": "D"
+    },
+    {
+      "id": "E",
+      "name": "E",
+      "sceneId": "E"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "prasert",
+      "name": "ประเสริฐ",
+      "sceneId": "A",
+      "sites": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "id": "wichai",
+      "name": "วิชัย",
+      "sceneId": "B",
+      "presence": "wichai"
+    },
+    {
+      "id": "boonmee",
+      "name": "ยายบุญมี",
+      "sceneId": "B"
+    },
+    {
+      "id": "ton",
+      "name": "ต้น",
+      "sceneId": "B"
+    },
+    {
+      "id": "kaew",
+      "name": "แม่แก้ว",
+      "sceneId": "D",
+      "presence": "spirit",
+      "sites": [
+        "D",
+        "E"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E01",
+      "name": "E01"
+    },
+    {
+      "id": "E02",
+      "name": "E02"
+    },
+    {
+      "id": "E03",
+      "name": "E03"
+    },
+    {
+      "id": "E04",
+      "name": "E04"
+    },
+    {
+      "id": "E05",
+      "name": "E05"
+    },
+    {
+      "id": "E06",
+      "name": "E06"
+    },
+    {
+      "id": "E07",
+      "name": "E07"
+    },
+    {
+      "id": "E08",
+      "name": "E08"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "guarded",
+      "description": "ความไว้ใจยังต่ำ"
+    },
+    {
+      "id": "arrived",
+      "description": "ทีมมาถึงพื้นที่"
+    },
+    {
+      "id": "visited-c",
+      "description": "เข้าบ้านดลแล้ว"
+    },
+    {
+      "id": "apparition",
+      "description": "พบการปรากฏตัวในสวน"
+    },
+    {
+      "id": "attacked-kaew",
+      "description": "มีการโจมตีแม่แก้ว"
+    },
+    {
+      "id": "trusted",
+      "description": "ความไว้ใจถึงระดับที่ยอมเล่ารายละเอียด"
+    },
+    {
+      "id": "cellar",
+      "description": "พบร่องรอยผู้สูญหายใต้เรือน"
+    },
+    {
+      "id": "confronted",
+      "description": "เผชิญหน้าด้วยหลักฐานอิสระ"
+    },
+    {
+      "id": "ritual-stopped",
+      "description": "คลายผนึกครบสามจุด"
+    },
+    {
+      "id": "freed",
+      "description": "วิญญาณได้รับการปลดปล่อย"
+    },
+    {
+      "id": "failed",
+      "description": "คดียุติด้วยความล้มเหลว"
+    },
+    {
+      "id": "detained",
+      "description": "วิชัยถูกควบคุมตัว"
+    },
+    {
+      "id": "rescued",
+      "description": "ผู้สูญหายทั้งสามถึงที่ปลอดภัย"
+    },
+    {
+      "id": "crisis",
+      "description": "ความหลอนถึงระดับวิกฤต"
+    },
+    {
+      "id": "withdrawn",
+      "description": "ทีมยืนยันถอนตัว"
+    },
+    {
+      "id": "gate-basis",
+      "description": "มีเอกสารหรือคำให้การเรื่องประตูน้ำ"
+    },
+    {
+      "id": "memory-basis",
+      "description": "มีคำให้การหรือความทรงจำเชื่อมถึงอดีต"
+    },
+    {
+      "id": "teaser",
+      "description": "มีข้อมูลสัญลักษณ์และคดีสิ้นสุดแล้ว"
+    },
+    {
+      "id": "warning",
+      "description": "ใกล้เส้นตายโดยพิธียังทำงาน"
+    },
+    {
+      "id": "gate-truth",
+      "description": "ค้นพบข้อมูลผู้ร่วมปิดประตูน้ำ"
+    },
+    {
+      "id": "wichai-memory",
+      "description": "ค้นพบความสัมพันธ์ในอดีตของวิชัยกับแม่แก้ว"
+    },
+    {
+      "id": "company-teaser",
+      "description": "เปิดเผยเบาะแสแฟ้มบริษัทหลังจบคดี"
+    },
+    {
+      "id": "confessed",
+      "description": "ประเสริฐยอมรับบทบาทในอดีต"
+    },
+    {
+      "id": "truth-recorded",
+      "description": "บันทึกคำรับสารภาพแล้ว"
+    },
+    {
+      "id": "bribe-accepted",
+      "description": "รับข้อเสนอปกปิดเรื่อง"
+    },
+    {
+      "id": "exposed",
+      "description": "เปิดโปงคำให้การที่ขัดแย้ง"
+    },
+    {
+      "id": "spirit-present",
+      "description": "วิญญาณอยู่ในสถานะที่สนทนาได้"
+    },
+    {
+      "id": "witchai-at-e",
+      "description": "วิชัยอยู่บ้านร้างและไม่ถูกควบคุมตัว"
+    },
+    {
+      "id": "past-flood",
+      "description": "ทราบเรื่องน้ำป่าและการช่วยเด็ก"
+    },
+    {
+      "id": "history-ready",
+      "description": "มีบริบทให้ถามถึงเด็กที่รอดชีวิต"
+    },
+    {
+      "id": "gate-topic-ready",
+      "description": "มีเบาะแสหรือคำให้การเรื่องน้ำป่า"
+    },
+    {
+      "id": "witness-ready",
+      "description": "เริ่มสอบถามพยานแล้ว"
+    },
+    {
+      "id": "wichai-free",
+      "description": "วิชัยยังไม่ถูกควบคุมตัว"
+    },
+    {
+      "id": "history-intro-needed",
+      "description": "ยังไม่ได้ฟังประวัติแม่แก้ว"
+    },
+    {
+      "id": "memory-fragment",
+      "description": "พบเศษความทรงจำเกี่ยวกับน้ำท่วม ยังไม่ยืนยันตัวบุคคล"
+    }
+  ],
+  "endings": [
+    {
+      "id": "A",
+      "description": "A"
+    },
+    {
+      "id": "B",
+      "description": "B"
+    },
+    {
+      "id": "C",
+      "description": "C"
+    },
+    {
+      "id": "D",
+      "description": "D"
+    }
+  ],
+  "dialogue": [
+    {
+      "id": "spirit-missing-guarded",
+      "npcId": "kaew",
+      "text": "ข้าได้ยินพวกเขา"
+    },
+    {
+      "id": "arrival",
+      "npcId": "prasert",
+      "text": "ทีมจากบริษัทใช่ไหมครับ? ผมประเสริฐ ผู้ใหญ่บ้าน... ช่วยคนของผมด้วยเถอะ ก่อนจะมีใครหายไปอีก"
+    },
+    {
+      "id": "missing",
+      "npcId": "prasert",
+      "text": "ดล นิด แล้วก็เพิ่มครับ หายไปสามคืนไล่ ๆ กัน"
+    },
+    {
+      "id": "evacuation",
+      "npcId": "prasert",
+      "text": "ผมช่วยอพยพอยู่แถวประตูน้ำ"
+    },
+    {
+      "id": "accuse-gate",
+      "npcId": "prasert",
+      "text": "ผมคิดว่าพวกเขาจะออกมาทัน"
+    },
+    {
+      "id": "grove-alibi",
+      "npcId": "wichai",
+      "text": "ผมไม่ได้เข้าไปนานแล้ว"
+    },
+    {
+      "id": "purchases",
+      "npcId": "wichai",
+      "text": "ผมซื้อเตรียมงานบุญหมู่บ้าน"
+    },
+    {
+      "id": "expose",
+      "npcId": "wichai",
+      "text": "มืดขนาดนั้น คนคงจำผิด"
+    },
+    {
+      "id": "confront-e",
+      "npcId": "wichai",
+      "text": "พวกคุณไม่ควรมาที่นี่... เอากำไลกลับไปวางเดี๋ยวนี้!"
+    },
+    {
+      "id": "rescued-child",
+      "npcId": "wichai",
+      "text": "ผมไม่ได้ขอให้เขาช่วยชีวิตผมสักหน่อย!"
+    },
+    {
+      "id": "history",
+      "npcId": "boonmee",
+      "text": "เด็กดีคนหนึ่งที่ตายทั้งที่ควรมีชีวิตต่อ เธอช่วยเด็กสามคน หนึ่งในนั้นชื่อวิชัย"
+    },
+    {
+      "id": "gate-history",
+      "npcId": "boonmee",
+      "text": "ผู้นำสมัยนั้นสั่ง ประเสริฐเป็นคนหนึ่งที่ช่วยทำ"
+    },
+    {
+      "id": "method",
+      "npcId": "boonmee",
+      "text": "ข้าบอกวิธีให้ได้ พวกเอ็งต้องเป็นคนเลือกเอง"
+    },
+    {
+      "id": "black-bundle",
+      "npcId": "ton",
+      "text": "มีคนถือห่อผ้าดำเข้าไปในสวน"
+    },
+    {
+      "id": "cart",
+      "npcId": "ton",
+      "text": "ผมเห็นรถเข็นไปทางบ้านร้าง"
+    },
+    {
+      "id": "protected",
+      "npcId": "ton",
+      "text": "วิชัยครับ ผมเห็นหน้าชัด"
+    },
+    {
+      "id": "spirit-name",
+      "npcId": "kaew",
+      "text": "ข้า... ชื่อแก้ว"
+    },
+    {
+      "id": "spirit-missing",
+      "npcId": "kaew",
+      "text": "ใต้เรือนไม้ท้ายสวน... ยังมีชีวิต"
+    },
+    {
+      "id": "spirit-bracelet",
+      "npcId": "kaew",
+      "text": "ข้ารู้สึกถึงมันในเรือนไม้"
+    },
+    {
+      "id": "spirit-memory",
+      "npcId": "kaew",
+      "text": "ข้าช่วยเด็กชายชื่อวิชัยจากน้ำ"
+    },
+    {
+      "id": "spirit-choice",
+      "npcId": "kaew",
+      "text": "พวกเอ็งจะทำเหมือนคนพวกนั้นหรือเปล่า... จะให้ข้าเจ็บเพื่อให้คนอื่นปลอดภัยอีกครั้งหรือ?"
+    },
+    {
+      "id": "history-intro",
+      "npcId": "boonmee",
+      "text": "แม่แก้วเป็นคนดี เธอช่วยเด็กสามคนจากน้ำป่าและเสียชีวิตในคืนนั้น"
+    },
+    {
+      "id": "custody",
+      "npcId": "wichai",
+      "text": "วิชัยอยู่ในการควบคุมตัว แต่พิธียังทำงานจนกว่าจะคลายผนึกครบ"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "dialogue-spirit-missing-guarded",
+      "event": "talk:spirit-missing",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "D"
+        },
+        {
+          "type": "objective",
+          "id": "spirit-present"
+        },
+        {
+          "type": "objective",
+          "id": "guarded"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "spirit-missing-guarded"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-arrival",
+      "event": "talk:arrival",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "A"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "arrival"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-missing",
+      "event": "talk:missing",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "missing"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-evacuation",
+      "event": "talk:evacuation",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "evacuation"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-accuse-gate",
+      "event": "talk:accuse-gate",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "gate-truth"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "accuse-gate"
+        },
+        {
+          "type": "completeObjective",
+          "id": "confessed"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-grove-alibi",
+      "event": "talk:grove-alibi",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "wichai-free"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "grove-alibi"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-purchases",
+      "event": "talk:purchases",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "evidence",
+          "id": "E07"
+        },
+        {
+          "type": "objective",
+          "id": "wichai-free"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "purchases"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-expose",
+      "event": "talk:expose",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "confronted"
+        },
+        {
+          "type": "objective",
+          "id": "wichai-free"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "expose"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-confront-e",
+      "event": "talk:confront-e",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "E"
+        },
+        {
+          "type": "objective",
+          "id": "witchai-at-e"
+        },
+        {
+          "type": "objective",
+          "id": "wichai-free"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "confront-e"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-rescued-child",
+      "event": "talk:rescued-child",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "E"
+        },
+        {
+          "type": "objective",
+          "id": "wichai-memory"
+        },
+        {
+          "type": "objective",
+          "id": "witchai-at-e"
+        },
+        {
+          "type": "objective",
+          "id": "wichai-free"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "rescued-child"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-history",
+      "event": "talk:history",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "history-ready"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "history"
+        },
+        {
+          "type": "completeObjective",
+          "id": "memory-basis"
+        }
+      ],
+      "priority": 10,
+      "exclusiveGroup": "history-response"
+    },
+    {
+      "id": "dialogue-gate-history",
+      "event": "talk:gate-history",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "gate-topic-ready"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "gate-history"
+        },
+        {
+          "type": "completeObjective",
+          "id": "gate-basis"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-method",
+      "event": "talk:method",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "method"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-black-bundle",
+      "event": "talk:black-bundle",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "black-bundle"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-cart",
+      "event": "talk:cart",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "cart"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-protected",
+      "event": "talk:protected",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "witness-ready"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "protected"
+        },
+        {
+          "type": "grantEvidence",
+          "id": "E08"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-spirit-name",
+      "event": "talk:spirit-name",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "D"
+        },
+        {
+          "type": "objective",
+          "id": "spirit-present"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "spirit-name"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-spirit-missing",
+      "event": "talk:spirit-missing",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "D"
+        },
+        {
+          "type": "objective",
+          "id": "spirit-present"
+        },
+        {
+          "type": "objective",
+          "id": "trusted"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "spirit-missing"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-spirit-bracelet",
+      "event": "talk:spirit-bracelet",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "D"
+        },
+        {
+          "type": "objective",
+          "id": "spirit-present"
+        },
+        {
+          "type": "objective",
+          "id": "trusted"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "spirit-bracelet"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-spirit-memory",
+      "event": "talk:spirit-memory",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "D"
+        },
+        {
+          "type": "objective",
+          "id": "spirit-present"
+        },
+        {
+          "type": "objective",
+          "id": "trusted"
+        },
+        {
+          "type": "objective",
+          "id": "gate-truth"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "spirit-memory"
+        },
+        {
+          "type": "completeObjective",
+          "id": "memory-basis"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-spirit-choice",
+      "event": "talk:spirit-choice",
+      "once": true,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "E"
+        },
+        {
+          "type": "objective",
+          "id": "ritual-stopped"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "spirit-choice"
+        }
+      ]
+    },
+    {
+      "id": "EV01",
+      "event": "EV01",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "arrived"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "arrived"
+        }
+      ]
+    },
+    {
+      "id": "EV02",
+      "event": "EV02",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "visited-c"
+        }
+      ],
+      "narration": "มีเสียงเคาะแผ่ว ๆ ใต้พื้นบ้านดล",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "visited-c"
+        }
+      ]
+    },
+    {
+      "id": "EV03",
+      "event": "EV03",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "apparition"
+        }
+      ],
+      "narration": "อย่าเอามาใกล้ข้า... ข้าเจ็บ...",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "apparition"
+        }
+      ]
+    },
+    {
+      "id": "EV04",
+      "event": "EV04",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "attacked-kaew"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "attacked-kaew"
+        }
+      ]
+    },
+    {
+      "id": "EV05",
+      "event": "EV05",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "trusted"
+        }
+      ],
+      "narration": "แม่แก้วยอมพูดถึงกำไลและพิธี",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "trusted"
+        }
+      ]
+    },
+    {
+      "id": "EV06",
+      "event": "EV06",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "cellar"
+        }
+      ],
+      "narration": "มีเสียงคนขอความช่วยเหลือจากใต้เรือน",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "cellar"
+        }
+      ]
+    },
+    {
+      "id": "EV07",
+      "event": "EV07",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "confronted"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "confronted"
+        }
+      ]
+    },
+    {
+      "id": "EV08",
+      "event": "EV08",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "ritual-stopped"
+        }
+      ],
+      "narration": "วงพิธีหลักหยุดทำงาน",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "ritual-stopped"
+        }
+      ]
+    },
+    {
+      "id": "EV09",
+      "event": "EV09",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "freed"
+        }
+      ],
+      "narration": "แม่แก้วได้รับการปลดปล่อย",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "freed"
+        }
+      ]
+    },
+    {
+      "id": "EV10",
+      "event": "EV10",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "failed"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "failed"
+        }
+      ]
+    },
+    {
+      "id": "EV11",
+      "event": "EV11",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "detained"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "detained"
+        }
+      ]
+    },
+    {
+      "id": "EV12",
+      "event": "EV12",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "rescued"
+        }
+      ],
+      "narration": "ผู้สูญหายทั้งสามถึงที่ปลอดภัย",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "rescued"
+        }
+      ]
+    },
+    {
+      "id": "EV13",
+      "event": "EV13",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "crisis"
+        }
+      ],
+      "narration": "ความหลอนพุ่งขึ้นจนพิธีและการเจรจายากขึ้น",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "crisis"
+        }
+      ]
+    },
+    {
+      "id": "EV14",
+      "event": "EV14",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "withdrawn"
+        }
+      ],
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "withdrawn"
+        }
+      ]
+    },
+    {
+      "id": "EV15",
+      "event": "EV15",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "gate-basis"
+        }
+      ],
+      "narration": "บันทึกและคำให้การชี้ว่ามีคนช่วยปิดประตูน้ำ",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "gate-truth"
+        }
+      ]
+    },
+    {
+      "id": "EV16",
+      "event": "EV16",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "memory-basis"
+        }
+      ],
+      "narration": "แม่แก้วเคยช่วยวิชัยออกจากน้ำ",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "wichai-memory"
+        }
+      ]
+    },
+    {
+      "id": "EV17",
+      "event": "EV17",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "teaser"
+        }
+      ],
+      "narration": "ฝ่ายตรวจสอบภายในพบสัญลักษณ์ตรงกับแฟ้มปิดผนึก CASE 017",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "company-teaser"
+        }
+      ]
+    },
+    {
+      "id": "EV18",
+      "event": "EV18",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "warning"
+        }
+      ],
+      "narration": "พิธีใกล้ถึงเส้นตาย 03:00",
+      "actions": [
+        {
+          "type": "completeObjective",
+          "id": "warning"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-history-intro",
+      "event": "talk:history",
+      "once": true,
+      "exclusiveGroup": "history-response",
+      "priority": 0,
+      "conditions": [
+        {
+          "type": "scene",
+          "id": "B"
+        },
+        {
+          "type": "objective",
+          "id": "history-intro-needed"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "history-intro"
+        },
+        {
+          "type": "completeObjective",
+          "id": "past-flood"
+        }
+      ]
+    },
+    {
+      "id": "dialogue-custody",
+      "event": "talk:custody",
+      "once": true,
+      "conditions": [
+        {
+          "type": "objective",
+          "id": "detained"
+        }
+      ],
+      "actions": [
+        {
+          "type": "showDialogue",
+          "id": "custody"
+        }
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "arrival",
+      "label": "ขอรายละเอียดภารกิจ",
+      "minutes": 0
+    },
+    {
+      "id": "missing",
+      "label": "ถามว่าใครหาย",
+      "minutes": 0
+    },
+    {
+      "id": "evacuation",
+      "label": "ถามเรื่องการอพยพ",
+      "minutes": 0
+    },
+    {
+      "id": "accuse-gate",
+      "label": "ถามเรื่องการปิดประตูน้ำโดยอ้างหลักฐาน",
+      "minutes": 0
+    },
+    {
+      "id": "grove-alibi",
+      "label": "ถามว่าเข้าสวนเมื่อไร",
+      "minutes": 0
+    },
+    {
+      "id": "purchases",
+      "label": "ถามถึงวัสดุพิธีในบัญชี",
+      "minutes": 0
+    },
+    {
+      "id": "expose",
+      "label": "ชี้หลักฐานที่ขัดกับคำให้การ",
+      "minutes": 0
+    },
+    {
+      "id": "confront-e",
+      "label": "เผชิญหน้ากับวิชัย",
+      "minutes": 0
+    },
+    {
+      "id": "rescued-child",
+      "label": "ถามถึงการช่วยชีวิตในอดีต",
+      "minutes": 0
+    },
+    {
+      "id": "history",
+      "label": "ขอให้ยายเล่าเรื่องแม่แก้วในอดีต",
+      "minutes": 10
+    },
+    {
+      "id": "gate-history",
+      "label": "ถามตรง ๆ ว่าใครปิดประตูน้ำ",
+      "minutes": 10
+    },
+    {
+      "id": "method",
+      "label": "ถามว่ายายช่วยอะไรได้บ้าง",
+      "minutes": 0
+    },
+    {
+      "id": "black-bundle",
+      "label": "ถามต้นว่าเห็นอะไร",
+      "minutes": 0
+    },
+    {
+      "id": "cart",
+      "label": "ถามว่าเห็นคนหายหรือไม่",
+      "minutes": 0
+    },
+    {
+      "id": "protected",
+      "label": "ยืนยันแผนคุ้มครองพยาน",
+      "minutes": 10
+    },
+    {
+      "id": "spirit-name",
+      "label": "ถามชื่อวิญญาณ",
+      "minutes": 0
+    },
+    {
+      "id": "spirit-missing",
+      "label": "ถามตำแหน่งคนหาย",
+      "minutes": 0
+    },
+    {
+      "id": "spirit-bracelet",
+      "label": "ถามตำแหน่งกำไล",
+      "minutes": 0
+    },
+    {
+      "id": "spirit-memory",
+      "label": "ช่วยแม่แก้วทบทวนความทรงจำ",
+      "minutes": 10
+    },
+    {
+      "id": "spirit-choice",
+      "label": "ถามแม่แก้วว่าต้องการอะไร",
+      "minutes": 0
+    },
+    {
+      "id": "custody",
+      "label": "ตรวจสถานะผู้ถูกควบคุมตัวและพิธี",
+      "minutes": 0
+    }
+  ],
+  "dm": {
+    "A": {
+      "script": "เริ่มด้วยคำว่าจ้างและแจ้งผู้สูญหายสามคน",
+      "secret": "ประเสริฐปิดบังบทบาทของตนในการปิดประตูน้ำ แต่ไม่ได้ลักพาตัวชาวบ้าน"
+    },
+    "B": {
+      "script": "เปิดให้ทีมซักถามและเปรียบเทียบคำให้การ",
+      "secret": "วิชัยเป็นเด็กที่แม่แก้วเคยช่วย และเป็นผู้ทำพิธีในปัจจุบัน"
+    },
+    "C": {
+      "script": "ให้สำรวจร่องรอยบ้านดลและเสียงใต้พื้น",
+      "secret": "เงาจมน้ำเป็นความทรงจำจากพิธี"
+    },
+    "D": {
+      "script": "เปิดทางให้สืบเรื่องผนึกและเจรจากับแม่แก้ว",
+      "secret": "คำตอบของแม่แก้วขึ้นกับความไว้ใจและความทรงจำ"
+    },
+    "E": {
+      "script": "ให้ทีมตัดสินใจระหว่างช่วยผู้สูญหาย หยุดพิธี และจัดการวิญญาณ",
+      "secret": "การจับวิชัยหรือทำให้แม่แก้วสลายยังไม่หยุดวงพิธี"
+    }
+  },
+  "epilogues": {
+    "confession": "ประเสริฐยอมรับต่อหน้าแม่แก้วว่าเขาช่วยปิดประตูน้ำในคืนนั้น",
+    "bribe": "มีการรับข้อเสนอปกปิดเรื่องจากวิชัย เงินดังกล่าวไม่รวมในค่าจ้างบริษัท",
+    "incomplete": "พิธีเดิมหยุดแล้ว แต่ทีมยังคลี่คลายคดีไม่ครบ",
+    "teaser": "ฝ่ายตรวจสอบภายใน: พบสัญลักษณ์ตรงกับแฟ้มปิดผนึก CASE 017 (พ.ศ. 2552) กรุณาอย่าแนบภาพกำไลลงรายงานสาธารณะ"
+  },
+  "endingNarration": {
+    "A": "แสงแรกส่องผ่านใบกล้วย แม่แก้วกล่าวขอบใจที่ฟัง ก่อนร่างค่อย ๆ จางหาย",
+    "B": "ด้ายดำเส้นสุดท้ายถูกทำลาย ยายบุญมีวางดอกไม้ที่ศาล พลางบอกว่าสงบกับเป็นอิสระนั้นต่างกัน",
+    "C": "รถตู้แล่นออกจากหนองตาลพร้อมผู้รอดชีวิต เสียงวิทยุถามว่าพื้นที่ปลอดภัยแล้วหรือยัง",
+    "D": "ระฆังดังสามครั้ง เทียนในบ้านร้างดับพร้อมกัน เสียงร้องลอยออกไปถึงทุกบ้าน"
+  }
+}
