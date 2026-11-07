@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import { BASIC_RULES_MODE } from '@baan/shared';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
@@ -29,7 +30,7 @@ const io = new Server(httpServer, {
 
 const rooms = new Rooms();
 const worlds = new WorldStore(undefined,true,true,process.env.CASE_STORY_VERSION!=='4.1',BASIC_RULES_MODE);
-const saveDirectory=process.env.CASE_SAVE_DIR?.trim();
+const saveDirectory=process.env.CASE_SAVE_DIR===undefined ? fileURLToPath(new URL('../saves/',import.meta.url)) : process.env.CASE_SAVE_DIR.trim();
 const saveRoom=saveDirectory ? openRoomSaves(saveDirectory,rooms,worlds) : undefined;
 function saveStartedRoom(code:string) {
  if(!saveRoom || !worlds.hasStarted(code)) return;

@@ -1,8 +1,8 @@
-import type { GuidedView, GuidedScene } from '../../network/onlineTypes';
+import type { GuidedView, GuidedScene, CaseDmPanel } from '../../network/onlineTypes';
 import { DmScript } from '../gm/DmScript';
 
-export function GuidedPanel({view,scenes,connected,action,isDm=false}:{
- view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;site?:string;
+export function GuidedPanel({view,scenes,npcDossiers,connected,action,isDm=false}:{
+ view:GuidedView;scenes?:GuidedScene[];npcDossiers?:CaseDmPanel['npcDossiers'];connected:boolean;isDm?:boolean;site?:string;
  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
 }) {
  const send=(command:string,target?:string)=>action('guided',{command,target});
@@ -17,8 +17,17 @@ export function GuidedPanel({view,scenes,connected,action,isDm=false}:{
    {!isDm && view.escorting>0 && <button disabled={!connected} onClick={()=>send('evacuate')}>พาผู้ที่กำลังช่วยไปจุดปลอดภัย · {view.escorting} คน</button>}
    {isDm && <>
      {view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
-     <details><summary>ฉากย่อยในบทปัจจุบัน</summary>
-       {scenes?.map(scene=><details key={scene.id}><summary>{scene.id} · {scene.cue} {scene.sent && <span className="dm-sent-mark">✓ ส่งเปิดฉากแล้ว</span>}</summary>
+     {scenes?.filter(scene=>scene.id===view.scene).map(scene=><section className="gm-current-scene" key={scene.id}>
+       <h4>บทฉากปัจจุบัน · {scene.id}</h4>
+       <p className="note">{scene.sent ? 'ส่งเปิดฉากแล้ว' : 'บทนี้ยังรอส่งให้ผู้เล่น'} · อ่านตามสถานการณ์และเลือกส่งจากแท็บอ่าน / จ่ายบท</p>
+       {!!npcDossiers?.filter(npc=>scene.script.includes(npc.name.replace(/^นาย/,''))).length && <aside className="gm-acting" aria-label="แนวทางสวมบท NPC">
+         <h5>ตัวละครที่กล่าวถึง · อารมณ์และวิธีสวมบท</h5><p className="note">แนวทางเริ่มต้น ปรับตามสิ่งที่เกิดขึ้นในเกม</p>
+         {npcDossiers.filter(npc=>scene.script.includes(npc.name.replace(/^นาย/,''))).map(npc=><p key={npc.id}><strong>{npc.name}</strong> · {npc.roleplay}</p>)}
+       </aside>}
+       <DmScript text={scene.script}/>
+     </section>)}
+     <details><summary>ฉากย่อยอื่นในบทปัจจุบัน</summary>
+       {scenes?.filter(scene=>scene.id!==view.scene).map(scene=><details key={scene.id}><summary>{scene.id} · {scene.cue} {scene.sent && <span className="dm-sent-mark">✓ ส่งเปิดฉากแล้ว</span>}</summary>
          {view.phase!=='ENDING' && <button disabled={!connected} onClick={()=>send('scene',scene.id)}>เปิดฉากนี้ให้ DM เตรียมส่ง</button>}
          <DmScript text={scene.script}/>
        </details>)}

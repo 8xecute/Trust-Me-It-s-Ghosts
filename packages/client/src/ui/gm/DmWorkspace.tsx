@@ -57,13 +57,13 @@ export function DmWorkspace({
   leaveRoom:()=>void;
   leaving:boolean;
 }) {
-  const [dmTab,setDmTab]=useState<'guide'|'queue'|'questions'|'dice'|'team'|'history'>('queue');
+  const [dmTab,setDmTab]=useState<'guide'|'queue'|'questions'|'dice'|'team'|'npcs'|'backup'|'history'>('queue');
   const [selectedRole,setSelectedRole]=useState('');
   const dicePlayers=dmPanel?.investigators ?? [];
   const pendingDice=dicePlayers.filter(entry=>entry.check && entry.diceRequest?.die!==null);
   const battle=world?.caseMap?.battle;
   const currentScene=world?.caseMap?.site;
-  const queue=(dmPanel?.narration ?? []).filter(card=>card.current ?? card.site===currentScene).sort((a,b)=>Number(!!b.answer)-Number(!!a.answer));
+  const queue=(dmPanel?.narration ?? []).filter(card=>card.current ?? card.site===currentScene).sort((a,b)=>Number(b.eventId.startsWith('guided-cue:'))-Number(a.eventId.startsWith('guided-cue:')) || Number(!!b.answer)-Number(!!a.answer));
   const otherScenes=(dmPanel?.narration ?? []).filter(card=>!(card.current ?? card.site===currentScene));
   const speakerNames=dmPanel?.speakers ?? [];
   const lead=dmPanel?.investigators.find(entry=>entry.id===previewPlayer && entry.site===currentScene)
@@ -84,9 +84,15 @@ export function DmWorkspace({
       <option value="">เลือกผู้สืบสวน</option>
       {investigators.map(player=><option key={player.id} value={player.id}>{playerName(player.id)}</option>)}
     </select></label>
-    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
+    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview} action={action} connected={connected}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
     </div><div className="dm-controls-pane">
     <h2 className="pane-heading">เครื่องมือดำเนินเรื่อง</h2>
+    {world?.case001 && !world.case001.report && <section className="session-tools" aria-label="จัดการคดี">
+     <p role="status">{world.paused?'พักคดีอยู่ · ทุกคนรอ DM เปิดเล่นต่อ':'คดีกำลังดำเนินอยู่'}</p>
+     <button disabled={!connected} onClick={()=>action('dmSessionControl',{command:world.paused?'resume':'pause'})}>{world.paused?'เปิดเล่นต่อ':'พักคดี'}</button>
+     <button disabled={!connected} onClick={()=>{if(window.confirm('ย้อนกลับจุดเริ่มบทปัจจุบันสำหรับทุกคน? การกระทำหลังจุดนั้นจะถูกยกเลิก และคดีจะพักให้ตรวจสถานะก่อนเล่นต่อ'))action('dmSessionControl',{command:'rewind'});}}>ย้อนต้นบท</button>
+     <button disabled={!connected} className="danger" onClick={()=>{if(window.confirm('ถอนทีมและปิดคดีสำหรับทุกคน? ระบบจะสรุปตามผลที่เกิดขึ้นจริง และกลับมาสืบต่อในห้องนี้ไม่ได้'))action('dmSessionControl',{command:'withdraw'});}}>ถอนทีมและปิดคดี</button>
+    </section>}
     {world?.case001 ? <section className="game-panel">
       <h2>{world.case001.title}</h2>
       <p>{world.case001.location} · {world.case001.time} · ช่วยแล้ว {world.case001.rescued}/3</p>
@@ -98,6 +104,7 @@ export function DmWorkspace({
         <div className="gm-focus-actions">
           <button type="button" className="primary" onClick={()=>setDmTab('queue')}>อ่านและจ่ายบท{queue.length>0?' · '+queue.length:''}</button>
           <button type="button" onClick={()=>setDmTab('guide')}>ดูฉาก / เปลี่ยนบท</button>
+          {dmPanel?.backup && <button type="button" onClick={()=>setDmTab('backup')}>ทีมติดขัด</button>}
           {!!pendingDice.length && <button type="button" onClick={()=>setDmTab('dice')}>จัดการ D20 · {pendingDice.length}</button>}
         </div>
       </section>
@@ -105,7 +112,7 @@ export function DmWorkspace({
       <nav className="workspace-tabs gm-tabs" aria-label="เครื่องมือผู้ดำเนินเรื่อง">
         {([
           ['guide','ฉาก / คู่มือ'],['queue','อ่าน / จ่ายบท '+queue.length],
-          ['questions','คำถาม '+(dmPanel?.questions?.length ?? 0)],['dice','D20'+(pendingDice.length ? ' · '+pendingDice.length : '')],['team','ทีม / NPC'],['history','บันทึก'],
+          ['questions','คำถาม '+(dmPanel?.questions?.length ?? 0)],['dice','D20'+(pendingDice.length ? ' · '+pendingDice.length : '')],['team','ทีม'],['npcs','แฟ้ม NPC'],['backup','ทีมติดขัด'],['history','บันทึก'],
         ] as const).map(([id,label])=><button key={id} type="button" aria-pressed={dmTab===id} onClick={()=>setDmTab(id)}>{label}</button>)}
       </nav>
       {!!pendingDice.length && dmTab!=='dice' && <button className="gm-alert" type="button" onClick={()=>setDmTab('dice')}>คำขอทอย D20 รอส่งการ์ด · {pendingDice.length}</button>}
@@ -113,12 +120,26 @@ export function DmWorkspace({
       <section hidden={dmTab!=='guide'} className="gm-pane">
         <p className="note">คู่มือนี้มีไว้ให้ DM อ่านและสวมบทบาท ข้อความในคู่มือจะไม่ส่งไปถึงผู้เล่น</p>
         {!!queue.length && <button type="button" onClick={()=>setDmTab('queue')}>เปิดคิวพร้อมส่ง · {queue.length}</button>}
-        {world.guided && <GuidedPanel view={world.guided} scenes={dmPanel.guidedScenes} connected={connected} action={action} isDm/>}
+        {world.guided?.scene==='H1' && <button disabled={!connected || world.paused} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐหลังวิเคราะห์หลักฐานครบ</button>}
+        {world.guided && <GuidedPanel view={world.guided} scenes={dmPanel.guidedScenes} npcDossiers={dmPanel.npcDossiers} connected={connected} action={action} isDm/>}
         {!world.guided && dmPanel.guide && <GmGuide chapters={dmPanel.guide}
           current={world.case001.report ? 'ENDINGS' : (battle?.phase || currentScene==='E' && world.case001.seals===3) ? 'FINAL' : world.caseMap?.site ?? 'A'}/>}
         {dmPanel.investigators[0]?.secret && <details className="dm-private">
           <summary>ข้อมูลลับของฉากปัจจุบัน</summary><p>{dmPanel.investigators[0].secret}</p>
         </details>}
+      </section>
+      <section hidden={dmTab!=='backup'} className="gm-pane gm-backup" aria-label="แผนสำรองสำหรับ DM">
+       {dmPanel.backup ? <>
+        <h3>ทีมติดขัด · บท {dmPanel.backup.phase} / ฉาก {dmPanel.backup.scene}</h3>
+        <p className="note">เฉพาะ DM · ใช้ตามสิ่งที่เกิดขึ้นจริง ตรวจเงื่อนไขและผู้ที่อยู่ในฉากก่อนเล่า คำแนะนำไม่ส่งให้ผู้เล่นอัตโนมัติ</p>
+        {!dmPanel.backup.opened && <p className="gm-alert">บทเปิดฉากยังไม่ได้ส่ง ให้เปิดคิวและส่งก่อนใช้คำใบ้</p>}
+        {dmPanel.backup.battle && <section><h4>ระหว่างเผชิญหน้า</h4><p>ให้ทีมตรวจพื้นที่อันตราย จุดอาคม และตัวเลือกเจรจาหรือถอยตามสถานการณ์ การถอยใช้คำสั่งในเทิร์นของผู้เล่น</p><p>การเปลี่ยนบทยังทำไม่ได้จนกว่าการเผชิญหน้าจะจบ</p></section>}
+        <section><h4>สิ่งที่ส่งให้ทั้งทีมล่าสุด</h4>{dmPanel.backup.delivered.length ? <ol>{dmPanel.backup.delivered.map(item=><li key={item.sequence}>{item.text}</li>)}</ol> : <p>ยังไม่มีบทที่ส่งให้ทั้งทีม</p>}<p className="note">เป็นประวัติล่าสุด ไม่ใช่รายการความรู้ทั้งหมดของทีม</p></section>
+        <section><h4>คำใบ้แบบค่อยเป็นค่อยไป</h4><p className="note">เลือกให้เหมาะกับฉากและสิ่งที่ทีมพบแล้ว อย่าเล่าข้อมูลที่ยังไม่ควรรู้</p><ol>{dmPanel.backup.hints.map((hint,i)=><li key={i}>{hint}</li>)}</ol></section>
+        <details><summary>พลาดเบาะแสหรือทอยไม่ผ่าน</summary><p className="note">ข้อมูลเตรียมบทเฉพาะ DM: ใช้แหล่งสำรองเมื่อทีมไปถึงและเข้าเงื่อนไขจริง</p><ul>{dmPanel.backup.alternatives.map((item,i)=><li key={i}>{item}</li>)}</ul></details>
+        <section><h4>ทางไปต่อ</h4><p>{dmPanel.backup.exit}</p>{dmPanel.backup.blockers.length ? <ul>{dmPanel.backup.blockers.map(item=><li key={item}>{item}</li>)}</ul> : <p>เตรียมสมุดคดีในแท็บฉาก / คู่มือ แล้วให้ผู้สืบสวนยืนยัน</p>}<button type="button" onClick={()=>setDmTab('guide')}>ไปฉาก / คู่มือ</button>{!dmPanel.backup.opened && <button type="button" onClick={()=>setDmTab('queue')}>ไปคิวบท</button>}</section>
+        <details><summary>เมื่อทีมอยากพักหรือปิดคดี</summary><p>ใช้ปุ่มพักคดีหรือถอนทีมด้านบน ปุ่มพักจะหยุดการกระทำของทุกคนและเปิดเล่นต่อได้ ตกลงพักกับทีมได้ และให้สมาชิกกลับเข้าห้องเดิมเมื่อพร้อมตามการตั้งค่าบันทึกของเซิร์ฟเวอร์ อย่ากดออกจากห้องหากต้องการกลับด้วยตัวละครเดิม</p><p>DM ถอนทีมได้ทุกบท และระบบใช้ผลที่เกิดขึ้นจริง การปิดคดีแล้วกลับมาสืบต่อไม่ได้</p></details>
+       </> : <p>แผนสำรองนี้ใช้กับคดีแบบนำทางที่กำลังเล่น</p>}
       </section>
       <section hidden={dmTab!=='queue'} className="gm-pane">
         <h3>บทเล่าที่รอส่ง</h3>
@@ -140,7 +161,7 @@ export function DmWorkspace({
           <label className="gm-role-picker">กำลังสวมบท <select value={activeRole ?? ''} onChange={event=>setSelectedRole(event.target.value)}>{roles.map(role=><option key={role}>{role}</option>)}</select></label>
           {roles.filter(role=>role===activeRole).map(role=><section key={role} className="gm-publish gm-dialogue">
             <h4 className="gm-role-badge">{role}</h4>
-            {answers.filter(choice=>(choice.speaker ?? 'ผู้บรรยาย')===role).map(choice=><details key={choice.id}>
+            {answers.filter(choice=>(choice.speaker ?? 'ผู้บรรยาย')===role).sort((a,b)=>Number(b.label.includes('พูดหลัก'))-Number(a.label.includes('พูดหลัก'))).map(choice=><details key={choice.id}>
               <summary>{choice.label} {sent[choice.id] && <span className="dm-sent-mark">✓ ส่งแล้ว</span>}</summary>
               <p className="story-text">{choice.answer}</p>
               <button disabled={!connected} onClick={()=>action('caseDm',{targetId:lead?.id,actionId:choice.id})}>{sent[choice.id]?'ส่งบทนี้อีกครั้ง':'ส่งบทนี้ให้ทีม'}</button>
@@ -212,7 +233,7 @@ export function DmWorkspace({
                 action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
               }}>
                 {entry.check.dice ? <p className="note">ใช้ {entry.check.dice.stat} ตามจุดทอยในบท · DC แนะนำ {entry.check.dice.dc}</p> :
-                  <label>ค่าสถานะ <select name="stat" defaultValue="PER"><option value="BODY">ร่างกาย BODY</option><option value="PER">การสังเกต PER</option><option value="INT">เชาวน์ปัญญา INT</option><option value="SOC">การเข้าสังคม SOC</option><option value="SPI">จิตวิญญาณ SPI</option><option value="RES">ความต้านทาน RES</option></select></label>}
+                  <label>ค่าสถานะ <select name="stat" defaultValue={entry.check.stat ?? 'PER'}><option value="BODY">ร่างกาย BODY</option><option value="PER">การสังเกต PER</option><option value="INT">เชาวน์ปัญญา INT</option><option value="SOC">การเข้าสังคม SOC</option><option value="SPI">จิตวิญญาณ SPI</option><option value="RES">ความต้านทาน RES</option></select></label>}
                 <label>ความยากก่อนส่งการ์ด <select name="difficulty" defaultValue={entry.check.dice?.dc ?? 14}>
                   <option value="11">ง่าย · DC 11</option><option value="14">ปกติ · DC 14</option><option value="17">ยาก · DC 17</option><option value="20">ยากมาก · DC 20</option><option value="22">พิเศษ · DC 22</option>
                 </select></label>
@@ -246,6 +267,13 @@ export function DmWorkspace({
       <details><summary>บันทึกสถานการณ์</summary><p>{world.case001.notice}</p></details>
       {world.case001.report && <pre className="story-text">{world.case001.report.text}</pre>}
       </div>
+      <section hidden={dmTab!=='npcs'} className="gm-pane" aria-label="แฟ้ม NPC เฉพาะ DM">
+        <h3>แฟ้ม NPC · เฉพาะ DM</h3><p className="note">ใช้เตรียมสวมบท ข้อมูลในแฟ้มไม่ได้ส่งให้ผู้เล่น</p>
+        {dmPanel?.npcDossiers?.map(npc=><details className="dm-private npc-dossier" key={npc.id}>
+          <summary>{npc.name}</summary>
+          <dl><dt>อารมณ์และวิธีสวมบท</dt><dd>{npc.roleplay}</dd><dt>ประวัติ</dt><dd>{npc.background}</dd><dt>แรงจูงใจ</dt><dd>{npc.motivation}</dd><dt>สิ่งที่รู้</dt><dd>{npc.knowledge}</dd><dt>ข้อมูลลับ / เงื่อนไข</dt><dd>{npc.secret}</dd></dl>
+        </details>)}
+      </section>
       <section hidden={dmTab!=='team'} className="gm-pane">
       {dmPanel && <section className="gm-travel">        {dmPanel.wichai && <details><summary>สเตตัสวิชัย</summary>
           <p>HP {dmPanel.wichai.baseHPFor2} · PDEF {dmPanel.wichai.PDEF} · MDEF {dmPanel.wichai.MDEF} · ATK {dmPanel.wichai.ATK} · INIT {dmPanel.wichai.INIT} · MOVE {dmPanel.wichai.MOVE}</p>

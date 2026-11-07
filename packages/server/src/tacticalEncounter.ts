@@ -361,7 +361,7 @@ export function strikeV2(w: World, actor: string, roll: () => number) {
   const combat=t.profile?.combat;
   if(combat) {
     const die=roll(), bonus=characterAttribute(character,'body')+(exposed?2:0);
-    const result=liteAttack({roll:die,bonus,defense:combat.PDEF,damage:1,physical:true,manifestation:combat.manifestation});
+    const result=liteAttack({roll:die,bonus,defense:combat.PDEF,damage:w.basicMode?2:1,physical:true,manifestation:combat.manifestation});
     if(exposed) delete t.exposed;
     w.lastCheck={playerId:actor,die,total:die+bonus,outcome:result.hit?'success':'failure'};
     e.turn=paid.turn;

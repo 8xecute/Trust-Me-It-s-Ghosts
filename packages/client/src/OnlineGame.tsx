@@ -92,6 +92,7 @@ export function OnlineGame() {
     });
   }
   function action(type:string, payload:object={},onSuccess?:()=>void,onSettled?:(error?:string)=>void) {
+    if(world?.paused && type!=='dmSessionControl') {setStatus('DM พักคดีอยู่ รอเปิดเล่นต่อ');onSettled?.('paused');return;}
     request('game:action',[{id:crypto.randomUUID(),type,...payload}],onSuccess,onSettled);
   }
   function caseRequest(payload:{actionId:string;boost?:string}) {
@@ -205,6 +206,7 @@ export function OnlineGame() {
         taken={cast} disabled={!connected}
         onCreate={(profession,talent,playerName)=>action('createCharacter',{profession,talent,playerName})}/>}
       {world?.case001 ? <section className="case-screen" aria-label="คดี 001">
+        {world.paused && <p className="narration-card" role="status">พักคดีอยู่ · รอ DM เปิดเล่นต่อ สถานะและผลทอยเดิมยังอยู่</p>}
 
         <header className="case-heading">
           <div><p className="eyebrow">แฟ้มภารกิจ · คดี 001</p><h2>{world.case001.title}</h2>
@@ -248,7 +250,7 @@ export function OnlineGame() {
         {world.caseMap && <>
           {battle ? <EncounterBoard site={world.caseMap.site} battle={battle} players={world.players}
             characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} turns={world.turns} action={connected ? action : undefined}/> :
-            <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro}/>}
+            <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro} npcs={world.caseMap.npcs}/>}
           {!battle && <CastPortraits roles={cast} speakers={[...(world.case001.speakers ?? []),...visibleCast(caseActions)]}/>}
           <section className="narration-card case-response" aria-label="เหตุการณ์ล่าสุด" aria-live="polite">
             <h3>เหตุการณ์ล่าสุด <button type="button" onClick={()=>setCaseTab('story')}>อ่านบทเต็ม</button></h3>
@@ -276,6 +278,7 @@ export function OnlineGame() {
 </div>
         <div hidden={caseTab!=='journal'}>
           <CaseNotebook view={world.case001.notebook}/>
+          {world.guided && <GuidedPanel view={world.guided} connected={connected} action={action} site={world.caseMap?.site}/>}
           {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName}/>}
         </div>
         <div hidden={caseTab!=='actions'}>

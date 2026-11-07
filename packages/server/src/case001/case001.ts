@@ -1,5 +1,5 @@
 import { caseCombatStats } from './caseCombatStats.js';
-import { guidedEndingText } from './guidedCase.js';
+import { guidedCellarRead, guidedEndingText } from './guidedCase.js';
 import { characterAttribute } from '@baan/shared';
 import { caseNotebook } from './caseNotebook.js';
 import {readFileSync} from 'node:fs';
@@ -121,6 +121,7 @@ function finish(s:CaseState, ending:Ending,cause:'withdrawal'|'deadline'|'incapa
  }
 }
 function haunt(s:CaseState, gain:number) {s.haunt=Math.min(10,s.haunt+gain);}
+export function withdrawCase(s:CaseState) {finish(s,s.storyVersion===4 ? endingV4(s) : 'D');}
 export function failCase(s:CaseState) { finish(s,s.storyVersion===4 ? endingV4(s) : 'D','incapacitated'); }
 export function tick(s:CaseState, cost:number) {
  if(s.report) return;
@@ -187,7 +188,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
  }
  if(s.site==='E') {
   if(!s.key) add('key',isV4 ? 'ตรวจห้องพิธีและค้นกุญแจห้องขัง' : 'ค้นหากุญแจห้องเก็บผลผลิตในห้องพิธี');
-  if(!s.opened && s.key) add('open','ใช้กุญแจเปิดห้องเก็บผลผลิต');
+  if(!s.opened && (s.key || s.guided?.scene==='E2' && s.guided.presented.includes('E2')) && !s.guided?.cellarPending) add('open',s.guided ? 'เปิดกลอนห้องเก็บผลผลิต' : 'ใช้กุญแจเปิดห้องเก็บผลผลิต');
   if(s.opened) for(const name of names) {
    if(!s.escorts.includes(name)&&!s.evacuated.includes(name)) add('escort:'+name,'พา '+name+' ออกจากห้องเก็บผลผลิต');
   }
@@ -345,14 +346,14 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
   if(ritualChecks.includes(option.id) && !(option.id==='seal1' && s.lore)) return {...option,check:'ritual'};
   if(spiritChecks.includes(option.id)) return {...option,check:'spirit'};
   if(s.diceVersion==='4.1' && ['clue:E02','clue:E03','clue:E04','clue:E05','clue:E06','clue:E07'].includes(option.id)) return option;
-  if(s.guided && option.id.startsWith('escort:')) return option;
+  if(s.guided && (option.id.startsWith('escort:') || option.id==='open')) return option;
   const investigation=investigationFor(option.id);
   return investigation && !s.milestones.includes('retry:'+option.id)
    ? {...option,label:option.label+' · ทดสอบ DC 12',check:'investigation',deception:investigation.deception}
    : option;
  });
 }
-export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>number, actor?: {character:Character;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats;boost?:'focus'|'background'|'deception'|'diagnostic';backgroundUsed:boolean;onBoost:()=>void;inEncounter?:boolean;playerId?:string;onCheck?:(result:ReturnType<typeof resolveCheck>)=>void}):CaseState {
+export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>number, actor?: {character:Character;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats;boost?:'focus'|'background'|'deception'|'diagnostic';backgroundUsed:boolean;onBoost:()=>void;inEncounter?:boolean;playerId?:string;deferGuidedOpen?:boolean;onCheck?:(result:ReturnType<typeof resolveCheck>)=>void}):CaseState {
  const option=caseOptions(current,!!actor).find(option=>option.id===id);
  if(!option) throw Error('ทำรายการนี้ในคดีไม่ได้');
  const s=structuredClone(current);
@@ -438,7 +439,10 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   case 'lore': s.lore=true;break;
   case 'study': s.understood=true;break;
   case 'key': s.key=true;break;
-  case 'open': s.opened=true;break;
+  case 'open':
+   if(s.guided && actor?.deferGuidedOpen) s.guided.cellarPending=true;
+   else s.opened=true;
+   break;
   case 'escort':
    s.escorts.push(target);
    if(s.escortOwners && actor?.playerId) s.escortOwners[target]=actor.playerId;
@@ -491,9 +495,10 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   const storyText=v4.beats[option.id];
   if(storyText) s.notice=storyText;
  }
+ if(s.guided && kind==='open') s.notice=guidedCellarRead!;
  if(kind==='finish') addFact(s,'withdrawn');
  if(kind!=='travel') s.decisions.push(s.notice);
- emitCaseBeat(s,option.id,s.notice,kind==='clue'?'party':'local');
+ emitCaseBeat(s,s.guided && kind==='open'?'guided-cellar-open':option.id,s.notice,kind==='clue' || s.guided && kind==='open'?'party':'local');
  tick(s,actor?.inEncounter ? 0 : option.minutes);
  if(kind==='finish'&&!s.report) {
   if(isV4) finish(s,endingV4(s));

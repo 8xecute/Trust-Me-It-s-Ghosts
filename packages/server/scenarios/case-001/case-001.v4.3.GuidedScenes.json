@@ -498,11 +498,11 @@
     "E2": {
       "id": "E2",
       "phase": "E",
-      "entry_cue": "หลังเปิดกลอนใต้ถุนพบคนหายสามคนอ่อนแรงแต่ยังมีชีวิต",
+      "entry_cue": "หลังประตูใต้ถุนมีเสียงคนร้องถามว่าทีมเป็นใคร กลอนประตูยังปิดอยู่",
       "suggested_questions": [
-        "ใครจับพวกเขา?",
-        "ใครต้องการการรักษาก่อน?",
-        "พาพวกเขาไปจุดปลอดภัยได้อย่างไร?"
+        "จะตอบคนในห้องว่าอย่างไร?",
+        "จะเปิดกลอนและช่วยคนข้างในอย่างไร?",
+        "พื้นที่รอบประตูปลอดภัยหรือไม่?"
       ],
       "guaranteed_information_rule": "เมื่อปลอดภัยพอ ดลบอกชื่อวิชัยโดยไม่ทอย; FOUND ไม่เท่ากับ SAFE",
       "optional_check_id": null,
@@ -510,7 +510,8 @@
       "missing_clue_fallback": "ถ้าขึ้น E4 ก่อนช่วย E2 ต้องเปิดตัวเลือกช่วยกลับมาภายใน E ก่อนปิดบท",
       "visible_only_after_scene_entered": true,
       "can_ask_freely": true,
-      "non_player_facing_notes": "never show hidden info from source script before discovery"
+      "non_player_facing_notes": "never show hidden info from source script before discovery",
+      "entry_read": "ใต้ถุนเรือนมีประตูห้องเก็บผลผลิตที่ลงกลอนจากด้านนอก เมื่อทีมเข้าใกล้ เสียงชายคนหนึ่งดังออกมาจากหลังประตู\n\nดล · “ใครน่ะ? พวกคุณเป็นคนของใคร? ถ้าเป็นวิชัย บอกมันว่าผมไม่เซ็นอะไรทั้งนั้น!”"
     },
     "E3": {
       "id": "E3",

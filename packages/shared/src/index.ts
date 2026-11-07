@@ -16,3 +16,5 @@ export * from './combatLite.js';
 
 /** Current playtest: profession stats and Focus, without advanced abilities. */
 export const BASIC_RULES_MODE = true;
+
+export * from './caseNpcs.js';
