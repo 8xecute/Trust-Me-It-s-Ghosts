@@ -336,7 +336,7 @@ export function stabilize(w: World, actor: string, input: unknown, roll: () => n
     !w.players[input] || w.characters?.[input]?.hp!==0 || distance(w.players[actor],w.players[input])!==1 ||
     t.used.includes('stabilized:'+input)) return reject();
   const paid=spendAction(w.turns[actor],character.focus,{ap:2,focus:0}) ?? reject('AP ไม่พอ');
-  if(character.profession==='field_medic' || check(w,actor,'knowledge',roll,undefined,8)) {
+  if((!w.basicMode && character.profession==='field_medic') || check(w,actor,'knowledge',roll,undefined,8)) {
     w.characters![input].hp=1;
     t.used.push('stabilized:'+input);
   }

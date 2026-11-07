@@ -71,6 +71,9 @@ for(const [count,die,outcome] of [[2,9,'success'],[3,6,'partial'],[4,5,'failure'
    assert.deepEqual(view(viewer).latestRoll?.result,{total:die+5,outcome});
   }
   const line={success:'ไม่ใช่ผู้พูดผ่านวิทยุสด',partial:'ไม่กล้าพูด',failure:'ไปดูข้อมูลที่บ้านผม'}[outcome];
+  assert.ok(players.every(player=>!view(player).case001?.notice.includes(line)));
+  const response=panel().narration.find(entry=>entry.answer?.rollId===card.id)!;
+  action(dm,'dmPublish',{cardId:response.id});
   assert.ok(players.every(player=>view(player).case001?.notice.includes(line)));
   assert.throws(()=>action(p,'dmRoll',{requestId:card.id}));
   assert.throws(()=>action(players[1],'caseAction',{actionId:option,site:'A'}));
@@ -148,6 +151,7 @@ test('room save resumes pending and committed checks without rerolling',()=>{
 test('v4.1 story checks remain optional for all four existing endings',()=>{
  for(const ending of ['A','B','C','D']) {
   const s=newCase(true,4,'4.1');
+  s.milestones.push('left-arrival');
   if(ending!=='D') s.seals[2]=true;
   if(ending==='A' || ending==='B') {
    s.evacuated=['ดล','นิด','เพิ่ม'];

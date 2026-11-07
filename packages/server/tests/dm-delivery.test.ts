@@ -23,6 +23,17 @@ function storyRoom() {
  return {send,panel,view:(player:string)=>worlds.snapshot(code,player),rollCount:()=>rolls};
 }
 
+test('the team can withdraw after leaving the entrance and returning',()=>{
+ const {send,view}=storyRoom();
+ assert.ok(!view('a').case001?.actions.some(option=>option.id==='finish'));
+ assert.throws(()=>send('a','caseAction',{actionId:'finish',site:'A'}));
+ send('dm','dmTravel',{actionId:'travel:B',site:'A'});
+ send('dm','dmTravel',{actionId:'travel:A',site:'B'});
+ assert.ok(view('a').case001?.actions.some(option=>option.id==='finish'));
+ send('a','caseAction',{actionId:'finish',site:'A'});
+ assert.equal(view('a').awaitingReport,true);
+});
+
 test('the DM releases narration and NPC answers while the server commits effects only after approval',()=>{
  const {send,panel,view,rollCount}=storyRoom();
  const briefing=panel().narration.find(beat=>beat.eventId==='briefing')!;

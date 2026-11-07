@@ -1,0 +1,705 @@
+{
+  "schema_version": "1.0",
+  "case_id": "BS-001",
+  "version": "4.3",
+  "route_policy": "guided_linear_forward_only",
+  "phase_order": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "FINAL",
+    "ENDING"
+  ],
+  "h1_policy": "H1 is optional clue-reveal inside currently active phase when documents exist; it does not change PHASE or teleport Prasert",
+  "check_logic": "only when player takes triggering action; FULL >= DC; PARTIAL DC-3..DC-1; FAILURE <= DC-4",
+  "question_policy": {
+    "max_suggestions": 3,
+    "free_text_allowed": true,
+    "suggestions_unlocked_by_observed_cues": true,
+    "do_not_reveal_dm_secrets": true
+  },
+  "phase_progress_policy": {
+    "monotonic": true,
+    "can_revisit_closed_phase": false,
+    "local_scene_order_flexible": true,
+    "transition_requires_player_confirm": true,
+    "exit_ui_choices": [
+      "inspect_current_phase_more",
+      "confirm_next_phase"
+    ],
+    "no_dice_gate_for_primary_route": true
+  },
+  "hint_policy": {
+    "tiers": [
+      "notice_cue",
+      "identify_observable_target",
+      "suggest_concrete_action"
+    ],
+    "only_current_phase": true,
+    "increment_on_player_request_or_stall": true,
+    "never_reveal_future_secret": true
+  },
+  "journal_policy": {
+    "sections": [
+      "known_facts",
+      "open_questions",
+      "next_destination_rationale"
+    ],
+    "only_player_discovered": true,
+    "retain_across_phases": true,
+    "summary_before_transition": true
+  },
+  "phases": {
+    "A": {
+      "title": "รับคดีที่ทางเข้าหมู่บ้าน",
+      "goal": "รู้ว่าคนหายสามคนคือใคร และทำไมต้องตรวจข้อมูลที่บ้านผู้ใหญ่",
+      "entry": "ประเสริฐมารอรับทีมกลางหมู่บ้านที่เงียบผิดปกติ เขารายงานคนหายสามคน ก่อนเสียงวิทยุจะย้ำว่าอาจยังมีคนอยู่",
+      "must": [
+        "ชื่อคนหาย ดล/นิด/เพิ่ม",
+        "ตำแหน่งบ้านผู้ใหญ่และแฟ้มข้อมูลคนหาย"
+      ],
+      "hints": [
+        "ประเสริฐดูมีข้อมูลอยู่ในมือมากกว่าที่เล่าครั้งแรก",
+        "เขาเอ่ยว่าที่บ้านมีแฟ้มและแผนที่ของคนหายทั้งสาม",
+        "ลองถามประเสริฐถึงแฟ้มข้อมูลและขอให้พาไปบ้านผู้ใหญ่"
+      ],
+      "lead": "หลังผู้เล่นได้รับรายชื่อและยืนยันเดินทาง ประเสริฐพาทีมไปดูเอกสารที่บ้านผู้ใหญ่",
+      "exit": "ทีมเลือกเดินทางไปบ้านผู้ใหญ่และรู้ตำแหน่ง B1; ไม่ต้องผ่าน A2_RADIO_ECHO",
+      "missed": [
+        "A2 วิทยุ: เรื่องร่องรอยน้ำจะถูกขยายจากบ้านดลและคำของยายบุญมี"
+      ]
+    },
+    "B": {
+      "title": "บ้านผู้ใหญ่และพยานที่ไม่กล้าพูด",
+      "goal": "รู้ว่าดลกำลังติดตามเรื่องผิดปกติและมีเหตุผลไปค้นสมุดที่บ้าน",
+      "entry": "แผนที่และแฟ้มถูกจัดไว้บนโต๊ะ วิชัยเป็นมิตรแต่คุมข้อมูล ส่วนต้นมีท่าทีกังวล",
+      "must": [
+        "รู้ว่าบ้านดลอยู่ที่ไหน",
+        "รู้ว่าดลเก็บบันทึกไว้ที่โต๊ะทำงานของบ้าน"
+      ],
+      "hints": [
+        "สังเกตว่าต้นมองวิชัยซ้ำ ๆ และวิชัยวางมือทับมุมแผนที่",
+        "ในแฟ้มมีชื่อดลซ้ำกับหัวข้อที่ดิน และประเสริฐบอกว่าดลจดรายละเอียดเอง",
+        "ตรวจแผนที่แล้วถามประเสริฐว่าบ้านดลอยู่ไหนและมีสิ่งใดควรค้น"
+      ],
+      "lead": "ประเสริฐชี้บ้านดลบนแผนที่ ทีมรู้ว่าสมุดที่ดลเก็บไว้อาจให้ข้อมูลว่าทำไมเขาจึงหาย",
+      "exit": "รู้ LOCATION_C_KNOWN จากแผนที่ หรือประเสริฐบอกทาง; ทีมเลือกยืนยันออกเดินทาง",
+      "missed": [
+        "B3 ต้น: สมุดดล C2 ชี้รูปแบบที่ดิน และคำให้การ E3 ยืนยันการลักพาตัว",
+        "B4 น้ำท่วม: ยายบุญมี C5 และเอกสาร E4/H1 ย้อนให้ข้อมูล"
+      ]
+    },
+    "C": {
+      "title": "บ้านดล เศษความทรงจำ และยายบุญมี",
+      "goal": "เห็นความเกี่ยวข้องของด้ายดำกับสวนและเข้าใจว่าแม่แก้วมีอดีตที่เกี่ยวกับน้ำท่วม",
+      "entry": "บ้านดลเหมือนถูกทิ้งกะทันหัน มีสมุดที่โต๊ะและความชื้นแปลก ๆ ที่เชื่อมกับผีเงาจมน้ำ",
+      "must": [
+        "รู้ว่าสวนกล้วยมีศาลและด้ายดำ",
+        "มีเหตุผลไปตรวจศาล: ข้อความในสมุด/คำยายบุญมี/ร่องรอย"
+      ],
+      "hints": [
+        "ข้อความท้ายสมุดกล่าวถึงศาล และคราบชื้นไม่เหมือนฝนตก",
+        "ยายบุญมีรู้เรื่องแม่แก้วและสิ่งที่ไม่ควรแตะในสวนกล้วย",
+        "อ่านหน้าท้ายสมุดหรือถามยายบุญมีว่าจะเริ่มตรวจสวนที่ไหน"
+      ],
+      "lead": "คำเตือนยายบุญมีเรื่องด้ายดำและชื่อแม่แก้วบรรจบกับหน้าท้ายสมุดดล ทีมจึงเลือกไปศาลสวนกล้วย",
+      "exit": "มี LOCATION_D_KNOWN จากสมุดหรือคำยาย และทีมเลือกมุ่งสวน; C4 เป็น optional",
+      "missed": [
+        "C4 ไม่ได้ภาพจากผี: D2/D5 มีรอยพิธีและทางไปบ้านร้าง",
+        "C5 ไม่ได้รู้วิชัยเป็นเด็กที่รอด: เอกสารอพยพ E4 และแม่แก้ว D3 ให้ข้อมูลตามสิ่งที่ตนรู้"
+      ]
+    },
+    "D": {
+      "title": "ศาลสวนกล้วยและแม่แก้ว",
+      "goal": "รู้ว่าผีถูกผูกด้วยอาคมเดียวกัน และตามรอยคนเป็นที่ขนของไปเรือนไม้ได้",
+      "entry": "ศาลมีด้ายดำและป้ายชื่อคนหายสามคน แม่แก้วปรากฏโดยไม่โจมตีทันที",
+      "must": [
+        "รู้ตำแหน่งทางไปเรือนไม้จากรอยล้อ/เสียง/คำใบ้",
+        "รู้ว่าสามคนยังไม่จำเป็นต้องเสียชีวิตเพราะชื่ออยู่บนด้าย"
+      ],
+      "hints": [
+        "ด้ายสามป้ายชื่อโยงไปคนหาย แต่รอยล้อบนดินเกิดจากของจริง",
+        "ด้านหลังศาลมีเศษกระสอบติดกิ่งและทางรถเข็นพาดต่อ",
+        "เดินตามรอยรถเข็นหลังศาลไปยังเรือนไม้ร้าง"
+      ],
+      "lead": "รอยล้อชัดขึ้นเมื่อพ้นศาล มุ่งตรงไปเรือนไม้ที่มีแสงเทียนอยู่ไกล ๆ ทีมเลือกตามไป",
+      "exit": "LOCATION_E_KNOWN และทีมเลือกไป E1; D4 optional; D5 ไม่ล็อกด้วย PER",
+      "missed": [
+        "D3 เจรจาพลาด: คำให้การผู้รอดชีวิตและตำรา E4 ยืนยันการผูกวิญญาณ",
+        "D2 อ่านพิธีไม่ออก: E4 มีตำราพิธีและกำไล"
+      ]
+    },
+    "E": {
+      "title": "เรือนไม้ร้าง: ช่วยคนและแกนพิธี",
+      "goal": "ช่วยคนหายให้ปลอดภัย เจอแกนอาคม และมีแผนหยุดพิธีโดยไม่ต้องย้อนถามคนเก่า",
+      "entry": "มีเสียงคนขอความช่วยเหลือใต้ถุนและแสงเทียนชั้นบน ข้อเท็จจริงสองสายแยกกันแต่โยงที่วิชัย",
+      "must": [
+        "มีโอกาสช่วยคนทั้งสามอย่างสมเหตุสมผล",
+        "ค้นพบกำไลทองเหลืองและร่องพิธีเดียว",
+        "รู้ว่าวิชัยเกี่ยวข้องจากพยาน/หลักฐานตามจริง"
+      ],
+      "hints": [
+        "เสียงร้องใต้ถุนเกิดจากคนมีชีวิต ขณะที่ด้ายดำพาดขึ้นชั้นบน",
+        "ถ้าแก้คำสาปโดยไม่ช่วยคน สามคนอาจยังไม่ปลอดภัย",
+        "ตรวจประตูใต้ถุนเพื่อช่วยคน และตรวจห้องบนเพื่ออ่านตำราและกำไล"
+      ],
+      "lead": "เมื่อทีมพร้อมและมีโอกาสจัดการความปลอดภัย ด้ายบนคานกระตุก กำไลร้อนและเสียงแม่แก้วดังขึ้น จึงเข้าสู่ช่วงตัดสินใจ Final",
+      "exit": "ทีมยืนยันรับมือพิธีและความเสี่ยงที่เหลือ → F ตามสถานะจริง; ไม่บังคับว่าต้องซัก E3 หรือเผชิญ E5",
+      "missed": [
+        "ถ้าไม่คุยต้น/ยาย: คำให้การ E3 กับเอกสาร E4 ให้ข้อเท็จจริงที่ตนรองรับ",
+        "ถ้า H1 ยังไม่พร้อม: สามารถแก้พิธีและจบคดีได้ แต่ความจริงน้ำท่วมอาจเปิดเผยไม่ครบ"
+      ]
+    },
+    "FINAL": {
+      "title": "หยุดการควบคุมและเลือกชะตาแม่แก้ว",
+      "goal": "หยุดพิธี ประคองความปลอดภัย และยุติภัยตามหลักฐานจริง",
+      "entry": "อาคมปะทุตามสถานะปัจจุบัน แต่การปรากฏตัว/Combat ของแม่แก้วต้องมาจากเหตุการณ์ที่เกิดขึ้นจริง",
+      "must": [
+        "ทราบสถานะพิธี คนหาย และแม่แก้วก่อน Resolve ตอนจบ"
+      ],
+      "hints": [
+        "ด้ายและกำไลเป็นแกนเดียวกับที่พบในห้องบน",
+        "แม่แก้วอาจต้องการความจริงมากกว่าการต่อสู้ และผู้รอดชีวิตต้องปลอดภัยก่อน",
+        "ใช้หลักฐานพร้อมจัดการกำไล เมื่อพิธีหยุดแล้วคุยกับแม่แก้วตามความจริง"
+      ],
+      "lead": "เมื่อภัยยุติหรือทีมถอนอย่างมีผลจริง ใช้ Ending Resolver A/B/C/D พร้อม Modifiers ไม่ให้ผู้เล่นเลือกตอนจบจากเมนู",
+      "exit": "ยุติวิกฤตหรือถอนตัว/หมดทางรับมือ และคำนวณ Ending จาก State",
+      "missed": [
+        "หากยังไม่ได้สารภาพประเสริฐ: เปิดเผยจากหลักฐานที่เก็บได้อย่างเหมาะสม ไม่วาร์ปเขามาในห้องพิธี",
+        "หากไม่ได้พูดกับแม่แก้วใน D: ยังเจรจา F5 ได้ แต่ TRUST ไม่ได้โบนัสย้อนหลัง"
+      ]
+    }
+  },
+  "scenes": {
+    "A1": {
+      "id": "A1",
+      "phase": "A",
+      "entry_cue": "เมื่อรถบริษัทมาถึง ประเสริฐรอพร้อมรายชื่อคนหาย สีหน้าเขาเปลี่ยนทุกครั้งที่พูดถึงสวนกล้วย",
+      "suggested_questions": [
+        "ทั้งสามหายคนละคืนหรือคืนเดียวกัน?",
+        "ใครเห็นพวกเขาเป็นคนสุดท้าย?",
+        "ทำไมจึงเรียกบริษัทนี้?"
+      ],
+      "guaranteed_information_rule": "A1: ชื่อดล นิด เพิ่ม และข่าวลือสวนกล้วยเป็นข้อมูลที่ประเสริฐตอบได้ทันที",
+      "optional_check_id": null,
+      "forward_bridge": "ให้ผู้เล่นถามประเสริฐก่อน; ระหว่างคุยวิทยุเริ่มส่งเสียงแปลก → A2; หากทีมข้ามการตรวจ ก็ได้ยินเสียงนั้นขณะเตรียมเดินทาง",
+      "missing_clue_fallback": "รายชื่อคนหายและแผนที่ยังอยู่ที่บ้านผู้ใหญ่ใน B ไม่ต้องย้อนมาทางเข้าหมู่บ้าน",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "A2": {
+      "id": "A2",
+      "phase": "A",
+      "entry_cue": "วิทยุมีเสียงสำลักกับคำว่า “ยังมีคนอยู่” แล้วคลื่นเงียบลง",
+      "suggested_questions": [
+        "เสียงนั้นเป็นสัญญาณวิทยุจริงหรือไม่?",
+        "เสียงพูดเป็นผู้หญิงหรือผู้ชาย?",
+        "มีแหล่งคลื่นอยู่แถวไหน?"
+      ],
+      "guaranteed_information_rule": "เสียงที่ได้ยินเป็นข้อมูลทุกคนได้รับ ไม่ต้องทอย; ตรวจความผิดปกติด้วย SPI DC14 เท่านั้น",
+      "optional_check_id": "A2_RADIO_ECHO",
+      "forward_bridge": "ประเสริฐเปิดแผนที่และบอกว่าเอกสารเวลาเห็นคนหายครั้งสุดท้ายอยู่ที่บ้าน → A3",
+      "missing_clue_fallback": "หากตรวจคลื่นล้มเหลว เรื่องน้ำและผีจะกลับมาใน C; ไม่มีการปิดทาง B",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "A3": {
+      "id": "A3",
+      "phase": "A",
+      "entry_cue": "ประเสริฐชี้ว่าข้อมูลคนหายอยู่ในบ้านที่ยังเปิดไฟสว่าง",
+      "suggested_questions": [
+        "แฟ้มคนหายมีอะไรบ้าง?",
+        "ไปที่บ้านผู้ใหญ่ไกลไหม?"
+      ],
+      "guaranteed_information_rule": "รู้ตำแหน่งบ้านผู้ใหญ่และไปได้โดยไม่ทอย",
+      "optional_check_id": null,
+      "forward_bridge": "เมื่อทีมตัดสินใจตามข้อมูล ให้บรรยายถนนเปลี่ยวและแผนที่ที่หน้าต่างบ้านผู้ใหญ่ → B1",
+      "missing_clue_fallback": "ถ้าไม่สนใจ A2 ก็ยังต้องถึง B1 ได้; ไม่กลับ A",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "B1": {
+      "id": "B1",
+      "phase": "B",
+      "entry_cue": "บนโต๊ะมีแผนที่รายชื่อสามคน วิชัยวางมือทับมุมแผนที่ ส่วนต้นยืนใกล้ประตูและหลบสายตา",
+      "suggested_questions": [
+        "วิชัยรู้เรื่องสวนอย่างไร?",
+        "ต้นทำไมไม่กล้าสบตา?",
+        "มีอะไรผิดปกติในแผนที่และแฟ้ม?"
+      ],
+      "guaranteed_information_rule": "ข้อมูลพื้นฐานเกี่ยวกับดลและสถานที่อยู่บนโต๊ะ ไม่ต้องทอย",
+      "optional_check_id": null,
+      "forward_bridge": "ให้ทีมเลือกคุยวิชัย B2 ต้น B3 หรือดูแฟ้ม B4 ตามความสนใจ; เบาะแสทั้งหมดมุ่งสู่ B5",
+      "missing_clue_fallback": "แม้ไม่ถาม NPC ทั้งคู่ ประเสริฐยังอธิบายว่าดลจดข้อมูลส่วนตัวที่บ้าน",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "B2": {
+      "id": "B2",
+      "phase": "B",
+      "entry_cue": "วิชัยตอบเรื่องสวนคล่อง แต่จังหวะตอบเรื่องกลางคืนชะงักอยู่ครู่หนึ่ง",
+      "suggested_questions": [
+        "เข้าไปสวนกลางคืนทำไม?",
+        "เรื่องซื้อขายที่ดินเกี่ยวกับคนหายอย่างไร?",
+        "มีใครยืนยันกิจกรรมคืนนั้นได้บ้าง?"
+      ],
+      "guaranteed_information_rule": "วิชัยบอกว่าทำงานที่ดินและตรวจสวนได้โดยการถาม; PER14 ช่วยสังเกตความไม่สอดคล้อง ไม่พิสูจน์ลักพาตัว",
+      "optional_check_id": "B2_WICHAI_TELL",
+      "forward_bridge": "วิชัยเบนไปว่าให้ถามคนที่เห็นเอง หากต้นอยู่ยังคุย B3 ได้ หรือเทียบแฟ้ม B4 ก่อนออก B5",
+      "missing_clue_fallback": "ไม่เจอพิรุธก็ยังรู้ว่าดลจดเรื่องที่ดินไว้ C2 จะเชื่อมข้อสงสัย",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "B3": {
+      "id": "B3",
+      "phase": "B",
+      "entry_cue": "ต้นพูดว่าเห็นบางอย่าง แต่เหลือบมองวิชัยจนพูดไม่จบ",
+      "suggested_questions": [
+        "ต้นเห็นใครหรือเห็นแค่เงา?",
+        "คุยที่เป็นส่วนตัวได้ไหม?",
+        "ต้องทำอย่างไรให้ต้นปลอดภัย?"
+      ],
+      "guaranteed_information_rule": "เห็นคนขนของเป็นสิ่งที่ต้นอาจเล่าเมื่อปลอดภัย; SOC14 เฉพาะเมื่อทีมพยายามโน้มน้าวโดยยังไม่ได้จัดความปลอดภัยจริง",
+      "optional_check_id": "B3_TON_DISCLOSURE",
+      "forward_bridge": "คำให้การหรือความเงียบของต้นชี้ว่าเบาะแสต้องตรวจสอบจากบันทึกที่ดลเก็บ → B5",
+      "missing_clue_fallback": "ถ้าทอยพลาดหรือไม่ถามต้น สมุดดล C2 และคำให้การผู้รอดชีวิต E3 รองรับ; ต้นไม่ถูกย้ายไปฉากหลัง",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "B4": {
+      "id": "B4",
+      "phase": "B",
+      "entry_cue": "ภาพเก่าประตูน้ำมีหยดน้ำด้านในกรอบ แฟ้มบันทึกปี 2534 ถูกคั่นไว้ผิดหมวด",
+      "suggested_questions": [
+        "คนในรูปเป็นใคร?",
+        "ทำไมรายงานเกี่ยวกับน้ำท่วมถูกเก็บกับแฟ้มคนหาย?",
+        "ตำแหน่งประตูน้ำสัมพันธ์กับสวนอย่างไร?"
+      ],
+      "guaranteed_information_rule": "เห็นปีและรูปได้โดยไม่ทอย; INT14 ใช้โยงความผิดปกติ ไม่ให้สรุปผู้สั่งเปิดประตูทันที",
+      "optional_check_id": "B4_FLOOD_PHOTO",
+      "forward_bridge": "คำตอบประเสริฐชี้ว่ายังไม่พร้อมเล่าทั้งหมด ทีมสามารถเก็บคำถามไว้ในสมุดคดีแล้วมุ่งบ้านดล → B5",
+      "missing_clue_fallback": "บันทึกยายบุญมี C5 และเอกสาร E4/H1 ให้ข้อมูลประตูน้ำภายหลังโดยไม่ต้องกลับมา B",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "B5": {
+      "id": "B5",
+      "phase": "B",
+      "entry_cue": "ประเสริฐวงตำแหน่งบ้านดลบนแผนที่และชี้ไปยังโต๊ะทำงานที่ยังไม่มีใครเก็บของ",
+      "suggested_questions": [
+        "ดลสืบอะไรอยู่ก่อนหาย?",
+        "มีแผนที่ไปบ้านดลหรือไม่?",
+        "ควรนำหลักฐานอะไรติดตัวไป?"
+      ],
+      "guaranteed_information_rule": "ตำแหน่ง C เปิดอัตโนมัติเมื่อได้รับแผนที่ ไม่ต้องทอย",
+      "optional_check_id": null,
+      "forward_bridge": "แสดงสรุปบท B ตามข้อมูลจริง แล้วให้ทีมยืนยันออกเดินทางไปบ้านดล → C1",
+      "missing_clue_fallback": "ถ้าไม่ได้สนทนาต้น/วิชัย ความลับไม่ถูกให้ฟรี; แต่ยังเข้าบ้านดลได้",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "C1": {
+      "id": "C1",
+      "phase": "C",
+      "entry_cue": "ประตูบ้านดลปิดไม่สนิท อาหารยังวางอยู่ เสื้อพาดเก้าอี้และมีคราบชื้นทั้งที่ฝนไม่ตก",
+      "suggested_questions": [
+        "ใครเข้ามาที่นี่ล่าสุด?",
+        "โต๊ะทำงานอยู่ตรงไหน?",
+        "เสียงและคราบชื้นมาจากอะไร?"
+      ],
+      "guaranteed_information_rule": "สภาพบ้านและจุดค้นบริเวณโต๊ะมองเห็นได้; ไม่จำเป็นต้องทอยเพื่อหาประตู",
+      "optional_check_id": null,
+      "forward_bridge": "ทางเดินและร่องรอยไปยังโต๊ะกระตุ้นการค้นสมุด → C2",
+      "missing_clue_fallback": "หากผู้เล่นยังไม่รู้เรื่องที่ดิน บันทึกบนโต๊ะจะเปิดประเด็นได้ใน C2",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "C2": {
+      "id": "C2",
+      "phase": "C",
+      "entry_cue": "สมุดปกดำมีรายการที่ดินหลายรายและชื่อวิชัยซ้ำ ๆ ที่สันมีเศษด้ายดำ",
+      "suggested_questions": [
+        "ทำไมเจ้าของที่ดินหลายคนเริ่มขายพร้อมกัน?",
+        "ด้ายดำติดสมุดมาได้อย่างไร?",
+        "หน้าสุดท้ายพูดถึงศาลเพราะอะไร?"
+      ],
+      "guaranteed_information_rule": "พบสมุดเมื่อค้นโต๊ะ ไม่ต้องทอย; INT14 ใช้วิเคราะห์ลำดับข่าวผีกับการกดราคา",
+      "optional_check_id": "C2_LAND_PATTERN",
+      "forward_bridge": "เมื่ออ่านจนถึงข้อความ “ไปดูศาล” ได้ยินเสียงเคาะจากใต้พื้นและผนัง → C3",
+      "missing_clue_fallback": "หากอ่านไม่เข้าใจ เก็บสมุดใน Inventory; การพบเอกสาร E4 ยืนยันได้ในภายหลัง",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "C3": {
+      "id": "C3",
+      "phase": "C",
+      "entry_cue": "มีเสียงเคาะสามครั้งจากใต้พื้น แล้วดังซ้ำจากผนังที่ไม่มีช่องว่าง",
+      "suggested_questions": [
+        "มีใครติดอยู่ใต้พื้นหรือไม่?",
+        "คราบน้ำเชื่อมกับด้ายดำหรือเปล่า?",
+        "ควรถอยหรือสืบต่อ?"
+      ],
+      "guaranteed_information_rule": "ตรวจแล้วไม่พบคนถูกขังใต้บ้านดล; SPI14 วิเคราะห์พลังพิเศษเมื่อสนใจ",
+      "optional_check_id": "C3_SPIRIT_RESIDUE",
+      "forward_bridge": "แสดงสัญญาณอันตรายให้ชัด เปิดทางสู้/สงบ/หนีใน C4 โดยไม่บังคับ Combat",
+      "missing_clue_fallback": "หากไม่ตรวจพลัง ผู้เล่นยังหลบผีและไปพบยายบุญมีได้ตามทางเดิน",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "C4": {
+      "id": "C4",
+      "phase": "C",
+      "entry_cue": "ร่างคนจมน้ำค่อย ๆ ปรากฏจากคราบน้ำ มันเปล่งเสียง “ช่วย...” ไม่ใช่พยานที่สนทนาได้อย่างมีเหตุผล",
+      "suggested_questions": [
+        "นี่ใช่คนหายหรือเป็นเศษความทรงจำ?",
+        "จะช่วยสงบผีหรือถอย?",
+        "ภาพที่มันเห็นเชื่อถือได้แค่ไหน?"
+      ],
+      "guaranteed_information_rule": "ไม่มีการเปิดเผยผู้ลักพาตัวจากผี; SPI14 สำหรับขอภาพสะท้อนเพิ่มเติมเมื่อมีช่องให้สื่อสาร",
+      "optional_check_id": "C4_DROWNED_ECHO_VISION",
+      "forward_bridge": "หลังจบผล encounter จะเห็นข้อมูลติดต่อยายบุญมีหรือเรื่องศาลจากสมุด/ปากชาวบ้าน → C5",
+      "missing_clue_fallback": "หนีหรือแพ้ไม่ปิด C5; ข้อมูลจากผีไม่ใช่กุญแจจำเป็นของ D",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "C5": {
+      "id": "C5",
+      "phase": "C",
+      "entry_cue": "ยายบุญมีเตรียมผ้าเขียวกับธูป และสะดุ้งเมื่อได้ยินชื่อแก้ว",
+      "suggested_questions": [
+        "เด็กที่แก้วช่วยเป็นใคร?",
+        "ปี 2534 เกิดอะไรกับสะพานไม้?",
+        "ด้ายดำที่ศาลมีมาตั้งแต่เมื่อไร?"
+      ],
+      "guaranteed_information_rule": "เมื่อถามชื่อเด็ก ยายตอบวิชัยทันที; ยายไม่เห็นคำสั่งเปิดประตูกับตา; INT17 เฉพาะเมื่อมีบันทึกสองชุดให้เทียบ",
+      "optional_check_id": "C5_EVACUATION_RECORDS",
+      "forward_bridge": "ยายบอกให้เริ่มที่ศาลและอย่าดึงด้ายดำด้วยมือเปล่า → D1 เมื่อทีมยืนยันออกเดินทาง",
+      "missing_clue_fallback": "ถ้าไม่ได้ตรวจสมุด ลักษณะด้ายดำที่ศาล D2 และเอกสาร E4 จะรองรับ; หากพลาดยาย เอกสารกับแม่แก้วเปิดตัวตนได้ภายหลัง",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "D1": {
+      "id": "D1",
+      "phase": "D",
+      "entry_cue": "เสียงแมลงหายไปทีละชนิด ใบกล้วยเคลื่อนสวนลม มีรอยเปียกพาไปศาล",
+      "suggested_questions": [
+        "รอยเปียกพาไปที่ไหน?",
+        "มีใครกำลังเฝ้าดูอยู่?",
+        "ศาลเป็นต้นทางเสียงร้องหรือเปล่า?"
+      ],
+      "guaranteed_information_rule": "ผู้เล่นมองเห็นทางเดินไปศาลได้ ไม่ต้องผ่าน PER",
+      "optional_check_id": null,
+      "forward_bridge": "เสียงกระซิบและด้ายดำดึงสายตาไปศาล → D2",
+      "missing_clue_fallback": "ถ้าทีมไม่รู้เรื่องแม่แก้ว ศาลมีชื่อและเครื่องไหว้ช่วยแนะนำตัวตน",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "D2": {
+      "id": "D2",
+      "phase": "D",
+      "entry_cue": "ด้ายดำพันศาลกับต้นกล้วยและป้ายผ้าชื่อ “ดล นิด เพิ่ม” แขวนอยู่",
+      "suggested_questions": [
+        "ป้ายสามชื่อหมายความว่าพวกเขาตายหรือแค่ถูกหมายหัว?",
+        "ด้ายต่อไปถึงไหน?",
+        "ตัดด้ายจะช่วยหรือทำให้พิธีปะทุ?"
+      ],
+      "guaranteed_information_rule": "อ่านชื่อครบได้โดยไม่ทอย; INT14 แยกโครงสร้างพิธี; การตัดด้ายแค่ทำให้พิธีอ่อนลง",
+      "optional_check_id": "D2_BINDING_PATTERN",
+      "forward_bridge": "ด้ายกระตุกตอบสนองเมื่อทีมแตะ และแม่แก้วปรากฏตัว → D3",
+      "missing_clue_fallback": "ผู้เล่นที่อ่านพิธีไม่ออกยังรู้ว่ามีคนใช้ด้ายกับทั้งสาม; ตำราที่ E4 อธิบายแกนต่อ",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "D3": {
+      "id": "D3",
+      "phase": "D",
+      "entry_cue": "แม่แก้วยืนหลังศาลและถามว่าพวกผู้เล่นมาหาคนหรือมาหาของ",
+      "suggested_questions": [
+        "คนที่หายอยู่ไหน?",
+        "ด้ายดำบังคับอะไรเธอ?",
+        "เธออยากให้ทีมทำอย่างไร?"
+      ],
+      "guaranteed_information_rule": "แม่แก้วบอกว่าไม่ได้ขังคน; ผีถูกอาคมขัดขวางไม่ให้ชี้ตัววิชัยตรง ๆ; SPI14 รับรู้อารมณ์ ไม่ลบผนึก",
+      "optional_check_id": "D3_KAEW_CONTACT",
+      "forward_bridge": "หากพูดคุยได้ แม่แก้วส่งคำใบ้ทิศทาง; หากก้าวร้าวจริงจึงเข้าสู่ D4; ทางเดิน D5 ยังมีอยู่",
+      "missing_clue_fallback": "ถ้าคุยพลาด ไม่ต้องย้อนมาหาเธอ: ทางไปเรือนไม้ตามรอยล้อ D5 และเอกสาร E4 รองรับ",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "D4": {
+      "id": "D4",
+      "phase": "D",
+      "entry_cue": "เมื่อผู้เล่นโจมตีหรือภัยคุกคามจริงเริ่มขึ้น รากไม้แทรกดิน แม่แก้วตอบโต้",
+      "suggested_questions": [
+        "จะยอมถอยแทนสู้หรือไม่?",
+        "ทำอย่างไรจึงหยุดพันธนาการ?",
+        "เมื่อร่างสลายแล้ววิญญาณยังอยู่ไหม?"
+      ],
+      "guaranteed_information_rule": "Combat เป็นทางเลือกตาม trigger ไม่ใช่บังคับ; สลายร่างได้แต่ไม่ฆ่าวิญญาณ",
+      "optional_check_id": null,
+      "forward_bridge": "ไม่ว่าผลสู้/ถอน/เจรจา ทีมยังติดตามรอยขนย้ายจากศาลได้ → D5",
+      "missing_clue_fallback": "หาก D4 ไม่เกิด ให้ไป D5 โดยไม่สร้างการต่อสู้ปลอม",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "D5": {
+      "id": "D5",
+      "phase": "D",
+      "entry_cue": "รอยล้อรถเข็นและเศษกระสอบทอดจากศาลไปเรือนไม้ร้างท้ายสวน",
+      "suggested_questions": [
+        "รอยล้อมาจากคนหรือผี?",
+        "มีเสียงอะไรจากปลายทาง?",
+        "ทีมควรช่วยคนหายหรือจัดการพิธีก่อน?"
+      ],
+      "guaranteed_information_rule": "ทางไปเรือนไม้อยู่ตรงหน้าเสมอ; PER11 ใช้รู้รายละเอียดการขนย้าย ไม่ใช้ล็อกทิศทาง",
+      "optional_check_id": "D5_CART_TRACKS",
+      "forward_bridge": "แสดงสรุปบท D แล้วทีมยืนยันเดินตามรอยล้อไปเรือนไม้ → E1",
+      "missing_clue_fallback": "ถ้าพลาด PER ทีมก็ยังเห็นทาง; ข้อมูลการลักพาตัวยืนยัน E2/E3",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "E1": {
+      "id": "E1",
+      "phase": "E",
+      "entry_cue": "ใต้ถุนเรือนมีกระสอบข้าวปิดประตูเล็ก ข้างบนมีแสงเทียนและเสียงกระซิบขอความช่วยเหลือ",
+      "suggested_questions": [
+        "เสียงคนมาจากตรงไหน?",
+        "จะช่วยคนก่อนหรือขึ้นไปตรวจกำไลก่อน?",
+        "วิชัยอาจกลับมาไหม?"
+      ],
+      "guaranteed_information_rule": "พบเบาะแสว่ามีคนอยู่ใต้ถุนได้โดยสำรวจ; ไม่ล็อกด้วยการทอย",
+      "optional_check_id": null,
+      "forward_bridge": "ทีมเลือกช่วย E2 หรือขึ้นห้องพิธี E4 ภายในบท E เดียวกัน ก่อนเชื่อม Final",
+      "missing_clue_fallback": "หากขึ้นบนก่อน เสียงผู้รอดชีวิตยังดังอยู่; ไม่แปลงเป็น HOSTAGES_SAFE โดยอัตโนมัติ",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "E2": {
+      "id": "E2",
+      "phase": "E",
+      "entry_cue": "หลังเปิดกลอนใต้ถุนพบคนหายสามคนอ่อนแรงแต่ยังมีชีวิต",
+      "suggested_questions": [
+        "ใครจับพวกเขา?",
+        "ใครต้องการการรักษาก่อน?",
+        "พาพวกเขาไปจุดปลอดภัยได้อย่างไร?"
+      ],
+      "guaranteed_information_rule": "เมื่อปลอดภัยพอ ดลบอกชื่อวิชัยโดยไม่ทอย; FOUND ไม่เท่ากับ SAFE",
+      "optional_check_id": null,
+      "forward_bridge": "ถ้าคนปลอดภัย ให้ E3 ซักข้อมูล หรือขึ้น E4 ตามทาง; หากยังเสี่ยงเน้นช่วยออกก่อน",
+      "missing_clue_fallback": "ถ้าขึ้น E4 ก่อนช่วย E2 ต้องเปิดตัวเลือกช่วยกลับมาภายใน E ก่อนปิดบท",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "E3": {
+      "id": "E3",
+      "phase": "E",
+      "entry_cue": "คนหายแต่ละคนเห็นคนละด้านของคดี และเริ่มแยกเล่าความทรงจำ",
+      "suggested_questions": [
+        "ดลมีหลักฐานที่ดินอะไร?",
+        "นิดเห็นด้ายดำเมื่อไร?",
+        "เพิ่มเห็นใครยกกล่องขึ้นชั้นบน?"
+      ],
+      "guaranteed_information_rule": "เมื่อปลอดภัยพอ พยานยืนยันคนจับได้ตรง ๆ; SOC11 ใช้เรียงเหตุการณ์ละเอียด ไม่ใช้ล็อกชื่อวิชัย",
+      "optional_check_id": "E3_HOSTAGES_ORDER",
+      "forward_bridge": "คำให้การกล่องและเสียงพิธีพาคนขึ้นห้องบน → E4; นำข้อมูลติดตัวไป Final",
+      "missing_clue_fallback": "ถ้าพยานตื่นกลัวและไม่ได้เรียงเวลา สัญญาณพิธีที่ E4 และเอกสารจะช่วยให้ต่อเรื่องได้",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "E4": {
+      "id": "E4",
+      "phase": "E",
+      "entry_cue": "ด้ายดำบรรจบที่โต๊ะกำไลทองเหลืองสลักคำว่า “แก้ว” และมีตำราพิธี",
+      "suggested_questions": [
+        "กำไลเป็นของใคร?",
+        "มีวิธีหยุดการควบคุมอย่างปลอดภัยหรือไม่?",
+        "บันทึกเก่าระบุเรื่องเปิดประตูน้ำว่าอย่างไร?"
+      ],
+      "guaranteed_information_rule": "พบกำไลและเอกสารพื้นฐานเมื่อสำรวจ ไม่ทอย; INT14 ใช้หาแนวทางปลดที่ปลอดภัย",
+      "optional_check_id": "E4_BRACELET_DECODE",
+      "forward_bridge": "หากวิชัยอยู่จริงและยังเป็นอิสระ อาจเข้าสู่ E5; มิฉะนั้นนำไป E6 เมื่อทีมพร้อมและคนหายมีโอกาสได้รับการช่วย",
+      "missing_clue_fallback": "ถ้า INT ไม่ผ่าน ให้ตำราเป็นหลักฐานค้าง; ยังปลดพิธีด้วยการทดลองหรือวิธีอื่นที่มีความเสี่ยงและเบาะแสประกอบ",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "E5": {
+      "id": "E5",
+      "phase": "E",
+      "entry_cue": "หากวิชัยอยู่จริง เขาหยุดที่บันไดเมื่อเห็นทีมใกล้กำไล",
+      "suggested_questions": [
+        "จะให้วิชัยวางอาวุธหรือสารภาพอย่างไร?",
+        "ใครให้ตำราวิชัย?",
+        "จะจัดการกับผู้รอดชีวิตอย่างไร?"
+      ],
+      "guaranteed_information_rule": "SOC17 ใช้ลดการขัดขืน ไม่ลบหลักฐานที่ทีมมี ไม่บังคับให้ยอมรับสารภาพโดยไม่มีข้อมูล",
+      "optional_check_id": "E5_WICHAI_NEGOTIATE",
+      "forward_bridge": "หลังวิชัยหนี ถูกจับ หรือยอมร่วมมือ พิธียังทำงาน จึงต้องกลับไปที่กำไลภายใน E และเข้า E6",
+      "missing_clue_fallback": "ถ้าวิชัยไม่ได้อยู่ ไม่สร้าง E5; เอกสารและคำให้การยังใช้กล่าวหาได้",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "H1": {
+      "id": "H1",
+      "phase": "ANY_BEFORE_ENDING",
+      "entry_cue": "เมื่อมีบันทึกน้ำท่วมและบันทึกอพยพ ข้อมูลเวลาไม่ตรงกันและต้องเรียงเหตุการณ์",
+      "suggested_questions": [
+        "ประตูน้ำถูกเปิดเมื่อใด?",
+        "ประเสริฐมีบทบาทระดับไหน?",
+        "เอกสารระบุว่าอพยพครบจริงหรือไม่?"
+      ],
+      "guaranteed_information_rule": "ตรวจหลักฐานได้แม้ประเสริฐไม่อยู่; คำสารภาพประเสริฐเกิดเฉพาะเมื่อเขาอยู่ในฉากจริงหรือผ่านช่องทางที่สมจริง",
+      "optional_check_id": "H1_FLOOD_TIMELINE",
+      "forward_bridge": "เก็บผลการวิเคราะห์ลงสมุดคดีและกลับกิจกรรม E ปัจจุบัน; H1 ไม่ใช่การเดินทางย้อนบท",
+      "missing_clue_fallback": "หากขาดคำสารภาพ รายงานท้ายคดียังชี้การกระทำได้จากหลักฐาน; ไม่ spawn ประเสริฐ",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery",
+      "display_in_playbook_phase": "E",
+      "requires_evidence": true
+    },
+    "E6": {
+      "id": "E6",
+      "phase": "E",
+      "entry_cue": "ด้ายดำบนคานกระตุก กำไลร้อนขึ้น และเสียงผู้หญิงดังใกล้ห้อง",
+      "suggested_questions": [
+        "ผู้รอดชีวิตปลอดภัยหรือยัง?",
+        "ต้องหยุดพิธีทันทีหรือรับมือผีก่อน?",
+        "อาคมกำลังเปลี่ยนไปอย่างไร?"
+      ],
+      "guaranteed_information_rule": "Final ขึ้นกับสภาพพิธี/วิญญาณจริง ไม่ใช่ต้องมีบอสทุกครั้ง",
+      "optional_check_id": null,
+      "forward_bridge": "เมื่อทีมยืนยันรับมือเหตุปะทุ หลังบันทึกสรุปบท E → F1 หรือ F5 ตามสถานะพิธี",
+      "missing_clue_fallback": "หากวิชัยไม่อยู่ พิธียังทำงาน; หากหยุดแล้วไม่สร้างการสู้บอสเพื่อเติมฉาก",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "F1": {
+      "id": "F1",
+      "phase": "FINAL",
+      "entry_cue": "เทียนและด้ายดำสั่น แม่แก้วร้องขอให้หยุดการควบคุม",
+      "suggested_questions": [
+        "พิธีหยุดหรือยัง?",
+        "ยังมีคนในพื้นที่อันตรายไหม?",
+        "ทีมจะใช้หลักฐานหรือป้องกันผีก่อน?"
+      ],
+      "guaranteed_information_rule": "ปรากฏเมื่อพิธียังทำงานตาม trigger; ไม่จำเป็นต้องมี combat",
+      "optional_check_id": null,
+      "forward_bridge": "แสดงร่าง/ปฏิกิริยาตามผลที่ D → F2 หรือไป F5 หากพิธีหยุดแล้ว",
+      "missing_clue_fallback": "ถ้าหยุดพิธีก่อนไม่ต้องสร้าง F1 เพื่อบังคับฉาก",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "F2": {
+      "id": "F2",
+      "phase": "FINAL",
+      "entry_cue": "แม่แก้วปรากฏตามสภาพที่ผู้เล่นเคยปฏิบัติต่อเธอในสวนกล้วย",
+      "suggested_questions": [
+        "เธอจำทีมได้อย่างไร?",
+        "ยังถูกด้ายบังคับอยู่ไหม?",
+        "มีทางสื่อสารโดยไม่สู้หรือไม่?"
+      ],
+      "guaranteed_information_rule": "ท่าทีขึ้นกับ KAEW_D_RESULT ไม่ใช่การทอยใหม่เพื่อเขียนทับเหตุการณ์ก่อน",
+      "optional_check_id": null,
+      "forward_bridge": "ถ้าพิธียังบังคับหรือทีมเลือกโจมตี จึงอาจ F3; ถ้าพิธีหยุดแล้วไป F5",
+      "missing_clue_fallback": "หากเคยสลาย D และยังไม่ฟื้น ไม่บังคับ spawn F2/F3",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "F3": {
+      "id": "F3",
+      "phase": "FINAL",
+      "entry_cue": "รากกล้วยเริ่มตรึงพื้นที่ ทีมอาจต้องป้องกันตัวระหว่างปลดกำไล",
+      "suggested_questions": [
+        "จะยืนคุ้มกันคนทำพิธีไหม?",
+        "ยังมีทางตัดพลังโดยไม่โจมตีแม่แก้วไหม?",
+        "ใครดูแลผู้รอดชีวิต?"
+      ],
+      "guaranteed_information_rule": "Combat Lite v1.1 ใช้เมื่อเกิดจริง ไม่ใช่ทอยข้อมูลเพิ่ม",
+      "optional_check_id": null,
+      "forward_bridge": "พิธีที่ทำต่อเนื่องอาจหยุดการบังคับ → F5; ถ้าอาคมยังทำงานอาจเกิด F4",
+      "missing_clue_fallback": "หากไม่มี Combat ทางสังคม/พิธียังดำเนินไปได้ ไม่ต้องสร้าง F3",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "F4": {
+      "id": "F4",
+      "phase": "FINAL",
+      "entry_cue": "ภาพน้ำท่วมซ้อนกับห้องพิธีเมื่อแรงอาคมสูงขึ้น",
+      "suggested_questions": [
+        "ภาพที่เห็นเป็นความทรงจำหรือคำสั่ง?",
+        "ใครเป็นคนเปิดประตูผันน้ำ?",
+        "ยังมีวิธีหยุดความรุนแรงหรือไม่?"
+      ],
+      "guaranteed_information_rule": "คำบอกเล่าความทรงจำไม่อาจแทนหลักฐานเต็ม; ใช้เงื่อนไขบอสและพิธีเดิม",
+      "optional_check_id": null,
+      "forward_bridge": "เมื่อพิธีหยุดหรือลดอันตรายสำเร็จ → F5; ถ้าไม่สำเร็จใช้ F6 เมื่อถึงเวลา",
+      "missing_clue_fallback": "ไม่บังคับเปลี่ยนเป็น Boss Phase 2 หากผู้เล่นจัดการพิธีก่อน",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "F5": {
+      "id": "F5",
+      "phase": "FINAL",
+      "entry_cue": "เมื่อด้ายขาด แม่แก้วได้ขยับด้วยตัวเองเป็นครั้งแรก และถามว่าผู้เล่นจะทำอย่างไรกับเธอ",
+      "suggested_questions": [
+        "ทีมจะเปิดเผยความจริงอย่างไร?",
+        "คนร้ายต้องรับผิดชอบแบบไหน?",
+        "แม่แก้วต้องการอะไรเพื่อไม่ทำร้ายใครอีก?"
+      ],
+      "guaranteed_information_rule": "SOC/SPI DC17 เฉพาะเมื่อต้องโน้มน้าวจริง; หลักฐานและการกระทำมาก่อนการทอย",
+      "optional_check_id": "F5_KAEW_RECONCILE",
+      "forward_bridge": "ใช้ RITUAL_STATUS, HOSTAGES_SAFE, หลักฐานและ KAEW_FINAL ตัดสิน Ending ไม่ใช่เมนูเลือกตอนจบ",
+      "missing_clue_fallback": "การทอยพลาดไม่ทำให้แม่แก้วโจมตีทันทีอัตโนมัติ; ทางยุติภัยอื่นยังได้ตามเหตุผล",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    },
+    "F6": {
+      "id": "F6",
+      "phase": "FINAL",
+      "entry_cue": "ถึง 03:00 หากพิธียังทำงาน ด้ายเปลี่ยนสีเข้มและแม่แก้วถูกรั้งหนักขึ้น",
+      "suggested_questions": [
+        "ยังถอนตัวพร้อมผู้รอดชีวิตได้หรือไม่?",
+        "พิธีที่ฝังแน่นยังปลดได้อย่างไร?",
+        "อะไรต้องแก้ก่อนเพื่อรักษาชีวิต?"
+      ],
+      "guaranteed_information_rule": "เวลา 03:00 ทำให้ RITUAL_STATUS=entrenched ไม่ได้เกมโอเวอร์/ฆ่าคนหายอัตโนมัติ",
+      "optional_check_id": null,
+      "forward_bridge": "ทำพิธีต่อหรือถอนกำลังตามเหตุการณ์จริง ก่อนสรุป Ending เมื่อคดีสิ้นสุด",
+      "missing_clue_fallback": "ห้ามนับความล้มเหลวเพียงเพราะเวลาผ่าน แต่เพิ่มความยากตามกติกาที่กำหนด",
+      "visible_only_after_scene_entered": true,
+      "can_ask_freely": true,
+      "non_player_facing_notes": "never show hidden info from source script before discovery"
+    }
+  }
+}

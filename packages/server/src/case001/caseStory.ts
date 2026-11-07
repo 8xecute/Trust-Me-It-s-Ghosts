@@ -1,3 +1,4 @@
+import { guidedDialogue, speakGuided } from './guidedCase.js';
 import { readFileSync } from 'node:fs';
 import { matchesScenarioConditions, applyScenarioEvent, validateScenario, type Condition, type ScenarioProgress } from '@baan/shared';
 import { emitCaseBeat, type CaseState, type Site } from './case001.js';
@@ -70,6 +71,7 @@ const definition=(s:CaseState)=>s.storyVersion===4 ? v4Scenario : legacyScenario
 const topicList=(s:CaseState)=>s.storyVersion===4 ? topics : raw.topics;
 
 function present(s:CaseState,npcId:string) {
+ if(s.guided?.phase==='FINAL' && ['don','nid','phoem'].includes(npcId)) return false;
  const npc=(s.storyVersion===4 ? npcs : raw.npcs).find(n=>n.id===npcId);
  if(!npc) return false;
  if(npc.presence==='wichai') return s.wichai?.site===s.site;
@@ -148,7 +150,9 @@ export function advanceStory(s:CaseState) {
   for(const id of ids) {
     const previous=p;
     p=applyScenarioEvent(scenario,{...p,narration:undefined},id);
-    if(p.firedTriggers.length!==previous.firedTriggers.length && p.narration) { narration.push(p.narration); emitCaseBeat(s,id,p.narration,['EV08','EV09','EV10','EV12','EV17','EV18','ritual-entrenched'].includes(id)?'party':'local'); }
+    // Guided scenes supply their own authored cues and NPC replies. Keep the
+    // existing scenario facts without also queuing the previous script's lines.
+    if(!s.guided && p.firedTriggers.length!==previous.firedTriggers.length && p.narration) { narration.push(p.narration); emitCaseBeat(s,id,p.narration,['EV08','EV09','EV10','EV12','EV17','EV18','ritual-entrenched'].includes(id)?'party':'local'); }
   }
   s.story=p;
   if(narration.length) s.notice+=' · '+narration.join(' · ');
@@ -160,6 +164,7 @@ export function sceneSpeakers(s:CaseState) {
 
 export function storyTopics(s:CaseState) {
   if(!s.story || s.report) return [];
+  if(s.guided) return guidedDialogue(s).map(line=>({id:'guided-talk:'+line.id,label:line.label,minutes:0,speaker:line.speaker}));
   const p=caseContext(s);
   const scenario=definition(s);
   return topicList(s).flatMap(topic=>{
@@ -182,10 +187,12 @@ function dialogueResponse(s:CaseState,id:string) {
 }
 
 export function previewDialogue(s:CaseState,id:string) {
+ if(id.startsWith('guided-talk:')) {const line=guidedDialogue(s).find(line=>'guided-talk:'+line.id===id);return line ? line.speaker+' · '+line.text : undefined;}
   return dialogueResponse(s,id)?.text;
 }
 
 export function speak(s:CaseState,id:string) {
+ if(id.startsWith('guided-talk:')) {speakGuided(s,id);return;}
   const answer=dialogueResponse(s,id);
   if(!answer) throw Error('หัวข้อนี้ยังใช้ไม่ได้');
   s.story=answer.next;

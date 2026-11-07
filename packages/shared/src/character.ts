@@ -130,7 +130,7 @@ export interface Character {
   focus: number;
 }
 
-export function createCharacter(profession: unknown, bonus: unknown, selection?: { talent: unknown; background: unknown }, usePreset = false): Character {
+export function createCharacter(profession: unknown, bonus: unknown, selection?: { talent: unknown; background?: unknown }, usePreset = false): Character {
   if (typeof profession !== 'string' || !Object.hasOwn(professions, profession)) {
     throw Error('อาชีพไม่ถูกต้อง');
   }
@@ -148,8 +148,6 @@ export function createCharacter(profession: unknown, bonus: unknown, selection?:
   if (!selection) return base;
   const talent = professionTechniques[role].talents.find(entry => entry.id === selection.talent);
   if (!talent) throw Error('เลือกพรสวรรค์ของอาชีพนี้หนึ่งอย่าง');
-  if (typeof selection.background !== 'string' || !Object.hasOwn(backgrounds, selection.background)) {
-    throw Error('ภูมิหลังไม่ถูกต้อง');
-  }
-  return { ...base, talent: talent.id, background: selection.background as Background };
+  // Legacy background fields are accepted for old clients but grant no mechanics.
+  return { ...base, talent: talent.id };
 }

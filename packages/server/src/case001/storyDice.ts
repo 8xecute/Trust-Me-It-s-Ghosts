@@ -17,6 +17,8 @@ export type StoryRoll = {actor:string;stat:Stat;dc:number;die:number;total:numbe
 const read=(name:string)=>JSON.parse(readFileSync(new URL('../../scenarios/case-001/'+name,import.meta.url),'utf8'));
 const pack=read('case-001.v4.1.dice.json') as {checks:Check[]};
 const flow=read('case-001.v4.1.flow.json') as {scenes:{id:string;investigation_checks?:string[]}[]};
+const guidedPack=read('case-001.v4.3.DiceChecks.json') as typeof pack;
+if(JSON.stringify(guidedPack.checks.map(c=>[c.id,c.dc,c.full,c.partial,c.failure]))!==JSON.stringify(pack.checks.map(c=>[c.id,c.dc,c.full,c.partial,c.failure]))) throw Error('กติกาจุดทอย v4.3 เปลี่ยน ต้องตรวจ migration');
 const mapped=new Map(flow.scenes.flatMap(scene=>(scene.investigation_checks ?? []).map(id=>[id,scene.id] as const)));
 if(pack.checks.length!==16 || mapped.size!==16 || new Set(pack.checks.map(check=>check.id)).size!==16 ||
  pack.checks.some(check=>mapped.get(check.id)!==check.scene_id || ![11,14,17].includes(check.dc) ||
@@ -39,23 +41,23 @@ function availableChecks(w:World,player:string) {
    w.narrative?.records.some(beat=>beat.eventId===id && beat.recipients.includes(player));
  const tonSpoke=fired('dialogue-black-bundle') || fired('dialogue-cart');
  const exposedWichai=fact('current-testimony');
- const gateCorroborated=has('E07') && fact('gate-testimony');
+ const gateCorroborated=has('E07') && (fact('gate-testimony') || fact('v43-evacuation-records'));
  const supportKaew=fact('gate-truth') && (exposedWichai || s.wichai?.status==='detained');
  const frightened=s.opened && s.evacuated.length===0 && s.escorts.length===0;
  const wInScene=s.wichai?.site===s.site && s.wichai.status!=='detained';
  const eligible:Record<string,boolean|undefined>={
-  A2_RADIO_ECHO:delivered('arrival-radio'),
+  A2_RADIO_ECHO:s.guided ? s.guided.presented.includes('A2') : delivered('arrival-radio'),
   B2_WICHAI_TELL:wInScene && !exposedWichai && !(has('E08') && has('E02')) &&
-   (fired('dialogue-wichai-land') || fired('dialogue-grove-alibi')),
-  B3_TON_DISCLOSURE:tonSpoke && !has('E08'),
+   (s.guided?.scene==='B2' || fired('dialogue-wichai-land') || fired('dialogue-grove-alibi')),
+  B3_TON_DISCLOSURE:(s.guided?.scene==='B3' || tonSpoke) && !has('E08') && !fact('v43-ton-protected'),
   B4_FLOOD_PHOTO:fact('v41-photo'),
   C2_LAND_PATTERN:has('E02'),
-  C3_SPIRIT_RESIDUE:delivered('EV02') && (has('E01') || has('E02')),
+  C3_SPIRIT_RESIDUE:(s.guided?.scene==='C3' || delivered('EV02')) && (has('E01') || has('E02')),
   C4_DROWNED_ECHO_VISION:battle?.id==='EN01' && battle.active===player &&
    !fact('memory-fragment') && battle.enemies.some(enemy=>enemy.state.phase!=='resolved') && (w.turns[player]?.ap ?? 0)>=2,
-  C5_EVACUATION_RECORDS:fact('met-boonmee') && fired('EV15'),
+  C5_EVACUATION_RECORDS:fact('met-boonmee') && (s.guided ? has('E07') : fired('EV15')),
   D2_BINDING_PATTERN:has('E04') && !s.seals[2],
-  D3_KAEW_CONTACT:fired('dialogue-spirit-controller') && (s.ghost==='cautious' || s.ghost==='hostile') && !s.seals[2],
+  D3_KAEW_CONTACT:(fact('v43-kaew-controller-blocked') || fired('dialogue-spirit-controller')) && (s.ghost==='cautious' || s.ghost==='hostile') && !s.seals[2],
   D5_CART_TRACKS:has('E06'),
   E3_HOSTAGES_ORDER:frightened,
   E4_BRACELET_DECODE:s.key && !s.seals[2],
@@ -63,7 +65,9 @@ function availableChecks(w:World,player:string) {
   H1_FLOOD_TIMELINE:gateCorroborated && !fact('gate-truth') && !fact('confessed'),
   F5_KAEW_RECONCILE:s.seals[2] && (s.ghost==='hostile' || s.ghost==='cautious') && !(supportKaew && s.trust>=2),
  };
- return pack.checks.flatMap(check=>{
+ return (s.guided ? guidedPack : pack).checks.flatMap(check=>{
+  if(s.guided && (!s.guided.observed.includes(check.scene_id) || s.guided.scene!==check.scene_id ||
+   (w.dmSession && !w.narrative?.records.some(beat=>beat.eventId==='guided-cue:'+check.scene_id)))) return [];
   const scene=check.scene_id[0];
   const siteMatches=scene==='H' ? ['B','C','E'].includes(s.site) : (scene==='F'?'E':scene)===s.site;
   if(!siteMatches || !eligible[check.id] || (battle && check.id!=='C4_DROWNED_ECHO_VISION')) return [];
@@ -120,7 +124,7 @@ export function runStoryCheck(w:World,player:string,actionId:string,boost:unknow
   if(check.id==='H1_FLOOD_TIMELINE') {
    addFact(s,'v41-flood-evidence');
    addFact(s,'gate-truth');
-   if(s.site==='B') addFact(s,'confessed');
+   if(s.site==='B' && s.guided?.phase!=='FINAL') addFact(s,'confessed');
   }
   if(check.id==='F5_KAEW_RECONCILE' && hasFact(s,'gate-truth') &&
    (hasFact(s,'current-testimony') || s.wichai?.status==='detained')) s.ghost='pacified';
@@ -139,10 +143,22 @@ export function runStoryCheck(w:World,player:string,actionId:string,boost:unknow
  advanceStory(s);
 }
 
-function availableDialogue(w:World,id:string,outcome:Outcome,dialogue:string) {
+export function storyCheckResponse(w:World,actionId:string,rollId:string) {
+ const definition=(w.case001?.guided ? guidedPack : pack).checks.find(check=>actionId.startsWith('dice:'+check.id+':'));
+ if(!definition)return;
+ const result=w.case001!.storyChecks?.[definition.id]?.at(-1);
+ if(!result)return;
+ const branch=definition[result.outcome],statValue=w.characters![result.actor].coreStats![result.stat];
+ return {rollId,checkId:definition.id,scene:definition.scene_id,playerId:result.actor,label:definition.title,die:result.die,stat:result.stat,statValue,bonus:result.total-result.die-statValue,total:result.total,dc:result.dc,
+  outcome:result.outcome==='full'?'success' as const:result.outcome,narration:branch.dm,dialogue:availableDialogue(w,definition.id,result.outcome,branch.dialogue),sentParts:[] as ('narration'|'dialogue')[]};
+}
+
+export function availableDialogue(w:World,id:string,outcome:Outcome,dialogue:string) {
  const s=w.case001!;
  const kaewPresent=s.ghost==='cautious' || s.ghost==='hostile' || s.ghost==='pacified';
  const wichaiPresent=s.wichai?.site===s.site && s.wichai.status!=='detained';
+ if(['B2_WICHAI_TELL','E5_WICHAI_NEGOTIATE'].includes(id) && !wichaiPresent) return;
+ if(['D3_KAEW_CONTACT','F5_KAEW_RECONCILE'].includes(id) && !kaewPresent) return;
  if(id==='H1_FLOOD_TIMELINE' && s.site!=='B') return;
  if(id==='D2_BINDING_PATTERN' && !kaewPresent) return;
  if(id==='D5_CART_TRACKS' && (outcome==='failure' || !kaewPresent)) return;

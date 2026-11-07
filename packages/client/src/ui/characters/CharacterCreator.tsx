@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { maxPlayerNameLength, characterPresets, coreStatLabels, biographyFields, castProfiles, type Biography, backgrounds, professions, professionTechniques, type Background, type Character, type Profession, type Talent } from '@baan/shared';
+import { BASIC_RULES_MODE, maxPlayerNameLength, characterPresets, coreStatLabels, biographyFields, castProfiles, type Biography, professions, professionTechniques, type Character, type Profession, type Talent } from '@baan/shared';
 import { portraitUrl } from './CastPortraits';
 
 const roleHelp:Record<Profession,string>={
@@ -18,7 +18,6 @@ const talentHelp:Record<Talent,string>={
  electric_talisman_trap:'วางกับดักในช่องว่างติดตัว ทำงานเมื่อผีเข้าช่อง',spirit_scanner:'สแกนผีในระยะ 4 ช่องที่มีแนวถึงเป้าหมาย เพื่อเปิดเผยผีที่ซ่อนตัว',ritual_jammer:'ทดสอบความรู้เพื่อรบกวนผี หรือยกเลิกท่าพิเศษของบอสที่เตรียมไว้',
  field_first_aid:'ฟื้น HP สูงสุด 3 ให้ตัวเองหรือเพื่อนติดกันที่ยังมี HP หนึ่งครั้งต่อเป้าหมายในการเผชิญหน้า',composure_kit:'ฟื้นสติสูงสุด 2 ให้เพื่อนติดกัน หรือช่วยเพื่อนที่สติเป็นศูนย์ หนึ่งครั้งต่อเป้าหมาย',emergency_drag:'ตอบโต้เมื่อเพื่อนติดกันถูกเล็ง ย้ายตัวเองและเพื่อนออกจากอันตรายได้คนละไม่เกิน 1 ช่อง',
 };
-const backgroundHelp:Record<Background,string>={rescuer:'ใช้กับการพาผู้สูญหายออกจากพื้นที่',journalist:'ใช้กับการค้นบันทึกหรือสอบถามพยานที่ระบุว่ารองรับ',technician:'ใช้กับการเปิดห้องเก็บผลผลิต',temple_student:'ใช้กับการทดสอบพิธีและผนึกที่รองรับ',skeptic:'ใช้กับการค้นหาผ้ายันต์',rural_native:'ใช้กับการค้นหารอยเท้าหลังบ้าน'};
 export const bioLabels = {background_story:'ประวัติ',motivation:'แรงจูงใจ',fear:'ความกลัว',past_mistake:'ความผิดพลาดในอดีต',personal_secret:'ความลับ'};
 const roles = Object.keys(professions) as Profession[];
 
@@ -32,12 +31,11 @@ export function CharacterCreator({ character, biography, taken, disabled, onCrea
   taken: Profession[];
   disabled: boolean;
   showCoreStats?: boolean;
-  onCreate: (profession: Profession, talent: Talent, background: Background, playerName: string) => void;
+  onCreate: (profession: Profession, talent: Talent | undefined, playerName: string) => void;
 }) {
   const [profession, setProfession] = useState<Profession>(()=>roles.find(role=>!taken.includes(role)) ?? roles[0]);
   const [talent, setTalent] = useState<Talent>(()=>professionTechniques[profession].talents[0].id);
   const [playerName, setPlayerName] = useState('');
-  const [background, setBackground] = useState<Background>('rescuer');
   const role=character?.profession ?? profession;
   const profile=castProfiles[role];
   const unavailable=taken.includes(profession);
@@ -69,26 +67,22 @@ export function CharacterCreator({ character, biography, taken, disabled, onCrea
         <h3>{profile.name}</h3>
         {profile.name!==professions[role].name && <p className="character-role">{professions[role].name}</p>}
         {!character && <p className="note" role="status">{roles.indexOf(profession)+1}/{roles.length} · {unavailable?'เพื่อนเลือกแล้ว กรุณาเลือกตัวอื่น':'เลือกได้'}</p>}
-        <p className="character-role-help">{roleHelp[role]}</p>
+        <p className="character-role-help">{BASIC_RULES_MODE ? 'โหมดพื้นฐาน · ใช้ค่าสถานะประจำอาชีพและสมาธิ พักความสามารถพิเศษไว้ก่อน' : roleHelp[role]}</p>
       </div>
     </div>
     {showCoreStats && <CoreStats stats={stats}/>}
     {!character && <details className="character-bio"><summary>ประวัติตัวละคร</summary><p>{profile.biography.background_story}</p></details>}
     {character ? <>
       <p>พลังชีวิต {character.hp} · สติ {character.sanity} · สมาธิ {character.focus}</p>
-      {character.talent && <p>พรสวรรค์ {professionTechniques[character.profession].talents.find(entry => entry.id === character.talent)?.name} · {talentHelp[character.talent]}</p>}
-      {character.background && <p>ภูมิหลัง {backgrounds[character.background]} · {backgroundHelp[character.background]}</p>}
+      {!BASIC_RULES_MODE && character.talent && <p>พรสวรรค์ {professionTechniques[character.profession].talents.find(entry => entry.id === character.talent)?.name} · {talentHelp[character.talent]}</p>}
       {biography && biographyFields.map(field=>biography[field] && <p key={field}>{bioLabels[field]} · {biography[field]}</p>)}
     </> :
-      <form onSubmit={event => { event.preventDefault(); if(!disabled && !unavailable) onCreate(profession, talent, background, playerName); }}>
+      <form onSubmit={event => { event.preventDefault(); if(!disabled && !unavailable) onCreate(profession, BASIC_RULES_MODE ? undefined : talent, playerName); }}>
         <label className="character-name">ชื่อผู้เล่น (ไม่บังคับ) <input value={playerName} maxLength={maxPlayerNameLength}
           onChange={event=>setPlayerName(event.target.value)} placeholder="ชื่อหรือชื่อเล่นในห้อง"/></label>
-        <label>พรสวรรค์ <select value={talent} onChange={event => setTalent(event.target.value as Talent)}>
+        {!BASIC_RULES_MODE && <label>พรสวรรค์ <select value={talent} onChange={event => setTalent(event.target.value as Talent)}>
           {talents.map(entry => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
-        </select>{chosenTalent && <span className="character-help"><strong>{chosenTalent.reaction ? 'ตอบโต้' : chosenTalent.ap+' AP'} · สมาธิ {chosenTalent.focus}</strong><br/>{talentHelp[chosenTalent.id]}</span>}</label>
-        <label>ภูมิหลัง <select value={background} onChange={event => setBackground(event.target.value as Background)}>
-          {Object.entries(backgrounds).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-        </select><span className="character-help">{backgroundHelp[background]} · เลือกใช้โบนัส +2 กับการทดสอบที่ตรงกันได้หนึ่งครั้งต่อสถานที่ โดยไม่ใช้ร่วมกับโบนัสสมาธิ</span></label>
+        </select>{chosenTalent && <span className="character-help"><strong>{chosenTalent.reaction ? 'ตอบโต้' : chosenTalent.ap+' AP'} · สมาธิ {chosenTalent.focus}</strong><br/>{talentHelp[chosenTalent.id]}</span>}</label>}
         <button className="primary" disabled={disabled || unavailable}>{unavailable ? 'ตัวละครนี้ถูกเลือกแล้ว' : 'ยืนยันตัวละคร'}</button>
       </form>}
   </details>;

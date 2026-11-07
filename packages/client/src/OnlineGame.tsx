@@ -1,3 +1,5 @@
+import { BASIC_RULES_MODE } from '@baan/shared';
+import { GuidedPanel } from './ui/case/GuidedPanel';
 import { D20Card } from './ui/case/D20Card';
 import { CaseNotebook } from './ui/case/CaseNotebook';
 import { NarrativeJournal } from './ui/case/NarrativeJournal';
@@ -49,7 +51,7 @@ export function OnlineGame() {
   const [leaving,setLeaving]=useState(false);
   const [connected,setConnected] = useState(false);
   const [biography,setBiography] = useState<Biography>();
-  const [caseTab,setCaseTab]=useState<'actions'|'story'|'journal'>('actions');
+  const [caseTab,setCaseTab]=useState<'scene'|'actions'|'story'|'journal'|'character'|'report'>('scene');
   const [actionGroup,setActionGroup] = useState('explore');
 
   function receive(snapshot:Snapshot,persistent?:boolean) {
@@ -176,7 +178,7 @@ export function OnlineGame() {
       setBiography(undefined);
       setPreview(undefined);
       setPreviewPlayer('');
-      setCaseTab('actions');
+      setCaseTab('scene');
     },()=>setLeaving(false));
   }
 
@@ -201,7 +203,7 @@ export function OnlineGame() {
       </details>
       {room.version===2 && !world?.case001 && <CharacterCreator character={character} biography={biography}
         taken={cast} disabled={!connected}
-        onCreate={(profession,talent,background,playerName)=>action('createCharacter',{profession,talent,background,playerName})}/>}
+        onCreate={(profession,talent,playerName)=>action('createCharacter',{profession,talent,playerName})}/>}
       {world?.case001 ? <section className="case-screen" aria-label="คดี 001">
 
         <header className="case-heading">
@@ -209,6 +211,9 @@ export function OnlineGame() {
             <p>{world.case001.location}</p></div>
           <div className="case-clock"><span>เวลาในภารกิจ</span><strong>{world.case001.time}</strong></div>
         </header>
+        <nav className="workspace-tabs player-main-tabs" aria-label="หน้าต่างคดี">{([['scene',battle?'สนามต่อสู้':'ฉาก'],['story','บทเล่า'],['actions','ลงมือทำ'],['character','ตัวละคร'],['journal','สมุดคดี'],...(world.case001.report ? [['report','รายงาน']] : [])] as [typeof caseTab,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={caseTab===id} onClick={()=>setCaseTab(id)}>{label}{id==='actions' && world.guided?.transition?' · รอยืนยัน':''}</button>)}</nav>
+        {character && <div className="player-status-strip"><img src={portraitUrl(character.profession)} alt=""/><strong>{character.playerName ?? castProfiles[character.profession].name}</strong><span>ชีวิต {character.hp}</span><span>สติ {character.sanity}</span><span>สมาธิ {character.focus}</span>{battle && <span>AP {world.turns[self.current]?.ap ?? 0}/3</span>}</div>}
+        <div hidden={caseTab!=='character'}>
         {character ? <section className="case-character game-panel" aria-label="สถานะตัวละครของคุณ">
           <img className="case-character-portrait" src={portraitUrl(character.profession)} alt={castProfiles[character.profession].name}/>
           <div className="case-character-heading">
@@ -224,10 +229,11 @@ export function OnlineGame() {
             </>}
             <CharacterCreator character={character} biography={biography}
               showCoreStats={!character.coreStats} taken={cast} disabled={!connected}
-              onCreate={(profession,talent,background,playerName)=>action('createCharacter',{profession,talent,background,playerName})}/>
+              onCreate={(profession,talent,playerName)=>action('createCharacter',{profession,talent,playerName})}/>
           </div>
         </section> : <GameHud exploring={!battle} haunt={world.case001.haunt} ap={battle ? world.turns[self.current]?.ap : undefined}/>}
 
+        </div>
         <p className="objective-compact"><strong>เป้าหมาย:</strong> {world.case001.notebook?.objective}</p>
         {world.pendingCheck && world.diceRequest?.die!==null &&
           <p className="narration-card d20-wait" role="status">ส่งคำขอทดสอบแล้ว · รอ DM ส่งการ์ด D20</p>}
@@ -235,25 +241,25 @@ export function OnlineGame() {
           <D20Card key={'request-'+world.diceRequest.id} card={world.diceRequest} connected={connected}
             onRoll={(requestId,settled)=>action('dmRoll',{requestId},undefined,settled)}/>}
         {world.latestRoll && <D20Card key={'result-'+world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
-        {world.case001.report && <section className="narration-card case-report" aria-label="รายงานคดี">
+        {world.case001.report && <section hidden={caseTab!=='report'} className="narration-card case-report" aria-label="รายงานคดี">
           <h3>รายงานคดี</h3><pre className="story-text">{world.case001.report.text}</pre>
         </section>}
-        <div className={battle ? 'case-workspace case-workspace-encounter' : 'case-workspace'}><div className="case-world-pane">
+        <div className={battle ? 'case-workspace case-workspace-encounter' : 'case-workspace'}><div className="case-world-pane" hidden={caseTab!=='scene'}>
         {world.caseMap && <>
           {battle ? <EncounterBoard site={world.caseMap.site} battle={battle} players={world.players}
-            characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} action={connected ? action : undefined}/> :
+            characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} turns={world.turns} action={connected ? action : undefined}/> :
             <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro}/>}
-          <CastPortraits roles={cast} speakers={battle ? [] : [...(world.case001.speakers ?? []),...visibleCast(caseActions)]}/>
+          {!battle && <CastPortraits roles={cast} speakers={[...(world.case001.speakers ?? []),...visibleCast(caseActions)]}/>}
           <section className="narration-card case-response" aria-label="เหตุการณ์ล่าสุด" aria-live="polite">
-            <h3>เหตุการณ์ล่าสุด</h3>
+            <h3>เหตุการณ์ล่าสุด <button type="button" onClick={()=>setCaseTab('story')}>อ่านบทเต็ม</button></h3>
             <p className="story-text">{world.case001.notice}</p>
             {world.lastCheck && !(!battle && world.latestRoll?.result && world.latestRoll.playerId===world.lastCheck.playerId && world.latestRoll.die===world.lastCheck.die && world.latestRoll.result.total===world.lastCheck.total && world.latestRoll.result.outcome===world.lastCheck.outcome) && <p className="roll-result" data-outcome={world.lastCheck.outcome}><strong>D20 {world.lastCheck.die} · รวม {world.lastCheck.total}</strong> · {
               world.lastCheck.outcome==='success'?'สำเร็จ':world.lastCheck.outcome==='partial'?'สำเร็จบางส่วน':'ไม่สำเร็จ'
             }</p>}
           </section>
         </>}
-        </div><aside className="case-actions-pane" aria-label="คำสั่งภารกิจ">
-        <nav className="workspace-tabs" aria-label="หน้าต่างคดี">{([['actions','คำสั่ง'],['story','บทเล่า'],['journal','สมุดคดี']] as const).map(([id,label])=><button key={id} type="button" aria-pressed={caseTab===id} onClick={()=>setCaseTab(id)}>{label}{id==='story' && world.narrative?.pending ? ' · '+world.narrative.pending : ''}</button>)}</nav>
+        </div><aside className="case-actions-pane" hidden={!(['actions','story','journal'] as string[]).includes(caseTab)} aria-label="คำสั่งภารกิจ">
+
         <div hidden={caseTab!=='story'}>        {world.narrative?.current ? <NarrativeJournal view={world.narrative} onNext={world.manualDm ? undefined : sequence=>action('narrativeNext',{sequence})}/> : <section className="narration-card" aria-label="เหตุการณ์ล่าสุด">
           <h3>บทเล่า</h3><p className="note">อ่านบทที่ทีมได้รับแล้วในเหตุการณ์ล่าสุด หรือย้อนอ่านจากสมุดคดี</p>
         </section>}
@@ -273,19 +279,8 @@ export function OnlineGame() {
           {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName}/>}
         </div>
         <div hidden={caseTab!=='actions'}>
+        {world.guided && <GuidedPanel view={world.guided} connected={connected} action={action} site={world.caseMap?.site}/>}
         <h3 className="pane-heading">คุณต้องการทำอะไร</h3>
-        {world.manualDm && !battle && !world.case001.report && !world.awaitingReport && <form className="narration-card" onSubmit={event=>{
-          event.preventDefault();
-          const form=event.currentTarget;
-          const text=new FormData(form).get('question');
-          action('askGm',{text,site:world.caseMap?.site},()=>form.reset());
-        }}>
-          <label>ถามผู้ดำเนินเรื่อง <textarea name="question" required maxLength={1000}
-            placeholder="พิมพ์สิ่งที่อยากถาม หรือเสนอว่าทีมควรไปที่ไหน"/></label>
-          <button disabled={!connected || !world.humanDmId || (world.pendingQuestionCount ?? 0)>=5}>ส่งคำถาม</button>
-          {!!world.pendingQuestionCount && <p role="status">รอคำตอบ {world.pendingQuestionCount} ข้อ</p>}
-          <p className="note">ผู้ดำเนินเรื่องเป็นคนพาทีมไปฉากถัดไป</p>
-        </form>}
         {world.manualDm && !world.humanDmId && <button disabled={!connected || !!battle}
           onClick={()=>action('claimDm')}>รับช่วงเป็นผู้ดำเนินเรื่อง</button>}
         {world.caseMap?.opportunity && <button disabled={!connected || !character?.hp} onClick={()=>action('start')}>เปิดกระดานเผชิญหน้า</button>}
@@ -320,11 +315,10 @@ export function OnlineGame() {
             {option.id.startsWith('travel:') && <p className="note">คำสั่งนี้พาทั้งทีมไปฉากถัดไป</p>}
             {option.check && character && !isHumanDm && <details><summary>เพิ่มโอกาสสำเร็จ</summary>
               <button disabled={!connected || waitingForRoll || character.focus<1} onClick={()=>caseRequest({actionId:option.id,boost:'focus'})}>ใช้สมาธิ +2</button>
-              {option.background && character.background===option.background &&
-                <button disabled={!connected || waitingForRoll} onClick={()=>caseRequest({actionId:option.id,boost:'background'})}>ใช้ภูมิหลัง +2</button>}
-              {option.deception && character.talent==='detect_deception' && <button disabled={!connected || character.focus<1}
+
+              {!BASIC_RULES_MODE && option.deception && character.talent==='detect_deception' && <button disabled={!connected || character.focus<1}
                 onClick={()=>caseRequest({actionId:option.id,boost:'deception'})}>จับพิรุธ (สมาธิ 1)</button>}
-              {option.id==='open' && character.profession==='occult_engineer' && <button disabled={!connected}
+              {!BASIC_RULES_MODE && option.id==='open' && character.profession==='occult_engineer' && <button disabled={!connected}
                 onClick={()=>caseRequest({actionId:option.id,boost:'diagnostic'})}>ตรวจกลไก +2</button>}
             </details>}
           </div>)}</div></>}

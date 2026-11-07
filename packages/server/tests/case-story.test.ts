@@ -24,7 +24,7 @@ test('Case story gates testimony, tracks EV15–18 once, and publishes an earned
   tick(next,10);tick(next,10);
   assert.equal(next.story!.firedTriggers.filter(id=>id==='EV18').length,1);
   assert.equal(JSON.stringify(caseView(next,true)).includes('CASE 017'),false);
-  next.site='A';next=action(next,'finish');
+  next.milestones.push('left-arrival');next.site='A';next=action(next,'finish');
   assert.ok(next.story!.firedTriggers.includes('EV17'));
   assert.match(next.report!.text,/CASE 017/);
 });

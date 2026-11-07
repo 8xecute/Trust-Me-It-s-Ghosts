@@ -80,7 +80,7 @@ export function caseOpportunity(s:CaseState,map:CaseMap):EncounterId|undefined {
   if(s.storyVersion===4) {
     if(available('EN01') && (s.evidence.includes('E01') || s.evidence.includes('E02'))) return 'EN01';
     if(available('EN02') && !s.seals[2] && (s.ghost==='cautious' || s.ghost==='hostile')) return 'EN02';
-    if(available('EN04') && !s.seals[2] && s.seals[0] && s.seals[1] && s.evidence.includes('E05') &&
+    if((!s.guided || s.guided.phase==='FINAL' && !hasFact(s,'kaew-dispersed')) && available('EN04') && !s.seals[2] && s.seals[0] && s.seals[1] && s.evidence.includes('E05') &&
       (s.ghost==='hostile' || s.minute>=210 || s.milestones.includes('unsafe-bracelet'))) return 'EN04';
     return;
   }

@@ -1,5 +1,6 @@
 import { caseGrid, spendAP } from '@baan/shared';
 import type { World } from '../world.js';
+import { speakGuided } from './guidedCase.js';
 import { isStoryCheck, runStoryCheck } from './storyDice.js';
 import { applyCaseAction, failCase, tick } from './case001.js';
 import { caseOpportunity, startCaseBattle, syncCaseBattle, travelCaseMap } from './caseBattle.js';
@@ -11,6 +12,7 @@ export function completeCaseRound(w:World) {
 }
 
 export function executeCaseAction(w:World,player:string,a:{actionId:string;boost?:unknown},roll:()=>number,coordinated=false) {
+ if(a.actionId.startsWith('guided-talk:')) {speakGuided(w.case001!,a.actionId);return;}
  if(isStoryCheck(a.actionId)) {runStoryCheck(w,player,a.actionId,a.boost,roll);return;}
  const first=w.case001?.narrativeEvents?.length ?? 0;
 
@@ -31,7 +33,7 @@ export function executeCaseAction(w:World,player:string,a:{actionId:string;boost
      w.turns[player]=spendAP(w.turns[player],a.actionId==='show-clue'?1:2) ?? (()=>{throw Error('AP ไม่พอ');})();
     }
     const boost=a.boost;
-    if(boost!==undefined && (!character || (boost!=='focus' && boost!=='background' && boost!=='deception' && boost!=='diagnostic'))) throw Error('ตัวเสริมการทดสอบไม่ถูกต้อง');
+    if(boost!==undefined && (!character || (boost!=='focus' && boost!=='deception' && boost!=='diagnostic'))) throw Error('ตัวเสริมการทดสอบไม่ถูกต้อง');
     const backgroundKey=player+':'+site+':'+(boost ?? a.actionId);
     let usedBoost=false;
     w.case001=applyCaseAction(priorCase,a.actionId,roll,character && {

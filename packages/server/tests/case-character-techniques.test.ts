@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { createCharacter, type Background } from '@baan/shared';
 import { applyCaseAction, newCase, type CaseState } from '../src/case001/case001.js';
 
-test('all six backgrounds apply only to a matching server-defined check', () => {
+test('all legacy backgrounds are inert and cannot grant a bonus', () => {
   const setups: [Background, string, Partial<CaseState>][]=[
     ['rural_native','clue:E01',{site:'C'}],
     ['journalist','clue:E02',{site:'C'}],
@@ -17,9 +17,10 @@ test('all six backgrounds apply only to a matching server-defined check', () => 
     let used=0;
     const actor={character,boost:'background' as const,backgroundUsed:false,onBoost:()=>{used++;}};
     const start={...newCase(),...state};
-    const checked=applyCaseAction(start,id,()=>7,actor);
-    assert.match(checked.notice,background==='rescuer'?/รวม 10/:/รวม 12/);
-    assert.equal(used,1);
+    assert.equal('background' in character,false);
+    const legacy={...actor,character:{...character,background}};
+    assert.throws(()=>applyCaseAction(start,id,()=>{throw Error('must not roll');},legacy),/ภูมิหลัง/);
+    assert.equal(used,0);
     assert.throws(()=>applyCaseAction(start,id,()=>7,{...actor,backgroundUsed:true}));
     assert.throws(()=>applyCaseAction(start,'travel:A',()=>7,actor));
   }

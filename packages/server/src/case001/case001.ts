@@ -1,4 +1,5 @@
 import { caseCombatStats } from './caseCombatStats.js';
+import { guidedEndingText } from './guidedCase.js';
 import { characterAttribute } from '@baan/shared';
 import { caseNotebook } from './caseNotebook.js';
 import {readFileSync} from 'node:fs';
@@ -35,6 +36,8 @@ export function emitCaseBeat(s:CaseState,eventId:string,text:string,scope:'local
  (s.narrativeEvents ??= []).push({eventId,text,site,scope,recipient});
 }
 export interface CaseState {
+ basicMode?:true;
+ guided?:import('./guidedCase.js').GuidedState;
  narrativeEvents?:{eventId:string;text:string;site:Site;scope:'local'|'party';recipient?:string;actor?:string}[];
  diceVersion?:'4.1'; storyChecks?:Record<string,StoryRoll[]>;
  storyVersion?:4; story?:ScenarioProgress; containment?:number; escortOwners?:Record<string,string>;
@@ -103,7 +106,7 @@ function finish(s:CaseState, ending:Ending,cause:'withdrawal'|'deadline'|'incapa
  s.report=report;
  if(s.story) {
   const earlyFailure=ending==='D' && cause!=='deadline' && (cause==='incapacitated' || !isV4 || s.minute<240);
-  s.notice=earlyFailure ? caseNarration[cause] : isV4 ? v4.endings[ending].text : storyEndingNarration[ending];
+  s.notice=s.guided ? guidedEndingText(ending) : earlyFailure ? caseNarration[cause] : isV4 ? v4.endings[ending].text : storyEndingNarration[ending];
   emitCaseBeat(s,'ending:'+ending,s.notice,'party');
   advanceStory(s);
   const variants=[
@@ -165,11 +168,12 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
   add('clue:'+id,isV4 && id==='E05' ? 'ตรวจกำไลทองเหลืองในห้องพิธี' : isV4 && id==='E07' && s.site==='E' ? 'ค้นบันทึกการเปิดประตูผันน้ำในเรือนร้าง' : clueActions[id]);
  }
  if(s.site==='A') {
-  if(!s.advance) add('advance','รับเงินล่วงหน้า 2,000 บาท',0);
-  if(s.story || s.evacuated.length || s.seals[2]) add('finish','ถอนทีมและปิดคดี',0);
+  if(!s.basicMode && !s.advance) add('advance','รับเงินล่วงหน้า 2,000 บาท',0);
+  if(!s.guided && (s.evacuated.length || s.seals[2] || s.milestones.includes('left-arrival'))) add('finish','ถอนทีมและปิดคดี',0);
  }
  if(!isV4&&s.site==='B'&&!s.lore) add('lore','ถามยายบุญมีถึงวิธีแก้ด้ายดำ');
  if(s.diceVersion==='4.1' && s.site==='B' && !hasFact(s,'v41-photo')) add('view-flood-photo','ตรวจรูปถ่ายเก่าคู่กับแผนที่หมู่บ้าน',0);
+ if(s.guided?.phase==='FINAL') add('finish','สรุปผลและปิดคดี',0);
  if(s.site==='D') {
   if(s.evidence.includes('E03')&&!s.understood) add('study','ศึกษาผ้ายันต์เพิ่มเติม');
   if(s.evidence.includes('E04')&&!s.seals[0]) {
@@ -190,7 +194,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
   if(s.story && s.key && !s.seals[2] && !s.milestones.includes('unsafe-bracelet')) {
    add('unsafe-bracelet','ยืนยันแตะกำไลก่อนคลายผนึก · ความหลอน +1 และแม่แก้วอาจเป็นศัตรู');
   }
-  if(s.seals[0]&&s.seals[1]&&!s.seals[2]&&(!isV4 || s.evidence.includes('E05'))) add('seal3',(isV4?'ปลดอาคมที่กำไล · ความรู้ DC ':'คลายวงพิธี · ความรู้ DC ')+(12+(s.haunt>=9?2:0)));
+  if(((s.seals[0]&&s.seals[1]) || (s.guided && s.key))&&!s.seals[2]&&(!isV4 || s.evidence.includes('E05'))) add('seal3',(isV4?'ปลดอาคมที่กำไล · ความรู้ DC ':'คลายวงพิธี · ความรู้ DC ')+(12+(s.haunt>=9?2:0)));
   if(s.seals[2]&&s.evidence.includes('E05')&&!s.returned&&s.ghost!=='sealed') add('return','คืนกำไลให้แม่แก้ว');
   if(s.returned&&s.ghost!=='freed'&&s.ghost!=='sealed') add('ritual','ทำพิธีปลดปล่อย · จิตวิญญาณ DC '+((s.ghost==='pacified'?10:12)+(s.haunt>=9?2:0)));
   if(s.seals[2]&&s.ghost!=='freed'&&s.ghost!=='sealed') add('suppress',(s.story?'ทำพิธีสะกดอย่างปลอดภัย · จิตวิญญาณ DC ':'สะกดแม่แก้วด้วยชุดพิธี · จิตวิญญาณ DC ')+((s.story && s.ghost==='pacified'?10:12)+(s.haunt>=9?2:0)));
@@ -198,29 +202,153 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
  if(s.story) {
   if(isV4 && s.site==='C' && !hasFact(s,'met-boonmee')) add('visit-boonmee','ไปพบยายบุญมี',0);
   if(s.site==='E' && !s.story.firedTriggers.includes('EV06')) add('approach-cellar','เข้าใกล้ประตูห้องเก็บผลผลิต',0);
-  for(const topic of storyTopics(s)) options.push({id:'talk:'+topic.id,label:topic.label,minutes:topic.minutes,speaker:topic.speaker});
+  for(const topic of storyTopics(s)) options.push({id:topic.id.startsWith('guided-talk:')?topic.id:'talk:'+topic.id,label:topic.label,minutes:topic.minutes,speaker:topic.speaker});
   if(s.site==='B' && s.wichai?.status==='idle' && (accountable(s) || isV4 && s.evidence.includes('E02') && s.evidence.includes('E08'))) add('confront','เผชิญหน้าวิชัยด้วยหลักฐานสองแหล่ง',0);
   if(s.wichai?.site===s.site && s.wichai.status!=='detained' && (accountable(s) || s.wichai.status==='traveling' || isV4 && s.evidence.includes('E02') && s.evidence.includes('E08'))) {
    add('detain','ควบคุมตัววิชัย · ร่างกาย DC 12',10);
    add('surrender','ขอให้วิชัยมอบตัว',10);
    if(s.wichai.site==='E' && !s.seals[2] && !hasFact(s,'bribe-accepted')) add('bribe','รับข้อเสนอปกปิดเรื่องจากวิชัย (50,000 บาท)',0);
   }
-  if(s.site==='A' && (hasFact(s,'confessed') || isV4 && hasFact(s,'gate-truth')) && !hasFact(s,'truth-recorded')) add('record-truth','บันทึกคำรับสารภาพในรายงาน',0);
+  if((s.site==='A' || s.guided?.phase==='FINAL') && (hasFact(s,'confessed') || isV4 && hasFact(s,'gate-truth')) && !hasFact(s,'truth-recorded')) add('record-truth','บันทึกคำรับสารภาพในรายงาน',0);
  }
  if(upgraded) add('hint','สำรวจความผิดปกติ',0);
  if(upgraded && s.site===mission.spiritSense.site && s.ghost!=='hidden' && s.evidence.includes(mission.spiritSense.evidence)) {
   add('sense',mission.spiritSense.question,0);
  }
+ if(s.guided) {
+  const local:Record<string,string[]>= {
+  "advance": [
+    "A1"
+  ],
+  "view-flood-photo": [
+    "B4"
+  ],
+  "clue:E01": [
+    "C1",
+    "C2"
+  ],
+  "clue:E02": [
+    "C2"
+  ],
+  "clue:E03": [
+    "D2"
+  ],
+  "clue:E04": [
+    "D2"
+  ],
+  "clue:E06": [
+    "D5"
+  ],
+  "clue:E07": [
+    "B4",
+    "E4",
+    "H1"
+  ],
+  "clue:E05": [
+    "E4"
+  ],
+  "key": [
+    "E4"
+  ],
+  "open": [
+    "E2"
+  ],
+  "visit-boonmee": [
+    "C5"
+  ],
+  "approach-cellar": [
+    "E1",
+    "E2"
+  ],
+  "study": [
+    "D2"
+  ],
+  "seal1": [
+    "D2",
+    "D4"
+  ],
+  "seal2": [
+    "D2",
+    "D4"
+  ],
+  "cut": [
+    "D2",
+    "D4"
+  ],
+  "pacify": [
+    "D3",
+    "D4"
+  ],
+  "negotiate": [
+    "D3"
+  ],
+  "show-clue": [
+    "D3",
+    "D4"
+  ],
+  "detain": [
+    "B2",
+    "E5"
+  ],
+  "surrender": [
+    "B2",
+    "E5"
+  ],
+  "bribe": [
+    "E5"
+  ],
+  "confront": [
+    "B2"
+  ],
+  "unsafe-bracelet": [
+    "E4"
+  ],
+  "seal3": [
+    "E4",
+    "F1",
+    "F3",
+    "F5"
+  ],
+  "return": [
+    "E4",
+    "F5"
+  ],
+  "ritual": [
+    "F5"
+  ],
+  "suppress": [
+    "F5"
+  ],
+  "record-truth": [
+    "H1",
+    "F5"
+  ],
+  "finish": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6"
+  ]
+};
+  for(let i=options.length-1;i>=0;i--) {
+   const id=options[i].id;
+   if(id.startsWith('travel:') || (local[id] && !local[id].includes(s.guided.scene))) options.splice(i,1);
+  }
+ }
+ if(s.basicMode) for(let i=options.length-1;i>=0;i--) if(['hint','sense'].includes(options[i].id)) options.splice(i,1);
  if(!upgraded) return options;
  return options.map(option => {
   if(option.id==='detain') return {...option,check:'physical'};
   if(option.id==='surrender' && !hasFact(s,'v41-wichai-cooperating')) return {...option,check:'social'};
-  if(ritualChecks.includes(option.id) && !(option.id==='seal1' && s.lore)) return {...option,check:'ritual',background:'temple_student'};
+  if(ritualChecks.includes(option.id) && !(option.id==='seal1' && s.lore)) return {...option,check:'ritual'};
   if(spiritChecks.includes(option.id)) return {...option,check:'spirit'};
   if(s.diceVersion==='4.1' && ['clue:E02','clue:E03','clue:E04','clue:E05','clue:E06','clue:E07'].includes(option.id)) return option;
+  if(s.guided && option.id.startsWith('escort:')) return option;
   const investigation=investigationFor(option.id);
   return investigation && !s.milestones.includes('retry:'+option.id)
-   ? {...option,label:option.label+' · ทดสอบ DC 12',check:'investigation',background:investigation.background,deception:investigation.deception}
+   ? {...option,label:option.label+' · ทดสอบ DC 12',check:'investigation',deception:investigation.deception}
    : option;
  });
 }
@@ -231,10 +359,9 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
  const [kind,target]=option.id.split(':');
  const isV4=s.storyVersion===4;
  s.notice=option.label;
+ if(current.basicMode && actor?.boost && actor.boost!=='focus') throw Error('พักความสามารถพิเศษไว้ในโหมดพื้นฐาน');
  if(actor?.boost && !option.check) throw Error('รายการนี้ไม่มีการทดสอบ');
- if(actor?.boost==='background' && (!option.background || actor.character.background!==option.background || actor.backgroundUsed)) {
-  throw Error('ใช้ภูมิหลังกับการทดสอบนี้ไม่ได้');
- }
+ if(actor?.boost==='background') throw Error('ระบบภูมิหลังถูกยกเลิกแล้ว');
  if(actor?.boost==='deception' && (!option.deception || actor.character.talent!=='detect_deception' || actor.backgroundUsed)) {
   throw Error('ใช้จับพิรุธกับรายการนี้ไม่ได้');
  }
@@ -297,6 +424,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
    actor.onBoost();
    break;
   case 'travel':
+   if((s.site==='A' || target==='A') && !s.milestones.includes('left-arrival')) s.milestones.push('left-arrival');
    s.site=target as Site;
    if(s.site==='A'&&s.escorts.length) {
     const arriving=s.escorts.filter(name=>!actor?.playerId || !s.escortOwners?.[name] || s.escortOwners[name]===actor.playerId);
@@ -343,7 +471,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   case 'return': s.returned=true;s.trust=3;break;
   case 'ritual': {
    const result=check((s.ghost==='pacified'?10:12)+penalty,'spirit',true);
-   s.progress=Math.min(6,s.progress+(result==='success'?(actor?.character.profession==='ritual_specialist'?3:2):result==='partial'?1:0));
+   s.progress=Math.min(6,s.progress+(result==='success'?(!s.basicMode && actor?.character.profession==='ritual_specialist'?3:2):result==='partial'?1:0));
    if(result!=='success') haunt(s,1);
    if(s.progress===6) s.ghost='freed';
    break;
@@ -375,7 +503,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
  return s;
 }
 export function caseDmView(s:CaseState) {
- return {...dmSceneScript(s),choices:caseOptions(s,true).filter(option=>option.id.startsWith('talk:') || option.id==='approach-cellar')};
+ return {...dmSceneScript(s),choices:caseOptions(s,true).filter(option=>option.id.startsWith('talk:') || option.id.startsWith('guided-talk:') || option.id==='approach-cellar')};
 }
 export function caseView(s:CaseState, upgraded=false) {
  const actions=caseOptions(s,upgraded);

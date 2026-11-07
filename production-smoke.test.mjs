@@ -21,7 +21,7 @@ test('production room lifecycle over polling and WebSocket', {timeout:20000}, as
   const origin = 'https://game.example';
   const url = 'http://127.0.0.1:'+port;
   const server = spawn(process.execPath,['packages/server/dist/index.js'],{
-    env:{...process.env,NODE_ENV:'production',PORT:String(port),CLIENT_ORIGIN:origin},
+    env:{...process.env,NODE_ENV:'production',CASE_STORY_VERSION:'4.1',PORT:String(port),CLIENT_ORIGIN:origin},
     stdio:['ignore','pipe','inherit'],
   });
   t.after(() => server.kill());
@@ -95,8 +95,8 @@ test('production room lifecycle over polling and WebSocket', {timeout:20000}, as
   assert.equal(v2resume.room.version,2);
   assert.equal(v2resume.playerId,v2join.playerId);
   assert.equal(v2resume.snapshot.characters[v2join.playerId].profession,'occult_engineer');
-  assert.equal(v2resume.snapshot.characters[v2join.playerId].talent,'spirit_scanner');
-  assert.equal(v2resume.snapshot.characters[v2join.playerId].background,'technician');
+  assert.equal(v2resume.snapshot.characters[v2join.playerId].talent,undefined);
+  assert.equal(v2resume.snapshot.characters[v2join.playerId].background,undefined);
   assert.equal(JSON.stringify(v2resume.snapshot).includes('owner-only'),false);
   assert.equal(JSON.stringify((await req(v2a,'game:snapshot')).snapshot).includes('owner-only'),false);
   assert.deepEqual((await req(v2a,'character:biography')).biography,{});

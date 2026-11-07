@@ -1,3 +1,4 @@
+import { BASIC_RULES_MODE } from '@baan/shared';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { Rooms, canStart } from './rooms.js';
@@ -27,7 +28,7 @@ const io = new Server(httpServer, {
 });
 
 const rooms = new Rooms();
-const worlds = new WorldStore(undefined,true,true);
+const worlds = new WorldStore(undefined,true,true,process.env.CASE_STORY_VERSION!=='4.1',BASIC_RULES_MODE);
 const saveDirectory=process.env.CASE_SAVE_DIR?.trim();
 const saveRoom=saveDirectory ? openRoomSaves(saveDirectory,rooms,worlds) : undefined;
 function saveStartedRoom(code:string) {

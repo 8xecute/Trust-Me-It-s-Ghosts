@@ -4,6 +4,7 @@ export function resolveCheck(
   options: { dc: number; attribute: number; equipment?: number; help?: boolean; boost?: 'focus' | 'background'; partial?: boolean },
   roll: () => number,
 ): { die: number; total: number; outcome: CheckOutcome; critical: boolean } {
+  if(options.boost==='background') throw Error('ระบบภูมิหลังถูกยกเลิกแล้ว');
   const die = roll();
   if (!Number.isInteger(die) || die < 1 || die > 20) throw Error('ผลทอยไม่ถูกต้อง');
   const total = die + options.attribute + (options.equipment ?? 0) + (options.help ? 2 : 0) + (options.boost ? 2 : 0);

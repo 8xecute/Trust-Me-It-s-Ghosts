@@ -44,7 +44,7 @@ test('only v2 rooms accept one authoritative character per investigator', () => 
   assert.ok(worlds.apply('upgrade', 'a', { id: 'start', type: 'caseStart' }).snapshot.case001);
 });
 
-test('talents are restricted to the selected profession and background to one approved tag', () => {
+test('talents are profession restricted and legacy backgrounds are ignored', () => {
   for (const [role, entry] of Object.entries(professionTechniques)) {
     assert.equal(entry.talents.length, 3);
     for (const talent of entry.talents) {
@@ -53,7 +53,8 @@ test('talents are restricted to the selected profession and background to one ap
     }
   }
   assert.throws(() => createCharacter('medium', 'body', { talent: 'field_first_aid', background: 'rescuer' }));
-  assert.throws(() => createCharacter('medium', 'body', { talent: 'soothe_spirit', background: ['rescuer'] }));
+  assert.equal('background' in createCharacter('medium', 'body', { talent: 'soothe_spirit', background: ['rescuer'] }),false);
+  assert.equal(createCharacter('medium','body',{talent:'soothe_spirit'}).talent,'soothe_spirit');
 });
 
 test('shared checks distinguish natural rolls and require explicit partial outcomes', () => {
@@ -96,7 +97,7 @@ test('two investigators cannot spend another turn or pay a talent boost twice on
   assert.equal(rolls, 1);
 });
 
-test('Case 001 spends a temple background only once per location and ignores forged boosts', () => {
+test('Case 001 rejects removed background boosts and retains Focus', () => {
   const worlds = new WorldStore(() => 1);
   worlds.create('case', 2);
   for (const player of ['a', 'b']) {
@@ -111,10 +112,9 @@ test('Case 001 spends a temple background only once per location and ignores for
   act('clue', 'clue:E03');
   act('clue-follow-up', 'clue:E03');
   assert.throws(() => act('forged', 'seal2', ['focus', 'background']));
-  const first = act('boost', 'seal2', 'background');
-  assert.equal(first.snapshot.characters?.a.focus, 4);
-  assert.equal('backgroundUses' in first.snapshot, false);
-  assert.throws(() => act('another', 'seal2', 'background'));
+  assert.throws(() => act('boost', 'seal2', 'background'));
+  assert.equal(worlds.snapshot('case','a').characters?.a.focus,4);
+  assert.equal('background' in worlds.snapshot('case','a').characters!.a,false);
   assert.equal(act('focus', 'seal2', 'focus').snapshot.characters?.a.focus, 3);
 });
 

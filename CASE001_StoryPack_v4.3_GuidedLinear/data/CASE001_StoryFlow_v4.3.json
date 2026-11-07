@@ -1,0 +1,1504 @@
+{
+  "schema_version": "1.0",
+  "case_id": "BS-001",
+  "case_title_th": "เสียงร้องจากสวนกล้วย",
+  "project_title_th": "บริษัท เรื่องผีไว้ใจผม จำกัด",
+  "version": "4.3",
+  "status": "playtest_draft_guided_linear",
+  "source_of_truth": "CASE001_StoryScript_v4.3.md",
+  "note": "Narrative Continuity v4.2 over v4.1 Dice-Integrated (Combat Lite v1.1 unchanged). Read story script; continuity options are optional, not hard-locked scene order.",
+  "main_path": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "FINAL",
+    "ENDING"
+  ],
+  "local_start_time": "23:00",
+  "ritual_entrench_time": "03:00",
+  "cast": [
+    {
+      "id": "PRASERT",
+      "name": "ประเสริฐ",
+      "importance": 3,
+      "first_phase": "A",
+      "knows": [
+        "old_floodgate_opening",
+        "past_coverup",
+        "missing_persons"
+      ],
+      "does_not_know": [
+        "wichai_kidnapped_people",
+        "ritual_details"
+      ]
+    },
+    {
+      "id": "WICHAI",
+      "name": "วิชัย",
+      "importance": 4,
+      "first_phase": "B",
+      "knows": [
+        "kidnapping",
+        "land_scheme",
+        "ritual",
+        "maekaew_saved_him"
+      ],
+      "does_not_know": [
+        "source_of_mysterious_book"
+      ]
+    },
+    {
+      "id": "TON",
+      "name": "ต้น",
+      "importance": 2,
+      "first_phase": "B",
+      "knows": [
+        "wichai_carried_black_bundle",
+        "wet_shadow_rumor"
+      ],
+      "does_not_know": [
+        "kidnapping_directly"
+      ]
+    },
+    {
+      "id": "BUNMEE",
+      "name": "ยายบุญมี",
+      "importance": 3,
+      "first_phase": "C",
+      "knows": [
+        "maekaew_rescued_wichai",
+        "evacuation_story",
+        "suspicious_old_records"
+      ],
+      "does_not_know": [
+        "current_kidnapping",
+        "ritual"
+      ]
+    },
+    {
+      "id": "MAEKAEW",
+      "name": "แม่แก้ว / นางตานี",
+      "importance": 4,
+      "first_phase": "D",
+      "knows": [
+        "wichai_identity",
+        "her_unconsented_binding",
+        "her_initial_hauntings"
+      ],
+      "restriction": "ritual_prevents_directly_naming_controller"
+    },
+    {
+      "id": "DON",
+      "name": "ดล",
+      "importance": 2,
+      "first_phase": "E",
+      "knows": [
+        "land_documents",
+        "wichai_captured_him"
+      ]
+    },
+    {
+      "id": "NID",
+      "name": "นิด",
+      "importance": 1,
+      "first_phase": "E",
+      "knows": [
+        "black_threads_at_shrine",
+        "wichai_captured_her"
+      ]
+    },
+    {
+      "id": "PHOEM",
+      "name": "เพิ่ม",
+      "importance": 1,
+      "first_phase": "E",
+      "knows": [
+        "ritual_box",
+        "wichai_captured_him"
+      ]
+    }
+  ],
+  "enemy_archetypes": [
+    {
+      "id": "DROWNED_ECHO",
+      "name": "ผีเงาจมน้ำ",
+      "phase": "C",
+      "purpose": [
+        "tutorial_combat",
+        "red_herring"
+      ],
+      "is_kidnapper": false,
+      "separate_named_npc": false
+    },
+    {
+      "id": "NANG_TANI",
+      "name": "แม่แก้ว",
+      "phase": [
+        "D",
+        "FINAL"
+      ],
+      "purpose": [
+        "confrontation",
+        "final_boss"
+      ],
+      "temporary_body_disperse": true,
+      "returns_while_unresolved": true
+    }
+  ],
+  "state_schema": {
+    "PHASE": {
+      "type": "enum",
+      "values": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "FINAL",
+        "ENDING"
+      ],
+      "initial": "A"
+    },
+    "TIME_MINUTES": {
+      "type": "integer",
+      "initial": 1380,
+      "semantics": "minutes_since_midnight; after 23:59 add to 1440; handle midnight rollover"
+    },
+    "TON_TRUST": {
+      "type": "enum",
+      "values": [
+        "low",
+        "high"
+      ],
+      "initial": "low"
+    },
+    "FLOOD_TRUTH": {
+      "type": "enum",
+      "values": [
+        "unknown",
+        "partial",
+        "evidence"
+      ],
+      "initial": "unknown"
+    },
+    "KNOWS_WICHAI_SAVED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "GHOST_ENCOUNTER": {
+      "type": "enum",
+      "values": [
+        "not_started",
+        "won",
+        "pacified",
+        "escaped",
+        "lost"
+      ],
+      "initial": "not_started"
+    },
+    "GHOST_CLUE": {
+      "type": "enum",
+      "values": [
+        "none",
+        "trace",
+        "vision"
+      ],
+      "initial": "none"
+    },
+    "SUSPECT_WICHAI": {
+      "type": "enum",
+      "values": [
+        "unknown",
+        "suspected",
+        "confirmed"
+      ],
+      "initial": "unknown"
+    },
+    "KAEW_TRUST": {
+      "type": "enum",
+      "values": [
+        "low",
+        "neutral",
+        "high"
+      ],
+      "initial": "neutral"
+    },
+    "KAEW_D_RESULT": {
+      "type": "enum",
+      "values": [
+        "not_met",
+        "talked",
+        "won",
+        "fled",
+        "lost"
+      ],
+      "initial": "not_met"
+    },
+    "KAEW_TEMP_DISPERSED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "HOSTAGES_FOUND": {
+      "type": "integer",
+      "min": 0,
+      "max": 3,
+      "initial": 0
+    },
+    "HOSTAGES_SAFE": {
+      "type": "integer",
+      "min": 0,
+      "max": 3,
+      "initial": 0
+    },
+    "WICHAI_STATUS": {
+      "type": "enum",
+      "values": [
+        "free",
+        "captured",
+        "escaped",
+        "dead"
+      ],
+      "initial": "free"
+    },
+    "RITUAL_STATUS": {
+      "type": "enum",
+      "values": [
+        "active",
+        "weakened",
+        "stopped",
+        "entrenched"
+      ],
+      "initial": "active"
+    },
+    "KAEW_FINAL": {
+      "type": "enum",
+      "values": [
+        "hostile",
+        "calm",
+        "sealed",
+        "controlled",
+        "departed"
+      ],
+      "initial": "controlled"
+    },
+    "FLOOD_EVIDENCE_COLLECTED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "LAND_EVIDENCE_COLLECTED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "BRIBE_ACCEPTED": {
+      "type": "boolean",
+      "initial": false
+    },
+    "CHECK_RESULTS": {
+      "type": "object",
+      "initial": {},
+      "semantics": "check id -> full|partial|failure, only if attempted"
+    },
+    "CLUE_LEVELS": {
+      "type": "object",
+      "initial": {},
+      "semantics": "clue id -> BASIC|PARTIAL|FULL; never downgrade; independent of physical discovery"
+    },
+    "RITUAL_PLAN": {
+      "type": "enum",
+      "values": [
+        "unknown",
+        "basic",
+        "prepared"
+      ],
+      "initial": "unknown",
+      "semantics": "analysis quality, not ritual actual status"
+    },
+    "WICHAI_COOPERATING": {
+      "type": "boolean",
+      "initial": false,
+      "semantics": "Wichai collaborates only when physically present and free"
+    }
+  },
+  "scenes": [
+    {
+      "id": "A1",
+      "phase": "A",
+      "title": "เข้าเขตหมู่บ้าน",
+      "must_offer": true,
+      "npc": [
+        "PRASERT"
+      ],
+      "main_dialogue": "ประเสริฐแจ้งมีคนหาย 3 คน",
+      "conditional_dialogue_keys": [
+        "ask_missing",
+        "ask_last_seen",
+        "ask_ghost",
+        "ask_green_woman",
+        "ask_police",
+        "accuse_prasert",
+        "refuse_job"
+      ],
+      "continuity": {
+        "narrative_bridge_id": "A1",
+        "player_motivator": "ประเสริฐรับรองข้อมูลคนหาย พร้อมเหตุผิดปกติที่เกิดกับวิทยุ",
+        "possible_next_scene_ids": [
+          "A2",
+          "A3"
+        ],
+        "on_entry_or_exit": "หลังผู้เล่นมีโอกาสถามหรือสำรวจทางเข้าหมู่บ้านอย่างน้อยหนึ่งอย่าง",
+        "optional_choices_not_locks": true,
+        "fallback": "ถ้าทีมไม่สนใจวิทยุ ให้เปิด A2 เป็นเสียงที่ได้ยินจากระยะไกลแล้วไม่บังคับทอย; ทีมยังมุ่งไป B ได้"
+      },
+      "guided_scene_id": "A1",
+      "guided_questions": [
+        "ทั้งสามหายคนละคืนหรือคืนเดียวกัน?",
+        "ใครเห็นพวกเขาเป็นคนสุดท้าย?",
+        "ทำไมจึงเรียกบริษัทนี้?"
+      ]
+    },
+    {
+      "id": "A2",
+      "phase": "A",
+      "title": "เสียงจากวิทยุ",
+      "trigger": "after_first_investigation_or_dialogue",
+      "must_offer": true,
+      "npc": [],
+      "clue": "still_people_inside",
+      "investigation_checks": [
+        "A2_RADIO_ECHO"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "A2",
+        "player_motivator": "เสียง “ยังมีคนอยู่” ทำให้เรื่องคนหายเร่งด่วน และประเสริฐมีข้อมูลยืนยันที่บ้าน",
+        "possible_next_scene_ids": [
+          "A3",
+          "B1"
+        ],
+        "on_entry_or_exit": "หลังวิทยุเงียบ ไม่ว่าผล A2_RADIO_ECHO จะเป็นแบบใด",
+        "optional_choices_not_locks": true,
+        "fallback": "หากผู้เล่นไม่รับการนำทาง ให้แผนที่/คำบอกทางของชาวบ้านพาไปบ้านผู้ใหญ่ได้ ไม่บังคับเดินตามประเสริฐ"
+      },
+      "guided_scene_id": "A2",
+      "guided_questions": [
+        "เสียงนั้นเป็นสัญญาณวิทยุจริงหรือไม่?",
+        "เสียงพูดเป็นผู้หญิงหรือผู้ชาย?",
+        "มีแหล่งคลื่นอยู่แถวไหน?"
+      ],
+      "check_id": "A2_RADIO_ECHO"
+    },
+    {
+      "id": "A3",
+      "phase": "A",
+      "title": "ประเสริฐบอกทาง",
+      "must_offer": true,
+      "transitions": [
+        "B1"
+      ],
+      "continuity": {
+        "narrative_bridge_id": "A3",
+        "player_motivator": "เดินทางตามเส้นทางจริงจากปากหมู่บ้านไปบ้านผู้ใหญ่",
+        "possible_next_scene_ids": [
+          "B1",
+          "C1"
+        ],
+        "on_entry_or_exit": "ทีมเลือกไปบ้านผู้ใหญ่ ไม่ใช่การตัดฉากอัตโนมัติ",
+        "optional_choices_not_locks": true,
+        "fallback": "ถ้าทีมข้าม B ไป C โดยตรง ต้องยังพบสมุดดลและข้อมูลที่จำเป็นได้; วิชัยหรือต้นไม่ถูกบังคับย้ายตำแหน่งตามทีม"
+      },
+      "guided_scene_id": "A3",
+      "guided_questions": [
+        "แฟ้มคนหายมีอะไรบ้าง?",
+        "ไปที่บ้านผู้ใหญ่ไกลไหม?"
+      ],
+      "requires_phase_exit_confirmation": true
+    },
+    {
+      "id": "B1",
+      "phase": "B",
+      "title": "ต้อนรับที่บ้านผู้ใหญ่",
+      "must_offer": true,
+      "npc": [
+        "PRASERT",
+        "WICHAI",
+        "TON"
+      ],
+      "continuity": {
+        "narrative_bridge_id": "B1",
+        "player_motivator": "เอกสารสามรายชื่อ แผนที่ และท่าทีตัวละครเปิดทางให้ทีมเลือกสอบสวน",
+        "possible_next_scene_ids": [
+          "B2",
+          "B3",
+          "B4",
+          "B5"
+        ],
+        "on_entry_or_exit": "เมื่อทีมเข้าบ้านผู้ใหญ่และได้เห็นคนที่อยู่ในห้องจริง",
+        "optional_choices_not_locks": true,
+        "fallback": "ห้ามบังคับให้สอบทุกคนก่อนออกจากบ้าน และห้ามสั่งวิชัยให้รอในห้องหากก่อนหน้าออกไปแล้ว"
+      },
+      "guided_scene_id": "B1",
+      "guided_questions": [
+        "วิชัยรู้เรื่องสวนอย่างไร?",
+        "ต้นทำไมไม่กล้าสบตา?",
+        "มีอะไรผิดปกติในแผนที่และแฟ้ม?"
+      ]
+    },
+    {
+      "id": "B2",
+      "phase": "B",
+      "title": "สอบวิชัย",
+      "must_offer": true,
+      "npc": [
+        "WICHAI"
+      ],
+      "conditional_dialogue_keys": [
+        "ask_missing",
+        "ask_land",
+        "ask_night_trip",
+        "ask_maekaew",
+        "ask_saved_as_child",
+        "accuse",
+        "confront_with_evidence"
+      ],
+      "investigation_checks": [
+        "B2_WICHAI_TELL"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "B2",
+        "player_motivator": "คำอธิบายของวิชัยมีช่องว่าง; พยานต้นหรือเอกสารอาจช่วยตรวจสอบ",
+        "possible_next_scene_ids": [
+          "B3",
+          "B4",
+          "B5"
+        ],
+        "on_entry_or_exit": "เมื่อจบคำถามช่วงหนึ่งหรือผู้เล่นเปลี่ยนความสนใจ",
+        "optional_choices_not_locks": true,
+        "fallback": "หากวิชัยออกไปแล้ว ให้ใช้ร่องรอยจากเอกสารและคำพูดต้น ไม่เสกบทพูดใหม่ให้วิชัยจากระยะไกล"
+      },
+      "guided_scene_id": "B2",
+      "guided_questions": [
+        "เข้าไปสวนกลางคืนทำไม?",
+        "เรื่องซื้อขายที่ดินเกี่ยวกับคนหายอย่างไร?",
+        "มีใครยืนยันกิจกรรมคืนนั้นได้บ้าง?"
+      ],
+      "check_id": "B2_WICHAI_TELL"
+    },
+    {
+      "id": "B3",
+      "phase": "B",
+      "title": "คำให้การต้น",
+      "must_offer": true,
+      "npc": [
+        "TON"
+      ],
+      "branches": [
+        {
+          "if": "ton_alone_and_reassured",
+          "effects": {
+            "TON_TRUST": "high"
+          },
+          "reveal": "wichai_bundle_and_cart"
+        },
+        {
+          "if": "ton_threatened",
+          "effects": {
+            "TON_TRUST": "low"
+          },
+          "reveal": "none"
+        }
+      ],
+      "fallback_clue": "C2",
+      "investigation_checks": [
+        "B3_TON_DISCLOSURE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "B3",
+        "player_motivator": "คำให้การเรื่องห่อผ้าดำและรถเข็นเป็นคำใบ้ แต่ไม่ใช่หลักฐานการลักพาตัว จึงควรตรวจรอยทาง/บันทึก",
+        "possible_next_scene_ids": [
+          "B4",
+          "B5"
+        ],
+        "on_entry_or_exit": "หลังทีมจบการคุยต้น หรือเขาขอหยุดพูด",
+        "optional_choices_not_locks": true,
+        "fallback": "การข่มขู่ต้นทำให้ TON_TRUST ต่ำ แต่ไม่ปิดทางบ้านดลและไม่ทำให้เขาพูดสิ่งที่ไม่เคยเห็น"
+      },
+      "guided_scene_id": "B3",
+      "guided_questions": [
+        "ต้นเห็นใครหรือเห็นแค่เงา?",
+        "คุยที่เป็นส่วนตัวได้ไหม?",
+        "ต้องทำอย่างไรให้ต้นปลอดภัย?"
+      ],
+      "check_id": "B3_TON_DISCLOSURE"
+    },
+    {
+      "id": "B4",
+      "phase": "B",
+      "title": "เอกสารน้ำท่วม",
+      "optional": true,
+      "npc": [
+        "PRASERT"
+      ],
+      "reveal": "flood_partial",
+      "investigation_checks": [
+        "B4_FLOOD_PHOTO"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "B4",
+        "player_motivator": "ภาพเก่าโยงสวนกล้วยกับประตูน้ำ แต่การยืนยันต้องใช้เอกสารจากแหล่งอื่น",
+        "possible_next_scene_ids": [
+          "B5",
+          "H1"
+        ],
+        "on_entry_or_exit": "หลังผู้เล่นพลิกรูปหรือเปิดแฟ้ม",
+        "optional_choices_not_locks": true,
+        "fallback": "H1 ไม่ใช่ฉากที่วาร์ปไปได้ทันที หากยังขาดบันทึกสองแหล่ง ให้บันทึกเป็นคำถามค้างไว้และเดินทางไปเก็บหลักฐานต่อ"
+      },
+      "guided_scene_id": "B4",
+      "guided_questions": [
+        "คนในรูปเป็นใคร?",
+        "ทำไมรายงานเกี่ยวกับน้ำท่วมถูกเก็บกับแฟ้มคนหาย?",
+        "ตำแหน่งประตูน้ำสัมพันธ์กับสวนอย่างไร?"
+      ],
+      "check_id": "B4_FLOOD_PHOTO"
+    },
+    {
+      "id": "B5",
+      "phase": "B",
+      "title": "ชี้ไปบ้านดล",
+      "must_offer": true,
+      "transitions": [
+        "C1"
+      ],
+      "continuity": {
+        "narrative_bridge_id": "B5",
+        "player_motivator": "บ้านดลเป็นที่ที่อาจมีสมุดอธิบายว่าทำไมเขาหาย ขณะเดียวกันผู้เล่นยังเลือกทางอื่นได้",
+        "possible_next_scene_ids": [
+          "C1",
+          "D1",
+          "C5"
+        ],
+        "on_entry_or_exit": "เมื่อผู้เล่นตัดสินใจออกจากบ้านผู้ใหญ่",
+        "optional_choices_not_locks": true,
+        "fallback": "สถานที่ไม่ใช่ประตูล็อกตาม Phase; ถ้าข้าม C ไป D ต้องพบชื่อคนหายและทางไป E ผ่านศาลและรอยรถเข็นได้"
+      },
+      "guided_scene_id": "B5",
+      "guided_questions": [
+        "ดลสืบอะไรอยู่ก่อนหาย?",
+        "มีแผนที่ไปบ้านดลหรือไม่?",
+        "ควรนำหลักฐานอะไรติดตัวไป?"
+      ],
+      "requires_phase_exit_confirmation": true
+    },
+    {
+      "id": "C1",
+      "phase": "C",
+      "title": "บ้านดล",
+      "must_offer": true,
+      "continuity": {
+        "narrative_bridge_id": "C1",
+        "player_motivator": "สภาพบ้านบอกว่าดลกำลังสืบอะไรบางอย่างก่อนหาย",
+        "possible_next_scene_ids": [
+          "C2",
+          "C3",
+          "C5"
+        ],
+        "on_entry_or_exit": "เมื่อทีมเข้าถึงบ้านดลทางกายภาพ",
+        "optional_choices_not_locks": true,
+        "fallback": "การเข้าบ้านไม่เปิด Combat โดยอัตโนมัติ และไม่กำหนดว่าดลถูกจับจากจุดนี้หากไม่มีหลักฐานจริง"
+      },
+      "guided_scene_id": "C1",
+      "guided_questions": [
+        "ใครเข้ามาที่นี่ล่าสุด?",
+        "โต๊ะทำงานอยู่ตรงไหน?",
+        "เสียงและคราบชื้นมาจากอะไร?"
+      ]
+    },
+    {
+      "id": "C2",
+      "phase": "C",
+      "title": "สมุดดล",
+      "must_offer": true,
+      "clues": [
+        "land_sales",
+        "black_thread"
+      ],
+      "fallback_to": "B2",
+      "investigation_checks": [
+        "C2_LAND_PATTERN"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "C2",
+        "player_motivator": "สมุดผูกปริศนาที่ดินกับสวนกล้วย และเศษด้ายดำชี้ไปที่ศาล",
+        "possible_next_scene_ids": [
+          "C3",
+          "C5",
+          "D1"
+        ],
+        "on_entry_or_exit": "หลังพบสมุด หรือหลังตรวจบันทึกที่ผู้เล่นค้นเจอ",
+        "optional_choices_not_locks": true,
+        "fallback": "โน้ตข้างหน้าเป็นเบาะแสเชื่อมฉาก ไม่ใช่คำเฉลยหรือเงื่อนไขบังคับไปบ้านยาย"
+      },
+      "guided_scene_id": "C2",
+      "guided_questions": [
+        "ทำไมเจ้าของที่ดินหลายคนเริ่มขายพร้อมกัน?",
+        "ด้ายดำติดสมุดมาได้อย่างไร?",
+        "หน้าสุดท้ายพูดถึงศาลเพราะอะไร?"
+      ],
+      "check_id": "C2_LAND_PATTERN"
+    },
+    {
+      "id": "C3",
+      "phase": "C",
+      "title": "เสียงเคาะ",
+      "must_offer": true,
+      "investigation_checks": [
+        "C3_SPIRIT_RESIDUE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "C3",
+        "player_motivator": "เสียงเคาะพาไปจุดพลัง ต้องเตือนก่อนผู้เล่นเลือกเผชิญผี",
+        "possible_next_scene_ids": [
+          "C4",
+          "C5",
+          "D1"
+        ],
+        "on_entry_or_exit": "หลังได้ยินเสียงเคาะและผู้เล่นมีโอกาสถอยหรือสำรวจ",
+        "optional_choices_not_locks": true,
+        "fallback": "หลบออกจากบ้านไม่เท่ากับแพ้ Encounter และไม่บังคับให้เกิดการสู้"
+      },
+      "guided_scene_id": "C3",
+      "guided_questions": [
+        "มีใครติดอยู่ใต้พื้นหรือไม่?",
+        "คราบน้ำเชื่อมกับด้ายดำหรือเปล่า?",
+        "ควรถอยหรือสืบต่อ?"
+      ],
+      "check_id": "C3_SPIRIT_RESIDUE"
+    },
+    {
+      "id": "C4",
+      "phase": "C",
+      "title": "ผีเงาจมน้ำ",
+      "must_offer": true,
+      "combat_trigger": "investigate_energy_after_warning",
+      "can_escape": true,
+      "branches": [
+        {
+          "result": "won",
+          "GHOST_CLUE": "trace"
+        },
+        {
+          "result": "pacified",
+          "GHOST_CLUE": "vision"
+        },
+        {
+          "result": "escaped",
+          "GHOST_CLUE": "none"
+        },
+        {
+          "result": "lost",
+          "GHOST_CLUE": "none"
+        }
+      ],
+      "is_kidnapper": false,
+      "investigation_checks": [
+        "C4_DROWNED_ECHO_VISION"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "C4",
+        "player_motivator": "ผลต่อสู้หรือเจรจาผีควรทิ้งร่องรอยให้ตีความต่อ แต่ไม่ใช่เส้นทางหลักที่บังคับ",
+        "possible_next_scene_ids": [
+          "C5",
+          "D1"
+        ],
+        "on_entry_or_exit": "เมื่อผีสลาย สงบ หนีสำเร็จ หรือทีมถอนออกได้จริง",
+        "optional_choices_not_locks": true,
+        "fallback": "ไม่ต้องบังคับให้ทีมกลับมาสู้ผีเพื่อปลดจุดต่อไป; ผีเงาจมน้ำไม่ได้เป็นผู้ลักพาตัว"
+      },
+      "guided_scene_id": "C4",
+      "guided_questions": [
+        "นี่ใช่คนหายหรือเป็นเศษความทรงจำ?",
+        "จะช่วยสงบผีหรือถอย?",
+        "ภาพที่มันเห็นเชื่อถือได้แค่ไหน?"
+      ],
+      "check_id": "C4_DROWNED_ECHO_VISION"
+    },
+    {
+      "id": "C5",
+      "phase": "C",
+      "title": "ยายบุญมี",
+      "must_offer": true,
+      "npc": [
+        "BUNMEE"
+      ],
+      "conditional_dialogue_keys": [
+        "ask_maekaew",
+        "ask_death",
+        "ask_saved_child",
+        "ask_floodgate",
+        "ask_silence",
+        "ask_kidnapper",
+        "accuse_bunmee",
+        "request_escort"
+      ],
+      "note": "may reveal Wichai as saved child immediately",
+      "investigation_checks": [
+        "C5_EVACUATION_RECORDS"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "C5",
+        "player_motivator": "ยายบุญมีเชื่อมเหตุปัจจุบันเข้ากับแม่แก้วและการอพยพ แล้วให้เหตุผลไปสำรวจศาล",
+        "possible_next_scene_ids": [
+          "D1",
+          "B4",
+          "H1"
+        ],
+        "on_entry_or_exit": "หลังจบคำถามที่ยายตอบได้จริงหรือทีมเตรียมออกจากบ้าน",
+        "optional_choices_not_locks": true,
+        "fallback": "ถ้าข้ามยาย ผู้เล่นยังมีโน้ตในสมุดดล แผนที่ หรือศาลพาไป D ได้; ยายไม่เคยเห็นการเปิดประตูน้ำกับตา"
+      },
+      "guided_scene_id": "C5",
+      "guided_questions": [
+        "เด็กที่แก้วช่วยเป็นใคร?",
+        "ปี 2534 เกิดอะไรกับสะพานไม้?",
+        "ด้ายดำที่ศาลมีมาตั้งแต่เมื่อไร?"
+      ],
+      "check_id": "C5_EVACUATION_RECORDS",
+      "requires_phase_exit_confirmation": true
+    },
+    {
+      "id": "D1",
+      "phase": "D",
+      "title": "สวนกล้วย",
+      "must_offer": true,
+      "continuity": {
+        "narrative_bridge_id": "D1",
+        "player_motivator": "สภาพสวนและร่องรอยพลังชี้ไปศาลซึ่งเป็นจุดที่ทีมต้องเลือกว่าจะตรวจอะไร",
+        "possible_next_scene_ids": [
+          "D2",
+          "D5"
+        ],
+        "on_entry_or_exit": "เมื่อผู้เล่นมาถึงสวนกล้วยทางเส้นทางจริง",
+        "optional_choices_not_locks": true,
+        "fallback": "หากทีมข้ามศาลไป E จะพบแกนกำไลในเรือนไม้ได้ โดยข้อมูลอาคมที่ขาดสามารถหาในตำรา E4 แทน"
+      },
+      "guided_scene_id": "D1",
+      "guided_questions": [
+        "รอยเปียกพาไปที่ไหน?",
+        "มีใครกำลังเฝ้าดูอยู่?",
+        "ศาลเป็นต้นทางเสียงร้องหรือเปล่า?"
+      ]
+    },
+    {
+      "id": "D2",
+      "phase": "D",
+      "title": "ศาลและด้ายดำ",
+      "must_offer": true,
+      "clues": [
+        "ritual_threads",
+        "missing_names"
+      ],
+      "note": "one ritual only",
+      "investigation_checks": [
+        "D2_BINDING_PATTERN"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "D2",
+        "player_motivator": "ชื่อสามคนและด้ายที่ไปต่อทางเรือนร้างทำให้ความเร่งด่วนเพิ่มขึ้น",
+        "possible_next_scene_ids": [
+          "D3",
+          "D5",
+          "E1"
+        ],
+        "on_entry_or_exit": "เมื่อผู้เล่นมองเห็นด้ายและชื่อสามคนหรือสัมผัสพิธี",
+        "optional_choices_not_locks": true,
+        "fallback": "การตัดด้ายทำให้พิธีอ่อนลงได้ แต่ไม่ทำให้แกนกำไลหยุดทำงานเอง"
+      },
+      "guided_scene_id": "D2",
+      "guided_questions": [
+        "ป้ายสามชื่อหมายความว่าพวกเขาตายหรือแค่ถูกหมายหัว?",
+        "ด้ายต่อไปถึงไหน?",
+        "ตัดด้ายจะช่วยหรือทำให้พิธีปะทุ?"
+      ],
+      "check_id": "D2_BINDING_PATTERN"
+    },
+    {
+      "id": "D3",
+      "phase": "D",
+      "title": "พบแม่แก้ว",
+      "must_offer": true,
+      "npc": [
+        "MAEKAEW"
+      ],
+      "conditional_dialogue_keys": [
+        "introduce",
+        "ask_kidnapping",
+        "ask_haunting",
+        "ask_threads",
+        "ask_controller",
+        "ask_wichai",
+        "mention_bunmee",
+        "offer_help",
+        "threaten"
+      ],
+      "investigation_checks": [
+        "D3_KAEW_CONTACT"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "D3",
+        "player_motivator": "แม่แก้วทำให้รู้ว่าคนหายไม่ได้อยู่ในศาล และให้เบาะแสว่ามีคนเอาของเธอไป",
+        "possible_next_scene_ids": [
+          "D4",
+          "D5",
+          "E1"
+        ],
+        "on_entry_or_exit": "หลังผู้เล่นถามแม่แก้วหรือเลือกยุติการสนทนา",
+        "optional_choices_not_locks": true,
+        "fallback": "ห้ามแม่แก้วเอ่ยว่า “วิชัยเป็นคนทำพิธี” ขณะถูกผูก แม้ SPI ทอยได้สูง และห้ามกำหนด Combat โดยอัตโนมัติเมื่อพบเธอ"
+      },
+      "guided_scene_id": "D3",
+      "guided_questions": [
+        "คนที่หายอยู่ไหน?",
+        "ด้ายดำบังคับอะไรเธอ?",
+        "เธออยากให้ทีมทำอย่างไร?"
+      ],
+      "check_id": "D3_KAEW_CONTACT"
+    },
+    {
+      "id": "D4",
+      "phase": "D",
+      "title": "เผชิญหน้าแม่แก้ว",
+      "optional": true,
+      "npc": [
+        "MAEKAEW"
+      ],
+      "branches": [
+        {
+          "result": "talked",
+          "KAEW_D_RESULT": "talked"
+        },
+        {
+          "result": "won",
+          "KAEW_D_RESULT": "won",
+          "KAEW_TEMP_DISPERSED": true
+        },
+        {
+          "result": "fled",
+          "KAEW_D_RESULT": "fled"
+        },
+        {
+          "result": "lost",
+          "KAEW_D_RESULT": "lost"
+        }
+      ],
+      "note": "temporary spirit body disperse, not permanent death",
+      "continuity": {
+        "narrative_bridge_id": "D4",
+        "player_motivator": "ผลของการเจรจาหรือปะทะแม่แก้วต้องส่งผลต่อการเดินทางและความสัมพันธ์ใน Final",
+        "possible_next_scene_ids": [
+          "D5",
+          "E1"
+        ],
+        "on_entry_or_exit": "หลังปะทะจบหรือทีมเลือกถอนอย่างสมเหตุผล",
+        "optional_choices_not_locks": true,
+        "fallback": "ไม่ฟื้นร่าง 100% แบบไม่มีผล หาก D4 won ให้ลดความแข็งแกร่งเมื่อกลับมา Final ตาม Combat Lite v1.1; ถ้าหยุดพิธีก่อนฟื้นไม่บังคับรีแมตช์"
+      },
+      "guided_scene_id": "D4",
+      "guided_questions": [
+        "จะยอมถอยแทนสู้หรือไม่?",
+        "ทำอย่างไรจึงหยุดพันธนาการ?",
+        "เมื่อร่างสลายแล้ววิญญาณยังอยู่ไหม?"
+      ]
+    },
+    {
+      "id": "D5",
+      "phase": "D",
+      "title": "รอยล้อไปเรือนไม้",
+      "must_offer": true,
+      "transitions": [
+        "E1"
+      ],
+      "investigation_checks": [
+        "D5_CART_TRACKS"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "D5",
+        "player_motivator": "รอยรถเข็นทำหน้าที่เป็นหลักฐานจริงเชื่อมศาลกับเรือนไม้",
+        "possible_next_scene_ids": [
+          "E1",
+          "D2"
+        ],
+        "on_entry_or_exit": "ทีมตามทางหลังศาลหรือได้รับทิศทางจากแม่แก้ว",
+        "optional_choices_not_locks": true,
+        "fallback": "ไม่มีเส้นทางลับวาร์ป หากทีมไม่ผ่าน Check ก็เดินตามทางที่เห็นได้ตามปกติ"
+      },
+      "guided_scene_id": "D5",
+      "guided_questions": [
+        "รอยล้อมาจากคนหรือผี?",
+        "มีเสียงอะไรจากปลายทาง?",
+        "ทีมควรช่วยคนหายหรือจัดการพิธีก่อน?"
+      ],
+      "check_id": "D5_CART_TRACKS",
+      "requires_phase_exit_confirmation": true
+    },
+    {
+      "id": "E1",
+      "phase": "E",
+      "title": "เรือนไม้ร้าง",
+      "must_offer": true,
+      "player_order_flexible": [
+        "rescue_hostages",
+        "investigate_ritual",
+        "ambush_wichai",
+        "retreat"
+      ],
+      "continuity": {
+        "narrative_bridge_id": "E1",
+        "player_motivator": "เสียงจากใต้ถุนและแสงพิธีจากชั้นบนสร้างทางเลือกจริงในเวลาเดียวกัน",
+        "possible_next_scene_ids": [
+          "E2",
+          "E4",
+          "E5"
+        ],
+        "on_entry_or_exit": "เมื่อทีมมองเห็นเรือนไม้และอยู่ในระยะเข้าไปตรวจ",
+        "optional_choices_not_locks": true,
+        "fallback": "ทางเลือกไม่กำหนดลำดับตายตัว ถ้าทีมแยกกันต้องรักษาตำแหน่งและเวลา E5 เล่นได้เฉพาะเมื่อวิชัยอยู่ที่นั่นจริง"
+      },
+      "guided_scene_id": "E1",
+      "guided_questions": [
+        "เสียงคนมาจากตรงไหน?",
+        "จะช่วยคนก่อนหรือขึ้นไปตรวจกำไลก่อน?",
+        "วิชัยอาจกลับมาไหม?"
+      ]
+    },
+    {
+      "id": "E2",
+      "phase": "E",
+      "title": "ห้องขัง",
+      "must_offer": true,
+      "npc": [
+        "DON",
+        "NID",
+        "PHOEM"
+      ],
+      "note": "found != safe",
+      "continuity": {
+        "narrative_bridge_id": "E2",
+        "player_motivator": "ช่วยชีวิตสามคนได้อย่างเป็นขั้นตอน และคำให้การจะพาทีมไปยังห้องพิธี",
+        "possible_next_scene_ids": [
+          "E3",
+          "E4",
+          "E1"
+        ],
+        "on_entry_or_exit": "เมื่อทีมเปิดทางเข้าได้หรือมีช่องสื่อสารกับผู้ถูกขัง",
+        "optional_choices_not_locks": true,
+        "fallback": "FOUND ไม่เท่ากับ SAFE; ใครยังอยู่ในเรือนหรือเส้นทางเสี่ยงยังไม่นับ HOSTAGES_SAFE; ถ้าคนหายถูกช่วยออกครบแล้วไม่ต้องเรียก E2 ซ้ำ"
+      },
+      "guided_scene_id": "E2",
+      "guided_questions": [
+        "ใครจับพวกเขา?",
+        "ใครต้องการการรักษาก่อน?",
+        "พาพวกเขาไปจุดปลอดภัยได้อย่างไร?"
+      ]
+    },
+    {
+      "id": "E3",
+      "phase": "E",
+      "title": "สอบคนหาย",
+      "optional": true,
+      "npc": [
+        "DON",
+        "NID",
+        "PHOEM"
+      ],
+      "reveal": "kidnapper_is_wichai",
+      "investigation_checks": [
+        "E3_HOSTAGES_ORDER"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "E3",
+        "player_motivator": "คำให้การระบุคนลักพาตัวแน่ชัด และของพิธีอยู่ชั้นบน จึงเปลี่ยนเป้าหมายจาก “หาใครหาย” เป็น “หยุดสาเหตุ”",
+        "possible_next_scene_ids": [
+          "E4",
+          "E5",
+          "H1"
+        ],
+        "on_entry_or_exit": "หลังผู้รอดชีวิตได้รับการช่วยเหลือและทีมเลือกถามรายละเอียด",
+        "optional_choices_not_locks": true,
+        "fallback": "ห้ามให้ผู้รอดชีวิตรู้ว่าใครเป็นผู้ส่งตำราหรืออธิบายกลไกพิธีที่พวกเขาไม่เคยเห็น"
+      },
+      "guided_scene_id": "E3",
+      "guided_questions": [
+        "ดลมีหลักฐานที่ดินอะไร?",
+        "นิดเห็นด้ายดำเมื่อไร?",
+        "เพิ่มเห็นใครยกกล่องขึ้นชั้นบน?"
+      ],
+      "check_id": "E3_HOSTAGES_ORDER"
+    },
+    {
+      "id": "E4",
+      "phase": "E",
+      "title": "กำไลพิธี",
+      "must_offer": true,
+      "clues": [
+        "brass_bracelet",
+        "ritual_core",
+        "land_documents",
+        "flood_records"
+      ],
+      "investigation_checks": [
+        "E4_BRACELET_DECODE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "E4",
+        "player_motivator": "กำไลเป็นแกนพิธีที่มีอยู่จริงและเชื่อมต่อศาล คนหาย วิชัย และการเผชิญหน้า Final",
+        "possible_next_scene_ids": [
+          "E5",
+          "H1",
+          "E6",
+          "F5"
+        ],
+        "on_entry_or_exit": "หลังพบกำไลหรือมีผู้เล่นเข้าไปใกล้เพื่อจัดการมัน",
+        "optional_choices_not_locks": true,
+        "fallback": "เมื่อยัง active และทีมจะจัดการกำไล ใช้ E6 เป็นสัญญาณเปลี่ยนสู่ Final; ถ้าหยุดได้ก่อนบอสให้ข้าม Combat ไป F5 ไม่ต้อง Spawn ผีซ้ำ"
+      },
+      "guided_scene_id": "E4",
+      "guided_questions": [
+        "กำไลเป็นของใคร?",
+        "มีวิธีหยุดการควบคุมอย่างปลอดภัยหรือไม่?",
+        "บันทึกเก่าระบุเรื่องเปิดประตูน้ำว่าอย่างไร?"
+      ],
+      "check_id": "E4_BRACELET_DECODE"
+    },
+    {
+      "id": "E5",
+      "phase": "E",
+      "title": "วิชัยเผชิญหน้า",
+      "conditional": "WICHAI_STATUS == free && WICHAI_is_physically_here",
+      "npc": [
+        "WICHAI"
+      ],
+      "conditional_dialogue_keys": [
+        "accuse_kidnap",
+        "ask_ritual",
+        "ask_maekaew_cooperation",
+        "ask_childhood",
+        "ask_land_debts",
+        "ask_book_source",
+        "offer_arrest",
+        "threaten",
+        "bribe"
+      ],
+      "investigation_checks": [
+        "E5_WICHAI_NEGOTIATE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "E5",
+        "player_motivator": "วิชัยมีโอกาสต่อรอง หนี หรือยอมจำนนตามหลักฐาน/ตำแหน่งจริง ไม่ใช่ NPC ที่ปรากฏตัวตามคิว",
+        "possible_next_scene_ids": [
+          "E4",
+          "H1",
+          "F1"
+        ],
+        "on_entry_or_exit": "เฉพาะ WICHAI_STATUS=free และการเคลื่อนที่จริงทำให้เขาอยู่ที่นี่",
+        "optional_choices_not_locks": true,
+        "fallback": "ถ้า WICHAI_STATUS เป็น captured/escaped/dead หรือไม่ได้อยู่ที่นี่ ห้ามแสดง E5; ใช้เอกสาร ห้องพิธี และคำให้การแทน"
+      },
+      "guided_scene_id": "E5",
+      "guided_questions": [
+        "จะให้วิชัยวางอาวุธหรือสารภาพอย่างไร?",
+        "ใครให้ตำราวิชัย?",
+        "จะจัดการกับผู้รอดชีวิตอย่างไร?"
+      ],
+      "check_id": "E5_WICHAI_NEGOTIATE"
+    },
+    {
+      "id": "H1",
+      "phase": "ANY_BEFORE_ENDING",
+      "title": "เผยความจริงน้ำท่วม",
+      "conditional": "flood_gate_and_evacuation_evidence_available",
+      "npc": [
+        "PRASERT",
+        "BUNMEE"
+      ],
+      "investigation_checks": [
+        "H1_FLOOD_TIMELINE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "confession_guard": "PRASERT_is_physically_here && appropriate_confrontation",
+      "continuity": {
+        "narrative_bridge_id": "H1",
+        "player_motivator": "ความจริงอดีตสังเคราะห์จากหลักฐานหลายแหล่งและคำรับสารภาพเมื่อ NPC อยู่จริง",
+        "possible_next_scene_ids": [
+          "B4",
+          "E4",
+          "F5"
+        ],
+        "on_entry_or_exit": "เมื่อผู้เล่นมีบันทึกเปิดประตูผันน้ำและการอพยพ/คำให้การประกอบเพียงพอ",
+        "optional_choices_not_locks": true,
+        "fallback": "H1 เป็น flexible reveal ไม่ต้องเดินย้อนกลับทันทีจากเรือนไม้เพื่อคุยประเสริฐ และไม่ทำให้ประเสริฐปรากฏตัวที่ E โดยไม่มีการเดินทาง; คำสารภาพสามารถเป็นฉาก follow-up หลัง Final ได้"
+      },
+      "guided_scene_id": "H1",
+      "guided_questions": [
+        "ประตูน้ำถูกเปิดเมื่อใด?",
+        "ประเสริฐมีบทบาทระดับไหน?",
+        "เอกสารระบุว่าอพยพครบจริงหรือไม่?"
+      ],
+      "check_id": "H1_FLOOD_TIMELINE",
+      "is_phase_transition": false,
+      "overlay_active_phase_only": true
+    },
+    {
+      "id": "E6",
+      "phase": "E",
+      "title": "ขยับไป Final",
+      "must_offer": false,
+      "conditional": "ritual_affected_by_player_or_locally_escalating && RITUAL_STATUS != stopped",
+      "note": "Script scene E6 existing in v4.1; newly indexed in v4.2",
+      "continuity": {
+        "narrative_bridge_id": "E6",
+        "player_motivator": "การแตะต้องกำไลที่ทำงานอยู่ทำให้แรงพิธีตอบสนองและสร้างจังหวะเข้าสู่ Final",
+        "possible_next_scene_ids": [
+          "F1",
+          "F5",
+          "E4"
+        ],
+        "on_entry_or_exit": "ผู้เล่นกำลังจะจัดการแกนกำไล หรือพิธีปะทุโดยมีผู้เล่นอยู่ในบริเวณที่ได้รับผลจริง",
+        "optional_choices_not_locks": true,
+        "fallback": "บทนี้เป็น transition ที่เคยมีใน Story Script แต่ขาด ID ใน StoryFlow v4.1; v4.2 ใส่เป็น scene E6 จริง ไม่เปิด F1 ถ้า RITUAL_STATUS=stopped"
+      },
+      "guided_scene_id": "E6",
+      "guided_questions": [
+        "ผู้รอดชีวิตปลอดภัยหรือยัง?",
+        "ต้องหยุดพิธีทันทีหรือรับมือผีก่อน?",
+        "อาคมกำลังเปลี่ยนไปอย่างไร?"
+      ],
+      "requires_phase_exit_confirmation": true
+    },
+    {
+      "id": "F1",
+      "phase": "FINAL",
+      "title": "อาคมกำไลปะทุ",
+      "conditional": "RITUAL_STATUS != stopped",
+      "continuity": {
+        "narrative_bridge_id": "F1",
+        "player_motivator": "เมื่อแรงผูกกำไลตอบสนองต้องให้ผู้เล่นเลือกหยุดพิธี ช่วยเพื่อน สื่อสาร หรือหนี",
+        "possible_next_scene_ids": [
+          "F1",
+          "F2",
+          "F3",
+          "F5",
+          "F6"
+        ],
+        "on_entry_or_exit": "ขณะพิธียัง active/weakened/entrenched และมีผู้เล่นแตะต้องหรือจัดการแกนจริง หรือถึงจังหวะพิธีปะทุ",
+        "optional_choices_not_locks": true,
+        "fallback": "หาก RITUAL_STATUS=stopped ก่อน F1 ไม่ต้องเล่นฉากปะทุ; เวลา 03:00 มีผล F6 เท่านั้นเมื่อพิธียังทำงาน"
+      },
+      "guided_scene_id": "F1",
+      "guided_questions": [
+        "พิธีหยุดหรือยัง?",
+        "ยังมีคนในพื้นที่อันตรายไหม?",
+        "ทีมจะใช้หลักฐานหรือป้องกันผีก่อน?"
+      ]
+    },
+    {
+      "id": "F2",
+      "phase": "FINAL",
+      "title": "แม่แก้วกลับมา",
+      "conditional": "maekaew_spirit_still_unresolved",
+      "variants_from_state": "KAEW_D_RESULT",
+      "continuity": {
+        "narrative_bridge_id": "F2",
+        "player_motivator": "การกลับมาของแม่แก้วต้องขึ้นกับผลที่ D เวลา และสภาพพิธี ไม่ใช่คำสั่ง Spawn บอส",
+        "possible_next_scene_ids": [
+          "F3",
+          "F5",
+          "F6"
+        ],
+        "on_entry_or_exit": "เมื่อพิธียังทำงานและแม่แก้วยังไม่ถูกคลี่คลาย หรือเธอปรากฏจริงตามเวลาและเงื่อนไข",
+        "optional_choices_not_locks": true,
+        "fallback": "ถ้า KAEW_D_RESULT=won และยังไม่มีเวลาฟื้น ไม่บังคับให้สร้างร่างสู้รอบสอง; ใช้เสียงหรือแรงพิธีเป็นอันตรายตามเงื่อนไขที่มี ไม่ทำให้ตายถาวร"
+      },
+      "guided_scene_id": "F2",
+      "guided_questions": [
+        "เธอจำทีมได้อย่างไร?",
+        "ยังถูกด้ายบังคับอยู่ไหม?",
+        "มีทางสื่อสารโดยไม่สู้หรือไม่?"
+      ]
+    },
+    {
+      "id": "F3",
+      "phase": "FINAL",
+      "title": "Boss Phase 1 พันธนาการ",
+      "conditional": "ritual_forces_hostile_or_player_attacks",
+      "combat": true,
+      "continuity": {
+        "narrative_bridge_id": "F3",
+        "player_motivator": "การต่อสู้เป็นอีกทางหนึ่งในการซื้อเวลาหรือขัดขวางพิธี ขึ้นกับการกระทำจริง",
+        "possible_next_scene_ids": [
+          "F4",
+          "F5",
+          "E1"
+        ],
+        "on_entry_or_exit": "เฉพาะเมื่อ ritual_forces_hostile_or_player_attacks เป็นจริง",
+        "optional_choices_not_locks": true,
+        "fallback": "ไม่มีเงื่อนไขต้องลด HP ให้ 0 จึงจะไป F5 ได้; ใช้ Combat Lite v1.1 สำหรับดาเมจ/Action โดยไม่กำหนดการคุยเป็น Combat อัตโนมัติ"
+      },
+      "guided_scene_id": "F3",
+      "guided_questions": [
+        "จะยืนคุ้มกันคนทำพิธีไหม?",
+        "ยังมีทางตัดพลังโดยไม่โจมตีแม่แก้วไหม?",
+        "ใครดูแลผู้รอดชีวิต?"
+      ]
+    },
+    {
+      "id": "F4",
+      "phase": "FINAL",
+      "title": "Boss Phase 2 คืนที่น้ำท่วม",
+      "conditional": "boss_reaches_memory_phase",
+      "combat": true,
+      "continuity": {
+        "narrative_bridge_id": "F4",
+        "player_motivator": "ภาพปี 2534 ทำให้ผู้เล่นเข้าใจความเจ็บปวดและเปิดทางสื่อสารระหว่างที่พิธียังทำงาน",
+        "possible_next_scene_ids": [
+          "F3",
+          "F5"
+        ],
+        "on_entry_or_exit": "เมื่อพลังพิธีหรือความทรงจำปะทุขึ้นตามเหตุจริง ไม่ใช่บังคับทุกการเล่น",
+        "optional_choices_not_locks": true,
+        "fallback": "ภาพความทรงจำไม่ใช่เอกสารยืนยันตัวผู้สั่งเปิดประตูน้ำ และไม่บังคับให้เล่น F4 หากจัดการพิธีเร็ว"
+      },
+      "guided_scene_id": "F4",
+      "guided_questions": [
+        "ภาพที่เห็นเป็นความทรงจำหรือคำสั่ง?",
+        "ใครเป็นคนเปิดประตูผันน้ำ?",
+        "ยังมีวิธีหยุดความรุนแรงหรือไม่?"
+      ]
+    },
+    {
+      "id": "F5",
+      "phase": "FINAL",
+      "title": "Phase 3 อิสรภาพ",
+      "conditional": "RITUAL_STATUS == stopped",
+      "branches": [
+        "calm",
+        "fight",
+        "seal",
+        "depart"
+      ],
+      "investigation_checks": [
+        "F5_KAEW_RECONCILE"
+      ],
+      "dice_rule": "optional_check_only_on_player_action; baseline_clues_not_gated",
+      "continuity": {
+        "narrative_bridge_id": "F5",
+        "player_motivator": "เมื่ออาคมหยุด ความเสี่ยงเหลือที่การยอมรับความจริง ความปลอดภัยคนหาย และความรับผิดของคนเป็น",
+        "possible_next_scene_ids": [
+          "E2",
+          "H1",
+          "ENDING_RESOLVER"
+        ],
+        "on_entry_or_exit": "เฉพาะ RITUAL_STATUS=stopped",
+        "optional_choices_not_locks": true,
+        "fallback": "นี่คือข้อเสนอการกระทำ ไม่ใช่เมนูเลือก Ending; Ending Resolver ใช้ state จริงและอาจให้ C แม้ทีมเลือกเจรจาดี"
+      },
+      "guided_scene_id": "F5",
+      "guided_questions": [
+        "ทีมจะเปิดเผยความจริงอย่างไร?",
+        "คนร้ายต้องรับผิดชอบแบบไหน?",
+        "แม่แก้วต้องการอะไรเพื่อไม่ทำร้ายใครอีก?"
+      ],
+      "check_id": "F5_KAEW_RECONCILE"
+    },
+    {
+      "id": "F6",
+      "phase": "FINAL",
+      "title": "ถึงเวลาตีสาม",
+      "conditional": "TIME_MINUTES >= 1620 && RITUAL_STATUS != stopped",
+      "effect": {
+        "RITUAL_STATUS": "entrenched"
+      },
+      "note": "not automatic failure or hostage death",
+      "continuity": {
+        "narrative_bridge_id": "F6",
+        "player_motivator": "ตีสามคือพิธีฝังแน่น ไม่ใช่เกมโอเวอร์อัตโนมัติ",
+        "possible_next_scene_ids": [
+          "F3",
+          "F5",
+          "ENDING_RESOLVER"
+        ],
+        "on_entry_or_exit": "TIME_MINUTES >= 1620 และ RITUAL_STATUS ยังไม่ stopped",
+        "optional_choices_not_locks": true,
+        "fallback": "ห้ามทำให้คนหายตายอัตโนมัติหรือบังคับ Ending D ทันทีเพราะเวลาถึงตีสาม"
+      },
+      "guided_scene_id": "F6",
+      "guided_questions": [
+        "ยังถอนตัวพร้อมผู้รอดชีวิตได้หรือไม่?",
+        "พิธีที่ฝังแน่นยังปลดได้อย่างไร?",
+        "อะไรต้องแก้ก่อนเพื่อรักษาชีวิต?"
+      ]
+    }
+  ],
+  "clues": [
+    {
+      "id": "E01",
+      "name": "รอยรองเท้ามนุษย์/รอยขนย้าย",
+      "phase": "C",
+      "points_to": "D"
+    },
+    {
+      "id": "E02",
+      "name": "สมุดบันทึกดล",
+      "phase": "C",
+      "points_to": "land_scheme"
+    },
+    {
+      "id": "E03",
+      "name": "ผ้ายันต์/ร่องพิธีที่ศาล",
+      "phase": "D",
+      "points_to": "single_binding_ritual"
+    },
+    {
+      "id": "E04",
+      "name": "ด้ายดำพร้อมชื่อคนหาย",
+      "phase": "D",
+      "points_to": "ritual_targets"
+    },
+    {
+      "id": "E05",
+      "name": "กำไลทองเหลืองสลักชื่อแก้ว",
+      "phase": "E",
+      "points_to": "ritual_core"
+    },
+    {
+      "id": "E06",
+      "name": "รอยล้อรถเข็นและกระสอบ",
+      "phase": "D",
+      "points_to": "E"
+    },
+    {
+      "id": "E07",
+      "name": "บันทึกเปิดประตูผันน้ำ/ข้อมูลอพยพ",
+      "phase": "B_or_E",
+      "points_to": "past_coverup"
+    },
+    {
+      "id": "E08",
+      "name": "คำให้การ NPC",
+      "phase": "multiple",
+      "points_to": "kidnapping_and_past"
+    }
+  ],
+  "ending_priority": [
+    {
+      "ending": "D",
+      "when": "ritual remains dangerous and party ends unable to contain crisis"
+    },
+    {
+      "ending": "C",
+      "when": "main danger stopped but rescue/evidence/current justice incomplete"
+    },
+    {
+      "ending": "B",
+      "when": "ritual stopped, all hostages safe, current case resolved, maekaew still dangerous or sealed"
+    },
+    {
+      "ending": "A",
+      "when": "ritual stopped, all 3 hostages safe, sufficient evidence for current and past, maekaew voluntarily nonviolent"
+    }
+  ],
+  "invariants": [
+    "Do not add another minor ghost battle besides C.",
+    "The drowned echo did not kidnap the missing villagers.",
+    "Wichai is the current kidnapper.",
+    "Mae Kaew saved only Wichai during the 1991 flood.",
+    "The flood diversion gate is OPENED in the 1991 incident in this draft.",
+    "There is only ONE coercive binding ritual centered on the brass bracelet.",
+    "Mae Kaew body can disperse temporarily at D; she is not permanently destroyed.",
+    "Wichai does not teleport to E if captured or dead elsewhere.",
+    "All 3 hostages are alive at game start.",
+    "03:00 entrenchment is not automatic game over.",
+    "Information required to progress has at least one alternate source.",
+    "Dialogue from the full script must be conditional on actual NPC knowledge and player action.",
+    "All 16 investigation checks are optional and conditional on player actions; do not roll upon entering a scene automatically.",
+    "Failed check cannot remove baseline facts, prior observed information, or guaranteed testimony from cooperative NPCs.",
+    "All check outcomes are source-limited: no forced omniscience from ghosts or fabricated evidence.",
+    "Do not treat missing ritual analysis as evidence that the brass bracelet is not the binding focus.",
+    "Check results do not replace Combat Lite attack rules, which have no partial hit."
+  ],
+  "dice_check_file": "data/CASE001_DiceChecks_v4.3.json",
+  "continuity_routes_file": null,
+  "story_route_policy": {
+    "mode": "guided_linear_forward_only",
+    "phase_order": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "FINAL",
+      "ENDING"
+    ],
+    "chapter_exit_confirmation": true,
+    "allow_back_to_closed_phase": false,
+    "local_order_flexible": true,
+    "failed_checks_block_main_story": false,
+    "missing_clue_delivery": "forward_source_only",
+    "h1": "information overlay within current phase only; do not teleport NPC",
+    "base_choice": "free questions + 2-3 contextual suggestions",
+    "scene_dialogue": "only actor present and knowledgeable"
+  },
+  "ending_continuity": {
+    "ENDING_A": {
+      "when": "หลังตรวจว่าพิธีหยุด คนหายปลอดภัยครบ หลักฐานคดีปัจจุบันและอดีตพร้อม แม่แก้วสมัครใจไม่เป็นภัย",
+      "narration": "แสงเช้าไม่ได้ลบเสียงร้องเมื่อคืนทันที แต่หลักฐานน้ำท่วมถูกนำออกจากความเงียบให้ชาวบ้านรับรู้ หากประเสริฐได้สารภาพไว้ เขายืนยันบทบาทของตนต่อหน้าผู้อื่น ดลรวบรวมวันที่ซื้อขายที่ดิน ส่วนศาลสวนกล้วยมีดอกไม้สดวางอยู่โดยไม่มีด้ายดำผูกเพิ่ม",
+      "note": "ใช้บท Ending A เดิมต่อ และให้แม่แก้วเลือกอยู่สงบหรือจากไปได้"
+    },
+    "ENDING_B": {
+      "when": "พิธีหยุดและคนหายปลอดภัยครบ คดีปัจจุบันคลี่คลาย แต่แม่แก้วยังเป็นภัยหรือถูกสะกด",
+      "narration": "เมื่อทุกคนกลับถึงถนนหมู่บ้าน คนหายได้พักกับครอบครัว แต่สวนกล้วยยังมีเสียงใบไม้สีกันทุกครั้งที่มีใครพูดถึงปี 2534 ความจริงบางส่วนเปิดออกแล้ว ทว่ายังไม่มีการคืนดีกัน",
+      "note": "คงผลโกรธ/ถูกผนึกของแม่แก้ว ไม่แอบเปลี่ยนเป็นสงบ"
+    },
+    "ENDING_C": {
+      "when": "หยุดภัยหลักได้ แต่ช่วยหรือพิสูจน์คดีไม่ครบ",
+      "narration": "รายงานบริษัทมีช่องที่ต้องเขียนว่า “รอตรวจสอบเพิ่มเติม” สิ่งที่ทีมช่วยได้ถูกบันทึกอย่างตรงไปตรงมา บางหน้าถูกทำเครื่องหมายว่ายังต้องติดตาม คนในหมู่บ้านรู้แล้วว่าคำตอบไม่ได้อยู่ที่ผีเพียงอย่างเดียว",
+      "note": "ระบุ modifier จริง เช่น 2/3 คน วิชัยหนี หรือหลักฐานไม่พอ"
+    },
+    "ENDING_D": {
+      "when": "ทีมสิ้นสุดภารกิจทั้งที่พิธียังเป็นภัยและไม่มีทางควบคุมที่เลือกใช้ได้",
+      "narration": "เมื่อภารกิจสิ้นสุดลงทั้งที่ภัยยังไม่ได้รับการควบคุม เสียงจากสวนกล้วยยังดังข้ามรั้วบ้าน ผู้ใหญ่บ้านต้องแจ้งเตือนคนที่เหลือ โดยไม่มีใครรับประกันได้ว่ารุ่งเช้าจะปลอดภัย แต่คนหายไม่ได้ตายเพราะแค่ถึงเวลาตีสาม",
+      "note": "ยังบันทึกสภาพคนหาย วิชัย และแม่แก้วตามจริง ไม่สรุปว่าทุกคนเสียชีวิต"
+    }
+  },
+  "guided_scenes_file": "data/CASE001_GuidedScenes_v4.3.json",
+  "narrative_routing_priority": "v4.3 guided forward-only scene guidance overrides v4.2 optional cross-phase skip/backtrack routes",
+  "player_journal": {
+    "persist": true,
+    "only_player_known_information": true,
+    "fields": [
+      "known_facts",
+      "open_questions",
+      "next_destination_rationale"
+    ],
+    "summarize_on_phase_exit": true
+  },
+  "hint_tiers": {
+    "levels": 3,
+    "by_phase_file": "data/CASE001_GuidedScenes_v4.3.json"
+  },
+  "legacy_routes_deprecated": true
+}

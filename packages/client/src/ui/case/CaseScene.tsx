@@ -5,7 +5,7 @@ import missingVillagerHouse from '../../assets/case-001/scenes/missing-villager-
 import grove from '../../assets/case-001/scenes/banana-grove.jpg';
 import abandonedHouse from '../../assets/case-001/scenes/abandoned-house.jpg';
 
-const illustrations: Record<CaseSite,string> = {
+export const illustrations: Record<CaseSite,string> = {
   A:entrance, B:headmanHouse, C:missingVillagerHouse, D:grove, E:abandonedHouse,
 };
 

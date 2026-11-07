@@ -25,7 +25,8 @@ test('encounter setup survives later actions and escape is not narrated as victo
  assert(escaped.narrative!.history.some(b=>b.eventId==='EN01:start'));
 });
 test('ending cause changes prose without changing D, rewards or duplicate protection',()=>{
- const early=applyCaseAction(newCase(true),'finish',()=>20);assert.equal(early.report!.ending,'D');
+ const started=newCase(true);started.milestones.push('left-arrival');
+ const early=applyCaseAction(started,'finish',()=>20);assert.equal(early.report!.ending,'D');
  assert.match(early.narrativeEvents!.find(b=>b.eventId==='ending:D')!.text,/ถอนตัว/);
  const deadline=newCase(true);tick(deadline,240);assert.equal(deadline.report!.ending,'D');assert.match(deadline.notice,/ระฆัง/);
  const down=newCase(true);failCase(down);failCase(down);assert.equal(down.narrativeEvents!.filter(b=>b.eventId==='ending:D').length,1);assert.match(down.notice,/หมดสภาพ/);

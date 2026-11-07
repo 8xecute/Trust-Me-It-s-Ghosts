@@ -12,6 +12,7 @@ import { EncounterBoard, type BattleView } from '../combat/EncounterBoard';
 type Cell = {x:number;y:number};
 export type PlayerPreview = {
   revision:number;
+  turns?:Record<string,{ap:number}>;
   narrative?:NarrativeView;
   players:Record<string,Cell>;
   characters?:Record<string,Character>;
@@ -35,7 +36,7 @@ export function DmPlayerView({playerId,preview}:{playerId:string;preview:PlayerP
       <p>{story.location} · {story.time} · ช่วยแล้ว {story.rescued}/3 · หลักฐาน {story.evidence}/8 · ผนึก {story.seals}/3</p>
     </>}
     {story && preview.caseMap && (preview.caseMap.battle ?
-      <EncounterBoard site={preview.caseMap.site} battle={preview.caseMap.battle} players={preview.players} characters={preview.characters ?? {}} self={playerId}/> :
+      <EncounterBoard site={preview.caseMap.site} battle={preview.caseMap.battle} players={preview.players} characters={preview.characters ?? {}} self={playerId} turns={preview.turns}/> :
       <CaseScene site={preview.caseMap.site} location={story.location} intro={story.intro}/>)}
     {story && <CastPortraits roles={Object.values(preview.characters ?? {}).map(entry=>entry.profession)} speakers={[...(story.speakers ?? []),...visibleCast(story.actions)]}/>}
     <GameHud exploring={!!story} hp={character?.hp} sanity={character?.sanity} focus={character?.focus} haunt={story?.haunt}/>

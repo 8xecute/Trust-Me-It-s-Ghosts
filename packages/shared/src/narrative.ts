@@ -4,6 +4,7 @@ export interface NarrativeBeat {
 export interface NarrativeView { current:NarrativeBeat|null; history:NarrativeBeat[]; pending:number; }
 
 export type StoryDiceInfo = {stat:keyof import('./combatLite.js').LiteStats;dc:number;ap:number};
+export type DmOutcomeAnswer = {rollId:string;checkId:string;scene:string;playerId:string;label:string;die:number;stat:string;statValue:number;bonus:number;total:number;dc:number;outcome:'success'|'partial'|'failure';narration:string;dialogue?:string;sentParts:('narration'|'dialogue')[]};
 export type DmRollCard = {id:string;playerId:string;die:number|null;label?:string;dice?:StoryDiceInfo;result?:{total:number;outcome:'success'|'partial'|'failure'}};
 export type DmLogEntry = {
   sequence:number;
