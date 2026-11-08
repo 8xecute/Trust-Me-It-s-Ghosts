@@ -1,3 +1,5 @@
+import {SessionSaveControls} from './SessionSaveControls';
+import type {Socket} from 'socket.io-client';
 import { DmOutcomeCard } from './DmOutcomeCard';
 import { useState } from 'react';
 import type { CaseDmPanel, GmChapter, Room, Snapshot } from '../../network/onlineTypes';
@@ -38,9 +40,10 @@ function GmGuide({chapters,current}:{chapters:GmChapter[];current:string}) {
 }
 
 export function DmWorkspace({
-  room, world, investigators, preview, previewPlayer, setPreviewPlayer, dmPanel,
+  socket, room, world, investigators, preview, previewPlayer, setPreviewPlayer, dmPanel,
   action, playerName, canStart, status, connected, limit, leaveRoom, leaving,
 }: {
+  socket:Socket|null;
   room:Room;
   world:Snapshot|null;
   investigators:Room['players'];
@@ -77,17 +80,19 @@ export function DmWorkspace({
   return <main className="game-shell online-shell dm-shell">
     <header className="online-heading"><div><p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ผู้ดำเนินเรื่อง</p><h1>ห้องควบคุมภารกิจ</h1></div><p className="turn-chip" role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p></header>
     <p className="room-reference">รหัสห้อง <strong>{room.code}</strong> · ผู้สืบสวน {investigators.length}/{limit}</p>
-    <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>ออกจากห้อง</button>
+    <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>{world?.case001?'ออกชั่วคราว':'ออกจากห้อง'}</button>
     <details className="session-members"><summary>ทีมผู้สืบสวน · {investigators.length} คน</summary><ul>{investigators.map(player=><li key={player.id}>{playerName(player.id)} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul></details>
     <div className="dm-workspace"><div className="dm-preview-pane">
     <label className="dm-view-selector">เลือกมุมมองผู้สืบสวน <select value={previewPlayer} onChange={event=>setPreviewPlayer(event.target.value)}>
       <option value="">เลือกผู้สืบสวน</option>
       {investigators.map(player=><option key={player.id} value={player.id}>{playerName(player.id)}</option>)}
     </select></label>
-    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview} action={action} connected={connected}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
+    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview} action={action} connected={connected}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{world?.inactivePlayers?.includes(previewPlayer)?'ตัวละครนี้พักใน session วันนี้ ข้อมูลเดิมยังอยู่':investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
     </div><div className="dm-controls-pane">
     <h2 className="pane-heading">เครื่องมือดำเนินเรื่อง</h2>
     {world?.case001 && !world.case001.report && <section className="session-tools" aria-label="จัดการคดี">
+     <SessionSaveControls socket={socket} paused={!!world.paused} playerName={playerName}/>
+     {world.paused && <section aria-label="จัดทีมวันนี้"><h3>ผู้เล่นใน session วันนี้</h3><button disabled={!connected} onClick={()=>{if(window.confirm('ยกเลิกเฉพาะแผนและคำขอที่ยังไม่ได้ทอย? ผลทอยที่เกิดแล้วจะยังอยู่'))action('dmSessionControl',{command:'clearPending'});}}>ยกเลิกแผนและคำขอที่ยังไม่ทอย</button><p>พักตัวละครคนที่มาไม่ได้ไว้ แล้วเปิดเล่นต่อเมื่อผู้เล่นที่เลือกกลับเข้าห้องครบ</p>{investigators.map(p=><label key={p.id}><input type="checkbox" checked={!world.inactivePlayers?.includes(p.id)} disabled={!connected} onChange={e=>action('dmSessionControl',{command:'attendance',targetId:p.id,absent:!e.target.checked})}/>{playerName(p.id)} · {world.inactivePlayers?.includes(p.id)?'พักตัวละคร':'เล่นวันนี้'}</label>)}</section>}
      <p role="status">{world.paused?'พักคดีอยู่ · ทุกคนรอ DM เปิดเล่นต่อ':'คดีกำลังดำเนินอยู่'}</p>
      <button disabled={!connected} onClick={()=>action('dmSessionControl',{command:world.paused?'resume':'pause'})}>{world.paused?'เปิดเล่นต่อ':'พักคดี'}</button>
      <button disabled={!connected} onClick={()=>{if(window.confirm('ย้อนกลับจุดเริ่มบทปัจจุบันสำหรับทุกคน? การกระทำหลังจุดนั้นจะถูกยกเลิก และคดีจะพักให้ตรวจสถานะก่อนเล่นต่อ'))action('dmSessionControl',{command:'rewind'});}}>ย้อนต้นบท</button>

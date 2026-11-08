@@ -1,3 +1,4 @@
+import {caseGrid as caseGridForSession} from '@baan/shared';
 import { randomInt } from 'node:crypto';
 import { characterAttribute, liteGhostHP } from '@baan/shared';
 import { readFileSync } from 'node:fs';
@@ -46,7 +47,7 @@ const distance=(a:Cell,b:Cell)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 const fail=(reason='ทำรายการนี้ไม่ได้'):never=>{throw Error(reason);};
 const points=(grid:GhostGrid)=>Array.from({length:grid.width*grid.height},(_,i)=>({x:i%grid.width,y:Math.floor(i/grid.width)}));
 const localPlayers=(w:World,site:Site)=>Object.fromEntries(Object.entries(w.players)
-  .filter(([id])=>id!==w.humanDmId && (w.caseMap!.sites[id] ?? 'A')===site));
+  .filter(([id])=>id!==w.humanDmId && !w.inactivePlayers?.includes(id) && (w.caseMap!.sites[id] ?? 'A')===site));
 const readyPlayers=(w:World,site:Site)=>Object.keys(localPlayers(w,site)).filter(id=>(w.characters?.[id]?.hp ?? 0)>0);
 export function removeCasePlayer(w:World,id:string,gridFor:(site:Site)=>GhostGrid,roll:()=>number,completeRound:()=>void) {
   const map=w.caseMap;
@@ -146,7 +147,7 @@ export function finishCaseBattle(w:World,escaped=false) {
     const pacified=battle.enemies.some(enemy=>enemy.state.outcome==='pacified');
     if(s.v51 && battle.id==='EN04') {delete map.battle;return;}
     if(s.v51 && (battle.id==='EN01' || battle.id==='EN02')) {
-      const lost=!Object.entries(w.characters ?? {}).some(([id,c])=>id!==w.humanDmId && map.sites[id]===battle.site && c.hp>0);
+      const lost=!Object.entries(w.characters ?? {}).some(([id,c])=>id!==w.humanDmId && !w.inactivePlayers?.includes(id) && !!w.players[id] && map.sites[id]===battle.site && c.hp>0);
       const result=escaped?'escaped':lost?'lost':pacified?'pacified':'won';
       if(battle.id==='EN01') {
         s.v51.GHOST_ENCOUNTER=result;
@@ -261,7 +262,7 @@ function nextCombatTurn(w:World,b:CaseBattle,grid:GhostGrid,roll:()=>number,inde
       advanceTactics(local,grid,roll,false);
       continue;
     }
-    if(w.characters?.[player]?.hp && w.players[player]) {
+    if(w.characters?.[player]?.hp && w.players[player] && !w.inactivePlayers?.includes(player)) {
       b.active=player;
       w.turns[player]=startTurn();
       return;
@@ -376,4 +377,11 @@ export function battleView(map:CaseMap,site:Site) {
     projections:[...b.projections,...(b.focusCell&&!b.armorDisabled?[b.focusCell]:[])],flooded:b.flooded ?? [],objective:!!b.focusCell&&!b.armorDisabled || b.projections.length>0,
     reaction:b.enemies[0].tactics.reaction,restrained:b.enemies[0].tactics.restrained,
   };
+}
+
+export function resumeSessionBattle(w:World,roll:()=>number,completeRound:()=>void) {
+ const b=w.caseMap?.battle;
+ if(!b?.active || !w.inactivePlayers?.includes(b.active))return;
+ if(b.initiative)nextCombatTurn(w,b,caseGridForSession(b.site),roll,b.initiative.indexOf(b.active),completeRound);
+ else b.active=readyPlayers(w,b.site)[0] ?? null;
 }

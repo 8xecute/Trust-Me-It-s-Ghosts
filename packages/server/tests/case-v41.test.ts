@@ -136,6 +136,8 @@ test('room save resumes pending and committed checks without rerolling',()=>{
  const save=openRoomSaves(directory,restoredRooms,restored);
  assert.equal(restoredRooms.resume('new-socket',tokens[1]).id,p);
  assert.equal(restored.snapshot(code,p).diceRequest?.id,card.id);
+ assert.equal(restored.snapshot(code,p).paused,true);
+ restored.apply(code,dm,{id:'resume-session',type:'dmSessionControl',command:'resume'});
  const request={id:'after-load',type:'dmRoll',requestId:card.id};
  restored.apply(code,p,request);
  save(code);
@@ -144,6 +146,7 @@ test('room save resumes pending and committed checks without rerolling',()=>{
  assert.equal(again.snapshot(code,p).latestRoll?.die,9);
  assert.equal(again.checkpoint(code).world.case001?.storyChecks?.A2_RADIO_ECHO.length,1);
  assert.equal(again.apply(code,p,request).duplicate,true);
+ again.apply(code,dm,{id:'resume-again',type:'dmSessionControl',command:'resume'});
  assert.throws(()=>again.apply(code,p,{...request,id:'new-id'}),/ไม่มีคำขอทอย/);
  assert.equal(rolls,1);
 });

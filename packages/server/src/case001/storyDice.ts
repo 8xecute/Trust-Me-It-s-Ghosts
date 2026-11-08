@@ -33,6 +33,7 @@ export const storyCheckHelp=pack.checks.map(({id,scene_id,title,stat,dc,trigger,
 
 function availableChecks(w:World,player:string) {
  const s=w.case001, character=w.characters?.[player];
+ if(w.inactivePlayers?.includes(player))return [];
  if(!s || s.diceVersion!=='4.1' || s.report || !character?.hp || !character.coreStats ||
    w.humanDmId===player || w.caseMap?.sites[player]!==s.site) return [];
  const battle=w.caseMap?.battle;

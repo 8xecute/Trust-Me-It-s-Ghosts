@@ -68,7 +68,7 @@ export function OnlineGame() {
   function request(event:string,args:unknown[]=[],onSuccess?:()=>void,onSettled?:(error?:string)=>void) {
     const connection=socket.current;
     if (!connection?.connected) {setStatus('กำลังรอการเชื่อมต่อ');onSettled?.('กำลังรอการเชื่อมต่อ');return;}
-    connection.timeout(5000).emit(event,...args,(error:Error|null,reply:Reply)=>{
+    connection.timeout(event==='session:import'?20000:5000).emit(event,...args,(error:Error|null,reply:Reply)=>{
       if(error || !reply?.ok) {
         const message=error ? 'เซิร์ฟเวอร์ไม่ตอบกลับ' : reply?.error ?? 'ทำรายการไม่ได้';
         setStatus(message);
@@ -83,7 +83,7 @@ export function OnlineGame() {
         }
         return;
       }
-      if(reply.token) sessionStorage.setItem(sessionKey,reply.token);
+      if(reply.token) {sessionStorage.setItem(sessionKey,reply.token);if(event==='session:import')localStorage.setItem(savedSessionKey,reply.token);}
       if(reply.playerId) self.current=reply.playerId;
       if(reply.room) setRoom(reply.room);
       if(reply.snapshot) receive(reply.snapshot,reply.persistent);
@@ -176,12 +176,14 @@ export function OnlineGame() {
   },[isHumanDm,room?.players,previewPlayer]);
 
   function leaveRoom() {
-    if(leaving || !window.confirm('ออกจากห้องนี้? คุณจะกลับเข้าคดีที่เริ่มแล้วด้วยตัวละครเดิมไม่ได้')) return;
+    const temporary=!!world?.case001;
+    if(leaving || !window.confirm(temporary?'ออกชั่วคราวและเก็บตัวละครไว้? DM ควรดาวน์โหลดเซฟก่อนปิดเกม':'ออกจากห้องนี้?'))return;
     setLeaving(true);
-    request('room:leave',[],()=>{
+    request(temporary?'room:detach':'room:leave',[],()=>{
       const token=sessionStorage.getItem(sessionKey);
       sessionStorage.removeItem(sessionKey);
-      if(token && localStorage.getItem(savedSessionKey)===token) localStorage.removeItem(savedSessionKey);
+      if(temporary && token)localStorage.setItem(savedSessionKey,token);
+      else if(token && localStorage.getItem(savedSessionKey)===token)localStorage.removeItem(savedSessionKey);
       latest.current=null;
       self.current='';
       setRoom(null);
@@ -193,7 +195,7 @@ export function OnlineGame() {
     },()=>setLeaving(false));
   }
 
-  if(isHumanDm && room) return <DmWorkspace room={room} world={world} investigators={investigators}
+  if(isHumanDm && room) return <DmWorkspace socket={socket.current} room={room} world={world} investigators={investigators}
     leaveRoom={leaveRoom} leaving={leaving} preview={preview} previewPlayer={previewPlayer} setPreviewPlayer={setPreviewPlayer} dmPanel={dmPanel}
     action={action} playerName={id=>playerName(id)+(world?.characters?.[id]?' · '+professions[world.characters[id].profession].name:'')} canStart={canStart} status={status} connected={connected} limit={limit}/>;
 
@@ -205,8 +207,10 @@ export function OnlineGame() {
         sessionStorage.setItem(sessionKey,savedToken);
         request('room:resume',[savedToken]);
       } : undefined}
+      importSave={save=>request('session:import',[save])}
+      recoverRoom={token=>{sessionStorage.setItem(sessionKey,token);request('room:resume',[token],()=>localStorage.setItem(savedSessionKey,token));}}
       createRoom={()=>request('room:create:v2')} joinRoom={roomCode=>request('room:join:v2',[roomCode])}/> : <>
-      <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>ออกจากห้อง</button>
+      <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>{world?.case001?'ออกชั่วคราว':'ออกจากห้อง'}</button>
       <details className="session-members" open={!world?.case001 && (room.version!==2 || !!character)}>
         <summary>ทีมของคุณ · ห้อง {room.code} · {room.players.length} คน</summary>
       <ul>{room.players.map((player,index)=><li key={player.id}>{world?.characters?.[player.id] ? playerName(player.id)+' · '+professions[world.characters[player.id].profession].name : playerName(player.id)}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
@@ -216,6 +220,7 @@ export function OnlineGame() {
         taken={cast.filter(role=>role!==character?.profession)} takenBy={Object.fromEntries(investigators.flatMap((p,i)=>world?.characters?.[p.id] ? [[world.characters[p.id].profession,world.characters[p.id].playerName ?? 'ผู้เล่น '+(i+1)]] : []))} disabled={!connected}
         editable names={world?.playerNames?.[self.current]} onSaveNames={(playerName,characterName)=>action('setPlayerNames',{playerName,characterName})} onCreate={(profession,talent,playerName,characterName)=>action(character?'updateCharacter':'createCharacter',{profession,talent,playerName,characterName})}/>}
       {world?.case001 ? <section className="case-screen" aria-label="คดี 001">
+        {world.inactivePlayers?.includes(self.current) && <p role="status">ตัวละครพักใน session นี้ ข้อมูลเดิมยังอยู่ รอ DM จัดทีมในครั้งถัดไป</p>}
         {world.paused && <p className="narration-card" role="status">พักคดีอยู่ · รอ DM เปิดเล่นต่อ สถานะและผลทอยเดิมยังอยู่</p>}
 
         <header className="case-heading">

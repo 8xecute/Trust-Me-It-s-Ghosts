@@ -7,6 +7,7 @@ export type GuidedView = {version:string;phase:string;scene:string;lethal?:boole
 
 export type Snapshot = {
   playerNames?:Record<string,{playerName?:string;characterName?:string}>;
+  inactivePlayers?:string[];preparingSession?:boolean;
   paused?:boolean;
   guided?:GuidedView;
   revision:number;

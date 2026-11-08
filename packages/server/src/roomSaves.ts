@@ -17,6 +17,7 @@ export function openRoomSaves(directory:string,rooms:Rooms,worlds:WorldStore) {
   if(save.version!==1 || save.membership.room.code+'.json'!==file) throw Error('ข้อมูลห้องบันทึกไม่ถูกต้อง: '+file);
   rooms.restore(save.membership);
   worlds.restore(save.membership.room.code,save.state);
+  worlds.prepareSession(save.membership.room.code);
  }
  const saveRoom=(code:string)=>{
   const save:SavedRoom={version:1,membership:rooms.checkpoint(code),state:worlds.checkpoint(code)};

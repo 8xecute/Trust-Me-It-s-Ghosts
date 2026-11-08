@@ -5,6 +5,8 @@ export class Rooms {
  private rooms = new Map<string,Room>();
  private tokens = new Map<string,{code:string;id:string}>();
  private memberships = new Map<string,string>();
+ has(code:string){return this.rooms.has(code);}
+ connectedIds(code:string){return [...this.ids].filter(([socket])=>this.memberships.get(socket)===code).map(([,id])=>id);}
  checkpoint(code:string) {
   const room=this.rooms.get(code);
   if(!room) throw Error('ไม่พบห้อง');

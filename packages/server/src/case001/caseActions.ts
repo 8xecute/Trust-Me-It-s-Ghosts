@@ -7,7 +7,7 @@ import { caseOpportunity, startCaseBattle, syncCaseBattle, travelCaseMap } from 
 
 export function completeCaseRound(w:World) {
  if(++w.caseMap!.rounds%3===0) tick(w.case001!,10);
- if(!Object.entries(w.characters!).some(([id,character])=>id!==w.humanDmId && w.players[id] && character.hp)) {
+ if(!Object.entries(w.characters!).some(([id,character])=>id!==w.humanDmId && !w.inactivePlayers?.includes(id) && w.players[id] && character.hp)) {
   const v=w.case001!.v51;
   if(v && w.caseMap?.battle?.id==='EN01')v.GHOST_ENCOUNTER='lost';
   if(v && w.caseMap?.battle?.id==='EN02')v.KAEW_D_RESULT='lost';
