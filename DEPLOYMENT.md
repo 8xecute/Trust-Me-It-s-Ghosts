@@ -34,7 +34,16 @@ After deployment, open the server's `/healthz` and check for `{"ok":true}`. Open
 
 ## Limitations
 
-- Rooms and reconnect tokens live in the memory of one process. A restart, redeploy or free-service spin-down clears them. Keep one server instance. A disconnected player can resume within two minutes while that process remains alive.
+- Started story rooms and resume tokens are saved to `packages/server/saves` by default. Set `CASE_SAVE_DIR` to a private persistent disk path on the Web Service to survive redeploys or instance replacement. Keep one server instance. An empty `CASE_SAVE_DIR` disables disk saves; then rooms survive only while that process stays alive. Unstarted rooms remain in memory.
 - Free web services can sleep after inactivity. The first online connection may need time to wake the service. Check the [Render free-tier limits](https://render.com/docs/free).
 - The Web Service exposes public room operations. Room codes and resume tokens are not accounts. Share room codes only with intended players. The server does not currently have public-facing rate limits.
 - The local smoke test verifies transports and room behavior, while a browser check after deploy is needed to verify the deployed TLS/proxy and client asset configuration.
+
+
+## Current release checks
+
+Use `CASE_STORY_VERSION=4.3` (or leave it unset) for guided scenes. The DM can pause, resume, rewind to the start of the current chapter, or withdraw and calculate an ending from the actual state. Rewind pauses the restored room and requires unchanged room membership and DM; resume after reviewing it. Rewind is unavailable after closing the case.
+
+The default basic mode uses 2 damage on a successful player attack and caps enemy HP scaling at four investigators to reduce crowding penalties for six-player teams. Advanced mode retains its previous damage and scaling.
+
+Local browser verification: `node scripts/browser-playtest.mjs 2` and `node scripts/browser-playtest.mjs 6`. Requires Chrome on Windows; starts local ports 39201, 5179 and 9237 and saves evidence under `artifacts`. Combat policy simulations: `node --import tsx scripts/combat-balance.mts`. Simulations use fixed seeds and a simple movement/attack policy for C/D and objective/ritual policy for E. They do not replace human playtesting.

@@ -71,7 +71,7 @@ export function EncounterBoard({site,battle,players,characters,self,ap,turns,act
               const objective=battle.projections.some(p=>at(p,cell)),blocked=grid.blocked.some(p=>at(p,cell));
               const label=id ? name(id) : spirit?.name ?? (hazard?'อันตราย':objective?'จุดอาคม':blocked?'สิ่งกีดขวาง':'ช่องว่าง');
               const tone=spirit?'ghost':id?'ally':hazard?'danger':objective?'objective':blocked?'wall':'';
-              const content=blocked?'■':objective?'◎':hazard?'!':cellName(cell);
+              const content=blocked?'■':objective?'◎':hazard?'!':'';
               const art=id && characters[id] ? tokenArt(characters[id].profession) : spirit && enemyArt(spirit) ? tokenArt(enemyArt(spirit)!) : undefined;
               const selectedCell=at(cell,selected);
               return <div key={i} className="combat-cell" style={{...combatPoint(cell,grid.height),zIndex:cell.x+cell.y+1}} data-tone={tone} data-danger={hazard} data-selected={selectedCell}>
@@ -96,7 +96,7 @@ export function EncounterBoard({site,battle,players,characters,self,ap,turns,act
       {restrained && <p className="combat-warning">ถูกพันธนาการ · ต้องปลดพันธนาการก่อนเดิน</p>}
       <div className="battle-actions">
       <button disabled={!canAct || !canMove || !ap} onClick={()=>send('move',{target:selected})}>เดิน (1 AP)</button>
-      <button disabled={!canAct || enemyDistance!==1 || (ap ?? 0)<2} onClick={()=>send('strike')}>โจมตี (2 AP · ระยะ 1)</button>
+      <button disabled={!canAct || enemyDistance!==1 || (ap ?? 0)<2} onClick={()=>send('strike')}>โจมตี (2 AP · ระยะ 1{BASIC_RULES_MODE?' · 2 HP':''})</button>
       <button disabled={!canAct || enemyDistance!==1 || (ap ?? 0)<2} onClick={()=>send('pacify')}>เจรจา (2 AP · ระยะ 1)</button>
       {battle.objective && <button disabled={!canAct || (ap ?? 0)<2} onClick={()=>send('caseObjective')}>คลายจุดอาคม (2 AP)</button>}
       <button disabled={!canAct} onClick={()=>send('escape')}>ถอยจากสนาม</button>

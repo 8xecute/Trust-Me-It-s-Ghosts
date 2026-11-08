@@ -2,3 +2,7 @@ node_modules/
 dist/
 .env
 *.local
+
+packages/server/saves/
+artifacts/
+combat-balance-report.json

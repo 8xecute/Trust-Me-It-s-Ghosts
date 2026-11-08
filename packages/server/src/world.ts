@@ -1,14 +1,14 @@
-import { newGuided, observeGuidedScene, allowedGuidedScenes, guidedView, guidedCommand, guidedScript } from './case001/guidedCase.js';
+import { newGuided, observeGuidedScene, allowedGuidedScenes, guidedView, guidedCommand, guidedScript, guidedBackup } from './case001/guidedCase.js';
 import { newState51, presentScene51, dmOptions51, contract51, delivered51, validateSave51 } from './case001/storyV51.js';
 import { availableDialogue, storyCheckResponse, isStoryCheck, storyCheckHelp, storyCheckOptions } from './case001/storyDice.js';
 import { completeCaseRound, executeCaseAction } from './case001/caseActions.js';
 import { caseCombatStats } from './case001/caseCombatStats.js';
-import { characterAttribute } from '@baan/shared';
+import { characterAttribute, caseNpcs, type CaseNpcPlacement } from '@baan/shared';
 import { dmEventPreviews, advanceStory, previewDialogue, sceneSpeakers, gmGuide, gmGuideV41 } from './case001/caseStory.js';
 import { newNarrative, enqueueNarrative, narrativeView, advanceNarrative, type NarrativeState } from './narrative.js';
 import { advanceTactics, applyTechnique, newTactics, negotiateV2, stabilize, strikeV2, type Tactics } from './tacticalEncounter.js';
 import { emitBattlePhase, caseBattleAction, caseOpportunity, startCaseBattle, battleView, newCaseMap, removeCasePlayer, syncCaseBattle, type CaseMap } from './case001/caseBattle.js';
-import { sceneNarration, emitCaseBeat, newCase, caseView, caseOptions, caseDmView, tick, type CaseState, type Site } from './case001/case001.js';
+import { sceneNarration, emitCaseBeat, newCase, caseView, caseOptions, caseDmView, withdrawCase, tick, type CaseState, type Site } from './case001/case001.js';
 import { readFileSync } from 'node:fs';
 import { parseScenarioJSON, applyScenarioEvent, getScriptedDmView, type ScriptedDmView, type ScenarioProgress } from '@baan/shared';
 import { randomInt, randomUUID } from 'node:crypto';
@@ -20,7 +20,7 @@ export type Cell = {x:number;y:number};
 type ExplorationPlan={id:string;actions:Record<string,{actionId:string;boost?:unknown;minutes:number}>};
 type QueuedNarration = Omit<NarrativeBeat,'sequence'> & {answer?:import('@baan/shared').DmOutcomeAnswer;phase?:string;id:string;recipients:string[]};
 type DmQuestion = {guidedScene?:string;id:string;playerId:string;site:Site;label:string};
-type DmCheck = {dice?:ReturnType<typeof storyCheckOptions>[number]['dice'];id:string;actionId:string;site:Site;label:string;boost?:unknown};
+type DmCheck = {stat?:keyof import('@baan/shared').LiteStats;dice?:ReturnType<typeof storyCheckOptions>[number]['dice'];id:string;actionId:string;site:Site;label:string;boost?:unknown};
 type DmSession = {
  sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
  checks:Record<string,DmCheck>;
@@ -31,9 +31,10 @@ type DmSession = {
  log:DmLogEntry[];
 };
 
-export type WorldAction = {id:string;type:'guided';command:string;target?:string} | {id:string;type:'dmPublish'|'dmDismiss';cardId:string;part?:'narration'|'dialogue'|'all'} | {id:string;type:'dmCancelCheck';targetId:string;checkId:string} | {id:string;type:'dmRequestRoll';targetId:string;checkId?:string;difficulty?:unknown;stat?:unknown} | {id:string;type:'dmAnswer';cardId:string;actionId:string} | {id:string;type:'dmReply';cardId:string;text:unknown;speaker?:unknown} | {id:string;type:'askGm';text:unknown;site:Site} | {id:string;type:'dmTravel';actionId:string;site:Site} | {id:string;type:'dmNarrativeNext';targetId:string;sequence:number} | {id:string;type:'planSubmit';actionId:string;boost?:unknown} | {id:string;type:'planResolve'|'planCancel';planId:string} | {id:string;type:'narrativeNext';sequence:number} | {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective'} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown;playerName?:unknown} | {id:string;type:'caseStart';mode?:'story'} | {id:string;type:'caseAction';actionId:string;boost?:unknown;site?:Site} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
-export interface World { basicMode?:true; dmSession?:DmSession; sceneMode?:true; explorationPlan?:ExplorationPlan; narrative?:NarrativeState; caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:DmRollCard|null; }
-type Snapshot = Omit<World,'dmSession'|'explorationPlan'|'narrative'|'case001'|'caseMap'|'backgroundUses'|'biographies'> & {manualDm?:true;awaitingReport?:boolean;dmLog?:DmLogEntry[];pendingQuestionCount?:number;pendingCheck?:string;narrative?:ReturnType<typeof narrativeView>;explorationPlan?:{id:string;participants:string[];minutes:number;mine?:{actionId:string;minutes:number}}} & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;opportunity?:string;withdrawalBlocked?:boolean;battle?:ReturnType<typeof battleView>}};
+export type WorldAction = {id:string;type:'dmSessionControl';command:'pause'|'resume'|'withdraw'|'rewind'} | {id:string;type:'dmPlaceNpc';site:string;npcId:string;position:{x:number;y:number}|null} | {id:string;type:'guided';command:string;target?:string} | {id:string;type:'dmPublish'|'dmDismiss';cardId:string;part?:'narration'|'dialogue'|'all'} | {id:string;type:'dmCancelCheck';targetId:string;checkId:string} | {id:string;type:'dmRequestRoll';targetId:string;checkId?:string;difficulty?:unknown;stat?:unknown} | {id:string;type:'dmAnswer';cardId:string;actionId:string} | {id:string;type:'dmReply';cardId:string;text:unknown;speaker?:unknown} | {id:string;type:'askGm';text:unknown;site:Site} | {id:string;type:'dmTravel';actionId:string;site:Site} | {id:string;type:'dmNarrativeNext';targetId:string;sequence:number} | {id:string;type:'planSubmit';actionId:string;boost?:unknown} | {id:string;type:'planResolve'|'planCancel';planId:string} | {id:string;type:'narrativeNext';sequence:number} | {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective'} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown;playerName?:unknown} | {id:string;type:'caseStart';mode?:'story'} | {id:string;type:'caseAction';actionId:string;boost?:unknown;site?:Site} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
+export interface World { paused?:boolean; basicMode?:true; dmSession?:DmSession; sceneMode?:true; explorationPlan?:ExplorationPlan; narrative?:NarrativeState; caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:DmRollCard|null; }
+type Snapshot = Omit<World,'dmSession'|'explorationPlan'|'narrative'|'case001'|'caseMap'|'backgroundUses'|'biographies'> & {manualDm?:true;awaitingReport?:boolean;dmLog?:DmLogEntry[];pendingQuestionCount?:number;pendingCheck?:string;narrative?:ReturnType<typeof narrativeView>;explorationPlan?:{id:string;participants:string[];minutes:number;mine?:{actionId:string;minutes:number}}} & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;npcs?:CaseNpcPlacement[];opportunity?:string;withdrawalBlocked?:boolean;battle?:ReturnType<typeof battleView>}};
+const npcDossiers: {id:string;name:string;background:string;motivation:string;knowledge:string;secret:string;roleplay:string}[] = JSON.parse(readFileSync(new URL('../scenarios/case-001/case-001.npcs.dm.json', import.meta.url), 'utf8'));
 const scenario = parseScenarioJSON(readFileSync(new URL('../scenarios/sample.json', import.meta.url), 'utf8'));
 type DmScript = {script:string; secret:string; next:string[]; dialogue:string[]; events:{id:string;text:string}[]};
 const dmScripts: Record<string,DmScript> = JSON.parse(readFileSync(new URL('../scenarios/sample.dm.json', import.meta.url), 'utf8')).scenes;
@@ -89,6 +90,8 @@ function recordDm(session:DmSession,kind:DmLogEntry['kind'],actor:string,recipie
 function inCurrentNarration(w:World,beat:QueuedNarration) {
  if(w.case001?.v51 && beat.eventId==='v51:crossfire-window' && w.case001.v51.pending?.kind!=='crossfire')return false;
  if(w.case001?.v51 && beat.eventId==='v51:execution-window' && w.case001.v51.pending?.kind!=='execution')return false;
+ if(w.case001?.guided && beat.eventId==='guided-contact-prasert' && w.case001.guided.scene!=='H1') return false;
+ if(w.case001?.guided && beat.eventId==='guided-cellar-open' && w.case001.guided.scene!=='E2') return false;
  if(w.case001?.guided && beat.answer && beat.answer.scene!==w.case001.guided.scene) return false;
  if(w.case001?.guided && beat.phase && beat.phase!==w.case001.guided.phase) return false;
  if(w.case001?.guided && beat.eventId.startsWith('guided-cue:') && beat.eventId!=='guided-cue:'+w.case001.guided.scene) return false;
@@ -99,6 +102,10 @@ function inCurrentNarration(w:World,beat:QueuedNarration) {
 function deliverDmNarration(w:World,beat:QueuedNarration,dm:string,kind:'narration'|'answer') {
  const {id,recipients,answer,...content}=beat;
  const state=w.narrative ??= newNarrative();
+ if(w.case001?.guided && beat.eventId==='guided-contact-prasert') w.case001.guided.prasertContact=true;
+ if(w.case001?.guided && beat.eventId==='guided-cellar-open') {
+  w.case001.opened=true;delete w.case001.guided.cellarPending;advanceStory(w.case001);
+ }
  const sent=w.dmSession!.sent ??= Object.fromEntries(state.records.map(beat=>[beat.eventId,{text:beat.text,site:beat.site,sequence:beat.sequence,count:1}]));
  enqueueNarrative(state,{...content,actor:dm},recipients);
  if(w.case001?.v51)delivered51(w.case001,beat.eventId);
@@ -123,12 +130,13 @@ export class WorldStore {
   private readonly guidedVersion:'4.3'|'5.1'='4.3',
   private readonly lethalV51=false,
  ) {}
+ private rewinds=new Map<string,{world:Omit<World,'backgroundUses'>;backgroundUses?:string[]}>();
  private worlds=new Map<string,World>(); private seen=new Map<string,Map<string,number>>();
  checkpoint(code:string) {
   const {backgroundUses,...world}=structuredClone(this.get(code));
-  return {world,backgroundUses:backgroundUses ? [...backgroundUses] : undefined,seen:[...this.seen.get(code)!]};
+  return {world,rewind:structuredClone(this.rewinds.get(code)),backgroundUses:backgroundUses ? [...backgroundUses] : undefined,seen:[...this.seen.get(code)!]};
  }
- restore(code:string,{world,backgroundUses,seen}:ReturnType<WorldStore['checkpoint']>) {
+ restore(code:string,{world,backgroundUses,seen,rewind}:ReturnType<WorldStore['checkpoint']>) {
   if(!world?.sceneMode || !world.case001 || !world.players || !Array.isArray(seen) || this.worlds.has(code)) {
    throw Error('สถานะคดีที่บันทึกไม่ถูกต้อง');
   }
@@ -137,6 +145,7 @@ export class WorldStore {
   validateSave51(world.case001);
   this.worlds.set(code,structuredClone({...world,backgroundUses:backgroundUses ? new Set(backgroundUses) : undefined}));
   this.seen.set(code,new Map(seen));
+  if(rewind) this.rewinds.set(code,structuredClone(rewind));
  }
  hasStarted(code:string) { return !!this.worlds.get(code)?.sceneMode; }
  assertCanJoin(raw:unknown) {
@@ -168,6 +177,8 @@ export class WorldStore {
   if(!w.case001 && this.storyRoomsOnly) return {caseMode:true,guide:this.storyDiceV41 ? gmGuideV41 : gmGuide,narration:[],travel:[],investigators:[]};
   if(w.case001?.story) return {
    caseMode:true,
+   npcDossiers:structuredClone(npcDossiers),
+   backup:guidedBackup(w),
    sent:structuredClone(w.dmSession?.sent ?? Object.fromEntries((w.narrative?.records ?? []).map(beat=>[beat.eventId,{text:beat.text,site:beat.site,sequence:beat.sequence,count:1}]))),
    guide:w.case001.v51 ? undefined : w.case001.diceVersion ? gmGuideV41 : w.case001.storyVersion===4 ? gmGuide : undefined,
    guidedScenes:w.case001.guided ? allowedGuidedScenes(w).map(scene=>({id:scene.id,cue:scene.entry_cue,script:guidedScript(w.case001!,scene.id),sent:!!w.case001!.guided!.presented.includes(scene.id)})) : undefined,
@@ -191,7 +202,7 @@ export class WorldStore {
    const check=w.dmSession?.checks[id];
    const special=w.dmSession ? caseOptions({...w.case001!,site},true).filter(option=>option.id==='sense' || option.id==='lore')
     .filter(option=>questionPreview(w,id,option.id)) : [];
-   return {id,site,...view,check:check && {id:check.id,label:check.label,dice:check.dice},diceRequest:w.dmSession?.rolls[id],narrative:narrativeView(w.narrative,id),events:dmEventPreviews({...w.case001!,site}),choices:w.caseMap?.battle?.site===site || !w.characters?.[id]?.hp ? [] : [...view.choices,...special].map(choice=>({
+   return {id,site,...view,check:check && {id:check.id,label:check.label,dice:check.dice,stat:check.stat},diceRequest:w.dmSession?.rolls[id],narrative:narrativeView(w.narrative,id),events:dmEventPreviews({...w.case001!,site}),choices:w.caseMap?.battle?.site===site || !w.characters?.[id]?.hp ? [] : [...view.choices,...special].map(choice=>({
     ...choice,answer:isDmQuestion(choice.id) ? questionPreview(w,id,choice.id) : undefined,
    }))};
   })};
@@ -244,9 +255,9 @@ export class WorldStore {
    pendingQuestionCount:dmSession.questions.filter(q=>q.playerId===viewer && q.site===site).length,
   } : {};
   return {...world,...manual,...(case001?.guided ? {guided:guidedView({...world,case001,caseMap,dmSession,narrative})} : {}),...(explorationPlan && viewer?{explorationPlan:{id:explorationPlan.id,participants:Object.keys(explorationPlan.actions),minutes:Math.max(0,...Object.values(explorationPlan.actions).map(a=>a.minutes)),mine:explorationPlan.actions[viewer]?{actionId:explorationPlan.actions[viewer].actionId,minutes:explorationPlan.actions[viewer].minutes}:undefined}}:{}),...(viewer && narrative?{narrative:narrativeView(narrative,viewer)}:{}),case001:story,
-   ...(caseMap && site && localCase ? {caseMap:{site,opportunity:caseOpportunity(localCase,caseMap),withdrawalBlocked:!!caseMap.battle,battle:battleView(caseMap,site)}} : {}),dm:getScriptedDmView(scenario,world.scenario)};
+   ...(caseMap && site && localCase ? {caseMap:{site,npcs:caseMap.npcPlacements?.[site] ?? [],opportunity:caseOpportunity(localCase,caseMap),withdrawalBlocked:!!caseMap.battle,battle:battleView(caseMap,site)}} : {}),dm:getScriptedDmView(scenario,world.scenario)};
  }
- delete(code:string){this.worlds.delete(code);this.seen.delete(code);}
+ delete(code:string){this.worlds.delete(code);this.seen.delete(code);this.rewinds.delete(code);}
  apply(code:string,player:string,input:unknown):{snapshot:Snapshot;duplicate:boolean} {
   const current=this.get(code);
   const w=current.characters ? structuredClone(current) : current;
@@ -259,7 +270,16 @@ export class WorldStore {
   if(typeof a.id!=='string'||a.id.length<1||a.id.length>100 || typeof a.type!=='string') throw Error('คำขอไม่ถูกต้อง');
   if(w.basicMode && (a.type==='useTalent' || a.type==='usePassive' || ('boost' in a && a.boost!==undefined && a.boost!=='focus'))) throw Error('พักความสามารถพิเศษไว้ในโหมดพื้นฐาน ใช้ Stat และสมาธิได้');
   const dedupe=player+':'+a.id; const seen=this.seen.get(code)!; if(seen.has(dedupe)) return {snapshot:this.snapshot(code,player),duplicate:true};
-  if(w.case001?.guided?.transition && (a.type!=='guided' || !['confirm','cancel','propose'].includes(a.command))) delete w.case001.guided.transition;
+  if(a.type==='dmSessionControl' && a.command==='rewind') {
+   const saved=this.rewinds.get(code);
+   if(player!==w.humanDmId || !w.dmSession || w.case001?.report || !saved || Object.keys(w.players).sort().join(',')!==Object.keys(saved.world.players).sort().join(',') || saved.world.humanDmId!==player) throw Error('ย้อนต้นบทไม่ได้เมื่อสมาชิกหรือ DM เปลี่ยน หรือคดีปิดแล้ว');
+   const restored:World=structuredClone({...saved.world,backgroundUses:saved.backgroundUses ? new Set(saved.backgroundUses):undefined});
+   restored.paused=true;restored.revision=w.revision+1;
+   this.worlds.set(code,restored);seen.set(dedupe,restored.revision);
+   return {snapshot:this.snapshot(code,player),duplicate:false};
+  }
+  if(w.paused && a.type!=='dmSessionControl') throw Error('DM พักคดีอยู่ รอเปิดเล่นต่อ');
+  if(w.case001?.guided?.transition && a.type!=='dmSessionControl' && a.type!=='dmPlaceNpc' && (a.type!=='guided' || !['confirm','cancel','propose'].includes(a.command))) delete w.case001.guided.transition;
   if ('die' in a || 'roll' in a || 'total' in a || 'outcome' in a || 'dc' in a || 'dcOverride' in a || 'statOverride' in a || 'modifier' in a) throw Error('คำขอไม่ถูกต้อง');
   if(a.type==='dmTravel' && w.case001?.guided) throw Error('ยืนยันเปลี่ยนบทผ่านสมุดคดี');
   if(a.type==='dmTravel') {
@@ -315,8 +335,29 @@ export class WorldStore {
   if(caseTactical) {
    caseBattleAction(w,player,a,caseGrid(w.caseMap!.sites[player] ?? 'A'),this.rollD20,()=>completeCaseRound(w));
   } else {
-  if(w.case001 && !['guided','planSubmit','planResolve','planCancel','dmPublish','dmDismiss','dmCancelCheck','askGm','dmReply'].includes(a.type) && a.type!=='dmNarrativeNext' && a.type!=='narrativeNext' && a.type!=='caseAction' && a.type!=='caseStart' && a.type!=='createCharacter' && !(a.type==='claimDm' && w.dmSession && !w.humanDmId) && !(w.case001.story && (a.type==='dmRequestRoll' || a.type==='dmRoll'))) throw Error('ใช้คำสั่งจากหน้าคดี');
+  if(w.case001 && !['guided','dmSessionControl','dmPlaceNpc','planSubmit','planResolve','planCancel','dmPublish','dmDismiss','dmCancelCheck','askGm','dmReply'].includes(a.type) && a.type!=='dmNarrativeNext' && a.type!=='narrativeNext' && a.type!=='caseAction' && a.type!=='caseStart' && a.type!=='createCharacter' && !(a.type==='claimDm' && w.dmSession && !w.humanDmId) && !(w.case001.story && (a.type==='dmRequestRoll' || a.type==='dmRoll'))) throw Error('ใช้คำสั่งจากหน้าคดี');
   switch(a.type){
+   case 'dmSessionControl': {
+    if(player!==w.humanDmId || !w.dmSession || !w.case001 || w.case001.report) throw Error('เฉพาะ DM ในคดีที่ยังไม่ปิด');
+    if(a.command==='pause') w.paused=true;
+    else if(a.command==='resume') delete w.paused;
+    else if(a.command==='withdraw') {
+     delete w.paused;delete w.caseMap?.battle;delete w.case001.guided?.transition;
+     withdrawCase(w.case001);
+    } else throw Error('คำสั่งจัดการคดีไม่ถูกต้อง');
+    break;
+   }
+   case 'dmPlaceNpc': {
+    if(w.humanDmId!==player || !w.dmSession || !w.case001 || !w.caseMap || w.case001.report || a.site!==w.case001.site || w.caseMap.battle) throw Error('วางตัวละครได้เฉพาะผู้ดำเนินเรื่องในฉากปัจจุบัน');
+    const npc=caseNpcs.find(item=>item.id===a.npcId);
+    const pos=a.position;
+    if(!npc || (pos!==null && (!pos || typeof pos.x!=='number' || typeof pos.y!=='number' || !Number.isFinite(pos.x) || !Number.isFinite(pos.y) || pos.x<0 || pos.x>100 || pos.y<0 || pos.y>100))) throw Error('ตำแหน่งหรือตัวละครไม่ถูกต้อง');
+    const placements=w.caseMap.npcPlacements ??= {};
+    const current=placements[w.case001.site] ?? [];
+    placements[w.case001.site]=current.filter(item=>item.id!==npc.id);
+    if(pos) placements[w.case001.site]!.push({id:npc.id,x:Math.round(pos.x*10)/10,y:Math.round(pos.y*10)/10});
+    break;
+   }
    case 'guided': guidedCommand(w,player,a.command,a.target);if(a.command==='history') approvedAnswer='guided-history';if(a.command==='hint') approvedAnswer='guided-hint';if(a.command==='evacuate') approvedAnswer='guided-rescue';narrativeActors=Object.keys(w.players).filter(id=>id!==w.humanDmId);break;
    case 'planSubmit': {
     if(!w.case001 || !w.caseMap || w.case001.report || w.caseMap.battle || w.humanDmId===player || !w.characters?.[player]?.hp) throw Error('วางแผนได้เฉพาะช่วงสำรวจ');
@@ -398,6 +439,7 @@ export class WorldStore {
     break;
    }
    case 'caseAction': {
+    if(w.case001?.guided && !w.case001.guided.presented.includes(w.case001.guided.scene)) throw Error('รอผู้ดำเนินเรื่องส่งบทเปิดฉากก่อน');
     if(w.sceneMode && requester===player && (!('site' in a) || a.site!==w.case001?.site)) throw Error('ทีมเปลี่ยนฉากแล้ว โปรดเลือกคำสั่งใหม่');
     if(w.dmSession && requester===player && typeof a.actionId==='string' &&
       (isDmQuestion(a.actionId) || a.actionId.startsWith('travel:'))) throw Error('ให้ผู้ดำเนินเรื่องจัดการการเดินทางและบทสนทนา');
@@ -405,7 +447,7 @@ export class WorldStore {
      const option=[...caseOptions(w.case001,true),...storyCheckOptions(w,player)].find(option=>option.id===a.actionId);
      if(option?.check) {
       if(w.dmSession.checks[player] || w.dmSession.rolls[player]?.die===null) throw Error('มีคำขอทอยที่รออยู่แล้ว');
-      const check={id:randomUUID(),actionId:option.id,site:w.case001.site,label:option.label,boost:a.boost,dice:'dice' in option ? option.dice : undefined};
+      const check={id:randomUUID(),actionId:option.id,site:w.case001.site,label:option.label,boost:a.boost,stat:({ritual:'INT',spirit:'SPI',physical:'BODY',social:'SOC',investigation:'PER'} as const)[option.check],dice:'dice' in option ? option.dice : undefined};
       if(!checkAvailable(w,player,check)) throw Error('ยังทอยเพื่อทำรายการนี้ไม่ได้');
       w.dmSession.checks[player]=check;
       recordDm(w.dmSession,'check-requested',player,[player],check.label);
@@ -470,6 +512,8 @@ export class WorldStore {
      if(index<0) throw Error('จ่ายบทนี้แล้วหรือไม่พบบท');
      if(!inCurrentNarration(w,session.narration[index])) throw Error('บทนี้อยู่คนละฉาก');
      const beat=session.narration[index];
+     const cue='guided-cue:'+w.case001?.guided?.scene;
+     if(w.case001?.guided && beat.eventId!==cue && session.narration.some(card=>card.eventId===cue && inCurrentNarration(w,card))) throw Error('ส่งบทเปิดฉากก่อนบทอื่น');
      if(beat.answer) {
       const response=beat.answer,part=a.part ?? 'all';
       if(!['narration','dialogue','all'].includes(part)) throw Error('เลือกบทตอบไม่ถูกต้อง');
@@ -687,6 +731,9 @@ export class WorldStore {
    w.case001.narrativeEvents=[];
   }
   this.worlds.set(code,w);
+  if(w.case001?.guided && (!current.case001 || current.case001.guided?.phase!==w.case001.guided.phase && w.case001.guided.phase!=='ENDING')) {
+   const {backgroundUses,...saved}=structuredClone(w);this.rewinds.set(code,{world:saved,backgroundUses:backgroundUses ? [...backgroundUses] : undefined});
+  }
   w.revision++;seen.set(dedupe,w.revision);return {snapshot:this.snapshot(code,requester),duplicate:false};
  }
  private get(code:string){const w=this.worlds.get(code);if(!w)throw Error('ไม่พบสถานะห้อง');return w;}

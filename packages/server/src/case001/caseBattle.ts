@@ -31,6 +31,7 @@ export interface CaseBattle {
   flooded?:Cell[];
 }
 export interface CaseMap {
+  npcPlacements?:Partial<Record<Site,import('@baan/shared').CaseNpcPlacement[]>>;
   sites:Record<string,Site>;
   positions:Partial<Record<Site,Record<string,Cell>>>;
   completed:EncounterId[];
@@ -103,7 +104,7 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
   const roster:EnemyKind[]=isV4 ? [id==='EN01' ? 'drowned_echo' : 'kaew_boss'] : definitions[id].roster.slice(0,count<=2 ? (id==='EN01'||id==='EN04'?1:2) : 3);
   const members=roster.map((kind,index)=>{
     const state=startGhostEncounter(w.players[actor],slots[index]);
-    state.ghostHealth=combat ? liteGhostHP(combat.baseHPFor2,Math.max(2,Object.keys(localPlayers(w,site)).length)) : kind==='kaew_boss' && (!isV4 || id==='EN04') ?Math.min(20,8+4*count):enemies[kind].hp;
+    state.ghostHealth=combat ? liteGhostHP(combat.baseHPFor2,Math.max(2,Math.min(w.basicMode?4:6,Object.keys(localPlayers(w,site)).length))) : kind==='kaew_boss' && (!isV4 || id==='EN04') ?Math.min(20,8+4*count):enemies[kind].hp;
     const tactics=newTactics({combat,movement:combat?.MOVE ?? (kind==='kaew_boss'?3:1),armor:kind==='ritual_guardian'?1:0,
       special:kind==='drowned_echo'?'wail':kind==='kaew_boss'?undefined:'lash',restrains:kind!=='ritual_guardian',
       boss:kind==='kaew_boss' && (!isV4 || id==='EN04'),canPacify:kind!=='kaew_boss' || isV4 && id==='EN02',anchorActive:kind==='kaew_boss' && (!isV4 || id==='EN04')});

@@ -182,3 +182,15 @@ test('Combat Lite attacks use Defense thresholds and listed damage',()=>{
   assert.equal(w.characters!.p0.hp,10); // 11 + 3 < PDEF 15
   assert.equal(enemy.tactics.profile?.combat?.MDEF,13);
 });
+
+
+test('basic mode reduces attack grind and caps enemy HP scaling for a crowded six-player board',()=>{
+ const w=fixture('C',6),grid=caseGrid('C');w.basicMode=true;
+ w.case001={...newCase(true,4),site:'C',evidence:['E01']};
+ w.characters!.p0=createCharacter('containment_specialist',undefined,undefined,true);
+ const rolls=[20,10,10,10,10,10,1];startCaseBattle(w,'p0',grid,()=>rolls.shift() ?? 10);
+ const enemy=w.caseMap!.battle!.enemies[0];assert.equal(enemy.state.ghostHealth,16);
+ w.players.p0={x:4,y:7};enemy.state.ghost={x:4,y:8};
+ caseBattleAction(w,'p0',{type:'strike'},grid,()=>7,()=>{});
+ assert.equal(enemy.state.ghostHealth,14);
+});

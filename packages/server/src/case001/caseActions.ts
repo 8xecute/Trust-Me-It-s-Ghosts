@@ -42,7 +42,7 @@ export function executeCaseAction(w:World,player:string,a:{actionId:string;boost
     const backgroundKey=player+':'+site+':'+(boost ?? a.actionId);
     let usedBoost=false;
     w.case001=applyCaseAction(priorCase,a.actionId,roll,character && {
-     character,boost,dcOverride:a.dcOverride,statOverride:a.statOverride,playerId:w.sceneMode && a.actionId.startsWith('travel:') ? undefined : player,inEncounter:inBattle || coordinated,backgroundUsed:w.backgroundUses?.has(backgroundKey) ?? false,
+     character,boost,deferGuidedOpen:!!w.dmSession,dcOverride:a.dcOverride,statOverride:a.statOverride,playerId:w.sceneMode && a.actionId.startsWith('travel:') ? undefined : player,inEncounter:inBattle || coordinated,backgroundUsed:w.backgroundUses?.has(backgroundKey) ?? false,
      onBoost:()=>{usedBoost=true;},
      onCheck:w.sceneMode ? ({die,total,outcome})=>{w.lastCheck={playerId:player,die,total,outcome};} : undefined,
     });

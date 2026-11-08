@@ -17,13 +17,14 @@ function room(count=2,die=20) {
  store.addPlayer(code,'dm');
  const send=(player:string,type:string,data:object={})=>store.apply(code,player,{id:String(++serial),type,...data}).snapshot;
  send('dm','claimDm');
- const players=['a','b','c','d'].slice(0,count);
- players.forEach((id,i)=>{store.addPlayer(code,id);send(id,'createCharacter',{profession:['medium','field_medic','occult_engineer','ritual_specialist'][i]});});
+ const players=['a','b','c','d','e','f'].slice(0,count);
+ players.forEach((id,i)=>{store.addPlayer(code,id);send(id,'createCharacter',{profession:['medium','field_medic','occult_engineer','ritual_specialist','paranormal_investigator','containment_specialist'][i]});});
  send('dm','caseStart',{mode:'story'});
  const panel=()=>{const p=store.dmPanel(code,'dm');if(!('caseMode' in p))throw Error('case');return p;};
  const view=()=>store.snapshot(code,'a');
  const publish=(id:string)=>{const card=panel().narration.find(card=>card.eventId===id && card.current)!;assert.ok(card,id);send('dm','dmPublish',{cardId:card.id});};
  const scene=(id:string)=>{send('dm','guided',{command:'scene',target:id});if(!view().guided?.cue)publish('guided-cue:'+id);};
+ const openCellar=()=>{send('a','caseAction',{actionId:'open',site:'E'});publish('guided-cellar-open');};
  const next=()=>{
   send('dm','guided',{command:'propose'});
   const before=view().guided!.transition!;
@@ -32,9 +33,9 @@ function room(count=2,die=20) {
   publish('guided-cue:'+view().guided!.scene);
  };
  publish('guided-cue:A1');
- return {store,send,panel,view,publish,scene,next,players,code,rolls:()=>rolls};
+ return {store,send,panel,view,publish,scene,openCellar,next,players,code,rolls:()=>rolls};
 }
-for(const count of [2,3,4]) test('v4.3 forward investigation and shared journal for '+count+' investigators',()=>{
+for(const count of [2,3,4,6]) test('v4.3 forward investigation and shared journal for '+count+' investigators',()=>{
  const r=room(count,1);
  assert.equal(r.view().guided?.prompts.length,3);
  assert.throws(()=>r.send('dm','guided',{command:'propose'}));
@@ -68,7 +69,7 @@ for(const count of [2,3,4]) test('v4.3 forward investigation and shared journal 
  r.scene('E4');assert.equal(r.view().case001!.rescued,0);
  r.scene('H1');
  assert.ok(!r.view().narrative?.current?.text.includes('ผมช่วยดำเนินการ'));
- r.scene('E2');
+ r.scene('E2');r.openCellar();
  r.scene('E3');
  assert.equal(r.view().case001!.rescued,0);
  r.next();
@@ -102,8 +103,8 @@ test('cue precedes prompts, hint requests are disabled and old scene questions a
  assert.equal(r.panel().questions![0].open,false);
  assert.throws(()=>r.send('dm','dmReply',{cardId:card.id,text:'ตอบเป็นวิชัย',speaker:'วิชัย'}));
 });
-test('v4.3 complete peaceful route reaches report A without revisiting a closed phase',()=>{
- const r=room();
+for(const count of [2,6]) test('v4.3 complete peaceful route reaches report A with '+count+' players',()=>{
+ const r=room(count);
  const act=(actionId:string)=>{
   r.send('a','caseAction',{actionId,site:r.view().caseMap!.site});
   const check=r.panel().investigators.find(p=>p.id==='a')?.check;
@@ -111,7 +112,7 @@ test('v4.3 complete peaceful route reaches report A without revisiting a closed 
  };
  r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();
  r.scene('D2');act('seal1');act('seal2');r.scene('D5');r.next();
- r.scene('E4');act('seal3');r.scene('E2');
+ r.scene('E4');act('seal3');r.scene('E2');r.openCellar();
  for(const name of ['ดล','นิด','เพิ่ม'])act('escort:'+name);
  r.scene('E3');
  const answer=r.panel().investigators.find(p=>p.id==='a')!.choices.find(c=>c.speaker==='ดล' && c.label==='ถามที่ดิน')!;
@@ -152,7 +153,7 @@ test('v4.3 can resolve B, C and D through actual forward routes',()=>{
   r.scene('E4');
   if(ending!=='D')act('seal3');
   if(ending==='B') {
-   r.scene('E2');r.scene('E3');
+   r.scene('E2');r.openCellar();r.scene('E3');
    const line=r.panel().investigators.find(p=>p.id==='a')!.choices.find(c=>c.speaker==='ดล' && c.label==='ถามที่ดิน')!;
    r.send('dm','caseDm',{targetId:'a',actionId:line.id});
    for(const name of ['ดล','นิด','เพิ่ม'])act('escort:'+name);
@@ -204,7 +205,7 @@ test('all sixteen v4.3 checks preserve the three authored result branches',()=>{
 test('guided content keeps authored replies and skips overlapping legacy scene narration',()=>{
  const r=room();
  r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();r.scene('D5');r.next();
- r.scene('E2');
+ r.scene('E2');r.openCellar();
  assert.equal(r.panel().narration.some(card=>card.eventId==='captives-open'),false);
  const line=r.panel().investigators[0].choices.find(choice=>choice.speaker==='ดล' && choice.label==='ดล พูดหลัก');
  assert.ok(line);
@@ -268,4 +269,120 @@ test('replayed confirmation cannot advance or repeat a saved chapter',()=>{
  assert.deepEqual(restored.snapshot(r.code,'a').guided!.journals[0].open_questions,['จดชื่อผู้สูญหายไว้ครบหรือยัง']);
  assert.throws(()=>restored.apply(r.code,'b',{...action,id:'stale-confirmation'}));
  assert.equal(restored.snapshot(r.code,'a').guided!.phase,'B');
+});
+
+
+test('opening narration precedes scene dialogue and carries the authored A2 description',()=>{
+ const r=room();
+ r.send('dm','guided',{command:'scene',target:'A2'});
+ const cue=r.panel().narration.find(card=>card.eventId==='guided-cue:A2')!;
+ assert.match(cue.text,/วิทยุสื่อสารในรถส่งเสียงซ่า/);
+ assert.match(cue.text,/หายใจเหมือนคนกำลังสำลักน้ำ/);
+ assert(!r.panel().investigators[0].choices.some(choice=>choice.speaker==='ประเสริฐ'));
+ assert.throws(()=>r.send('a','caseAction',{actionId:'dice:A2_RADIO_ECHO:SPI',site:'A'}),/ส่งบทเปิดฉาก/);
+ r.publish('guided-cue:A2');
+ assert.equal(r.view().narrative!.current!.text,cue.text);
+ assert(r.panel().investigators[0].choices.some(choice=>choice.speaker==='ประเสริฐ'));
+});
+
+test('E2 keeps the door closed until the team acts and the DM delivers the opening',()=>{
+ const r=room();r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();r.scene('D5');r.next();
+ r.scene('E2');
+ assert.match(r.view().narrative!.current!.text,/ใครน่ะ/);
+ assert.equal(r.store.checkpoint(r.code).world.case001!.opened,false);
+ assert(r.view().case001!.actions.some(action=>action.id==='open' && !action.check));
+ assert(!r.panel().investigators[0].choices.some(choice=>choice.label==='ดล พูดหลัก'));
+ assert(r.panel().investigators[0].choices.some(choice=>choice.label==='หากทีมยืนยันเป็นบริษัท'));
+ assert.throws(()=>r.scene('E3'));
+ r.send('a','caseAction',{actionId:'open',site:'E'});
+ assert.equal(r.store.checkpoint(r.code).world.case001!.opened,false);
+ assert(!r.view().case001!.actions.some(action=>action.id==='open' || action.id.startsWith('escort:')));
+ assert.throws(()=>r.send('dm','guided',{command:'scene',target:'E4'}),/ส่งบทเปิดห้อง/);
+ const pending=r.panel().narration.find(card=>card.eventId==='guided-cellar-open')!;
+ assert.match(pending.text,/ชายสองคนและหญิงหนึ่งคน/);
+ const save=r.store.checkpoint(r.code),restored=new WorldStore(()=>20,true,true,true);
+ restored.restore(r.code,JSON.parse(JSON.stringify(save)));
+ assert.equal(restored.checkpoint(r.code).world.case001!.opened,false);
+ const restoredPanel=restored.dmPanel(r.code,'dm');assert('caseMode' in restoredPanel);
+ const restoredCard=restoredPanel.narration.find(card=>card.eventId==='guided-cellar-open')!;
+ restored.apply(r.code,'dm',{id:'restored-cellar',type:'dmPublish',cardId:restoredCard.id});
+ assert.equal(restored.checkpoint(r.code).world.case001!.opened,true);
+ r.publish('guided-cellar-open');
+ assert.equal(r.store.checkpoint(r.code).world.case001!.opened,true);
+ assert(r.view().case001!.actions.some(action=>action.id==='escort:ดล'));
+ assert(r.panel().investigators[0].choices.some(choice=>choice.label==='ดล พูดหลัก'));
+ assert(!r.panel().investigators[0].choices.some(choice=>choice.label==='หากทีมยืนยันเป็นบริษัท'));
+ assert.equal(r.view().case001!.rescued,0);
+});
+
+test('E5 debt response requires a discovered source, while C5 retains the relationship testimony',()=>{
+ const r=room();const saved=r.store.checkpoint(r.code);const s=saved.world.case001!;
+ s.guided!.phase='E';s.guided!.scene='E5';s.guided!.presented.push('E5');s.site='E';s.wichai!.site='E';
+ assert(!guidedDialogue(s).some(line=>line.id==='E5-debt-evidence'));
+ s.evidence.push('E02');assert(guidedDialogue(s).some(line=>line.id==='E5-debt-evidence'));
+ s.guided!.phase='C';s.guided!.scene='C5';s.guided!.presented.push('C5');s.site='C';
+ assert(guidedDialogue(s).some(line=>line.id==='C5-relationship'));
+});
+
+test('DM backup follows scene progress and never exposes private guidance to players',()=>{
+ const r=room();const before=r.store.checkpoint(r.code);
+ const backup=r.panel().backup!;
+ assert.equal(backup.phase,'A');assert(backup.hints.length);assert(backup.alternatives.length);
+ assert(backup.blockers.some(text=>text.includes('A3')));
+ assert(!JSON.stringify(r.view()).includes('backup'));
+ assert.throws(()=>r.store.dmPanel(r.code,'a'));
+ assert.deepEqual(r.store.checkpoint(r.code),before);
+ r.scene('A3');assert.equal(r.panel().backup!.blockers.length,0);
+ r.send('dm','guided',{command:'propose'});
+ assert(r.panel().backup!.blockers.some(text=>text.includes('ยืนยัน')));
+});
+
+
+test('DM can pause, resume and withdraw before Final while players cannot bypass pause',()=>{
+ const r=room();const before=r.view();
+ assert.throws(()=>r.send('a','dmSessionControl',{command:'pause'}));
+ r.send('dm','dmSessionControl',{command:'pause'});assert(r.view().paused);
+ assert.throws(()=>r.send('dm','guided',{command:'scene',target:'A3'}),/พักคดี/);
+ assert.throws(()=>r.send('a','askGm',{text:'ไปต่อ',site:'A'}),/พักคดี/);
+ assert.equal(r.view().case001!.time,before.case001!.time);
+ r.send('dm','dmSessionControl',{command:'resume'});assert(!r.view().paused);
+ r.send('dm','dmSessionControl',{command:'withdraw'});
+ const ending=r.panel().narration.find(card=>card.eventId==='ending:D')!;assert(ending);
+ r.send('dm','dmPublish',{cardId:ending.id});assert.equal(r.view().case001!.report!.ending,'D');
+});
+
+test('H1 allows a delivered telephone contact before a remote confession',()=>{
+ const r=room();r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();r.scene('D5');r.next();r.scene('E4');r.scene('H1');
+ assert(!r.panel().investigators[0].choices.some(c=>c.speaker==='ประเสริฐ'));
+ assert.throws(()=>r.send('dm','guided',{command:'contactPrasert'}));
+ r.send('a','guided',{command:'history'});
+ r.send('dm','guided',{command:'contactPrasert'});
+ assert(!r.panel().investigators[0].choices.some(c=>c.speaker==='ประเสริฐ'));
+ r.publish('guided-contact-prasert');
+ const line=r.panel().investigators[0].choices.find(c=>c.speaker==='ประเสริฐ')!;assert(line);
+ r.send('dm','caseDm',{targetId:'a',actionId:line.id});
+ assert.match(r.view().narrative!.current!.text,/ทางโทรศัพท์/);
+ assert(r.store.checkpoint(r.code).world.case001!.story!.objectives.includes('confessed'));
+});
+
+test('chapter rewind restores a persisted checkpoint, pauses play and keeps revisions increasing',()=>{
+ const r=room();r.scene('A3');r.next();
+ const beginning=r.store.checkpoint(r.code);assert(beginning.rewind);
+ r.scene('B4');const revision=r.view().revision;assert(r.view().case001!.evidence>0);
+ assert.throws(()=>r.send('a','dmSessionControl',{command:'rewind'}));
+ const restored=new WorldStore(()=>20,true,true,true);restored.restore(r.code,JSON.parse(JSON.stringify(r.store.checkpoint(r.code))));
+ restored.apply(r.code,'dm',{id:'rewind-test',type:'dmSessionControl',command:'rewind'});
+ const after=restored.snapshot(r.code,'a');assert(after.paused);assert(after.revision>revision);
+ assert.equal(after.guided!.scene,'B1');assert.equal(after.case001!.evidence,beginning.world.case001!.evidence.length);
+ assert.throws(()=>restored.apply(r.code,'a',{id:'while-paused',type:'askGm',text:'ถาม',site:'B'}));
+ restored.apply(r.code,'dm',{id:'resume-test',type:'dmSessionControl',command:'resume'});assert(!restored.snapshot(r.code,'a').paused);
+});
+
+test('ritual requests recommend INT to the DM instead of the generic PER default',()=>{
+ const r=room();r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();r.scene('D5');r.next();r.scene('E4');
+ r.send('a','caseAction',{actionId:'seal3',site:'E'});
+ const check=r.panel().investigators.find(p=>p.id==='a')!.check!;assert.equal(check.stat,'INT');
+ r.send('dm','dmRequestRoll',{targetId:'a',checkId:check.id,stat:check.stat,difficulty:14});
+ r.send('a','dmRoll',{requestId:r.view().diceRequest!.id});
+ assert.equal(r.view().latestRoll!.result!.total,20+r.view().characters!.a.coreStats!.INT);
 });

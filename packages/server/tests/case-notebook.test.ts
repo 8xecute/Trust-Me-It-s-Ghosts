@@ -26,3 +26,18 @@ test('only Human DM can inspect private prerequisites or advance another player 
  const after=act('dm','dmNarrativeNext',{targetId:'a',sequence});assert.equal(after.case001!.time,publicView.case001!.time);assert(store.snapshot('r','a').narrative!.current!.sequence>sequence);
  assert.deepEqual(store.dmPreview('r','dm','a'),store.snapshot('r','a'));
 });
+
+test('NPC dossiers are available only through the DM panel',()=>{
+ const store=new WorldStore(()=>20,true,true,true);store.create('private',2);let n=0;
+ const act=(p:string,type:string,payload:object={})=>store.apply('private',p,{id:String(++n),type,...payload});
+ for(const p of ['dm','a','b'])store.addPlayer('private',p);
+ act('dm','claimDm');act('a','createCharacter',{profession:'medium'});act('b','createCharacter',{profession:'field_medic'});
+ act('dm','caseStart',{mode:'story'});
+ const panel=store.dmPanel('private','dm');assert('npcDossiers' in panel && panel.npcDossiers);
+ assert(panel.npcDossiers.some(npc=>npc.name==='นายวิชัย' && npc.secret));
+ assert(panel.npcDossiers.every(npc=>npc.roleplay));
+ assert.throws(()=>store.dmPanel('private','a'));
+ const player=JSON.stringify(store.snapshot('private','a'));
+ for(const npc of panel.npcDossiers) {assert(!player.includes(npc.secret));assert(!player.includes(npc.roleplay));}
+ assert(!player.includes('npcDossiers'));
+});

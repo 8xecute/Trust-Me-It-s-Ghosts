@@ -114,3 +114,7 @@ node --test production-smoke.test.mjs production-v51-smoke.test.mjs
 - `scripts/import-case001-v51.py`
 - `docs/CASE001_V51_QA.md` (รายงานนี้)
 - `docs/CASE001_V51_TEST_RESULTS.txt` (บันทึกผลตรวจ)
+
+## ตรวจหลังรวม main
+
+รวม origin/main e7a6344 โดยรักษาเครื่องมือ DM, NPC dossiers, scene casting และ recovery ล่าสุดไว้ ชุดทดสอบรวมผ่าน 193/193 และ typecheck ผ่าน; build หลังรวมผ่าน ปรับเทสต์เปิดห้องให้รองรับพฤติกรรมล่าสุด และเพิ่ม React import สำหรับการทดสอบ reader ผ่าน Node

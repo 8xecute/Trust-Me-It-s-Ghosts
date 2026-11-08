@@ -9,10 +9,10 @@ import { scenes51, endings51 } from './v51Content.js';
 import { command51, dialogue51, presentScene51, sceneCue51, speak51, wichaiHere51 } from './storyV51.js';
 
 type Phase='A'|'B'|'C'|'D'|'E'|'FINAL'|'ENDING';
-type Scene={id:string;phase:Phase;entry_cue:string;suggested_questions:string[];optional_check_id:string|null;forward_bridge:string};
-type PhaseInfo={title:string;hints:string[];lead:string};
+type Scene={id:string;phase:Phase;entry_cue:string;entry_read?:string;suggested_questions:string[];optional_check_id:string|null;forward_bridge:string};
+type PhaseInfo={title:string;hints:string[];lead:string;missed:string[];exit:string};
 export type GuidedState={
- version:'4.3'|'5.1';phase:Phase;scene:string;observed:string[];presented:string[];
+ version:'4.3'|'5.1';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
  hints:Partial<Record<Phase,number>>;questions:string[];
  journals:{phase:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string}[];
  transition?:{id:string;from:Phase;to:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string};
@@ -27,6 +27,13 @@ const script=readFileSync(new URL('case-001.v4.3.script.md',root),'utf8');
 export const guidedScripts=Object.fromEntries(Array.from(script.matchAll(/^### ([A-F]\d+|H1|ENDING [A-D]) — [^\n]+\n([\s\S]*?)(?=^#{2,3} |$(?![\s\S]))/gm),([,id,text])=>[id,text.trim()]));
 if(Object.keys(data.scenes).length!==31 || flow.scenes.some(scene=>!data.scenes[scene.id]) ||
  Object.values(data.scenes).some(scene=>scene.suggested_questions.length>3 || !guidedScripts[scene.id])) throw Error('ข้อมูลฉาก v4.3 ไม่ครบ');
+function authoredRead(section:string, label:string) {
+ const beforeDice=section.split(/^#### .*ทอยเต๋า/m)[0];
+ const match=beforeDice.match(new RegExp('^\\*\\*\\['+label+'\\]\\*\\*\\s*\\n+((?:>[^\\n]*(?:\\n|$))+)', 'm'));
+ return match?.[1].replace(/^> ?/gm,'').trim();
+}
+export const guidedCellarRead=authoredRead(guidedScripts.E2,'DM อ่านเมื่อเปิด');
+if(!guidedCellarRead) throw Error('ไม่พบบทเปิดห้อง E2');
 export const newGuided=(version:'4.3'|'5.1'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
 export function guidedScript(s:import('./case001.js').CaseState,id:string) {
  return s.v51 ? id.startsWith('ENDING ') ? endings51[id.slice(-1)]?.script : scenes51[id]?.sourceMarkdown : guidedScripts[id];
@@ -99,10 +106,9 @@ export function observeGuidedScene(w:World,id:string) {
  if(id==='C5') addFact(s,'met-boonmee');
  if(id==='D2') {evidence('E04');evidence('E03');s.ghost=s.ghost==='hidden'?'cautious':s.ghost;}
  if(id==='D5') evidence('E06');
- if(id==='E2') s.opened=true;
  if(id==='E4') {s.key=true;evidence('E05');evidence('E07');addFact(s,'v43-evacuation-records');}
  const scene=data.scenes[id];
- emitCaseBeat(s,'guided-cue:'+id,scene.entry_cue,'party',s.site);
+ emitCaseBeat(s,'guided-cue:'+id,id==='E2' && s.opened ? guidedCellarRead! : scene.entry_read ?? authoredRead(guidedScripts[id],'DM อ่าน') ?? scene.entry_cue,'party',s.site);
  // Recover facts through their authored new sources, without moving past NPCs.
  advanceStory(s);
 }
@@ -128,6 +134,22 @@ function summary(w:World) {
  return {known_facts:facts.length?facts:seen?[seen]:[],open_questions:g.questions.slice(-3),
   next_destination_rationale:g.phase==='C' && !g.observed.includes('C5') ? data.scenes.C2.entry_cue : data.phases[g.phase as Exclude<Phase,'ENDING'>].lead};
 }
+export function guidedBackup(w:World) {
+ const s=w.case001,g=s?.guided;
+ if(!s || !g || g.phase==='ENDING' || s.report) return undefined;
+ const phase=data.phases[g.phase];
+ const players=Object.keys(w.players).filter(id=>id!==w.humanDmId && !!w.characters?.[id]);
+ const delivered=(w.narrative?.records ?? []).filter(beat=>players.length>0 && players.every(id=>beat.recipients.includes(id))).slice(-5).map(beat=>({sequence:beat.sequence,text:beat.text}));
+ const required={A:['A3'],B:['B5'],C:['C2','C5'],D:['D5'],E:['E1']}[g.phase as Site];
+ const blockers:string[]=[];
+ if(g.cellarPending) blockers.push('ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก');
+ if(w.caseMap?.battle) blockers.push('จบการเผชิญหน้าก่อนเปลี่ยนบท');
+ if(required && !required.some(scene=>g.presented.includes(scene))) blockers.push('ส่งฉากนำทางอย่างน้อยหนึ่งฉาก: '+required.join(' หรือ '));
+ if(g.phase==='FINAL') blockers.push('ช่วงสุดท้าย: ผู้เล่นใช้คำสั่งสรุปผลและปิดคดีเมื่อพร้อม');
+ if(g.transition) blockers.push('รอผู้สืบสวนยืนยันเปลี่ยนบท หรือเลือกสำรวจต่อ');
+ return {phase:g.phase,scene:g.scene,title:phase.title,opened:!!g.presented.includes(g.scene),hints:phase.hints,alternatives:phase.missed,exit:phase.exit,delivered,blockers,battle:!!w.caseMap?.battle};
+}
+
 export function guidedCommand(w:World,player:string,command:string,target?:string) {
  const s=w.case001!,g=s?.guided;
  if(!g || s.report) throw Error('ไม่มีบทนำทางที่กำลังดำเนินอยู่');
@@ -177,6 +199,14 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   return;
  }
  if(player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่อง');
+ if(g.cellarPending && (command==='propose' || command==='scene' && target!=='E2')) throw Error('ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก');
+ if(command==='contactPrasert') {
+  if(g.scene!=='H1' || !g.presented.includes('H1') || !hasFact(s,'gate-truth') || w.caseMap?.battle) throw Error('วิเคราะห์หลักฐานใน H1 ก่อนติดต่อประเสริฐ');
+  if(g.prasertContact || w.dmSession?.narration.some(beat=>beat.eventId==='guided-contact-prasert')) throw Error('ติดต่อประเสริฐแล้วหรือมีบทติดต่อรอส่ง');
+  emitCaseBeat(s,'guided-contact-prasert','ทีมโทรหาประเสริฐและนำข้อสงสัยจากเอกสารน้ำท่วมไปถาม เขารับสายและเงียบไปครู่หนึ่ง','party',s.site);
+  if(!w.dmSession) g.prasertContact=true;
+  return;
+ }
  if(command==='protect') {
   if(g.scene!=='B3') throw Error('จัดความปลอดภัยได้ในฉากต้นเท่านั้น');
   if(s.v51)s.v51.TON_TRUST='high';
@@ -207,15 +237,20 @@ export function guidedDialogue(s:import('./case001.js').CaseState) {
   if(line.scene!==g.scene) return false;
   if(line.speaker==='วิชัย' && (s.wichai?.site!==s.site || s.wichai.status==='detained')) return false;
   if(line.speaker==='แม่แก้ว' && !['cautious','hostile','pacified'].includes(s.ghost)) return false;
-  if(line.speaker==='ประเสริฐ' && !['A','B'].includes(s.site)) return false;
+  if(line.speaker==='ประเสริฐ' && !['A','B'].includes(s.site) && !(line.scene==='H1' && g.prasertContact)) return false;
   if(line.label.includes('คำรับสารภาพ') && !hasFact(s,'confessed')) return false;
   if(line.label.includes('พาวิชัย') && s.wichai?.site!==s.site) return false;
   if(line.label.includes('ยายบุญมีฝาก') && !hasFact(s,'v43-boonmee-apology')) return false;
   if(line.speaker==='ต้น' && line.label==='คุยตามลำพังและทำให้ปลอดภัย' && !hasFact(s,'v43-ton-protected')) return false;
   if(line.speaker==='ต้น' && line.label==='ถามต่อหน้าวิชัย' && hasFact(s,'v43-ton-protected')) return false;
-  if(line.label.includes('ดลจากในห้อง') || line.label==='หากทีมยืนยันเป็นบริษัท') return false; // E2's cue already opens the room.
+  if(line.scene==='E2') {
+   if(line.label.includes('ดลจากในห้อง')) return false; // Included in the opening narration.
+   if(line.label==='หากทีมยืนยันเป็นบริษัท') return !s.opened && !g.cellarPending;
+   if(!s.opened || g.cellarPending) return false;
+  }
   if(line.label.includes('เคยช่วยชีวิต') && !hasFact(s,'v43-wichai-saved') && !s.story?.firedTriggers.includes('dialogue-boonmee-child')) return false;
   if(line.label.includes('แสดงสมุด') && !s.evidence.includes('E02')) return false;
+  if(line.id==='E5-debt-evidence' && !s.evidence.some(id=>id==='E02' || id==='E05')) return false;
   if(line.label.includes('ปราบแม่แก้ว') && !hasFact(s,'kaew-dispersed')) return false;
   return true;
  });
@@ -232,7 +267,7 @@ export function speakGuided(s:import('./case001.js').CaseState,id:string) {
  if(line.speaker==='ยายบุญมี' && line.label==='ถามประตูน้ำ') addFact(s,'gate-testimony');
  if(line.speaker==='แม่แก้ว' && line.label.includes('ควบคุม')) addFact(s,'v43-kaew-controller-blocked');
  if(line.speaker==='ยายบุญมี' && line.label==='ถามชื่อเด็ก') addFact(s,'v43-wichai-saved');
- s.notice=line.speaker+' · '+line.text;
+ s.notice=line.speaker+(line.scene==='H1' && !['A','B'].includes(s.site)?' (ทางโทรศัพท์)':'')+' · '+line.text;
  emitCaseBeat(s,id,s.notice,'party',s.site);
  advanceStory(s);
 }

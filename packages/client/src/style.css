@@ -627,7 +627,7 @@ body:has(.dm-shell) { background: radial-gradient(ellipse at 72% 0%, #282b43 0%,
 .player-shell .case-illustration { margin:0; }
 .player-shell .case-illustration img { max-height:49dvh; object-fit:cover; width:100%; }
 .player-shell .case-response { order:initial!important; margin-top:8px; }
-.player-shell .case-response .story-text { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+.player-shell .case-response .story-text { display:block; overflow-wrap:anywhere; }
 .player-shell .case-response h3 { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0; font-size:.9rem; }
 .player-shell .case-response h3 button { margin:0; font-size:.8rem; }
 .player-shell .case-actions-pane { max-height:65dvh; overflow:auto; padding:16px; border:1px solid var(--border); border-radius:12px; background:var(--panel); }
@@ -642,3 +642,29 @@ body:has(.dm-shell) { background: radial-gradient(ellipse at 72% 0%, #282b43 0%,
 @media(max-width:640px) { .player-main-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:6px; } .player-main-tabs button { font-size:.85rem; padding:8px 4px; } .player-status-strip { gap:4px 10px; font-size:.8rem; } .player-status-strip strong { flex:1 1 calc(100% - 60px); } .player-status-strip img { height:36px; width:28px; } .player-shell .case-actions-pane { max-height:58dvh; padding:12px; } }
 .player-main-tabs button[aria-pressed="true"] { background:#e6b56e; color:#211609; border-color:#e6b56e; font-weight:700; }
 .gm-dice form { scroll-margin-top:150px; }
+
+.npc-dossier { margin:10px 0; padding:12px; }
+.npc-dossier dl { display:grid; gap:4px; margin:12px 0 0; }
+.npc-dossier dt { color:var(--accent); font-weight:700; }
+.npc-dossier dd { margin:0 0 8px; line-height:1.6; }
+.gm-current-scene { margin:14px 0; padding:14px; border:1px solid var(--border); border-radius:10px; }
+
+.gm-acting { margin:12px 0; padding:12px; border-left:3px solid var(--accent); background:var(--well); border-radius:8px; }
+.gm-acting h5 { margin:0 0 4px; color:var(--accent); font-size:.95rem; }
+.gm-acting p { margin:6px 0; line-height:1.6; }
+.gm-script-trigger { padding:10px 12px; border-left:3px solid var(--accent); background:var(--well); }
+.gm-script-response { padding:12px; border:1px solid var(--border); border-radius:8px; }
+.gm-script-response h5 { margin:0 0 6px; color:var(--accent); }
+
+.case-scene-stage { position:relative; display:block; width:100%; padding:0; margin:0; border:0; border-radius:0; background:#0c0b0a; }
+.case-scene-stage .case-scene-image { display:block; width:100%; height:auto; max-height:none; object-fit:fill; }
+.player-shell .case-scene-stage .case-scene-image, .case-world-pane .case-scene-stage .case-scene-image { max-height:none; object-fit:fill; }
+.case-scene-placement { cursor:crosshair; }
+.case-scene-placement:focus-visible { outline:3px solid var(--accent); outline-offset:-3px; }
+.scene-npc { position:absolute; transform:translate(-50%,-80%); display:flex; flex-direction:column; align-items:center; pointer-events:none; color:#fff; font-size:.7rem; line-height:1.2; text-shadow:0 1px 3px #000; }
+.case-illustration .scene-npc img { width:clamp(45px,9vw,90px); height:clamp(70px,14vw,135px); object-fit:contain; border:0; border-radius:0; background:transparent; filter:drop-shadow(0 2px 3px #000); }
+.scene-npc span { padding:2px 4px; border-radius:4px; background:#151722e8; white-space:nowrap; }
+.scene-npc-controls { padding:10px; display:grid; gap:6px; }
+.scene-npc-controls p { margin:0; font-size:.8rem; }
+.scene-npc-controls form { display:flex; flex-wrap:wrap; align-items:end; gap:6px; }
+.scene-npc-controls input { width:5.5em; }
