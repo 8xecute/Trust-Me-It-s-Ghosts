@@ -22,7 +22,14 @@ test('built server defaults to v5.1 and delivers only approved public cues over 
  await action(dm,'claimDm');
  const joined=await Promise.all([req(a,'room:join:v2',created.room.code),req(b,'room:join:v2',created.room.code)]);
  joined.forEach(result=>assert.equal(result.ok,true));
+ const playerId=joined[0].playerId;
+ await action(a,'setPlayerNames',{playerName:'หนึ่ง',characterName:'หมอก'});
+ assert.equal((await req(b,'game:snapshot')).snapshot.playerNames[playerId].characterName,'หมอก');
  await action(a,'createCharacter',{profession:'medium'});await action(b,'createCharacter',{profession:'field_medic'});
+ await action(a,'setPlayerNames',{playerName:'หนึ่ง',characterName:'สายหมอก'});
+ await action(a,'updateCharacter',{profession:'ritual_specialist'});
+ const profile=(await req(b,'game:snapshot')).snapshot.characters[playerId];
+ assert.equal(profile.playerName,'หนึ่ง');assert.equal(profile.characterName,'สายหมอก');assert.equal(profile.profession,'ritual_specialist');
  await action(dm,'caseStart',{mode:'story'});
  const before=(await req(a,'game:snapshot')).snapshot;
  assert.equal(before.guided.version,'5.1');assert.equal(before.guided.lethal,true);assert.deepEqual(before.case001.actions,[]);

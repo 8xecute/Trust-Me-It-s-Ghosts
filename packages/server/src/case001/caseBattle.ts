@@ -131,7 +131,7 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
     const prior=hasFact(s,'kaew-dispersed') ? 'won' : hasFact(s,'kaew-fled') ? 'fled' : hasFact(s,'kaew-talked') ? 'talked' : undefined;
     if(prior) text+='\n'+v4.finalArrival[prior];
   }
-  if(!w.case001!.v51) {
+  if(!w.case001!.v51 && !(w.case001!.guided && id==='EN01')) {
     emitCaseBeat(w.case001!,id+':start',text);
     w.case001!.narrativeEvents!.at(-1)!.site=site;
   }

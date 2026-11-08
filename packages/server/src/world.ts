@@ -31,8 +31,8 @@ type DmSession = {
  log:DmLogEntry[];
 };
 
-export type WorldAction = {id:string;type:'dmSessionControl';command:'pause'|'resume'|'withdraw'|'rewind'} | {id:string;type:'dmPlaceNpc';site:string;npcId:string;position:{x:number;y:number}|null} | {id:string;type:'guided';command:string;target?:string} | {id:string;type:'dmPublish'|'dmDismiss';cardId:string;part?:'narration'|'dialogue'|'all'} | {id:string;type:'dmCancelCheck';targetId:string;checkId:string} | {id:string;type:'dmRequestRoll';targetId:string;checkId?:string;difficulty?:unknown;stat?:unknown} | {id:string;type:'dmAnswer';cardId:string;actionId:string} | {id:string;type:'dmReply';cardId:string;text:unknown;speaker?:unknown} | {id:string;type:'askGm';text:unknown;site:Site} | {id:string;type:'dmTravel';actionId:string;site:Site} | {id:string;type:'dmNarrativeNext';targetId:string;sequence:number} | {id:string;type:'planSubmit';actionId:string;boost?:unknown} | {id:string;type:'planResolve'|'planCancel';planId:string} | {id:string;type:'narrativeNext';sequence:number} | {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective'} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown;playerName?:unknown} | {id:string;type:'caseStart';mode?:'story'} | {id:string;type:'caseAction';actionId:string;boost?:unknown;site?:Site} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
-export interface World { paused?:boolean; basicMode?:true; dmSession?:DmSession; sceneMode?:true; explorationPlan?:ExplorationPlan; narrative?:NarrativeState; caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:DmRollCard|null; }
+export type WorldAction = {id:string;type:'setPlayerNames';playerName?:unknown;characterName?:unknown} | {id:string;type:'updateCharacter';profession:unknown;bonus?:unknown;talent?:unknown;playerName?:unknown;characterName?:unknown} | {id:string;type:'dmSessionControl';command:'pause'|'resume'|'withdraw'|'rewind'} | {id:string;type:'dmPlaceNpc';site:string;npcId:string;position:{x:number;y:number}|null} | {id:string;type:'guided';command:string;target?:string} | {id:string;type:'dmPublish'|'dmDismiss';cardId:string;part?:'narration'|'dialogue'|'all'} | {id:string;type:'dmCancelCheck';targetId:string;checkId:string} | {id:string;type:'dmRequestRoll';targetId:string;checkId?:string;difficulty?:unknown;stat?:unknown} | {id:string;type:'dmAnswer';cardId:string;actionId:string} | {id:string;type:'dmReply';cardId:string;text:unknown;speaker?:unknown} | {id:string;type:'askGm';text:unknown;site:Site} | {id:string;type:'dmTravel';actionId:string;site:Site} | {id:string;type:'dmNarrativeNext';targetId:string;sequence:number} | {id:string;type:'planSubmit';actionId:string;boost?:unknown} | {id:string;type:'planResolve'|'planCancel';planId:string} | {id:string;type:'narrativeNext';sequence:number} | {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective'} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown;playerName?:unknown;characterName?:unknown} | {id:string;type:'caseStart';mode?:'story'} | {id:string;type:'caseAction';actionId:string;boost?:unknown;site?:Site} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
+export interface World { playerNames?:Record<string,{playerName?:string;characterName?:string}>; paused?:boolean; basicMode?:true; dmSession?:DmSession; sceneMode?:true; explorationPlan?:ExplorationPlan; narrative?:NarrativeState; caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:DmRollCard|null; }
 type Snapshot = Omit<World,'dmSession'|'explorationPlan'|'narrative'|'case001'|'caseMap'|'backgroundUses'|'biographies'> & {manualDm?:true;awaitingReport?:boolean;dmLog?:DmLogEntry[];pendingQuestionCount?:number;pendingCheck?:string;narrative?:ReturnType<typeof narrativeView>;explorationPlan?:{id:string;participants:string[];minutes:number;mine?:{actionId:string;minutes:number}}} & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;npcs?:CaseNpcPlacement[];opportunity?:string;withdrawalBlocked?:boolean;battle?:ReturnType<typeof battleView>}};
 const npcDossiers: {id:string;name:string;background:string;motivation:string;knowledge:string;secret:string;roleplay:string}[] = JSON.parse(readFileSync(new URL('../scenarios/case-001/case-001.npcs.dm.json', import.meta.url), 'utf8'));
 const scenario = parseScenarioJSON(readFileSync(new URL('../scenarios/sample.json', import.meta.url), 'utf8'));
@@ -157,7 +157,7 @@ export class WorldStore {
  addPlayer(code:string,id:string){const w=this.get(code); const spawns=[{x:4,y:7},{x:3,y:7},{x:6,y:7},{x:4,y:8}];
  if(w.characters) spawns.push({x:3,y:8},{x:5,y:7},{x:6,y:8});
  const p=spawns.find(p=>!Object.values(w.players).some(q=>eq(p,q)) && (!w.tactics || !w.encounter || !eq(p,w.encounter.ghost))); if(!p) throw Error('ไม่มีตำแหน่งว่าง'); w.players[id]=p; w.inventory[id]=[]; w.turns[id]=startTurn(); w.revision++;}
- removePlayer(code:string,id:string){const w=this.get(code); delete w.explorationPlan; delete w.players[id]; removeCasePlayer(w,id,caseGrid,this.rollD20,()=>completeCaseRound(w));
+ removePlayer(code:string,id:string){const w=this.get(code); delete w.explorationPlan; delete w.players[id]; if(w.playerNames)delete w.playerNames[id]; removeCasePlayer(w,id,caseGrid,this.rollD20,()=>completeCaseRound(w));
  if(w.case001?.escortOwners) for(const [name,owner] of Object.entries(w.case001.escortOwners)) {
   if(owner===id) {delete w.case001.escortOwners[name];w.case001.escorts=w.case001.escorts.filter(escort=>escort!==name);}
  } if(w.characters) delete w.characters[id]; if(w.biographies) delete w.biographies[id]; delete w.inventory[id]; delete w.turns[id]; if(w.humanDmId===id) w.humanDmId=null; if(w.diceRequest?.playerId===id) w.diceRequest=null;
@@ -268,6 +268,11 @@ export class WorldStore {
   let approvedAnswer:string|undefined;
   let rollAnswer:import('@baan/shared').DmOutcomeAnswer|undefined;
   if(typeof a.id!=='string'||a.id.length<1||a.id.length>100 || typeof a.type!=='string') throw Error('คำขอไม่ถูกต้อง');
+  const editingProfile=a.type==='updateCharacter';
+  if(editingProfile) {
+   if(w.case001 || w.encounter || !w.characters?.[player] || w.humanDmId===player) throw Error('แก้ตัวละครได้ก่อนเริ่มคดีเท่านั้น');
+   a={...a,bonus:('bonus' in a ? a.bonus : undefined) ?? w.characters[player].bonus,type:'createCharacter'} as Extract<WorldAction,{type:'createCharacter'}>;
+  }
   if(w.basicMode && (a.type==='useTalent' || a.type==='usePassive' || ('boost' in a && a.boost!==undefined && a.boost!=='focus'))) throw Error('พักความสามารถพิเศษไว้ในโหมดพื้นฐาน ใช้ Stat และสมาธิได้');
   const dedupe=player+':'+a.id; const seen=this.seen.get(code)!; if(seen.has(dedupe)) return {snapshot:this.snapshot(code,player),duplicate:true};
   if(a.type==='dmSessionControl' && a.command==='rewind') {
@@ -319,7 +324,7 @@ export class WorldStore {
   const storyStart=a.type==='caseStart' && (a.mode==='story' || (this.storyRoomsOnly && !!w.characters));
   if(w.characters && w.humanDmId===player && !storyStart && ['move','open','close','collect','chooseDialogue','start','endTurn','strike','escape','pacify','tacticalCheck','stabilize','breakRestraint','caseStart'].includes(a.type)) throw Error('คำสั่งนี้สำหรับผู้สืบสวน');
   if(this.storyRoomsOnly && w.characters && !w.case001 &&
-    !['createCharacter','claimDm','releaseDm','caseStart'].includes(a.type)) throw Error('เริ่มคดีก่อนลงมือสำรวจ');
+    !['createCharacter','setPlayerNames','claimDm','releaseDm','caseStart'].includes(a.type)) throw Error('เริ่มคดีก่อนลงมือสำรวจ');
   if(w.explorationPlan && !['planSubmit','planResolve','planCancel','narrativeNext','move','dmRequestRoll','dmRoll','dmNarrativeNext'].includes(a.type)) delete w.explorationPlan;
   const pos=w.players[player];
   if(w.encounter && w.encounter.phase!=='resolved' && ['move','endTurn','pacify','strike','escape','focus','check','tacticalCheck','breakRestraint','stabilize'].includes(a.type) && w.activePlayer!==player) throw Error('ยังไม่ถึงเทิร์นของผู้เล่น');
@@ -334,6 +339,7 @@ export class WorldStore {
     ['move','start','endTurn','strike','pacify','escape','useTalent','usePassive','stabilize','breakRestraint','caseObjective'].includes(a.type);
   if(caseTactical) {
    caseBattleAction(w,player,a,caseGrid(w.caseMap!.sites[player] ?? 'A'),this.rollD20,()=>completeCaseRound(w));
+   if(a.type==='start' && w.case001?.guided && w.caseMap?.battle?.id==='EN01') observeGuidedScene(w,'C4');
   } else {
   if(w.case001 && !['guided','dmSessionControl','dmPlaceNpc','planSubmit','planResolve','planCancel','dmPublish','dmDismiss','dmCancelCheck','askGm','dmReply'].includes(a.type) && a.type!=='dmNarrativeNext' && a.type!=='narrativeNext' && a.type!=='caseAction' && a.type!=='caseStart' && a.type!=='createCharacter' && !(a.type==='claimDm' && w.dmSession && !w.humanDmId) && !(w.case001.story && (a.type==='dmRequestRoll' || a.type==='dmRoll'))) throw Error('ใช้คำสั่งจากหน้าคดี');
   switch(a.type){
@@ -395,16 +401,25 @@ export class WorldStore {
     advanceNarrative(w.narrative,a.targetId,a.sequence);break;
    }
    case 'narrativeNext': if(w.narrative) advanceNarrative(w.narrative,player,a.sequence); break;
+   case 'setPlayerNames': {
+    if(!w.characters || w.case001 || w.encounter || w.humanDmId===player) throw Error('ตั้งชื่อได้ก่อนเริ่มคดีเท่านั้น');
+    const names={playerName:validatePlayerName(a.playerName),characterName:validatePlayerName(a.characterName)};
+    (w.playerNames ??= {})[player]=names;
+    const c=w.characters[player];
+    if(c) w.characters[player]={...c,playerName:names.playerName,characterName:names.characterName ?? castProfiles[c.profession].name};
+    break;
+   }
    case 'createCharacter': {
-    if(!w.characters || w.humanDmId===player || w.characters[player]) throw Error('สร้างตัวละครไม่ได้');
+    if(!w.characters || w.humanDmId===player || w.characters[player] && !editingProfile) throw Error('สร้างตัวละครไม่ได้');
     const character=createCharacter(a.profession,a.bonus,
       w.basicMode || a.talent===undefined ? undefined : {talent:a.talent},this.storyRoomsOnly);
-    if(this.storyRoomsOnly && Object.values(w.characters).some(other=>other.profession===character.profession)) {
+    if(this.storyRoomsOnly && Object.entries(w.characters).some(([id,other])=>id!==player && other.profession===character.profession)) {
      throw Error('เพื่อนร่วมทีมเลือกตัวละครนี้แล้ว');
     }
     const biography=this.storyRoomsOnly ? castProfiles[character.profession].biography : validateBiography(a.biography);
-    const playerName=validatePlayerName(a.playerName);
-    w.characters[player]=playerName ? {...character,playerName} : character;
+    const playerName=validatePlayerName(a.playerName ?? w.playerNames?.[player]?.playerName);
+    const characterName=validatePlayerName(a.characterName ?? w.playerNames?.[player]?.characterName);
+    w.characters[player]={...character,...(playerName?{playerName}:{}),...(characterName || this.storyRoomsOnly ? {characterName:characterName ?? castProfiles[character.profession].name}: {})};
     if(w.biographies) w.biographies[player]={...biography};
     break;
    }

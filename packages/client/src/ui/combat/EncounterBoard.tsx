@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BASIC_RULES_MODE, caseGrid, castProfiles, type CaseSite, type Character } from '@baan/shared';
+import { BASIC_RULES_MODE, professions, caseGrid, castProfiles, type CaseSite, type Character } from '@baan/shared';
 import { TacticalTechniques } from './TacticalTechniques';
 import { portraitUrl } from '../characters/CastPortraits';
 import { illustrations } from '../case/CaseScene';
@@ -38,7 +38,7 @@ export function EncounterBoard({site,battle,players,characters,self,ap,turns,act
   const canAct=!!action && !!character?.hp && battle.active===self;
   const enemy=battle.enemies.find(entry=>entry.id===enemyId) ?? battle.enemies[0];
   const enemyDistance=enemy && players[self] ? Math.abs(players[self].x-enemy.position.x)+Math.abs(players[self].y-enemy.position.y) : undefined;
-  const name=(id:string)=>characters[id] ? (characters[id].playerName ?? castProfiles[characters[id].profession].name) : 'ผู้สืบสวน';
+  const name=(id:string)=>characters[id] ? (characters[id].playerName ?? 'ผู้เล่น '+(Object.keys(players).filter(p=>characters[p]).indexOf(id)+1))+(characters[id].characterName?' ('+characters[id].characterName+')':'')+' · '+professions[characters[id].profession].name : 'ผู้สืบสวน';
   const occupant=(cell:Cell)=>Object.keys(players).find(id=>at(cell,players[id]));
   const ghost=(cell:Cell)=>battle.enemies.find(entry=>at(cell,entry.position));
   const reachable=useMemo(()=>players[self] ? movementPreview(grid,players[self],

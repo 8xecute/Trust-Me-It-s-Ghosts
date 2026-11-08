@@ -3,9 +3,10 @@ import type { BattleView } from '../ui/combat/EncounterBoard';
 
 export type GuidedJournal = {known_facts:string[];open_questions:string[];next_destination_rationale:string};
 export type GuidedScene = {id:string;cue:string;script:string;sent?:boolean};
-export type GuidedView = {version:string;phase:string;scene:string;lethal?:boolean;canAnalyzeHistory:boolean;escorting:number;cue?:string;prompts:string[];hint?:string;journals:(GuidedJournal & {phase:string})[];transition?:GuidedJournal & {id:string;from:string;to:string}};
+export type GuidedView = {version:string;phase:string;scene:string;lethal?:boolean;canAnalyzeHistory:boolean;escorting:number;cue?:string;prompts:string[];questionOptions?:{label:string;speaker:string}[];hint?:string;journals:(GuidedJournal & {phase:string})[];transition?:GuidedJournal & {id:string;from:string;to:string}};
 
 export type Snapshot = {
+  playerNames?:Record<string,{playerName?:string;characterName?:string}>;
   paused?:boolean;
   guided?:GuidedView;
   revision:number;

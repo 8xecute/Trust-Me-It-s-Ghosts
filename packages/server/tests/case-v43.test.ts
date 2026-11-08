@@ -6,7 +6,7 @@ import {WorldStore} from '../src/world.js';
 import {caseOptions} from '../src/case001/case001.js';
 import {startCaseBattle,finishCaseBattle,caseOpportunity} from '../src/case001/caseBattle.js';
 import {caseGrid} from '@baan/shared';
-import {newGuided,observeGuidedScene,guidedDialogue,guidedCommand} from '../src/case001/guidedCase.js';
+import {newGuided,observeGuidedScene,guidedDialogue,guidedCommand,allowedGuidedScenes} from '../src/case001/guidedCase.js';
 import {enqueueNarrative,newNarrative} from '../src/narrative.js';
 
 function room(count=2,die=20) {
@@ -385,4 +385,35 @@ test('ritual requests recommend INT to the DM instead of the generic PER default
  r.send('dm','dmRequestRoll',{targetId:'a',checkId:check.id,stat:check.stat,difficulty:14});
  r.send('a','dmRoll',{requestId:r.view().diceRequest!.id});
  assert.equal(r.view().latestRoll!.result!.total,20+r.view().characters!.a.coreStats!.INT);
+});
+
+
+test('C4 script is available before combat, opens on start and remains readable afterwards',()=>{
+ const r=room();r.scene('A3');r.next();r.scene('B5');r.next();
+ assert(!r.panel().guidedScenes!.some(scene=>scene.id==='C4'));
+ r.scene('C2');assert(r.panel().guidedScenes!.some(scene=>scene.id==='C4'));
+ r.send('a','start');assert.equal(r.view().guided!.scene,'C4');
+ const cue=r.panel().narration.find(card=>card.eventId==='guided-cue:C4')!;assert(cue?.current);
+ assert.match(cue.text,/น้ำสีดำ/);
+ assert(!r.panel().narration.some(card=>card.eventId==='EN01:start'));
+ assert(!r.view().narrative!.history.some(beat=>beat.eventId==='guided-cue:C4'));
+ r.publish('guided-cue:C4');assert(r.view().narrative!.history.some(beat=>beat.eventId==='guided-cue:C4'));
+ const saved=r.store.checkpoint(r.code);finishCaseBattle(saved.world,true);
+ assert(allowedGuidedScenes(saved.world).some(scene=>scene.id==='C4'));
+});
+
+test('starting combat after the DM read C4 never duplicates its opening',()=>{
+ const r=room();r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.scene('C4');
+ r.send('a','start');
+ assert.equal(r.view().narrative!.history.filter(beat=>beat.eventId==='guided-cue:C4').length,1);
+ assert(!r.panel().narration.some(card=>card.eventId==='guided-cue:C4' || card.eventId==='EN01:start'));
+});
+
+
+test('player question choices have an available authored reply and remain gated by scene publication',()=>{
+ const r=room();const options=r.view().guided!.questionOptions!;assert(options.length);
+ assert(options.every(q=>r.panel().investigators[0].choices.some(c=>c.label===q.label && c.speaker===q.speaker && c.answer)));
+ r.send('a','askGm',{site:'A',text:options[0].speaker+' · '+options[0].label});assert.equal(r.panel().questions!.length,1);
+ r.send('dm','guided',{command:'scene',target:'A3'});assert.deepEqual(r.view().guided!.questionOptions,[]);
+ r.publish('guided-cue:A3');assert(!JSON.stringify(r.view().guided!.questionOptions).includes('DM ลับ'));
 });

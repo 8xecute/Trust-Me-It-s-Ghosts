@@ -49,6 +49,33 @@ function room(count=2,die=20,lethal=false) {
  return {store,code,send,panel,view,saved,publish,scene,event,next,say,act,toE,players};
 }
 
+test('v5.1 merge keeps C4 available and publishes its opening once through the DM',()=>{
+ const r=room();r.scene('A3');r.next();r.scene('B5');r.next();
+ assert.ok(!r.panel().guidedScenes!.some(scene=>scene.id==='C4'));
+ r.scene('C2');assert.ok(r.panel().guidedScenes!.some(scene=>scene.id==='C4'));
+ r.send('a','start');assert.equal(r.view().guided!.scene,'C4');
+ assert.deepEqual(r.view().guided!.questionOptions,[]);
+ assert.ok(!r.view().narrative!.history.some(beat=>beat.eventId==='guided-cue:C4'));
+ r.publish('guided-cue:C4');
+ assert.equal(r.view().narrative!.history.filter(beat=>beat.eventId==='guided-cue:C4').length,1);
+ assert.ok(!r.panel().narration.some(card=>card.eventId==='EN01:start'));
+ const saved=r.saved();finishCaseBattle(saved,true);
+ assert.ok(allowedGuidedScenes(saved).some(scene=>scene.id==='C4'));
+});
+
+test('v5.1 question buttons expose approved labels only, retaining DM context gates',()=>{
+ const r=room();assert.deepEqual(r.view().guided!.questionOptions,[]);
+ const line=scenes51.A1.dialogue.find(line=>line.label==='ใคร?')!;
+ r.event('context:'+line.id);
+ const option=r.view().guided!.questionOptions!.find(q=>q.label===line.label)!;
+ assert.ok(option);assert.deepEqual(Object.keys(option).sort(),['label','speaker']);
+ assert.ok(r.panel().investigators[0].choices.some(c=>c.label===option.label && c.speaker===option.speaker && c.answer));
+ r.send('a','askGm',{site:'A',text:option.speaker+' · '+option.label});
+ assert.equal(r.panel().questions!.length,1);
+ r.send('dm','guided',{command:'scene',target:'A3'});
+ assert.deepEqual(r.view().guided!.questionOptions,[]);
+});
+
 test('v5.1 source imports 31 complete scenes, four endings and unchanged 16 dice cards',()=>{
  assert.equal(Object.keys(scenes51).length,31);assert.deepEqual(Object.keys(endings51),['A','B','C','D']);
  const original=readFileSync(new URL('../scenarios/case-001/case-001.v4.3.DiceChecks.json',import.meta.url),'utf8');

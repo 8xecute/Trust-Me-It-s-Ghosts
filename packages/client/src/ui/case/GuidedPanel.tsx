@@ -1,8 +1,8 @@
 import type { GuidedView, GuidedScene, CaseDmPanel } from '../../network/onlineTypes';
 import { DmScript } from '../gm/DmScript';
 
-export function GuidedPanel({view,scenes,events,storyState,npcDossiers,connected,action,isDm=false}:{
- view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;site?:string;
+export function GuidedPanel({view,scenes,events,storyState,npcDossiers,connected,action,isDm=false,site,pendingQuestions=0}:{
+ view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;site?:string;pendingQuestions?:number;
  npcDossiers?:CaseDmPanel['npcDossiers'];events?:{id:string;label:string}[];storyState?:Record<string,unknown>;
  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
 }) {
@@ -11,9 +11,11 @@ export function GuidedPanel({view,scenes,events,storyState,npcDossiers,connected
    <h3>บท {view.phase} · ฉาก {view.scene}</h3>
    {view.version==='5.1' && <p>Story v5.1 · {view.lethal?'Lethal Variant เปิด':'Lethal Variant ปิด'}</p>}
    {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}
-   {!isDm && view.prompts.length>0 && <div aria-label="หัวข้อสงสัย">
-     <p className="note">หัวข้อชวนคุยกับผู้ดำเนินเรื่อง</p>
-     <ul>{view.prompts.slice(0,3).map(text=><li key={text}>{text}</li>)}</ul>
+   {!isDm && <div aria-label="คำถามที่มีบทตอบในฉาก">
+     <p className="note">เลือกคำถามที่มีบทตอบในฉากนี้ · ส่งให้ DM ตอบ</p>
+     {view.questionOptions?.length ? <div className="question-options">{view.questionOptions.map((q,i)=><button key={q.speaker+q.label+i} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:q.speaker+' · '+q.label})}>{q.speaker} · {q.label.replace(/^ถาม/,'')}</button>)}</div> : <p>รอเปิดบทสนทนาหรือคุยกับ DM ถึงสิ่งที่สังเกตพบ</p>}
+     {pendingQuestions>0 && <p role="status">ส่งแล้ว · รอ DM ตอบ {pendingQuestions} คำถาม</p>}
+     {view.version==='5.1' && view.prompts.length>0 && <details><summary>หัวข้อชวนคุยจากบทปัจจุบัน</summary><ul>{view.prompts.map(prompt=><li key={prompt}>{prompt}</li>)}</ul></details>}
    </div>}
    {view.canAnalyzeHistory && <button disabled={!connected} onClick={()=>send('history')}>อ่านบันทึกพร้อมข้อมูลประกอบ · ไม่ต้องทอย</button>}
    {!isDm && view.escorting>0 && <button disabled={!connected} onClick={()=>send('evacuate')}>พาผู้ที่กำลังช่วยไปจุดปลอดภัย · {view.escorting} คน</button>}

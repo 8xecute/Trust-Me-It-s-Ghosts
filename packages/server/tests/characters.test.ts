@@ -168,3 +168,32 @@ test('five and six investigators rotate through AP before one Ghost Phase, exclu
     for(const id of players) assert.equal(next.turns[id].ap,3);
   }
 });
+
+test('players can edit both names and their profession before start, shared with the team and locked afterwards',()=>{
+ const store=new WorldStore(()=>20,true,true,true);store.create('names',2);let n=0;
+ const act=(p:string,type:string,data:object={})=>store.apply('names',p,{id:String(++n),type,...data});
+ for(const id of ['dm','a','b'])store.addPlayer('names',id);
+ act('dm','claimDm');act('a','createCharacter',{profession:'medium',playerName:'แฟรงค์',characterName:'หมอก'});act('b','createCharacter',{profession:'field_medic'});
+ act('a','updateCharacter',{profession:'ritual_specialist',playerName:'แฟรงค์ใหม่',characterName:'สายหมอก'});
+ const c=store.snapshot('names','b').characters!.a;assert.equal(c.playerName,'แฟรงค์ใหม่');assert.equal(c.characterName,'สายหมอก');assert.equal(c.profession,'ritual_specialist');
+ assert.throws(()=>act('a','updateCharacter',{profession:'field_medic',playerName:'ผิด',characterName:'ผิด'}));
+ assert.equal(store.snapshot('names','b').characters!.a.characterName,'สายหมอก');
+ assert.throws(()=>act('a','updateCharacter',{profession:'ritual_specialist',characterName:'แยก\nบรรทัด'}));
+ act('dm','caseStart',{mode:'story'});
+ assert.throws(()=>act('a','updateCharacter',{profession:'medium',playerName:'เปลี่ยน',characterName:'เปลี่ยน'}),/ก่อนเริ่มคดี/);
+ assert.equal(store.snapshot('names','b').characters!.a.characterName,'สายหมอก');
+});
+
+test('names can be saved before choosing a role and changed without resetting the character',()=>{
+ const store=new WorldStore(()=>20,true,true,true);store.create('split',2);let n=0;
+ const act=(p:string,type:string,data:object={})=>store.apply('split',p,{id:String(++n),type,...data});
+ for(const id of ['dm','a','b'])store.addPlayer('split',id);act('dm','claimDm');
+ act('a','setPlayerNames',{playerName:'แฟรงค์',characterName:'หมอก'});
+ assert.equal(store.snapshot('split','b').playerNames!.a.characterName,'หมอก');assert(!store.snapshot('split','a').characters!.a);
+ act('a','createCharacter',{profession:'medium'});const before=store.snapshot('split','a').characters!.a;
+ act('a','setPlayerNames',{playerName:'แฟรงค์ใหม่',characterName:'สายหมอก'});
+ const after=store.snapshot('split','b').characters!.a;assert.equal(after.characterName,'สายหมอก');assert.equal(after.profession,before.profession);assert.deepEqual(after.coreStats,before.coreStats);
+ act('a','updateCharacter',{profession:'ritual_specialist'});assert.equal(store.snapshot('split','b').characters!.a.characterName,'สายหมอก');
+ act('b','createCharacter',{profession:'field_medic'});act('dm','caseStart',{mode:'story'});
+ assert.throws(()=>act('a','setPlayerNames',{playerName:'เปลี่ยนหลังเริ่ม'}));
+});

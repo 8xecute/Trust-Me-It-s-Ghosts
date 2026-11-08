@@ -119,6 +119,7 @@ export function validatePlayerName(value:unknown):string|undefined {
 
 export interface Character {
   playerName?: string;
+  characterName?: string;
   coreStats?: LiteStats;
   talent?: Talent;
   background?: Background;

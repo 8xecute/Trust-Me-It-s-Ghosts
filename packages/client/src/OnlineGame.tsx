@@ -1,4 +1,5 @@
-import { BASIC_RULES_MODE } from '@baan/shared';
+import {useCaseUpdates} from './ui/case/useCaseUpdates';
+import { BASIC_RULES_MODE, professions } from '@baan/shared';
 import { GuidedPanel } from './ui/case/GuidedPanel';
 import { D20Card } from './ui/case/D20Card';
 import { CaseNotebook } from './ui/case/CaseNotebook';
@@ -138,7 +139,9 @@ export function OnlineGame() {
   function playerName(id:string) {
     if(id===world?.humanDmId) return 'ผู้ดำเนินเรื่อง';
     const index=investigators.findIndex(player=>player.id===id);
-    return world?.characters?.[id]?.playerName ?? (index<0 ? id : 'ผู้สืบสวน '+(index+1));
+    const c=world?.characters?.[id];
+    const savedNames=world?.playerNames?.[id];
+    return (savedNames?.playerName ?? c?.playerName ?? (index<0 ? id : 'ผู้สืบสวน '+(index+1)))+((savedNames?.characterName ?? c?.characterName)?' ('+(savedNames?.characterName ?? c?.characterName)+')':'');
   }
   const limit=6;
   const canStart=connected && investigators.length>=2 && investigators.length<=limit &&
@@ -159,6 +162,13 @@ export function OnlineGame() {
     .filter(option=>!battle || option.dice || ['seal1','seal2','seal3','ritual','suppress','show-clue'].includes(option.id))
     .filter(option=>option.id!=='hint' || character?.profession==='paranormal_investigator')
     .filter(option=>option.id!=='sense' || character?.profession==='medium');
+  const readScope=room && self.current ? room.code+':'+self.current : '';
+  const deliveredBeats=(world?.narrative?.history ?? []).filter(beat=>beat.sequence<=(world?.narrative?.current?.sequence ?? 0));
+  const unreadStory=useCaseUpdates(readScope+':story',deliveredBeats.map(beat=>beat.sequence+':'+beat.eventId+':'+beat.text),caseTab==='story' && !isHumanDm);
+  const notebook=world?.case001?.notebook;
+  const evidenceEntries=world?.guided && !world.guided.cue ? [] : [...(notebook?.confirmed ?? []).map(e=>'confirmed:'+e.id+':'+e.text+':'+e.source),...(notebook?.suspected ?? []).map(e=>'suspected:'+e.id+':'+e.text+':'+e.source)];
+  const unreadEvidence=useCaseUpdates(readScope+':evidence',evidenceEntries,caseTab==='journal' && !isHumanDm);
+  const rollOptions=caseActions.filter(option=>option.check || option.dice);
   const groups=actionGroups.filter(group=>caseActions.some(option=>actionCategory(option.id)===group.id));
   const visibleGroup=groups.some(group=>group.id===actionGroup) ? actionGroup : groups[0]?.id;
   useEffect(()=>{
@@ -185,7 +195,7 @@ export function OnlineGame() {
 
   if(isHumanDm && room) return <DmWorkspace room={room} world={world} investigators={investigators}
     leaveRoom={leaveRoom} leaving={leaving} preview={preview} previewPlayer={previewPlayer} setPreviewPlayer={setPreviewPlayer} dmPanel={dmPanel}
-    action={action} playerName={playerName} canStart={canStart} status={status} connected={connected} limit={limit}/>;
+    action={action} playerName={id=>playerName(id)+(world?.characters?.[id]?' · '+professions[world.characters[id].profession].name:'')} canStart={canStart} status={status} connected={connected} limit={limit}/>;
 
   const savedToken=room ? null : localStorage.getItem(savedSessionKey);
   return <main className={`game-shell online-shell player-shell${room ? '' : ' lobby-shell'}`}>
@@ -199,12 +209,12 @@ export function OnlineGame() {
       <button className="danger" disabled={!connected || leaving} onClick={leaveRoom}>ออกจากห้อง</button>
       <details className="session-members" open={!world?.case001 && (room.version!==2 || !!character)}>
         <summary>ทีมของคุณ · ห้อง {room.code} · {room.players.length} คน</summary>
-      <ul>{room.players.map((player,index)=><li key={player.id}>{world?.characters?.[player.id] ? (world.characters[player.id].playerName ?? castProfiles[world.characters[player.id].profession].name) : 'ผู้เล่น '+(index+1)}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
+      <ul>{room.players.map((player,index)=><li key={player.id}>{world?.characters?.[player.id] ? playerName(player.id)+' · '+professions[world.characters[player.id].profession].name : playerName(player.id)}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
       <button disabled={!connected} onClick={()=>request('room:ready',[!room.players.find(p=>p.id===self.current)?.ready])}>สลับสถานะพร้อม</button>
       </details>
       {room.version===2 && !world?.case001 && <CharacterCreator character={character} biography={biography}
-        taken={cast} disabled={!connected}
-        onCreate={(profession,talent,playerName)=>action('createCharacter',{profession,talent,playerName})}/>}
+        taken={cast.filter(role=>role!==character?.profession)} takenBy={Object.fromEntries(investigators.flatMap((p,i)=>world?.characters?.[p.id] ? [[world.characters[p.id].profession,world.characters[p.id].playerName ?? 'ผู้เล่น '+(i+1)]] : []))} disabled={!connected}
+        editable names={world?.playerNames?.[self.current]} onSaveNames={(playerName,characterName)=>action('setPlayerNames',{playerName,characterName})} onCreate={(profession,talent,playerName,characterName)=>action(character?'updateCharacter':'createCharacter',{profession,talent,playerName,characterName})}/>}
       {world?.case001 ? <section className="case-screen" aria-label="คดี 001">
         {world.paused && <p className="narration-card" role="status">พักคดีอยู่ · รอ DM เปิดเล่นต่อ สถานะและผลทอยเดิมยังอยู่</p>}
 
@@ -213,14 +223,15 @@ export function OnlineGame() {
             <p>{world.case001.location}</p></div>
           <div className="case-clock"><span>เวลาในภารกิจ</span><strong>{world.case001.time}</strong></div>
         </header>
-        <nav className="workspace-tabs player-main-tabs" aria-label="หน้าต่างคดี">{([['scene',battle?'สนามต่อสู้':'ฉาก'],['story','บทเล่า'],['actions','ลงมือทำ'],['character','ตัวละคร'],['journal','สมุดคดี'],...(world.case001.report ? [['report','รายงาน']] : [])] as [typeof caseTab,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={caseTab===id} onClick={()=>setCaseTab(id)}>{label}{id==='actions' && world.guided?.transition?' · รอยืนยัน':''}</button>)}</nav>
-        {character && <div className="player-status-strip"><img src={portraitUrl(character.profession)} alt=""/><strong>{character.playerName ?? castProfiles[character.profession].name}</strong><span>ชีวิต {character.hp}</span><span>สติ {character.sanity}</span><span>สมาธิ {character.focus}</span>{battle && <span>AP {world.turns[self.current]?.ap ?? 0}/3</span>}</div>}
+        <nav className="workspace-tabs player-main-tabs" aria-label="หน้าต่างคดี">{([['scene',battle?'สนามต่อสู้':'ฉาก'],['story','บทเล่า'],['actions','ลงมือทำ'],['character','ตัวละคร'],['journal','หลักฐาน / สมุดคดี'],...(world.case001.report ? [['report','รายงาน']] : [])] as [typeof caseTab,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={caseTab===id} onClick={()=>setCaseTab(id)}>{label}{id==='story' && unreadStory>0 && <span className="update-badge" aria-label={unreadStory+' บทที่ยังไม่อ่าน'}>{unreadStory}</span>}{id==='journal' && unreadEvidence>0 && <span className="update-badge" aria-label={unreadEvidence+' หลักฐานใหม่หรืออัปเดต'}>{unreadEvidence}</span>}{id==='actions' && world.guided?.transition?' · รอยืนยัน':''}</button>)}</nav>
+        {character && <div className="player-status-strip"><img src={portraitUrl(character.profession)} alt=""/><strong>{playerName(self.current)}</strong><span>{professions[character.profession].name}</span><span>ชีวิต {character.hp}</span><span>สติ {character.sanity}</span><span>สมาธิ {character.focus}</span>{battle && <span>AP {world.turns[self.current]?.ap ?? 0}/3</span>}</div>}
+        <div className="team-identity" aria-label="ชื่อผู้เล่นและบทบาทในพื้นที่">{investigators.filter(p=>world.players[p.id] && world.characters?.[p.id]).map(p=><span key={p.id}>{playerName(p.id)} · {professions[world.characters![p.id].profession].name}</span>)}</div>
         <div hidden={caseTab!=='character'}>
         {character ? <section className="case-character game-panel" aria-label="สถานะตัวละครของคุณ">
           <img className="case-character-portrait" src={portraitUrl(character.profession)} alt={castProfiles[character.profession].name}/>
           <div className="case-character-heading">
             <p className="eyebrow">ตัวละครของคุณ</p>
-            <h3>{character.playerName ?? castProfiles[character.profession].name}</h3>
+            <h3>{playerName(self.current)}</h3>
           </div>
           <div className="case-character-stats">
             <h4>สถานะปัจจุบัน</h4>
@@ -230,12 +241,20 @@ export function OnlineGame() {
               <CoreStats stats={character.coreStats}/>
             </>}
             <CharacterCreator character={character} biography={biography}
-              showCoreStats={!character.coreStats} taken={cast} disabled={!connected}
+              showCoreStats={!character.coreStats} taken={cast.filter(role=>role!==character?.profession)} takenBy={Object.fromEntries(investigators.flatMap((p,i)=>world?.characters?.[p.id] ? [[world.characters[p.id].profession,world.characters[p.id].playerName ?? 'ผู้เล่น '+(i+1)]] : []))} disabled={!connected}
               onCreate={(profession,talent,playerName)=>action('createCharacter',{profession,talent,playerName})}/>
           </div>
         </section> : <GameHud exploring={!battle} haunt={world.case001.haunt} ap={battle ? world.turns[self.current]?.ap : undefined}/>}
 
         </div>
+        <div className="case-updates" aria-live="polite">
+          {unreadStory>0 && caseTab!=='story' && <button onClick={()=>setCaseTab('story')}>บทใหม่ที่ยังไม่อ่าน · {unreadStory}</button>}
+          {unreadEvidence>0 && caseTab!=='journal' && <button onClick={()=>setCaseTab('journal')}>หลักฐานใหม่หรืออัปเดต · {unreadEvidence}</button>}
+        </div>
+        {!battle && !world.paused && !world.case001.report && rollOptions.length>0 && !waitingForRoll && <section className="roll-opportunity" aria-label="มีจุดทอยพร้อมให้เลือก">
+          <strong>มีจุดทอยพร้อมให้เลือก · {rollOptions.length}</strong><p>เลือกเมื่อคุณต้องการทำสิ่งนั้น ระบบจะส่งคำขอให้ DM</p>
+          {rollOptions.map(option=><button key={option.id} disabled={!connected || !character?.hp} onClick={()=>caseRequest({actionId:option.id})}>{option.label}{option.dice && ' · '+option.dice.stat+' DC '+option.dice.dc}</button>)}
+        </section>}
         <p className="objective-compact"><strong>เป้าหมาย:</strong> {world.case001.notebook?.objective}</p>
         {world.pendingCheck && world.diceRequest?.die!==null &&
           <p className="narration-card d20-wait" role="status">ส่งคำขอทดสอบแล้ว · รอ DM ส่งการ์ด D20</p>}
@@ -278,11 +297,11 @@ export function OnlineGame() {
 </div>
         <div hidden={caseTab!=='journal'}>
           <CaseNotebook view={world.case001.notebook}/>
-          {world.guided && <GuidedPanel view={world.guided} connected={connected} action={action} site={world.caseMap?.site}/>}
+          {world.guided && <GuidedPanel view={world.guided} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
           {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName}/>}
         </div>
         <div hidden={caseTab!=='actions'}>
-        {world.guided && <GuidedPanel view={world.guided} connected={connected} action={action} site={world.caseMap?.site}/>}
+        {world.guided && <GuidedPanel view={world.guided} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
         <h3 className="pane-heading">คุณต้องการทำอะไร</h3>
         {world.manualDm && !world.humanDmId && <button disabled={!connected || !!battle}
           onClick={()=>action('claimDm')}>รับช่วงเป็นผู้ดำเนินเรื่อง</button>}

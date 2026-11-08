@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { World } from '../world.js';
 import { addFact, advanceStory, hasFact, v4 } from './caseStory.js';
 import { emitCaseBeat, tick, type Site } from './case001.js';
-import { travelCaseMap } from './caseBattle.js';
+import { caseOpportunity, travelCaseMap } from './caseBattle.js';
 import { caseGrid } from '@baan/shared';
 import { scenes51, endings51 } from './v51Content.js';
 import { command51, dialogue51, presentScene51, sceneCue51, speak51, wichaiHere51 } from './storyV51.js';
@@ -63,7 +63,7 @@ export function allowedGuidedScenes(w:World) {
    if(scene.id==='B2') return g.presented.includes('B1') && wichaiHere51(s);
    if(scene.id==='E5') return wichaiHere51(s) && s.site==='E';
    if(scene.id==='E3') return s.opened && s.evacuated.length<3;
-   if(scene.id==='C4') return w.caseMap?.battle?.id==='EN01';
+   if(scene.id==='C4') return g.observed.includes('C4') || w.caseMap?.battle?.id==='EN01' || !!w.caseMap && caseOpportunity(s,w.caseMap)==='EN01';
    if(scene.id==='D3') return ['cautious','hostile','pacified'].includes(s.ghost) && !v.KAEW_TEMP_DISPERSED;
    if(scene.id==='D4') return w.caseMap?.battle?.id==='EN02';
    if(scene.id==='F1'||scene.id==='F2') return v.RITUAL_STATUS!=='stopped';
@@ -77,7 +77,7 @@ export function allowedGuidedScenes(w:World) {
   if(scene.phase!==g.phase) return false;
   if(scene.id==='E5') return s.wichai?.site==='E' && s.wichai.status!=='detained';
   if(scene.id==='E3') return s.opened && s.evacuated.length<3;
-  if(scene.id==='C4') return !!w.caseMap?.battle && w.caseMap.battle.id==='EN01';
+  if(scene.id==='C4') return g.observed.includes('C4') || w.caseMap?.battle?.id==='EN01' || !!w.caseMap && caseOpportunity(s,w.caseMap)==='EN01';
   if(scene.id==='D3') return ['cautious','hostile','pacified'].includes(s.ghost);
   if(scene.id==='D4') return w.caseMap?.battle?.id==='EN02';
   if(scene.id==='F2') return !hasFact(s,'kaew-dispersed') && !s.seals[2] && s.ghost!=='hidden';
@@ -119,6 +119,7 @@ export function guidedView(w:World) {
  const scene=sceneData(s)[g.scene];
  return {version:g.version,phase:g.phase,scene:g.scene,
   cue:seen?scene.entry_cue:undefined,prompts:seen?scene.suggested_questions:[],lethal:s.v51?.lethal,
+  questionOptions:seen && !w.caseMap?.battle && !s.report ? guidedDialogue(s).filter(line=>line.label.startsWith('ถาม') || s.v51 && 'field' in line && line.field==='responses' && line.label.endsWith('?')).map(line=>({label:line.label,speaker:line.speaker})) : [],
   canAnalyzeHistory:g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
 }
 function summary(w:World) {
