@@ -141,6 +141,7 @@ export function caseContext(s:CaseState):ScenarioProgress {
 }
 
 export function advanceStory(s:CaseState) {
+ if(s.v51)return;
   if(!s.story) return;
   const scenario=definition(s);
   let p=caseContext(s);

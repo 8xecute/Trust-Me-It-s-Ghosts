@@ -1,4 +1,5 @@
-import { newGuided, observeGuidedScene, allowedGuidedScenes, guidedView, guidedCommand, guidedScripts } from './case001/guidedCase.js';
+import { newGuided, observeGuidedScene, allowedGuidedScenes, guidedView, guidedCommand, guidedScript } from './case001/guidedCase.js';
+import { newState51, presentScene51, dmOptions51, contract51, delivered51, validateSave51 } from './case001/storyV51.js';
 import { availableDialogue, storyCheckResponse, isStoryCheck, storyCheckHelp, storyCheckOptions } from './case001/storyDice.js';
 import { completeCaseRound, executeCaseAction } from './case001/caseActions.js';
 import { caseCombatStats } from './case001/caseCombatStats.js';
@@ -86,6 +87,8 @@ function recordDm(session:DmSession,kind:DmLogEntry['kind'],actor:string,recipie
 }
 
 function inCurrentNarration(w:World,beat:QueuedNarration) {
+ if(w.case001?.v51 && beat.eventId==='v51:crossfire-window' && w.case001.v51.pending?.kind!=='crossfire')return false;
+ if(w.case001?.v51 && beat.eventId==='v51:execution-window' && w.case001.v51.pending?.kind!=='execution')return false;
  if(w.case001?.guided && beat.answer && beat.answer.scene!==w.case001.guided.scene) return false;
  if(w.case001?.guided && beat.phase && beat.phase!==w.case001.guided.phase) return false;
  if(w.case001?.guided && beat.eventId.startsWith('guided-cue:') && beat.eventId!=='guided-cue:'+w.case001.guided.scene) return false;
@@ -98,9 +101,11 @@ function deliverDmNarration(w:World,beat:QueuedNarration,dm:string,kind:'narrati
  const state=w.narrative ??= newNarrative();
  const sent=w.dmSession!.sent ??= Object.fromEntries(state.records.map(beat=>[beat.eventId,{text:beat.text,site:beat.site,sequence:beat.sequence,count:1}]));
  enqueueNarrative(state,{...content,actor:dm},recipients);
+ if(w.case001?.v51)delivered51(w.case001,beat.eventId);
  if(w.case001?.guided && beat.eventId.startsWith('guided-cue:')) {
   const id=beat.eventId.slice('guided-cue:'.length);
   if(!w.case001.guided.presented.includes(id)) w.case001.guided.presented.push(id);
+  if(w.case001.v51)presentScene51(w.case001,id);
  }
  for(const player of recipients) state.cursors[player]=state.sequence;
  const previous=sent[beat.eventId];
@@ -115,6 +120,8 @@ export class WorldStore {
   private readonly storyDiceV41 = false,
   private readonly guidedV43 = false,
   private readonly basicRules = false,
+  private readonly guidedVersion:'4.3'|'5.1'='4.3',
+  private readonly lethalV51=false,
  ) {}
  private worlds=new Map<string,World>(); private seen=new Map<string,Map<string,number>>();
  checkpoint(code:string) {
@@ -126,6 +133,8 @@ export class WorldStore {
    throw Error('สถานะคดีที่บันทึกไม่ถูกต้อง');
   }
   if(this.basicRules) {world.basicMode=true;world.case001.basicMode=true;}
+  if(world.case001.guided?.version==='5.1' && !world.case001.v51)throw Error('เซฟ v5.1 ไม่มี State Contract');
+  validateSave51(world.case001);
   this.worlds.set(code,structuredClone({...world,backgroundUses:backgroundUses ? new Set(backgroundUses) : undefined}));
   this.seen.set(code,new Map(seen));
  }
@@ -160,8 +169,10 @@ export class WorldStore {
   if(w.case001?.story) return {
    caseMode:true,
    sent:structuredClone(w.dmSession?.sent ?? Object.fromEntries((w.narrative?.records ?? []).map(beat=>[beat.eventId,{text:beat.text,site:beat.site,sequence:beat.sequence,count:1}]))),
-   guide:w.case001.diceVersion ? gmGuideV41 : w.case001.storyVersion===4 ? gmGuide : undefined,
-   guidedScenes:w.case001.guided ? allowedGuidedScenes(w).map(scene=>({id:scene.id,cue:scene.entry_cue,script:guidedScripts[scene.id],sent:!!w.case001!.guided!.presented.includes(scene.id)})) : undefined,
+   guide:w.case001.v51 ? undefined : w.case001.diceVersion ? gmGuideV41 : w.case001.storyVersion===4 ? gmGuide : undefined,
+   guidedScenes:w.case001.guided ? allowedGuidedScenes(w).map(scene=>({id:scene.id,cue:scene.entry_cue,script:guidedScript(w.case001!,scene.id),sent:!!w.case001!.guided!.presented.includes(scene.id)})) : undefined,
+   storyState:w.case001.v51 ? contract51(w.case001) : undefined,
+   storyEvents:w.case001.v51 ? dmOptions51(w.case001) : undefined,
    diceGuide:w.case001.diceVersion ? storyCheckHelp : undefined,
    narration:(w.dmSession?.narration ?? []).map(beat=>({
     ...structuredClone(beat),current:inCurrentNarration(w,beat),
@@ -370,7 +381,16 @@ export class WorldStore {
     if(sceneMode) {
      w.sceneMode=true;
      if(w.humanDmId) w.dmSession={narration:[],questions:[],checks:{},rolls:{},log:[]};
-     if(this.guidedV43) {w.case001.guided=newGuided();observeGuidedScene(w,'A1');}
+     if(this.guidedV43) {
+      w.case001.guided=newGuided(this.guidedVersion);
+      if(this.guidedVersion==='5.1') {
+       w.case001.v51=newState51(this.lethalV51);
+       w.case001.narrativeEvents=[];
+       w.case001.notice='';
+       if(this.lethalV51)emitCaseBeat(w.case001,'v51:lethal','ใช้ Lethal Variant v5.1: เวลา 03:00 พิธีที่ยังแรงเต็มอาจคร่าชีวิตผู้มีชื่อผูกไว้ การพาออกจากเรือนอย่างเดียวไม่ตัดสายพิธี HP0 ยังไม่ตายทันทีตาม Core เดิม','party');
+      }
+      observeGuidedScene(w,'A1');
+     }
      w.lastCheck=null;
      narrativeActors=Object.keys(w.players).filter(id=>id!==w.humanDmId);
     }
@@ -490,6 +510,7 @@ export class WorldStore {
      const check=w.dmSession?.checks[a.targetId];
      if(check ? a.checkId!==check.id || !checkAvailable(w,a.targetId,check) : a.checkId!==undefined) throw Error('คำขอทอยจากฉากเปลี่ยนไปแล้ว');
      if(check && a.difficulty!==undefined && ![11,14,17,20,22].includes(a.difficulty as number)) throw Error('ระดับความยากไม่ถูกต้อง');
+     if(w.case001?.v51 && check?.dice && a.difficulty!==undefined && a.difficulty!==check.dice.dc)throw Error('v5.1 ต้องรักษา DC ของ Dice Card ต้นฉบับ');
      if(check?.dice && a.stat!==undefined && a.stat!==check.dice.stat) throw Error('จุดทอยตามบทต้องใช้ค่าสถานะที่กำหนด');
      let manualDice: DmRollCard['dice'];
      if(!check && ('difficulty' in a || 'stat' in a)) {

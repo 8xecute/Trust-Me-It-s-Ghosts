@@ -3,6 +3,8 @@ import type { LiteStats } from '@baan/shared';
 import { emitCaseBeat } from './case001.js';
 import { addFact, advanceStory, hasFact } from './caseStory.js';
 import type { World } from '../world.js';
+import { alive51, recordCheck51, wichaiHere51 } from './storyV51.js';
+import { scenes51 } from './v51Content.js';
 
 type Outcome = 'full'|'partial'|'failure';
 type Stat = keyof LiteStats;
@@ -43,8 +45,8 @@ function availableChecks(w:World,player:string) {
  const exposedWichai=fact('current-testimony');
  const gateCorroborated=has('E07') && (fact('gate-testimony') || fact('v43-evacuation-records'));
  const supportKaew=fact('gate-truth') && (exposedWichai || s.wichai?.status==='detained');
- const frightened=s.opened && s.evacuated.length===0 && s.escorts.length===0;
- const wInScene=s.wichai?.site===s.site && s.wichai.status!=='detained';
+ const frightened=s.opened && s.evacuated.length===0 && s.escorts.length===0 && (!s.v51 || ['ดล','นิด'].some(n=>alive51(s,n)));
+ const wInScene=s.v51 ? wichaiHere51(s) : s.wichai?.site===s.site && s.wichai.status!=='detained';
  const eligible:Record<string,boolean|undefined>={
   A2_RADIO_ECHO:s.guided ? s.guided.presented.includes('A2') : delivered('arrival-radio'),
   B2_WICHAI_TELL:wInScene && !exposedWichai && !(has('E08') && has('E02')) &&
@@ -65,6 +67,13 @@ function availableChecks(w:World,player:string) {
   H1_FLOOD_TIMELINE:gateCorroborated && !fact('gate-truth') && !fact('confessed'),
   F5_KAEW_RECONCILE:s.seals[2] && (s.ghost==='hostile' || s.ghost==='cautious') && !(supportKaew && s.trust>=2),
  };
+ if(s.v51) {
+  // Both C5 Editorial Props explicitly await Canon approval.
+  eligible.C5_EVACUATION_RECORDS=false;
+  eligible.H1_FLOOD_TIMELINE=s.evidence.includes('E07') && fact('gate-testimony') && !fact('gate-truth');
+  eligible.F5_KAEW_RECONCILE=s.v51.RITUAL_STATUS==='stopped' && !s.v51.KAEW_TEMP_DISPERSED && s.v51.KAEW_FINAL!=='calm';
+  eligible.B4_FLOOD_PHOTO=s.guided?.presented.includes('B4');
+ }
  return (s.guided ? guidedPack : pack).checks.flatMap(check=>{
   if(s.guided && (!s.guided.observed.includes(check.scene_id) || s.guided.scene!==check.scene_id ||
    (w.dmSession && !w.narrative?.records.some(beat=>beat.eventId==='guided-cue:'+check.scene_id)))) return [];
@@ -72,7 +81,7 @@ function availableChecks(w:World,player:string) {
   const siteMatches=scene==='H' ? ['B','C','E'].includes(s.site) : (scene==='F'?'E':scene)===s.site;
   if(!siteMatches || !eligible[check.id] || (battle && check.id!=='C4_DROWNED_ECHO_VISION')) return [];
   const attempts=s.storyChecks?.[check.id] ?? [];
-  if(attempts.some(roll=>roll.outcome==='full')) return [];
+  if(attempts.some(roll=>roll.outcome==='full') && !(s.v51 && check.id==='F5_KAEW_RECONCILE' && s.v51.KAEW_FINAL!=='calm')) return [];
   return check.stat.split('|').flatMap(raw=>{
    const stat=raw as Stat;
    if(stat==='SPI' && character.sanity===0) return [];
@@ -80,7 +89,7 @@ function availableChecks(w:World,player:string) {
    const support=check.id==='F5_KAEW_RECONCILE' ? [supportKaew, s.trust>=2] :
     check.id==='E5_WICHAI_NEGOTIATE' ? [exposedWichai,has('E02')] :
     check.id==='B4_FLOOD_PHOTO' ? [has('E07')] : [];
-   const context=JSON.stringify([stat,...support]);
+   const context=JSON.stringify([stat,...support,...(s.v51 && check.id==='F5_KAEW_RECONCILE'?[s.v51.humanCaseSupported,s.v51.disclosurePlan]:[])]);
    return attempts.some(roll=>roll.context===context) ? [] : [{check,stat,context}];
   });
  });
@@ -103,6 +112,7 @@ export function runStoryCheck(w:World,player:string,actionId:string,boost:unknow
  if(!entry) throw Error('การทดสอบนี้ทำไม่ได้ในสถานการณ์ปัจจุบัน');
  const {check,stat,context}=entry;
  const dc=dcOverride ?? check.dc;
+ if(w.case001?.v51 && dc!==check.dc)throw Error('v5.1 ต้องรักษา DC ของ Dice Card ต้นฉบับ');
  if(!Number.isInteger(dc) || ![11,14,17,20,22].includes(dc)) throw Error('ระดับความยากไม่ถูกต้อง');
  const s=w.case001!, character=w.characters![player];
  if(boost!==undefined && boost!=='focus') throw Error('การทดสอบนี้ใช้โบนัสสมาธิได้เท่านั้น');
@@ -126,9 +136,9 @@ export function runStoryCheck(w:World,player:string,actionId:string,boost:unknow
   if(check.id==='H1_FLOOD_TIMELINE') {
    addFact(s,'v41-flood-evidence');
    addFact(s,'gate-truth');
-   if(s.site==='B' && s.guided?.phase!=='FINAL') addFact(s,'confessed');
+   if(!s.v51 && s.site==='B' && s.guided?.phase!=='FINAL') addFact(s,'confessed');
   }
-  if(check.id==='F5_KAEW_RECONCILE' && hasFact(s,'gate-truth') &&
+  if(!s.v51 && check.id==='F5_KAEW_RECONCILE' && hasFact(s,'gate-truth') &&
    (hasFact(s,'current-testimony') || s.wichai?.status==='detained')) s.ghost='pacified';
  }
  if(outcome==='partial') {
@@ -137,8 +147,9 @@ export function runStoryCheck(w:World,player:string,actionId:string,boost:unknow
   if(check.id==='H1_FLOOD_TIMELINE') addFact(s,'v41-flood-partial');
  }
  if(check.id==='E3_HOSTAGES_ORDER') addFact(s,'current-testimony');
+ recordCheck51(s,check.id,outcome);
  const branch=check[outcome];
- const text=[branch.dm,availableDialogue(w,check.id,outcome,branch.dialogue)].filter(Boolean).join('\n');
+ const text=[checkNarration(w,check.id,outcome,branch.dm),availableDialogue(w,check.id,outcome,branch.dialogue)].filter(Boolean).join('\n');
  s.notice=text;
  emitCaseBeat(s,actionId,text,'party',s.site);
  s.narrativeEvents!.at(-1)!.actor=player;
@@ -152,11 +163,34 @@ export function storyCheckResponse(w:World,actionId:string,rollId:string) {
  if(!result)return;
  const branch=definition[result.outcome],statValue=w.characters![result.actor].coreStats![result.stat];
  return {rollId,checkId:definition.id,scene:definition.scene_id,playerId:result.actor,label:definition.title,die:result.die,stat:result.stat,statValue,bonus:result.total-result.die-statValue,total:result.total,dc:result.dc,
-  outcome:result.outcome==='full'?'success' as const:result.outcome,narration:branch.dm,dialogue:availableDialogue(w,definition.id,result.outcome,branch.dialogue),sentParts:[] as ('narration'|'dialogue')[]};
+  outcome:result.outcome==='full'?'success' as const:result.outcome,narration:checkNarration(w,definition.id,result.outcome,branch.dm),dialogue:availableDialogue(w,definition.id,result.outcome,branch.dialogue),sentParts:[] as ('narration'|'dialogue')[]};
+}
+
+function checkNarration(w:World,id:string,outcome:Outcome,text:string) {
+ const s=w.case001!;
+ if(!s.v51)return text;
+ if(id==='F5_KAEW_RECONCILE' && outcome==='full' && s.v51.KAEW_FINAL!=='calm')return 'ผลทอยถึง Full แต่ยังต้องมีเหตุผลหลักฐานและการรับผิดที่เกิดขึ้นจริง';
+ if(id==='E3_HOSTAGES_ORDER')return text.replaceAll('ทั้งสาม','ผู้รอดชีวิตที่อยู่จริง');
+ if(id==='H1_FLOOD_TIMELINE')return outcome==='full'?'มีการเปิดประตูผันน้ำก่อนพื้นที่สวนได้รับการยืนยันว่าอพยพครบ':outcome==='partial'?'เวลาเปิดประตูกับข้อมูลอพยพไม่สอดคล้องกัน แต่ยังอธิบายไม่ได้ว่าใครตัดสินใจ':'ยังเรียงลำดับจากข้อมูลที่มีไม่ชัด เก็บหลักฐานที่พบไว้';
+ return text;
 }
 
 export function availableDialogue(w:World,id:string,outcome:Outcome,dialogue:string) {
  const s=w.case001!;
+ if(s.v51) {
+  if(id==='B3_TON_DISCLOSURE') {
+   const line=scenes51.B3.dialogue.find(line=>outcome==='full' && s.v51!.TON_TRUST==='high'?line.label.includes('ส่วนตัว'):line.label.includes('ต่อหน้าวิชัย'));
+   return line ? 'ต้น: “'+line.text+'”' : undefined;
+  }
+  if(id==='E3_HOSTAGES_ORDER') {
+   const line=scenes51.E3.dialogue.find(line=>['ดล','นิด'].includes(line.speaker) && alive51(s,line.speaker) && /วิชัย/.test(line.text));
+   return line ? line.speaker+': “'+line.text+'”' : undefined;
+  }
+  if(id==='F5_KAEW_RECONCILE' && outcome==='full' && s.v51.KAEW_FINAL!=='calm')return 'แม่แก้ว: “คำสัญญาข้าเคยฟังมาแล้ว เอาหลักฐานไปให้คนเป็นเห็น”';
+  if(/วิชัย/.test(dialogue.split(':')[0]) && !wichaiHere51(s,true))return;
+  if(id==='H1_FLOOD_TIMELINE')return;
+  if(id==='D3_KAEW_CONTACT' && s.v51.KAEW_TEMP_DISPERSED)return;
+ }
  const kaewPresent=s.ghost==='cautious' || s.ghost==='hostile' || s.ghost==='pacified';
  const wichaiPresent=s.wichai?.site===s.site && s.wichai.status!=='detained';
  if(['B2_WICHAI_TELL','E5_WICHAI_NEGOTIATE'].includes(id) && !wichaiPresent) return;
@@ -173,6 +207,7 @@ export function learnedStoryInformation(state:import('./case001.js').CaseState) 
  return pack.checks.flatMap(check=>{
   const best=state.storyChecks?.[check.id]?.reduce((a,b)=>rank[b.outcome]>rank[a.outcome]?b:a);
   if(!best) return [];
-  return check[best.outcome].information.map((text,index)=>({id:check.id+':'+index,text,source:check.title}));
+  const information=state.v51 && check.id==='B3_TON_DISCLOSURE' ? ['ต้นให้คำบอกเล่าตามสิ่งที่สังเกตภายหลัง ต้องเทียบรอยล้อและพยานตรง'] : check[best.outcome].information;
+  return information.map((text,index)=>({id:check.id+':'+index,text,source:check.title}));
  });
 }

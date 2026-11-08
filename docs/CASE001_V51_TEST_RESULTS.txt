@@ -1,0 +1,248 @@
+=== build.log ===
+
+> rueang-phi-wai-jai-phom@0.1.0 build
+> npm run build -w @baan/shared && npm run build -w @baan/server && npm run build -w @baan/client
+
+
+> @baan/shared@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @baan/server@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @baan/client@0.1.0 build
+> tsc -p tsconfig.json && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 117 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                     0.47 kB │ gzip:  0.37 kB
+dist/assets/ritual_specialist-BVaKDUCA.jpg         84.44 kB
+dist/assets/medium-DwovXKsb.jpg                    86.84 kB
+dist/assets/paranormal_investigator-CuY1az3C.jpg   87.66 kB
+dist/assets/field_medic-npyiEg96.jpg               93.94 kB
+dist/assets/containment_specialist-BxjbnsA7.jpg    95.53 kB
+dist/assets/dol-DVDzpx9B.jpg                       99.93 kB
+dist/assets/occult_engineer-s4pE5f6M.jpg          100.98 kB
+dist/assets/wichai-Ba4bPDPJ.jpg                   103.91 kB
+dist/assets/phoem-ZsJOfy0L.jpg                    112.18 kB
+dist/assets/nid-DjtliZHt.jpg                      118.94 kB
+dist/assets/ton-DShU7dPr.jpg                      124.03 kB
+dist/assets/prasert-Up2oYJru.jpg                  125.97 kB
+dist/assets/drowned-ILPeQUSz.jpg                  128.18 kB
+dist/assets/boonmee-CMxu3DOs.jpg                  129.15 kB
+dist/assets/kaew-DHzjmd-4.jpg                     132.23 kB
+dist/assets/paranormal_investigator-BPHH8Gbj.png  137.31 kB
+dist/assets/kaewFinal-WxtTM2Uw.jpg                147.89 kB
+dist/assets/ritual_specialist-DDUyvp8w.png        153.85 kB
+dist/assets/containment_specialist-7NuhyVYp.png   162.16 kB
+dist/assets/kaew-DpQrufC7.png                     182.50 kB
+dist/assets/drowned-DzyUPCsf.png                  192.28 kB
+dist/assets/occult_engineer-kEZ1BgKV.png          221.25 kB
+dist/assets/field_medic-BwKbhd7G.png              227.49 kB
+dist/assets/medium-69wHaiau.png                   244.98 kB
+dist/assets/kaewFinal-Bfb1K51H.png                358.88 kB
+dist/assets/roadside-sala-Co1h7A3A.jpg            376.24 kB
+dist/assets/abandoned-house-2Zlogiew.jpg          431.08 kB
+dist/assets/banana-grove-CfncCOwS.jpg             437.66 kB
+dist/assets/missing-villager-house-CINmYLi8.jpg   447.22 kB
+dist/assets/headman-house-x2UR4esw.jpg            449.34 kB
+dist/assets/index-BWBy5V14.css                     35.67 kB │ gzip:  8.31 kB
+dist/assets/index-DkB6SNyf.js                     272.62 kB │ gzip: 84.16 kB
+✓ built in 669ms
+
+=== full-suite.log ===
+✔ Combat Lite defense and guard use BODY and RES independently (0.8434ms)
+✔ Combat Lite scales ghost HP for two to four players (0.8722ms)
+✔ Combat Lite uses one roll, without automatic criticals, and blocks physical damage to incorporeal ghosts (0.2248ms)
+✔ isometric placement preserves unique grid coordinates (1.6205ms)
+✔ movement preview excludes occupied, blocked and out of budget cells (0.3561ms)
+✔ flooded cells consume the same extra preview distance as server movement (0.1838ms)
+✔ mode transitions preserve token and object positions (1.3195ms)
+✔ placement rejects occupied, blocked and out of bounds cells (0.3178ms)
+✔ encounter permits one adjacent unobstructed move per turn (0.2487ms)
+✔ pacification resolves encounter (0.9954ms)
+✔ escape requires boundary (0.1584ms)
+✔ two strikes cause temporary defeat (0.1489ms)
+✔ ghost moves around blocks and attacks deterministically (1.0382ms)
+✔ blocked cells and bounds reject movement (1.3796ms)
+✔ finds shortest route around blockers (0.3418ms)
+✔ rejects blocked and unreachable targets and handles same cell (0.1781ms)
+✔ movement follows route and keyboard cancels it (0.2075ms)
+✔ open and close preserve state; locked objects cannot open (0.7413ms)
+✔ evidence can only be collected once and identifiers are unique (0.1869ms)
+✔ validates references, duplicate IDs and malformed input (1.1106ms)
+✔ three events advance state and one-time triggers do not repeat (0.8868ms)
+✔ AP costs, exhaustion and reset (0.8098ms)
+✔ DC thresholds and injected d20 (0.3206ms)
+✔ focus costs AP, boosts and is consumed by next check (0.1526ms)
+✔ zoom changes and stays within bounds (0.8429ms)
+✔ roof visibility toggles both ways (0.725ms)
+✔ basic mode retains all six preset stats and does not assign advanced talents (12.3458ms)
+✔ basic mode removes cash advance and rejects forged advance requests (11.0602ms)
+✔ DM sent marks survive reload, remain private and do not count duplicate requests (24.3707ms)
+✔ old talent selections survive restore but cannot be used in basic mode (2.0239ms)
+✔ basic mode still resolves an authoritative scripted check with Focus (9.9784ms)
+✔ DM chooses a validated DC before a scripted roll and the chosen value drives the outcome (15.8067ms)
+✔ each case location exposes the expanded grid and retains its blocked cells (5.5534ms)
+✔ EN01 retains location and occupancy through movement, escape and snapshot recovery (20.2725ms)
+✔ grove and Guardian battles scale their rosters for two and four investigators (1.4103ms)
+✔ finale is bypassable when pacified and uses projections then the third seal to advance (0.7057ms)
+✔ v4.1 uses only Mae Kaeo in the grove and finale and carries a grove victory forward (14.2876ms)
+✔ Combat Lite scales Case 001 health and lets the ghost win initiative (5.9261ms)
+✔ Combat Lite attacks use Defense thresholds and listed damage (1.4437ms)
+✔ all legacy backgrounds are inert and cannot grant a bonus (2.6989ms)
+✔ a failed investigation leaves the clue reachable through a follow-up (1.0766ms)
+✔ deception, spirit sense, diagnostic and anomaly hint obey role and scene conditions (0.6176ms)
+✔ notebook separates source-backed evidence from inference and hides undiscovered plot facts (2.4923ms)
+✔ DM previews explain unmet prerequisites, missing NPCs and already fired events without mutating state (1.136ms)
+✔ only Human DM can inspect private prerequisites or advance another player presentation; time unchanged (51.6454ms)
+✔ Case story gates testimony, tracks EV15–18 once, and publishes an earned teaser only after closure (7.9418ms)
+✔ the same NPC topic gives a guarded response and unlocks its trusted response later (0.9165ms)
+✔ peaceful, safe containment, rescue-only and failed routes each settle once (3.582ms)
+✔ seal three on the deadline wins, and arrest prevents sabotage without stopping the ritual (1.8574ms)
+✔ Human DM uses the same Case reducer and cannot reveal gated lines or bypass permissions (26.1205ms)
+✔ v4 requires corroboration for the floodgate reveal (8.1266ms)
+✔ v4 allows action after 03:00 and keeps a detained Wichai away from E (3.0396ms)
+✔ v4 endings account for the ritual, survivor safety and both investigations (1.9967ms)
+✔ v4 plays from briefing to the full ending without starting a battle (61.2125ms)
+✔ v4.1 radio baseline, authoritative success and shared result with 2 investigators (65.3397ms)
+✔ v4.1 radio baseline, authoritative partial and shared result with 3 investigators (45.0573ms)
+✔ v4.1 radio baseline, authoritative failure and shared result with 4 investigators (45.2447ms)
+✔ all sixteen authored checks resolve their own branches with valid phase conditions (4.8448ms)
+✔ room save resumes pending and committed checks without rerolling (18.5585ms)
+✔ v4.1 story checks remain optional for all four existing endings (2.418ms)
+✔ v4.1 can go from briefing to ending A with a Human DM and no combat (189.3995ms)
+✔ v4.3 forward investigation and shared journal for 2 investigators (128.8339ms)
+✔ v4.3 forward investigation and shared journal for 3 investigators (76.0497ms)
+✔ v4.3 forward investigation and shared journal for 4 investigators (174.5601ms)
+✔ cue precedes prompts, hint requests are disabled and old scene questions are blocked (11.5632ms)
+✔ v4.3 complete peaceful route reaches report A without revisiting a closed phase (130.81ms)
+✔ temporary dispersal cannot force a final boss before recovery (4.8695ms)
+✔ v4.3 can resolve B, C and D through actual forward routes (109.7919ms)
+✔ all sixteen v4.3 checks preserve the three authored result branches (11.6208ms)
+✔ guided content keeps authored replies and skips overlapping legacy scene narration (44.3439ms)
+✔ safe testimony bypasses uncertain dice and reopening a scene never repeats its cue (13.2777ms)
+✔ handoff journal excludes private narration and retains open questions (7.0862ms)
+✔ replayed confirmation cannot advance or repeat a saved chapter (11.2766ms)
+✔ v5.1 source imports 31 complete scenes, four endings and unchanged 16 dice cards (10.8913ms)
+✔ real v5.1 room routes forward with 2 investigators; optional failures never lock C2/D5 (72.7704ms)
+✔ real v5.1 room routes forward with 4 investigators; optional failures never lock C2/D5 (72.5397ms)
+✔ real v5.1 room routes forward with 6 investigators; optional failures never lock C2/D5 (156.91ms)
+✔ v5.1 does not grant scene facts or reveal DM sections before cue delivery (32.704ms)
+✔ B1 establishes land map before B2; Ton safe disclosure is scoped and optional (13.6943ms)
+✔ D3 actual conversation writes talked; F2 selects only that branch (51.5561ms)
+✔ 03:00 samples prestate once in E, preserves safe counts, and never ends the game (0.7013ms)
+✔ 03:00 weakened has no additional fatality (0.3269ms)
+✔ 03:00 stopped has no additional fatality (0.5252ms)
+✔ 03:00 untethered has no additional fatality (0.1981ms)
+✔ 03:00 already-dead has no additional fatality (0.1519ms)
+✔ 03:00 nonlethal has no additional fatality (0.144ms)
+✔ save and resume preserve a real 03:00 crossing and never convert a v4.3 room (40.7697ms)
+✔ crossfire needs presence, actual shield, delivered reaction window and actual failed protection (44.046ms)
+✔ evacuated people cannot become shields; a negotiation failure does not kill (73.5752ms)
+✔ v5.1 peaceful path reaches A through real check, rescue, evidence and disclosure actions (105.68ms)
+✔ actual forward routes resolve ordinary B and incomplete C/D without forcing A (115.5847ms)
+✔ F5 has no remote execution and a delivered attempt can be prevented or reach Vigilante Ghost (74.9631ms)
+✔ resolver precedence and factual reports distinguish losses, unshared documents and escaped suspect (0.2985ms)
+✔ Fallen Agent report title and body never claim an already stopped ritual still curses the village (0.3856ms)
+✔ undefined branches stay unavailable and invalid saves do not infer state (0.3888ms)
+✔ failed B3 and D5 rolls preserve forward clues without treating skipped checks as failures (21.5282ms)
+✔ C4 resolves won through the existing encounter reducer without identifying Wichai (1.8148ms)
+✔ C4 resolves pacified through the existing encounter reducer without identifying Wichai (1.3925ms)
+✔ C4 resolves escaped through the existing encounter reducer without identifying Wichai (1.3549ms)
+✔ C4 resolves lost through the existing encounter reducer without identifying Wichai (1.0965ms)
+✔ D4 actual victory disperses the manifestation, keeps ritual active and does not respawn it in F2 (1.4371ms)
+✔ F4 requires the actual flood-memory phase, and E4 cannot act or leak flip notes before its cue (18.2605ms)
+✔ C5 props remain an explicit unresolved source requirement; v5.1 DC overrides are rejected before rolling (14.3522ms)
+✔ trauma dialogue requires actual witnessed or communicated knowledge, and dead NPCs never speak (2.0451ms)
+✔ peaceful route frees the ghost, commits rewards and deducts advance once (6.6438ms)
+✔ blind seal cutting increases haunt and a suppression route resolves as B (1.5205ms)
+✔ rescue only grants rescue bonus and deadline failure grants none (2.3774ms)
+✔ seal 3 must have both earlier seals and wins a tie at the deadline (0.3096ms)
+✔ System DM and Human DM rooms commit the same case rules and hide private state (7.1068ms)
+✔ all six professions allocate exactly one point without exceeding four (1.8832ms)
+✔ only v2 rooms accept one authoritative character per investigator (5.9407ms)
+✔ talents are profession restricted and legacy backgrounds are ignored (0.2557ms)
+✔ shared checks distinguish natural rolls and require explicit partial outcomes (0.1949ms)
+✔ two investigators cannot spend another turn or pay a talent boost twice on retry (20.1189ms)
+✔ Case 001 rejects removed background boosts and retains Focus (22.5654ms)
+✔ v2 rooms accept seven members and cap investigators at six (19.1016ms)
+✔ five and six investigators rotate through AP before one Ghost Phase, excluding the DM (11.1967ms)
+✔ the team can withdraw after leaving the entrance and returning (23.8066ms)
+✔ the DM releases narration and NPC answers while the server commits effects only after approval (25.313ms)
+✔ D20 requests are private and committed results are shared with the room (29.7446ms)
+✔ the DM can close stale questions and the report stays private until the ending is released (13.5643ms)
+✔ a scripted exploration check waits for the assigned card and commits exactly once (22.0653ms)
+✔ moving the team away cancels a pending scripted roll without using dice (8.1417ms)
+✔ the GM can answer in their own words, and only the released text is shared (9.686ms)
+✔ DM pauses narration from another scene and validates the speaker of a custom reply (10.5712ms)
+✔ DM chooses a validated DC and the server resolves the shared result (4.5368ms)
+✔ DM selected stat and DC govern a pending legacy scene action (10.4273ms)
+✔ DM chooses authored outcome response after shared roll for 2 players (71.7791ms)
+✔ DM chooses authored outcome response after shared roll for 3 players (48.1038ms)
+✔ DM chooses authored outcome response after shared roll for 4 players (48.4656ms)
+✔ a rolled response cannot be released in another guided scene (4.4069ms)
+✔ Human DM role is exclusive and private scripts never enter public snapshots (4.3047ms)
+✔ Human DM uses conditional events, approved dialogue and scene routes, and server dice (6.0993ms)
+✔ only the DM can request a current player perspective without private biography (23.596ms)
+✔ two players cannot occupy one cell or collect one item twice (5.0064ms)
+✔ server controls dice, focus and AP across two players (0.8398ms)
+✔ scene setup is local, precedes discovery, and does not repeat on revisiting (38.3441ms)
+✔ encounter setup survives later actions and escape is not narrated as victory (5.9012ms)
+✔ ending cause changes prose without changing D, rewards or duplicate protection (1.0968ms)
+✔ unsafe early discovery is not falsely recorded as a midnight grove apparition (1.0661ms)
+✔ E07 revelation survives subsequent dialogue, retries and snapshot recovery without blocking play (16.2406ms)
+✔ split party receives shared clues with provenance but not another location local dialogue (3.0105ms)
+✔ queue is bounded and lagging readers recover without an acknowledgement barrier (0.7313ms)
+✔ first interview introduces flood history before a focused revelation without a map lock (6.9539ms)
+✔ independent evidence and witness routes remain valid out of order (5.4887ms)
+✔ absent NPC and hidden spirit cannot speak; custody preserves the ritual (1.2181ms)
+✔ Human DM and forged player requests revalidate presence and do not leak a blocked response (11.7642ms)
+✔ two or six players travel together for ten minutes, sequential actions still sum (44.0895ms)
+✔ zero minute discussion and a ten minute search use max and preserve failed action atomicity (7.2789ms)
+✔ reconnect snapshots preserve proposals; normal actions cancel a stale plan without waiting (2.589ms)
+✔ third seal at 03:00 wins a coordinated block; an unstopped ritual still fails (36.4671ms)
+✔ failed clue uses time and a new retry costs a new block (4.7181ms)
+✔ room capacity, readiness and disconnect (2.238ms)
+✔ validation and duplicate membership (0.3378ms)
+✔ JSON rejects invalid syntax and broken dialogue references (1.6096ms)
+✔ room snapshot contains authoritative scenario state and one-time collection event (4.5546ms)
+✔ Scripted DM selects fallback dialogue when the room lacks evidence (3.5803ms)
+✔ Scripted DM rejects forged or stale choices and leaves room state unchanged (1.5514ms)
+✔ Scripted DM chooses the higher-priority response when both triggers match (0.3208ms)
+✔ story room of 2 shares scenes, dialogue and scripted rolls (22.8778ms)
+✔ story room of 3 shares scenes, dialogue and scripted rolls (4.8261ms)
+✔ story room of 4 shares scenes, dialogue and scripted rolls (7.0791ms)
+✔ six distinct investigators and a DM can start, with private preset profiles (2.2489ms)
+✔ talisman and defensive line grant one defense bonus that expires after Ghost Phase (2.0573ms)
+✔ ritual zone and jammer each reduce a ghost check by two (0.517ms)
+✔ binding prevents movement, bash pushes along legal cells and bindings can be removed (1.0184ms)
+✔ weakness is consumed by the next ally attack (0.5768ms)
+✔ evasion and drag require a telegraph and legal free cells, and use one reaction (0.8389ms)
+✔ bodyguard redirects a lash and emergency response stabilizes a recipient only once (0.568ms)
+✔ healing and composure effects cap resources and cannot be repeated for the same ally (0.3655ms)
+✔ wail can be cancelled and scanner reveals only within line of effect (0.3914ms)
+✔ the engineer places a free warning device and a paid trap triggers once on entry (0.6564ms)
+✔ boss binding reduces movement and jammer cancels only a prepared special (0.5428ms)
+✔ boss armor, Calm and anchor-powered dispersal keep combat separate from ritual outcomes (0.3918ms)
+✔ validates movement, deduplicates actions and snapshots (3.511ms)
+✔ rejects invalid object action and duplicate collection (0.1621ms)
+✔ turn ownership and separate AP (0.3323ms)
+ℹ tests 177
+ℹ suites 0
+ℹ pass 177
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1856.4981
+
+=== approved localhost production smoke rerun ===
+node --test production-smoke.test.mjs production-v51-smoke.test.mjs
+3 tests, 3 pass, 0 fail
+Configuration, legacy polling/WebSocket lifecycle, built v5.1 public/DM delivery.

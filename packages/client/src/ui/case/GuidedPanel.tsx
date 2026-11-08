@@ -1,13 +1,15 @@
 import type { GuidedView, GuidedScene } from '../../network/onlineTypes';
 import { DmScript } from '../gm/DmScript';
 
-export function GuidedPanel({view,scenes,connected,action,isDm=false}:{
+export function GuidedPanel({view,scenes,events,storyState,connected,action,isDm=false}:{
  view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;site?:string;
+ events?:{id:string;label:string}[];storyState?:Record<string,unknown>;
  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
 }) {
  const send=(command:string,target?:string)=>action('guided',{command,target});
  return <section className="case-notebook guided-panel" aria-label="การดำเนินบท">
    <h3>บท {view.phase} · ฉาก {view.scene}</h3>
+   {view.version==='5.1' && <p>Story v5.1 · {view.lethal?'Lethal Variant เปิด':'Lethal Variant ปิด'}</p>}
    {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}
    {!isDm && view.prompts.length>0 && <div aria-label="หัวข้อสงสัย">
      <p className="note">หัวข้อชวนคุยกับผู้ดำเนินเรื่อง</p>
@@ -16,6 +18,11 @@ export function GuidedPanel({view,scenes,connected,action,isDm=false}:{
    {view.canAnalyzeHistory && <button disabled={!connected} onClick={()=>send('history')}>อ่านบันทึกพร้อมข้อมูลประกอบ · ไม่ต้องทอย</button>}
    {!isDm && view.escorting>0 && <button disabled={!connected} onClick={()=>send('evacuate')}>พาผู้ที่กำลังช่วยไปจุดปลอดภัย · {view.escorting} คน</button>}
    {isDm && <>
+     {events && <details><summary>บันทึกเหตุจริงและเงื่อนไขบท · เฉพาะ DM</summary>
+       <p>ยืนยันเฉพาะการกระทำที่เกิดขึ้นจริง ใช้ Core/Combat เดิมตัดสินระยะและผลการป้องกันก่อนบันทึก</p>
+       {events.map(event=><details key={event.id}><summary>{event.label}</summary><button disabled={!connected} onClick={()=>send('v51:'+event.id)}>ยืนยันเหตุนี้เกิดจริง</button></details>)}
+     </details>}
+     {storyState && <details><summary>สถานะคดี · เฉพาะ DM</summary><pre>{JSON.stringify(storyState,null,2)}</pre></details>}
      {view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
      <details><summary>ฉากย่อยในบทปัจจุบัน</summary>
        {scenes?.map(scene=><details key={scene.id}><summary>{scene.id} · {scene.cue} {scene.sent && <span className="dm-sent-mark">✓ ส่งเปิดฉากแล้ว</span>}</summary>

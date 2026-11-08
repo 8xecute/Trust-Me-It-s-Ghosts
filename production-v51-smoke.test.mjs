@@ -1,0 +1,38 @@
+import {spawn} from 'node:child_process';
+import {once} from 'node:events';
+import {createServer} from 'node:net';
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {io} from 'socket.io-client';
+
+test('built server defaults to v5.1 and delivers only approved public cues over Socket.IO',{timeout:20000},async t=>{
+ const reservation=createServer().listen(0,'127.0.0.1');await once(reservation,'listening');
+ const {port}=reservation.address();await new Promise(resolve=>reservation.close(resolve));
+ const origin='https://game.example',env={...process.env,NODE_ENV:'production',CLIENT_ORIGIN:origin,PORT:String(port),CASE001_LETHAL:'true'};
+ delete env.CASE_STORY_VERSION;delete env.CASE_SAVE_DIR;
+ const server=spawn(process.execPath,['packages/server/dist/index.js'],{env,stdio:['ignore','pipe','inherit']});
+ t.after(()=>server.kill());
+ await Promise.race([once(server.stdout,'data'),once(server,'exit').then(([code])=>{throw Error('Server exited '+code);})]);
+ const clients=Array.from({length:3},()=>io('http://127.0.0.1:'+port,{transports:['websocket'],reconnection:false,extraHeaders:{Origin:origin}}));
+ t.after(()=>clients.forEach(client=>client.disconnect()));await Promise.all(clients.map(client=>once(client,'connect')));
+ const [dm,a,b]=clients,req=(client,event,...args)=>client.timeout(3000).emitWithAck(event,...args);
+ const created=await req(dm,'room:create:v2');assert.equal(created.ok,true);
+ let serial=0;
+ const action=async(client,type,payload={})=>{const result=await req(client,'game:action',{id:String(++serial),type,...payload});assert.equal(result.ok,true,result.error);return result;};
+ await action(dm,'claimDm');
+ const joined=await Promise.all([req(a,'room:join:v2',created.room.code),req(b,'room:join:v2',created.room.code)]);
+ joined.forEach(result=>assert.equal(result.ok,true));
+ await action(a,'createCharacter',{profession:'medium'});await action(b,'createCharacter',{profession:'field_medic'});
+ await action(dm,'caseStart',{mode:'story'});
+ const before=(await req(a,'game:snapshot')).snapshot;
+ assert.equal(before.guided.version,'5.1');assert.equal(before.guided.lethal,true);assert.deepEqual(before.case001.actions,[]);
+ const panel=(await req(dm,'dm:panel')).panel;
+ assert.equal(panel.storyState.KAEW_D_RESULT,'not_met');assert.equal(panel.storyState.HOSTAGE_FATE.เพิ่ม,'alive');
+ assert.ok(panel.guidedScenes.find(scene=>scene.id==='A1').script.includes('DM ลับ'));
+ const cue=panel.narration.find(card=>card.eventId==='guided-cue:A1');assert.ok(cue);
+ await action(dm,'dmPublish',{cardId:cue.id});
+ const after=(await req(a,'game:snapshot')).snapshot;
+ assert.match(after.guided.cue,/รถบริษัทเลี้ยวเข้าหมู่บ้านหนองตาล/);assert.equal(after.guided.prompts.length,3);
+ for(const forbidden of ['DM ลับ','sourceMarkdown','storyState','KAEW_D_RESULT','contextConfirmed'])assert.ok(!JSON.stringify(after).includes(forbidden),forbidden);
+ assert.equal((await req(a,'dm:panel')).ok,false);
+});

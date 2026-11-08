@@ -130,8 +130,10 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
     const prior=hasFact(s,'kaew-dispersed') ? 'won' : hasFact(s,'kaew-fled') ? 'fled' : hasFact(s,'kaew-talked') ? 'talked' : undefined;
     if(prior) text+='\n'+v4.finalArrival[prior];
   }
-  emitCaseBeat(w.case001!,id+':start',text);
-  w.case001!.narrativeEvents!.at(-1)!.site=site;
+  if(!w.case001!.v51) {
+    emitCaseBeat(w.case001!,id+':start',text);
+    w.case001!.narrativeEvents!.at(-1)!.site=site;
+  }
 }
 
 export function finishCaseBattle(w:World,escaped=false) {
@@ -141,6 +143,25 @@ export function finishCaseBattle(w:World,escaped=false) {
   if(s?.storyVersion===4 && !s.report) {
     const script=v4.encounters[battle.id];
     const pacified=battle.enemies.some(enemy=>enemy.state.outcome==='pacified');
+    if(s.v51 && battle.id==='EN04') {delete map.battle;return;}
+    if(s.v51 && (battle.id==='EN01' || battle.id==='EN02')) {
+      const lost=!Object.entries(w.characters ?? {}).some(([id,c])=>id!==w.humanDmId && map.sites[id]===battle.site && c.hp>0);
+      const result=escaped?'escaped':lost?'lost':pacified?'pacified':'won';
+      if(battle.id==='EN01') {
+        s.v51.GHOST_ENCOUNTER=result;
+        if(pacified)s.v51.GHOST_CLUE='vision';
+        else if(result==='won' && s.v51.GHOST_CLUE==='none')s.v51.GHOST_CLUE='trace';
+      } else {
+        s.v51.KAEW_D_RESULT=result==='escaped'?'fled':result==='pacified'?'talked':result;
+        if(result==='won'){s.v51.KAEW_TEMP_DISPERSED=true;s.ghost='hidden';addFact(s,'kaew-dispersed');}
+        if(result==='escaped')addFact(s,'kaew-fled');
+        if(result==='pacified'){s.ghost='pacified';addFact(s,'kaew-talked');}
+      }
+      const text=battle.id==='EN01' ? {escaped:'ผีชะงักที่ธรณี',won:'ร่างแตกเหลือด้ายหนึ่งเส้น',pacified:'เห็นภาพน้ำกับคนขนสิ่งของไปทางเรือน ไม่เห็นหน้า',lost:'ทีมหมดสภาพต่อสู้'}[result] :
+       {escaped:'แม่แก้วหยุดที่ขอบเขตสวน “ข้าไม่ได้อยากทำให้เจ็บ”',won:'ร่างชุดเขียวสลาย แต่เสียงยังอยู่ “ข้ายัง... ไปไหนไม่ได้”',pacified:'แม่แก้ว · ถ้าหยุดทำร้ายข้า... ข้าจะพยายามหยุด',lost:'ด้ายกระชากเธอจนฝืนเตือน “หนีไป”'}[result];
+      emitCaseBeat(s,battle.id+':end',text,'local',battle.site);
+      delete map.battle;return;
+    }
     emitCaseBeat(s,battle.id+':end',
       escaped ? script.escaped ?? caseNarration.escape : pacified ? script.pacified ?? script.end : script.end,'local',battle.site);
     if(!escaped && battle.id==='EN01') {
@@ -168,6 +189,7 @@ export function finishCaseBattle(w:World,escaped=false) {
 
 export function emitBattlePhase(w:World) {
  const battle=w.caseMap?.battle,s=w.case001;
+ if(s?.v51)return;
  if(!battle?.phase || !s?.story || s.report) return;
  const key='narrative:'+battle.id+':'+battle.phase;
  if(s.milestones.includes(key)) return;

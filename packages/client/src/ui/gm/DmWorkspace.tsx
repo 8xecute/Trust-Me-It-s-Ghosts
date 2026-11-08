@@ -113,7 +113,7 @@ export function DmWorkspace({
       <section hidden={dmTab!=='guide'} className="gm-pane">
         <p className="note">คู่มือนี้มีไว้ให้ DM อ่านและสวมบทบาท ข้อความในคู่มือจะไม่ส่งไปถึงผู้เล่น</p>
         {!!queue.length && <button type="button" onClick={()=>setDmTab('queue')}>เปิดคิวพร้อมส่ง · {queue.length}</button>}
-        {world.guided && <GuidedPanel view={world.guided} scenes={dmPanel.guidedScenes} connected={connected} action={action} isDm/>}
+        {world.guided && <GuidedPanel view={world.guided} scenes={dmPanel.guidedScenes} events={dmPanel.storyEvents} storyState={dmPanel.storyState} connected={connected} action={action} isDm/>}
         {!world.guided && dmPanel.guide && <GmGuide chapters={dmPanel.guide}
           current={world.case001.report ? 'ENDINGS' : (battle?.phase || currentScene==='E' && world.case001.seals===3) ? 'FINAL' : world.caseMap?.site ?? 'A'}/>}
         {dmPanel.investigators[0]?.secret && <details className="dm-private">
@@ -148,7 +148,7 @@ export function DmWorkspace({
           </section>)}
         </section>}
         {!!otherScenes.length && <details><summary>บทพักจากฉากอื่น · {otherScenes.length}</summary>
-          <p className="note">บทพักนี้ไม่พร้อมส่ง บทที่ปิดไปแล้วใน v4.3 ย้อนกลับไม่ได้</p>
+          <p className="note">บทพักนี้ไม่พร้อมส่ง บทที่ปิดไปแล้วใน v{world.guided?.version ?? '4.3'} ย้อนกลับไม่ได้</p>
           <ul>{otherScenes.map(card=><li key={card.id}>ฉาก {card.site} · {card.text.slice(0,75)}</li>)}</ul>
         </details>}
       </section>
@@ -209,11 +209,11 @@ export function DmWorkspace({
               entry.check ?
               <form key={entry.check.id} onSubmit={event=>{
                 event.preventDefault();const data=new FormData(event.currentTarget);
-                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
+                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:world.guided?.version==='5.1' && entry.check!.dice ? entry.check!.dice.dc : Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
               }}>
                 {entry.check.dice ? <p className="note">ใช้ {entry.check.dice.stat} ตามจุดทอยในบท · DC แนะนำ {entry.check.dice.dc}</p> :
                   <label>ค่าสถานะ <select name="stat" defaultValue="PER"><option value="BODY">ร่างกาย BODY</option><option value="PER">การสังเกต PER</option><option value="INT">เชาวน์ปัญญา INT</option><option value="SOC">การเข้าสังคม SOC</option><option value="SPI">จิตวิญญาณ SPI</option><option value="RES">ความต้านทาน RES</option></select></label>}
-                <label>ความยากก่อนส่งการ์ด <select name="difficulty" defaultValue={entry.check.dice?.dc ?? 14}>
+                <label>ความยากก่อนส่งการ์ด <select name="difficulty" disabled={world.guided?.version==='5.1' && !!entry.check.dice} defaultValue={entry.check.dice?.dc ?? 14}>
                   <option value="11">ง่าย · DC 11</option><option value="14">ปกติ · DC 14</option><option value="17">ยาก · DC 17</option><option value="20">ยากมาก · DC 20</option><option value="22">พิเศษ · DC 22</option>
                 </select></label>
                 <button type="submit" className="primary" disabled={!connected || !!world.case001?.report}>ส่งการ์ดตามคำขอ</button>

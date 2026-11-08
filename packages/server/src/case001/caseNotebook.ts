@@ -16,6 +16,11 @@ for(const entry of entries) {
  for(const c of [...entry.when,...(entry.unless??[])])if(!refs[c.type]?.has(c.id))throw Error('สมุดคดีอ้างอิงเงื่อนไขที่ไม่มี');
 }
 export function caseNotebook(s:CaseState):CaseNotebookView {
+ if(s.v51) {
+  const labels:Record<string,string>={E01:'ร่องรอยหลังบ้านดล',E02:'สมุดดล',E03:'ร่องรอยพิธีที่ศาล',E04:'ด้ายดำและป้ายชื่อคนหาย',E05:'กำไลสลักชื่อแก้ว',E06:'รอยล้อไปเรือนไม้',E07:'เอกสารเหตุปี 2534 ที่ทีมเก็บไว้',E08:'คำให้การต้น ต้องเทียบหลักฐานอื่น'};
+  return {objective:'ช่วยคนหาย ตรวจหลักฐาน และหยุดพิธี',confirmed:s.evidence.map(id=>({id,text:labels[id] ?? id,source:'สิ่งที่ทีมพบจริง'})),
+   suspected:learnedStoryInformation(s),unknown:(s.guided?.questions ?? []).map((text,i)=>({id:'question:'+i,text,source:'คำถามของทีม'}))};
+ }
  const p=caseContext(s);
  if(s.report)p.objectives.push('case-closed');
  if(s.opened)p.objectives.push('captives-located');

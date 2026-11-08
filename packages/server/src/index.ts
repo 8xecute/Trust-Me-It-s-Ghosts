@@ -28,7 +28,8 @@ const io = new Server(httpServer, {
 });
 
 const rooms = new Rooms();
-const worlds = new WorldStore(undefined,true,true,process.env.CASE_STORY_VERSION!=='4.1',BASIC_RULES_MODE);
+const worlds = new WorldStore(undefined,true,true,process.env.CASE_STORY_VERSION!=='4.1',BASIC_RULES_MODE,
+ process.env.CASE_STORY_VERSION==='4.3'?'4.3':'5.1',process.env.CASE001_LETHAL==='true');
 const saveDirectory=process.env.CASE_SAVE_DIR?.trim();
 const saveRoom=saveDirectory ? openRoomSaves(saveDirectory,rooms,worlds) : undefined;
 function saveStartedRoom(code:string) {

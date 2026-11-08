@@ -3,7 +3,7 @@ import type { BattleView } from '../ui/combat/EncounterBoard';
 
 export type GuidedJournal = {known_facts:string[];open_questions:string[];next_destination_rationale:string};
 export type GuidedScene = {id:string;cue:string;script:string;sent?:boolean};
-export type GuidedView = {version:string;phase:string;scene:string;canAnalyzeHistory:boolean;escorting:number;cue?:string;prompts:string[];hint?:string;journals:(GuidedJournal & {phase:string})[];transition?:GuidedJournal & {id:string;from:string;to:string}};
+export type GuidedView = {version:string;phase:string;scene:string;lethal?:boolean;canAnalyzeHistory:boolean;escorting:number;cue?:string;prompts:string[];hint?:string;journals:(GuidedJournal & {phase:string})[];transition?:GuidedJournal & {id:string;from:string;to:string}};
 
 export type Snapshot = {
   guided?:GuidedView;
@@ -40,6 +40,8 @@ export type CaseDmPanel = {
   sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
   guide?:GmChapter[];
   guidedScenes?:GuidedScene[];
+  storyEvents?:{id:string;label:string}[];
+  storyState?:Record<string,unknown>;
   diceGuide?:{id:string;scene_id:string;title:string;stat:string;dc:number;trigger:string;baseline:string;bypass:string;fallback:string}[];
   narration:{id:string;eventId:string;site:string;text:string;recipients?:string[];current?:boolean;speakers?:string[];answer?:import('@baan/shared').DmOutcomeAnswer}[];
   speakers?:string[];
