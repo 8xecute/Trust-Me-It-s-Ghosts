@@ -4,7 +4,7 @@ export function DmOutcomeCard({id,answer,current,connected,action,playerName}:{
  id:string;answer:DmOutcomeAnswer;current:boolean;connected:boolean;
  action:(type:string,payload?:object)=>void;playerName:(id:string)=>string;
 }) {
- const labels={success:'Full · สำเร็จเต็มที่',partial:'Partial · สำเร็จบางส่วน',failure:'Fail · ไม่สำเร็จ'};
+ const labels={success:'สำเร็จเต็มที่',partial:'สำเร็จบางส่วน',failure:'ไม่สำเร็จ'};
  const send=(part:'narration'|'dialogue'|'all')=>action('dmPublish',{cardId:id,part});
  return <article className="gm-outcome-card" data-outcome={answer.outcome} aria-label="บทตอบหลังทอย">
    <p className="eyebrow">ผลคำนวณแล้ว · รอ DM เลือกจ่ายบท</p>

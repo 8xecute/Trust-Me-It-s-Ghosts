@@ -1,6 +1,7 @@
 import { caseGrid, spendAP } from '@baan/shared';
 import type { World } from '../world.js';
-import { speakGuided } from './guidedCase.js';
+import { observeGuidedScene, speakGuided } from './guidedCase.js';
+import { noTimer } from './v51Content.js';
 import { isStoryCheck, runStoryCheck } from './storyDice.js';
 import { applyCaseAction, failCase, tick } from './case001.js';
 import { caseOpportunity, startCaseBattle, syncCaseBattle, travelCaseMap } from './caseBattle.js';
@@ -46,6 +47,7 @@ export function executeCaseAction(w:World,player:string,a:{actionId:string;boost
      onBoost:()=>{usedBoost=true;},
      onCheck:w.sceneMode ? ({die,total,outcome})=>{w.lastCheck={playerId:player,die,total,outcome};} : undefined,
     });
+    if(noTimer(w.case001) && a.actionId==='unsafe-bracelet')observeGuidedScene(w,'F6');
     if(w.caseMap && a.actionId==='cut') w.case001.milestones.push('grove-disturbed');
     if(w.caseMap && w.case001.site!==site) {
      const travellers=w.sceneMode ? Object.keys(w.players).filter(id=>id!==w.humanDmId) : [player];

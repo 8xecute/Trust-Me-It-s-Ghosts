@@ -1,0 +1,18 @@
+.case-story-thread {
+  min-width: 0;
+  margin-block: .75rem;
+  padding: .85rem 1rem;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--dm-step-accent, #d8ac69);
+  border-radius: .65rem;
+  background: var(--well);
+  overflow-wrap: anywhere;
+}
+.case-story-thread header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .85rem; }
+.case-story-thread header span, .case-thread-history small { color: var(--dm-step-accent, #d8ac69); font-size: .85rem; }
+.case-story-thread h4 { margin: 0 0 .35rem; }
+.case-story-thread p { margin: .35rem 0; }
+.case-thread-bridge, .case-thread-latest, .case-thread-handoff, .case-thread-history { margin-block: .6rem; }
+.case-thread-handoff { padding: .7rem; border: 1px solid var(--border); border-radius: .45rem; }
+.case-thread-history { padding-inline-start: 1.4rem; }
+.case-thread-history li { padding-block: .45rem; border-top: 1px solid var(--border); }

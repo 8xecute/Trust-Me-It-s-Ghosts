@@ -1,7 +1,7 @@
 import { caseCombatStats } from './caseCombatStats.js';
 import { guidedCellarRead, guidedEndingText } from './guidedCase.js';
-import { alive51, clock51, endingText51, resolveEnding51, wichaiHere51, sceneCue51, presentScene51, type State51 } from './storyV51.js';
-import { endings51, scenes51 } from './v51Content.js';
+import { alive51, clock51, endingText51, resolveEnding51, wichaiHere51, sceneCue51, presentScene51, startBacklash52, delivered51, type State51 } from './storyV51.js';
+import { noTimer, storyContent } from './v51Content.js';
 import { characterAttribute } from '@baan/shared';
 import { caseNotebook } from './caseNotebook.js';
 import {readFileSync} from 'node:fs';
@@ -30,7 +30,7 @@ const clueActions: Record<string,string> = {
  E05:'เปิดกล่องไม้และเก็บกำไลหลังคลายผนึก',E06:'ตรวจรอยล้อรถเข็น',E07:'ขออนุญาตตรวจเอกสารหมู่บ้าน',E08:'ขอให้ต้นเล่าหลังรับปากว่าจะช่วยคุ้มครอง',
 };
 export interface CaseReport {
- ending:Ending; title:string; time:string; haunt:number; rescued:number; evidence:number; seals:number;
+ ending:Ending; title:string; time?:string; haunt:number; rescued:number; evidence:number; seals:number;
  ghost:string; accountability:boolean; advance:number; base:number|null; rescueBonus:number; rootBonus:number;
  payable:number|null; reputation:number|null; decisions:string[]; text:string;
 }
@@ -63,7 +63,7 @@ function time(minute:number) {
  return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
 }
 export function sceneNarration(s:CaseState,site:Site=s.site) {
- if(s.v51)return sceneCue51(s,s.guided!.scene);
+ if(s.v51)return s.report ? '' : sceneCue51(s,s.guided!.scene);
  return (s.storyVersion===4 ? v4.scenes : caseNarration.scenes)[site];
 }
 function locationName(s:CaseState,site:Site) {
@@ -93,7 +93,7 @@ function finish(s:CaseState, ending:Ending,cause:'withdrawal'|'deadline'|'incapa
  const payable=base===null?null:base+rescueBonus+rootBonus-s.advance;
  const reputationText=reputation===null?'รอพิจารณา':String(reputation);
  const payText=payable===null?'รอพิจารณาค่าจ้างพื้นฐาน':payable+' บาท';
- const report:CaseReport={ending,title:s.v51 ? endings51[ending].title : isV4 ? v4.endings[ending].title : labels[ending],time:time(s.minute),haunt:s.haunt,rescued:s.evacuated.length,
+ const report:CaseReport={ending,title:s.v51 ? storyContent(s).endings[ending].title : isV4 ? v4.endings[ending].title : labels[ending],...(noTimer(s)?{}:{time:time(s.minute)}),haunt:s.haunt,rescued:s.evacuated.length,
   evidence:s.evidence.length,seals:s.seals.filter(Boolean).length,ghost:ghostLabels[s.ghost],
   accountability:accountable(s),advance:s.advance,base,rescueBonus,rootBonus,payable,reputation,
   decisions:[...s.decisions],text:''};
@@ -106,7 +106,7 @@ function finish(s:CaseState, ending:Ending,cause:'withdrawal'|'deadline'|'incapa
   'รายงานคดี BS-001 · '+mission.title,'ตอนจบ '+ending+' · '+report.title,
   'ช่วยผู้สูญหาย '+report.rescued+'/3 · หลักฐาน '+report.evidence+'/8 · ผนึก '+report.seals+'/3',
   'แม่แก้ว '+report.ghost+' · หลักฐานเอาผิดวิชัย '+(report.accountability?'เพียงพอ':'ยังไม่เพียงพอ'),
-  'เวลา '+report.time+' · ความหลอน '+report.haunt+'/10',
+  (noTimer(s)?'':'เวลา '+report.time+' · ')+'ความหลอน '+report.haunt+'/10',
   ...(isV4 && !s.v51 ? ['พิธี '+(s.seals[2]?'หยุดแล้ว':s.minute>=240?'ฝังแน่น':'ยังทำงาน')+
    ' · วิชัย '+(s.wichai?.status==='detained'?'ถูกควบคุมตัว':'ยังไม่อยู่ในการควบคุมตัว')] : []),
   'ค่าจ้างพื้นฐาน '+(base??'รอพิจารณา')+' · โบนัสช่วยเหลือ '+rescueBonus+' · โบนัสต้นเหตุ '+rootBonus+' · หักเงินล่วงหน้า '+s.advance+' บาท',
@@ -135,7 +135,7 @@ function haunt(s:CaseState, gain:number) {s.haunt=Math.min(10,s.haunt+gain);}
 export function withdrawCase(s:CaseState) {finish(s,s.storyVersion===4 ? endingV4(s) : 'D');}
 export function failCase(s:CaseState) { finish(s,s.storyVersion===4 ? endingV4(s) : 'D','incapacitated'); }
 export function tick(s:CaseState, cost:number) {
- if(s.report) return;
+ if(s.report || noTimer(s)) return;
  if(s.v51 && (!Number.isFinite(cost) || cost<0)) throw Error('เวลาในเรื่องต้องเพิ่มหรือคงเดิม');
  const previousMinute=s.minute;
  s.minute+=cost;
@@ -171,19 +171,21 @@ const investigationFor = (actionId:string) => mission.investigationChecks[action
 export function caseOptions(s:CaseState, upgraded=false):Option[] {
  if(s.report) return [];
  if(s.v51 && s.guided && !s.guided.presented.includes(s.guided.scene))return [];
- const isV4=s.storyVersion===4;
+ const isV4=s.storyVersion===4, eventDriven=noTimer(s);
  const options:Option[]=[];
- const add=(id:string,label:string,minutes=10)=>options.push({id,label,minutes});
+ const add=(id:string,label:string,minutes=10)=>options.push({id,label,minutes:eventDriven?0:minutes});
  for(const [a,b] of mission.travel) {
   const target=a===s.site?b:b===s.site?a:null;
   if(target) add('travel:'+target,'เดินทางไป '+locationName(s,target),mission.travelMinutes);
  }
  for(const [id,site] of Object.entries(clueSites)) {
+  if(eventDriven && id==='E07')continue;
   if(site!==s.site && !(s.site==='E' && (id==='E06' || isV4 && id==='E07'))) continue;
   if(s.evidence.includes(id) || isV4 && id==='E08' || (id==='E05' && !(isV4 ? s.key : s.seals[2]))) continue;
   add('clue:'+id,isV4 && id==='E05' ? 'ตรวจกำไลทองเหลืองในห้องพิธี' : isV4 && id==='E07' && s.site==='E' ? 'ค้นบันทึกการเปิดประตูผันน้ำในเรือนร้าง' : clueActions[id]);
  }
  if(s.site==='A') {
+  if(eventDriven && s.guided!.scene==='A1' && !s.milestones.includes('arrival-investigated'))add('survey-arrival','สำรวจรอบจุดจอดรถบริษัท');
   if(!s.basicMode && !s.advance) add('advance','รับเงินล่วงหน้า 2,000 บาท',0);
   if(!s.guided && (s.evacuated.length || s.seals[2] || s.milestones.includes('left-arrival'))) add('finish','ถอนทีมและปิดคดี',0);
  }
@@ -191,6 +193,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
  if(s.diceVersion==='4.1' && s.site==='B' && !hasFact(s,'v41-photo')) add('view-flood-photo','ตรวจรูปถ่ายเก่าคู่กับแผนที่หมู่บ้าน',0);
  if(s.guided?.phase==='FINAL') add('finish','สรุปผลและปิดคดี',0);
  if(s.site==='D') {
+  if(eventDriven && s.guided!.scene==='D3' && !s.v51!.KAEW_TEMP_DISPERSED && !s.milestones.includes('kaew-engaged'))add('engage-kaew','เลือกเข้าปะทะแม่แก้วตาม Initiative');
   if(s.evidence.includes('E03')&&!s.understood) add('study','ศึกษาผ้ายันต์เพิ่มเติม');
   if(s.evidence.includes('E04')&&!s.seals[0]) {
    add('seal1',s.lore?'คลายด้ายดำตามวิธียายบุญมี':'คลายด้ายดำ · ความรู้ DC 12');
@@ -203,14 +206,19 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
  }
  if(s.site==='E') {
   if(!s.key) add('key',isV4 ? 'ตรวจห้องพิธีและค้นกุญแจห้องขัง' : 'ค้นหากุญแจห้องเก็บผลผลิตในห้องพิธี');
-  if(!s.opened && (s.key || s.guided?.scene==='E2' && s.guided.presented.includes('E2')) && !s.guided?.cellarPending) add('open',s.guided ? 'เปิดกลอนห้องเก็บผลผลิต' : 'ใช้กุญแจเปิดห้องเก็บผลผลิต');
-  if(s.opened) for(const name of names) {
+  if(!s.opened && (s.key || eventDriven && s.guided?.scene==='E1' || s.guided?.scene==='E2' && s.guided.presented.includes('E2')) && !s.guided?.cellarPending) add('open',s.guided ? 'เปิดกลอนห้องเก็บผลผลิต' : 'ใช้กุญแจเปิดห้องเก็บผลผลิต');
+  if(eventDriven && s.guided!.scene==='E4' && !s.v51!.bagSearched)add('search-ritual-bag','ค้นใต้ฐานกล่องและเปิดกระเป๋าที่ซ่อนอยู่');
+  if(eventDriven && s.key && !s.seals[2] && !s.v51!.coreApproached && ['E4','E6'].includes(s.guided!.scene))add('approach-ritual-core','เข้าใกล้กำไลเพื่อเตรียมปลดแกนพิธี');
+  if(s.opened && (!eventDriven || s.guided!.presented.includes('E2'))) for(const name of names) {
    if(alive51(s,name) && !s.escorts.includes(name)&&!s.evacuated.includes(name) && !(s.v51?.pending?.kind==='crossfire' && s.v51.pending.target===name)) add('escort:'+name,'พา '+name+' ออกจากห้องเก็บผลผลิต');
   }
-  if(s.story && s.key && !s.seals[2] && !s.milestones.includes('unsafe-bracelet')) {
+  if(eventDriven && s.key && !s.seals[2] && s.v51!.coreWarningDelivered && !s.v51!.backlash) {
+   add('unsafe-bracelet','ยืนยันดึงหรือตัดแกนผิดวิธีหลังได้ยินคำเตือน');
+  }
+  if(!eventDriven && s.story && s.key && !s.seals[2] && !s.milestones.includes('unsafe-bracelet')) {
    add('unsafe-bracelet','ยืนยันแตะกำไลก่อนคลายผนึก · ความหลอน +1 และแม่แก้วอาจเป็นศัตรู');
   }
-  if(((s.seals[0]&&s.seals[1]) || (s.guided && s.key))&&!s.seals[2]&&(!isV4 || s.evidence.includes('E05'))) add('seal3',(isV4?'ปลดอาคมที่กำไล · ความรู้ DC ':'คลายวงพิธี · ความรู้ DC ')+(12+(s.haunt>=9?2:0)));
+  if((!eventDriven || !s.v51!.backlash || s.v51!.backlash.announced) && ((s.seals[0]&&s.seals[1]) || (s.guided && s.key))&&!s.seals[2]&&(!isV4 || s.evidence.includes('E05'))) add('seal3',(isV4?'ปลดอาคมที่กำไล · ความรู้ DC ':'คลายวงพิธี · ความรู้ DC ')+(12+(s.haunt>=9?2:0)));
   if(s.seals[2]&&s.evidence.includes('E05')&&!s.returned&&s.ghost!=='sealed') add('return','คืนกำไลให้แม่แก้ว');
   if(s.returned&&s.ghost!=='freed'&&s.ghost!=='sealed') add('ritual','ทำพิธีปลดปล่อย · จิตวิญญาณ DC '+((s.ghost==='pacified'?10:12)+(s.haunt>=9?2:0)));
   if(s.seals[2]&&s.ghost!=='freed'&&s.ghost!=='sealed') add('suppress',(s.story?'ทำพิธีสะกดอย่างปลอดภัย · จิตวิญญาณ DC ':'สะกดแม่แก้วด้วยชุดพิธี · จิตวิญญาณ DC ')+((s.story && s.ghost==='pacified'?10:12)+(s.haunt>=9?2:0)));
@@ -348,9 +356,15 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
     "F6"
   ]
 };
+  if(eventDriven) {
+   local.open=['E1','E4'];
+   local['unsafe-bracelet']=['E4','E6','F1','F2','F3','F6'];
+   local.seal3.push('F2','F6');
+   local.finish.push('E6','H1');
+  }
   for(let i=options.length-1;i>=0;i--) {
    const id=options[i].id;
-   if(s.v51 && s.guided.phase==='FINAL' && ['key','open','clue:E05'].includes(id))continue;
+   if(s.v51 && !eventDriven && s.guided.phase==='FINAL' && ['key','open','clue:E05'].includes(id))continue;
    if(id.startsWith('travel:') || (local[id] && !local[id].includes(s.guided.scene))) options.splice(i,1);
   }
  }
@@ -358,7 +372,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
   const id=options[i].id;
   // Undefined v5.1 outcomes remain private rules decisions. Keep previous
   // rooms' mechanics intact rather than silently equating them with calm.
-  if(['return','ritual','suppress','record-truth'].includes(id) || id==='finish' && !!s.v51.pending ||
+  if(['return','ritual','suppress','record-truth'].includes(id) || id==='finish' && !!(s.v51.pending || s.v51.backlash) ||
    id==='pacify' && s.v51.KAEW_TEMP_DISPERSED)options.splice(i,1);
  }
  if(s.basicMode) for(let i=options.length-1;i>=0;i--) if(['hint','sense'].includes(options[i].id)) options.splice(i,1);
@@ -413,7 +427,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
  if(actor && option.check==='investigation') {
   if(check(12,investigationFor(option.id).attribute)!=='success') {
    s.milestones.push('retry:'+option.id);
-   s.notice+=' · ยังทำรายการไม่สำเร็จ ลองอีกครั้งโดยใช้เวลาเพิ่มได้';
+   s.notice+=(noTimer(s)?' · ยังทำรายการไม่สำเร็จ ลองเปลี่ยนวิธีหรือหาเบาะแสประกอบ':' · ยังทำรายการไม่สำเร็จ ลองอีกครั้งโดยใช้เวลาเพิ่มได้');
    emitCaseBeat(s,option.id,s.notice);
    tick(s,actor?.inEncounter ? 0 : option.minutes);
    return s;
@@ -425,11 +439,12 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   case 'visit-boonmee': addFact(s,'met-boonmee');break;
   case 'approach-cellar': s.milestones.push('approached-cellar');break;
   case 'confront':
-   s.wichai!.status='traveling';s.wichai!.nextMove=s.minute+10;addFact(s,'confronted');break;
+   if(!noTimer(s)){s.wichai!.status='traveling';s.wichai!.nextMove=s.minute+10;}
+   addFact(s,'confronted');break;
   case 'detain': case 'surrender': {
    const dc=kind==='detain' ? (isV4 ? caseCombatStats.wichai.PDEF : 12) : (accountable(s) && s.evacuated.length===3) ? 12 : 15;
    if((kind==='surrender' && hasFact(s,'v41-wichai-cooperating')) || check(dc,kind==='detain'?'body':'mind',false,kind==='surrender'?'SOC':undefined)==='success') s.wichai!.status='detained';
-   else if(s.wichai!.site!=='E') {s.wichai!.status='traveling';s.wichai!.nextMove=s.minute+10;}
+   else if(!noTimer(s) && s.wichai!.site!=='E') {s.wichai!.status='traveling';s.wichai!.nextMove=s.minute+10;}
    break;
   }
   case 'bribe': addFact(s,'bribe-accepted');break;
@@ -458,12 +473,13 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
    }
    break;
   case 'clue': s.evidence.push(target);break;
-  case 'advance': s.advance=2000;break;
+  case 'advance': s.advance=2000;if(noTimer(s))s.milestones.push('arrival-investigated');break;
+  case 'survey-arrival': s.milestones.push('arrival-investigated');break;
   case 'lore': s.lore=true;break;
   case 'study': s.understood=true;break;
   case 'key': s.key=true;break;
   case 'open':
-   if(s.guided && actor?.deferGuidedOpen) s.guided.cellarPending=true;
+   if(s.guided && !noTimer(s) && actor?.deferGuidedOpen) s.guided.cellarPending=true;
    else s.opened=true;
    break;
   case 'escort':
@@ -474,12 +490,23 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
    if(s.lore||check(12)==='success') {s.seals[0]=true;trust();}
    else s.notice+=' · ผนึกยังอยู่';
    break;
+  case 'engage-kaew': s.milestones.push('kaew-engaged');break;
   case 'cut': s.seals[0]=true;haunt(s,2);if(s.ghost!=='hidden') s.ghost='hostile';break;
   case 'seal2':
    if(check((s.understood?8:12)+penalty)==='success') s.seals[1]=true;
    else {haunt(s,1);s.notice+=' · ผนึกยังอยู่';}
    break;
+  case 'search-ritual-bag':
+   s.v51!.bagSearched=true;
+   s.notice='ใต้ผ้าพบกระเป๋าสะพายของวิชัย ในกระเป๋ามีหนังสือทวงหนี้ ตารางซื้อขายที่ดิน และแฟ้มบันทึกปี 2534';
+   break;
+  case 'approach-ritual-core':
+   s.v51!.coreApproached=true;
+   s.notice='ปมผ้าชื่อเพิ่มกระตุกแรงและแดงเข้มกว่าชื่ออื่น เสียงแม่แก้วเตือนให้หยุดมือก่อนดึงแกน';
+   if(!actor?.deferGuidedOpen)delivered51(s,'approach-ritual-core');
+   break;
   case 'unsafe-bracelet':
+   if(noTimer(s)){startBacklash52(s,'player');break;}
    s.milestones.push('unsafe-bracelet');haunt(s,1);
    if(s.ghost!=='pacified') s.ghost='hostile';
    break;
@@ -518,17 +545,23 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   const storyText=v4.beats[option.id];
   if(storyText) s.notice=storyText;
  }
- if(s.guided && kind==='open') s.notice=guidedCellarRead!;
+ if(s.guided && kind==='open') s.notice=noTimer(s)?'กลอนห้องใต้ถุนคลายออก':guidedCellarRead!;
  if(kind==='finish') addFact(s,'withdrawn');
  if(s.v51) {
   if(s.wichai?.status==='detained' && s.v51.WICHAI_STATUS!=='dead')s.v51.WICHAI_STATUS='captured';
   if(s.v51.WICHAI_STATUS==='captured' && s.v51.pending?.kind==='crossfire')delete s.v51.pending;
   if((kind==='seal1' && s.seals[0] || kind==='seal2' && s.seals[1]) && s.v51.RITUAL_STATUS==='active')s.v51.RITUAL_STATUS='weakened';
-  if(kind==='seal3' && s.seals[2])s.v51.RITUAL_STATUS='stopped';
-  if(kind==='key' || kind==='open')presentScene51(s,kind==='key'?'E4':'E2');
+  if(kind==='seal3' && s.seals[2]) {
+   s.v51.RITUAL_STATUS='stopped';
+   if(noTimer(s)) {
+    for(const name of Object.keys(s.v51.RITUAL_TETHER_INTACT) as (keyof State51['RITUAL_TETHER_INTACT'])[])s.v51.RITUAL_TETHER_INTACT[name]=false;
+    delete s.v51.backlash;
+   }
+  }
+  if(kind==='key' || kind==='open' && !noTimer(s))presentScene51(s,kind==='key'?'E4':'E2');
  }
  if(kind!=='travel') s.decisions.push(s.notice);
- emitCaseBeat(s,s.guided && kind==='open'?'guided-cellar-open':option.id,s.notice,kind==='clue' || s.guided && kind==='open'?'party':'local');
+ emitCaseBeat(s,s.guided && kind==='open' && !noTimer(s)?'guided-cellar-open':option.id,s.notice,kind==='clue' || s.guided && kind==='open' || ['approach-ritual-core','search-ritual-bag'].includes(kind)?'party':'local');
  tick(s,actor?.inEncounter ? 0 : option.minutes);
  if(kind==='finish'&&!s.report) {
   if(isV4) finish(s,endingV4(s));
@@ -538,14 +571,14 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
  return s;
 }
 export function caseDmView(s:CaseState) {
- if(s.v51)return {script:scenes51[s.guided!.scene]?.sourceMarkdown ?? '',secret:scenes51[s.guided!.scene]?.dmSecret ?? '',choices:caseOptions(s,true).filter(option=>option.id.startsWith('guided-talk:'))};
+ if(s.v51)return {script:storyContent(s).scenes[s.guided!.scene]?.sourceMarkdown ?? '',secret:storyContent(s).scenes[s.guided!.scene]?.dmSecret ?? '',choices:caseOptions(s,true).filter(option=>option.id.startsWith('guided-talk:'))};
  return {...dmSceneScript(s),choices:caseOptions(s,true).filter(option=>option.id.startsWith('talk:') || option.id.startsWith('guided-talk:') || option.id==='approach-cellar')};
 }
 export function caseView(s:CaseState, upgraded=false) {
- const actions=caseOptions(s,upgraded);
+ const actions=caseOptions(s,upgraded).map(option=>noTimer(s) && option.speaker ? {...option,label:'คุยกับ '+option.speaker} : option);
  const speakers=[...new Set(actions.flatMap(option=>option.speaker ? [option.speaker] : []))];
  return {notebook:caseNotebook(s),title:mission.title,location:locationName(s,s.site),storyVersion:s.storyVersion,diceVersion:s.diceVersion,
-  time:time(s.minute),intro:sceneNarration(s),notice:s.notice,haunt:s.haunt,rescued:s.evacuated.length,escorting:s.escorts.length,
+  ...(noTimer(s)?{}:{time:time(s.minute)}),intro:sceneNarration(s),notice:s.notice,haunt:s.haunt,rescued:s.evacuated.length,escorting:s.escorts.length,
   evidence:s.evidence.length,seals:s.seals.filter(Boolean).length,progress:s.progress,containment:s.containment,
   ghost:s.v51?.KAEW_TEMP_DISPERSED?'ร่างปรากฏสลายชั่วคราว':s.ghost==='hidden'?null:ghostLabels[s.ghost],report:s.report,actions,speakers};
 }

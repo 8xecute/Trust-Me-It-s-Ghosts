@@ -32,7 +32,7 @@ const io = new Server(httpServer, {
 
 const rooms = new Rooms();
 const worlds = new WorldStore(undefined,true,true,process.env.CASE_STORY_VERSION!=='4.1',BASIC_RULES_MODE,
- process.env.CASE_STORY_VERSION==='4.3'?'4.3':'5.1',process.env.CASE001_LETHAL==='true');
+ process.env.CASE_STORY_VERSION==='4.3'?'4.3':process.env.CASE_STORY_VERSION==='5.1'?'5.1':'5.2',process.env.CASE001_LETHAL==='true');
 const saveDirectory=process.env.CASE_SAVE_DIR===undefined ? fileURLToPath(new URL('../saves/',import.meta.url)) : process.env.CASE_SAVE_DIR.trim();
 const saveRoom=saveDirectory ? openRoomSaves(saveDirectory,rooms,worlds) : undefined;
 function saveStartedRoom(code:string) {
@@ -92,11 +92,15 @@ io.on('connection', (socket) => {
     if(!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
     (ack as Ack)({ok:true,preview:worlds.dmPreview(code,player,target)});
   }));
-  socket.on('dm:panel', (ack: unknown) => handle(ack, () => {
-    const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
-    if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
-    (ack as Ack)({ok:true,panel:worlds.dmPanel(code,player)});
-  }));
+  socket.on('dm:panel', (options: unknown, callback?: unknown) => {
+    const ack=typeof options==='function' ? options : callback;
+    handle(ack, () => {
+      const code=rooms.roomCode(socket.id), player=rooms.playerId(socket.id);
+      if (!code || !player) throw Error('ไม่ได้อยู่ในห้อง');
+      const includeReader=typeof options!=='object' || options===null || !('includeReader' in options) || options.includeReader!==false;
+      (ack as Ack)({ok:true,panel:worlds.dmPanel(code,player,includeReader)});
+    });
+  });
   socket.on('game:snapshot', (ack: unknown) => handle(ack, () => {
     const code=rooms.roomCode(socket.id); if(!code) throw Error('ไม่ได้อยู่ในห้อง');
     (ack as Ack)({ok:true,snapshot:worlds.snapshot(code,rooms.playerId(socket.id)!)});

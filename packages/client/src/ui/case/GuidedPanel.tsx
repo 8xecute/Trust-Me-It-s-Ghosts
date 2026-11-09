@@ -1,61 +1,66 @@
 import type { GuidedView, GuidedScene, CaseDmPanel } from '../../network/onlineTypes';
 import { DmScript } from '../gm/DmScript';
 
-export function GuidedPanel({view,scenes,events,storyState,npcDossiers,connected,action,isDm=false,site,pendingQuestions=0}:{
- view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;site?:string;pendingQuestions?:number;
- npcDossiers?:CaseDmPanel['npcDossiers'];events?:{id:string;label:string}[];storyState?:Record<string,unknown>;
+export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isDm=false,dmNavigation=true,showStory=true,site,pendingQuestions=0}:{
+ view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;dmNavigation?:boolean;showStory?:boolean;site?:string;pendingQuestions?:number;
+ npcDossiers?:CaseDmPanel['npcDossiers'];events?:CaseDmPanel['storyEvents'];
  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
 }) {
  const send=(command:string,target?:string)=>action('guided',{command,target});
  return <section className="case-notebook guided-panel" aria-label="การดำเนินบท">
-   <h3>บท {view.phase} · ฉาก {view.scene}</h3>
-   {view.version==='5.1' && <p>Story v5.1 · {view.lethal?'Lethal Variant เปิด':'Lethal Variant ปิด'}</p>}
-   {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}
+   {showStory && <><h3>{view.phase==='FINAL'?'ช่วงท้าย':view.phase==='ENDING'?'บทสรุป':'บท '+view.phase} · {view.scene}</h3>
+   {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}</>}
    {!isDm && <div aria-label="คำถามที่มีบทตอบในฉาก">
      <p className="note">เลือกคำถามที่มีบทตอบในฉากนี้ · ส่งให้ DM ตอบ</p>
-     {view.questionOptions?.length ? <div className="question-options">{view.questionOptions.map((q,i)=><button key={q.speaker+q.label+i} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:q.speaker+' · '+q.label})}>{q.speaker} · {q.label.replace(/^ถาม/,'')}</button>)}</div> : <p>รอเปิดบทสนทนาหรือคุยกับ DM ถึงสิ่งที่สังเกตพบ</p>}
+     {view.questionOptions?.length ? <div className="question-options">{view.questionOptions.map((q,i)=><button key={q.speaker+q.label+i} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:q.speaker+' · '+q.label})}>{q.speaker} · {q.label.replace(/^ถาม/,'')}</button>)}</div> : !view.prompts.length && <p>รอเปิดบทสนทนาหรือคุยกับ DM ถึงสิ่งที่สังเกตพบ</p>}
      {pendingQuestions>0 && <p role="status">ส่งแล้ว · รอ DM ตอบ {pendingQuestions} คำถาม</p>}
-     {view.version==='5.1' && view.prompts.length>0 && <details><summary>หัวข้อชวนคุยจากบทปัจจุบัน</summary><ul>{view.prompts.map(prompt=><li key={prompt}>{prompt}</li>)}</ul></details>}
+     {view.version!=='4.3' && view.prompts.length>0 && <section><h4>ชวนคุยในฉาก {view.scene}</h4><div className="question-options">{view.prompts.map(prompt=><button type="button" key={prompt} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:prompt})}>{prompt}</button>)}</div></section>}
    </div>}
    {view.canAnalyzeHistory && <button disabled={!connected} onClick={()=>send('history')}>อ่านบันทึกพร้อมข้อมูลประกอบ · ไม่ต้องทอย</button>}
    {!isDm && view.escorting>0 && <button disabled={!connected} onClick={()=>send('evacuate')}>พาผู้ที่กำลังช่วยไปจุดปลอดภัย · {view.escorting} คน</button>}
    {isDm && <>
-     {events && <details><summary>บันทึกเหตุจริงและเงื่อนไขบท · เฉพาะ DM</summary>
-       <p>ยืนยันเฉพาะการกระทำที่เกิดขึ้นจริง ใช้ Core/Combat เดิมตัดสินระยะและผลการป้องกันก่อนบันทึก</p>
-       {events.map(event=><details key={event.id}><summary>{event.label}</summary><button disabled={!connected} onClick={()=>send('v51:'+event.id)}>ยืนยันเหตุนี้เกิดจริง</button></details>)}
-     </details>}
-     {storyState && <details><summary>สถานะคดี · เฉพาะ DM</summary><pre>{JSON.stringify(storyState,null,2)}</pre></details>}
-     {view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
+     {events && <DmStoryEvents events={events} connected={connected} action={action}/>}
+     {dmNavigation && view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
      {scenes?.filter(scene=>scene.id===view.scene).map(scene=><section className="gm-current-scene" key={scene.id}>
        <h4>บทฉากปัจจุบัน · {scene.id}</h4>
-       <p className="note">{scene.sent ? 'ส่งเปิดฉากแล้ว' : 'บทนี้ยังรอส่งให้ผู้เล่น'} · อ่านตามสถานการณ์และเลือกส่งจากแท็บอ่าน / จ่ายบท</p>
+       <p className="note">{scene.sent ? 'ส่งเปิดฉากแล้ว' : 'บทนี้ยังรอส่งให้ผู้เล่น'} · อ่านตามสถานการณ์และส่งจากหน้าดำเนินเกม</p>
        {!!npcDossiers?.filter(npc=>scene.script.includes(npc.name.replace(/^นาย/,''))).length && <aside className="gm-acting" aria-label="แนวทางสวมบท NPC">
          <h5>ตัวละครที่กล่าวถึง · อารมณ์และวิธีสวมบท</h5><p className="note">แนวทางเริ่มต้น ปรับตามสิ่งที่เกิดขึ้นในเกม</p>
          {npcDossiers.filter(npc=>scene.script.includes(npc.name.replace(/^นาย/,''))).map(npc=><p key={npc.id}><strong>{npc.name}</strong> · {npc.roleplay}</p>)}
        </aside>}
        <DmScript text={scene.script}/>
      </section>)}
-     <details><summary>ฉากย่อยอื่นในบทปัจจุบัน</summary>
+     {scenes && <details><summary>ฉากย่อยอื่นในบทปัจจุบัน</summary>
        {scenes?.filter(scene=>scene.id!==view.scene).map(scene=><details key={scene.id}><summary>{scene.id} · {scene.cue} {scene.sent && <span className="dm-sent-mark">✓ ส่งเปิดฉากแล้ว</span>}</summary>
          {view.phase!=='ENDING' && <button disabled={!connected} onClick={()=>send('scene',scene.id)}>เปิดฉากนี้ให้ DM เตรียมส่ง</button>}
          <DmScript text={scene.script}/>
        </details>)}
-     </details>
-     <button disabled={!connected || !!view.transition || view.phase==='FINAL' || view.phase==='ENDING'} onClick={()=>send('propose')}>เตรียมสมุดคดีเพื่อไปบทต่อไป</button>
+     </details>}
+     {dmNavigation && <button disabled={!connected || !!view.transition || view.phase==='FINAL' || view.phase==='ENDING'} onClick={()=>send('propose')}>เตรียมสมุดคดีเพื่อไปบทต่อไป</button>}
    </>}
-   {view.transition && <section className="narration-card" aria-label="ยืนยันเปลี่ยนบท">
+   {showStory && (!isDm || dmNavigation) && view.transition && <section className="narration-card" aria-label="ยืนยันเปลี่ยนบท">
      <h3>สรุปก่อนออกบท {view.transition.from}</h3>
      <Journal journal={view.transition}/>
      <p>เมื่อยืนยันแล้ว ทีมจะปิดบทนี้และเดินหน้าต่อ</p>
      <button disabled={!connected} onClick={()=>send('cancel')}>สำรวจต่อในบทนี้</button>
-     {!isDm && <button className="primary" disabled={!connected} onClick={()=>send('confirm',view.transition!.id)}>ยืนยันไปบท {view.transition.to}</button>}
+     {!isDm && <button className="primary" disabled={!connected} onClick={()=>send('confirm',view.transition!.id)}>ยืนยันไป{view.transition.to==='FINAL'?'ช่วงท้าย':'บท '+view.transition.to}</button>}
      {isDm && <p>รอผู้สืบสวนยืนยันให้ทีมเดินทาง</p>}
    </section>}
-   {!!view.journals.length && <details><summary>สมุดคดีจากบทก่อน · {view.journals.length}</summary>
+   {showStory && !!view.journals.length && <details><summary>สมุดคดีจากบทก่อน · {view.journals.length}</summary>
      {view.journals.map(journal=><section key={journal.phase}><h4>บท {journal.phase}</h4><Journal journal={journal}/></section>)}
    </details>}
  </section>;
 }
+export function DmStoryEvents({events,connected,action,dialogue=false,expanded=false}:{dialogue?:boolean;expanded?:boolean;events:NonNullable<CaseDmPanel['storyEvents']>;connected:boolean;action:(type:string,payload?:object)=>void}) {
+ if(!events.length)return null;
+ const items=<div className="dm-event-actions">{events.map(event=><div key={event.id} className="dm-event-action">
+   <p>{event.label}</p>{event.detail && <p className="note">{event.detail}</p>}
+   <button type="button" disabled={!connected} onClick={()=>action('guided',{command:'v51:'+event.id})}>{dialogue?'เปิดใช้บทนี้':'บันทึกผลนี้'}</button>
+ </div>)}</div>;
+ if(expanded)return items;
+ return <details className="dm-secondary-disclosure"><summary>{dialogue?'เตรียมบทพูดเสริม':'บันทึกผลที่เกิดขึ้นจริง'}</summary>{items}</details>;
+}
+
 function Journal({journal}:{journal:{known_facts:string[];open_questions:string[];next_destination_rationale:string}}) {
  return <>
    <h4>ข้อมูลที่ทีมได้รับ</h4><p>คำให้การยังต้องเทียบกับหลักฐาน</p><ul>{journal.known_facts.map((text,i)=><li key={i}>{text}</li>)}</ul>

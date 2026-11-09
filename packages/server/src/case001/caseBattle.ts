@@ -1,3 +1,4 @@
+import { noTimer } from './v51Content.js';
 import {caseGrid as caseGridForSession} from '@baan/shared';
 import { randomInt } from 'node:crypto';
 import { characterAttribute, liteGhostHP } from '@baan/shared';
@@ -81,9 +82,9 @@ export function caseOpportunity(s:CaseState,map:CaseMap):EncounterId|undefined {
   if(s.report || map.battle) return;
   if(s.storyVersion===4) {
     if(available('EN01') && (s.evidence.includes('E01') || s.evidence.includes('E02'))) return 'EN01';
-    if(available('EN02') && !s.seals[2] && (s.ghost==='cautious' || s.ghost==='hostile')) return 'EN02';
+    if(available('EN02') && !s.seals[2] && (s.ghost==='cautious' || s.ghost==='hostile') && (!noTimer(s) || s.milestones.includes('kaew-engaged'))) return 'EN02';
     if((!s.guided || s.guided.phase==='FINAL' && !hasFact(s,'kaew-dispersed')) && available('EN04') && !s.seals[2] && s.seals[0] && s.seals[1] && s.evidence.includes('E05') &&
-      (s.ghost==='hostile' || s.minute>=210 || s.milestones.includes('unsafe-bracelet'))) return 'EN04';
+      (s.ghost==='hostile' || (noTimer(s) ? s.guided?.phase==='FINAL' && !!s.v51?.coreApproached : s.minute>=210 || s.milestones.includes('unsafe-bracelet')))) return 'EN04';
     return;
   }
   if(available('EN04') && s.seals[0] && s.seals[1] && !s.seals[2] && s.ghost!=='pacified' && (s.ghost==='hostile' || s.haunt>=6)) return 'EN04';

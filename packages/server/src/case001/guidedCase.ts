@@ -5,14 +5,14 @@ import { addFact, advanceStory, hasFact, v4 } from './caseStory.js';
 import { emitCaseBeat, tick, type Site } from './case001.js';
 import { caseOpportunity, travelCaseMap } from './caseBattle.js';
 import { caseGrid } from '@baan/shared';
-import { scenes51, endings51 } from './v51Content.js';
-import { command51, dialogue51, presentScene51, sceneCue51, speak51, wichaiHere51 } from './storyV51.js';
+import { noTimer, sceneBrief52, storyContent } from './v51Content.js';
+import { alive51, command51, delivered51, dialogue51, historySources52, hostageNames, presentScene51, sceneCue51, speak51, wichaiHere51 } from './storyV51.js';
 
 type Phase='A'|'B'|'C'|'D'|'E'|'FINAL'|'ENDING';
 type Scene={id:string;phase:Phase;entry_cue:string;entry_read?:string;suggested_questions:string[];optional_check_id:string|null;forward_bridge:string};
 type PhaseInfo={title:string;hints:string[];lead:string;missed:string[];exit:string};
 export type GuidedState={
- version:'4.3'|'5.1';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
+ version:'4.3'|'5.1'|'5.2';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
  hints:Partial<Record<Phase,number>>;questions:string[];
  journals:{phase:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string}[];
  transition?:{id:string;from:Phase;to:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string};
@@ -34,12 +34,12 @@ function authoredRead(section:string, label:string) {
 }
 export const guidedCellarRead=authoredRead(guidedScripts.E2,'DM อ่านเมื่อเปิด');
 if(!guidedCellarRead) throw Error('ไม่พบบทเปิดห้อง E2');
-export const newGuided=(version:'4.3'|'5.1'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
+export const newGuided=(version:'4.3'|'5.1'|'5.2'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
 export function guidedScript(s:import('./case001.js').CaseState,id:string) {
- return s.v51 ? id.startsWith('ENDING ') ? endings51[id.slice(-1)]?.script : scenes51[id]?.sourceMarkdown : guidedScripts[id];
+ return s.v51 ? id.startsWith('ENDING ') ? storyContent(s).endings[id.slice(-1)]?.script : storyContent(s).scenes[id]?.sourceMarkdown : guidedScripts[id];
 }
 function sceneData(s:import('./case001.js').CaseState):Record<string,Scene> {
- return s.v51 ? Object.fromEntries(Object.values(scenes51).map(scene=>[scene.id,{id:scene.id,phase:scene.phase as Phase,entry_cue:sceneCue51(s,scene.id),suggested_questions:scene.questions,optional_check_id:scene.checkId,forward_bridge:scene.nextSceneHandoff}])) : data.scenes;
+ return s.v51 ? Object.fromEntries(Object.values(storyContent(s).scenes).map(scene=>[scene.id,{id:scene.id,phase:scene.phase as Phase,entry_cue:sceneCue51(s,scene.id),suggested_questions:scene.questions,optional_check_id:scene.checkId,forward_bridge:scene.nextSceneHandoff}])) : data.scenes;
 }
 
 export function guidedEndingText(ending:string) {
@@ -57,16 +57,22 @@ export function allowedGuidedScenes(w:World) {
  return Object.values(sceneData(s)).filter(scene=>{
   if(s.v51) {
    const v=s.v51;
-   if(scene.id==='H1') return ['B','C','E','FINAL'].includes(g.phase) && s.evidence.includes('E07') && hasFact(s,'gate-testimony');
-   if(scene.phase!==g.phase) return false;
-   if(scene.id==='A2') return g.presented.includes('A1');
+   if(scene.id==='H1') return ['B','C','E','FINAL'].includes(g.phase) && (noTimer(s)?historySources52(s):s.evidence.includes('E07') && hasFact(s,'gate-testimony'));
+   if(noTimer(s) && scene.id==='F6')return ['E','FINAL'].includes(g.phase) && s.site==='E' && !!v.backlash && v.RITUAL_STATUS!=='stopped';
+   if(scene.phase!==g.phase && !(noTimer(s) && g.phase==='FINAL' && scene.phase==='E')) return false;
+   if(scene.id==='A2')return g.presented.includes('A1') && (!noTimer(s) || s.milestones.includes('arrival-investigated'));
+   if(noTimer(s) && ['B3','B4'].includes(scene.id))return g.presented.includes('B1');
+   if(noTimer(s) && scene.id==='E6')return s.opened || s.key;
    if(scene.id==='B2') return g.presented.includes('B1') && wichaiHere51(s);
    if(scene.id==='E5') return wichaiHere51(s) && s.site==='E';
-   if(scene.id==='E3') return s.opened && s.evacuated.length<3;
+   if(noTimer(s) && scene.id==='E2')return s.opened;
+   if(scene.id==='E3') return noTimer(s)
+    ?g.presented.includes('E2') && hostageNames.some(n=>alive51(s,n) && !s.evacuated.includes(n) && !s.escorts.includes(n))
+    :s.opened && s.evacuated.length<3;
    if(scene.id==='C4') return g.observed.includes('C4') || w.caseMap?.battle?.id==='EN01' || !!w.caseMap && caseOpportunity(s,w.caseMap)==='EN01';
    if(scene.id==='D3') return ['cautious','hostile','pacified'].includes(s.ghost) && !v.KAEW_TEMP_DISPERSED;
    if(scene.id==='D4') return w.caseMap?.battle?.id==='EN02';
-   if(scene.id==='F1'||scene.id==='F2') return v.RITUAL_STATUS!=='stopped';
+   if(scene.id==='F1'||scene.id==='F2') return v.RITUAL_STATUS!=='stopped' && (!noTimer(s) || !!v.coreApproached && (scene.id==='F1' || g.presented.includes('F1')));
    if(scene.id==='F3') return w.caseMap?.battle?.id==='EN04';
    if(scene.id==='F4') return w.caseMap?.battle?.id==='EN04' && w.caseMap.battle.phase==='flood_memory';
    if(scene.id==='F5') return v.RITUAL_STATUS==='stopped';
@@ -87,15 +93,23 @@ export function allowedGuidedScenes(w:World) {
   return true;
  });
 }
+function canObserveDuringBattle(w:World,id:string) {
+ return !w.caseMap?.battle || ['C4','D4','F3','F4'].includes(id) || noTimer(w.case001!) && id==='F6';
+}
+
+export function canOpenGuidedScene(w:World,id:string) {
+ return canObserveDuringBattle(w,id) && (!w.case001?.guided?.cellarPending || id==='E2');
+}
+
 export function observeGuidedScene(w:World,id:string) {
  const s=w.case001!,g=s.guided!;
  if(!allowedGuidedScenes(w).some(scene=>scene.id===id)) throw Error('ฉากนี้ยังเปิดไม่ได้');
- if(w.caseMap?.battle && !['C4','D4','F3','F4'].includes(id)) throw Error('จบการเผชิญหน้าก่อนเปลี่ยนฉากย่อย');
+ if(!canObserveDuringBattle(w,id)) throw Error('จบการเผชิญหน้าก่อนเปลี่ยนฉากย่อย');
  g.scene=id;
- if(g.observed.includes(id)) return;
- g.observed.push(id);
+ if(g.observed.includes(id) && !(noTimer(s) && id==='F6' && !s.v51?.backlash?.announced))return;
+ if(!g.observed.includes(id))g.observed.push(id);
  if(s.v51) {
-  if(!w.dmSession) {g.presented.push(id);presentScene51(s,id);}
+  if(!w.dmSession) {if(!g.presented.includes(id))g.presented.push(id);presentScene51(s,id);delivered51(s,'guided-cue:'+id);}
   emitCaseBeat(s,'guided-cue:'+id,sceneCue51(s,id),'party',s.site);
   return;
  }
@@ -118,15 +132,22 @@ export function guidedView(w:World) {
  const seen=g.phase!=='ENDING' && g.presented.includes(g.scene);
  const scene=sceneData(s)[g.scene];
  return {version:g.version,phase:g.phase,scene:g.scene,
-  cue:seen?scene.entry_cue:undefined,prompts:seen?scene.suggested_questions:[],lethal:s.v51?.lethal,
-  questionOptions:seen && !w.caseMap?.battle && !s.report ? guidedDialogue(s).filter(line=>line.label.startsWith('ถาม') || s.v51 && 'field' in line && line.field==='responses' && line.label.endsWith('?')).map(line=>({label:line.label,speaker:line.speaker})) : [],
-  canAnalyzeHistory:g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
+  title:seen && noTimer(s)?storyContent(s).scenes[g.scene]?.title:undefined,
+  previousLead:noTimer(s)?g.journals.at(-1)?.next_destination_rationale:undefined,
+  cue:seen?noTimer(s) && w.dmSession ? w.dmSession.sent?.['guided-cue:'+g.scene]?.text : scene.entry_cue:undefined,prompts:seen?scene.suggested_questions:[],
+  questionOptions:!noTimer(s) && seen && !w.caseMap?.battle && !s.report ? guidedDialogue(s).filter(line=>line.label.startsWith('ถาม') || s.v51 && 'field' in line && line.field==='responses' && line.label.endsWith('?')).map(line=>({label:line.label,speaker:line.speaker})) : [],
+  canAnalyzeHistory:!noTimer(s) && g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
 }
+export function sharedCaseStory(w:World) {
+ const players=Object.keys(w.players).filter(id=>id!==w.humanDmId && !!w.characters?.[id] && !w.inactivePlayers?.includes(id));
+ return (w.narrative?.records ?? []).filter(beat=>players.length>0 && players.every(id=>beat.recipients.includes(id)))
+  .map(({recipients,...beat})=>beat);
+}
+
 function summary(w:World) {
  const g=w.case001!.guided!;
- // Only information delivered to the whole team belongs in its shared journal.
- const players=Object.keys(w.players).filter(id=>id!==w.humanDmId);
- const facts=(w.narrative?.records ?? []).filter(beat=>beat.eventId!=='guided-hint' && beat.eventId!=='guided-handoff' && players.every(id=>beat.recipients.includes(id))).slice(-4).map(beat=>beat.text);
+ const facts=sharedCaseStory(w).filter(beat=>beat.eventId!=='guided-hint' && beat.eventId!=='guided-handoff' &&
+  (!noTimer(w.case001!) || !beat.phase || beat.phase===g.phase)).slice(-4).map(beat=>beat.text);
  const seen=guidedView(w)?.cue;
  if(w.case001!.v51) {
   const lead:Record<string,string>={A:'ตรวจแฟ้มที่บ้านผู้ใหญ่',B:'ตรวจสมุดที่บ้านดลตามแผนที่',C:'ตรวจศาลตามสมุดดลหรือคำชี้ทางที่ได้รับ',D:'ตามรอยล้อไปเรือนไม้',E:'จัดการกำไลและประเมินความปลอดภัยตามสิ่งที่ทีมพบ'};
@@ -135,28 +156,41 @@ function summary(w:World) {
  return {known_facts:facts.length?facts:seen?[seen]:[],open_questions:g.questions.slice(-3),
   next_destination_rationale:g.phase==='C' && !g.observed.includes('C5') ? data.scenes.C2.entry_cue : data.phases[g.phase as Exclude<Phase,'ENDING'>].lead};
 }
+const chapterLeads:Partial<Record<Phase,string[]>>={A:['A3'],B:['B5'],C:['C2','C5'],D:['D5'],E:['E1']};
+
+function chapterExit(w:World) {
+ const s=w.case001!,g=s.guided!;
+ const to=data.phase_order[data.phase_order.indexOf(g.phase)+1];
+ const required=chapterLeads[g.phase] ?? [];
+ const leadSent=required.some(id=>g.presented.includes(id));
+ const blocked=g.cellarPending ? 'ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก' :
+  s.v51?.pending || s.v51?.backlash ? 'ให้ทีมรับมือเหตุคุกคามก่อนปิดบท' :
+  w.caseMap?.battle ? 'จบการเผชิญหน้าก่อนเปลี่ยนบท' : undefined;
+ const reason=blocked ?? (g.phase==='FINAL' ? 'ช่วงสุดท้าย ให้ผู้สืบสวนสรุปผลและปิดคดีเมื่อพร้อม' :
+  !leadSent ? 'เล่าเบาะแสจุดหมายก่อนจากฉาก '+required.join(' หรือ ') : undefined);
+ return {to,leadScenes:!leadSent && !blocked ? required : [],canPropose:!reason && !g.transition,reason};
+}
+
 export function guidedBackup(w:World) {
  const s=w.case001,g=s?.guided;
  if(!s || !g || g.phase==='ENDING' || s.report) return undefined;
  const phase=data.phases[g.phase];
+ const brief=noTimer(s)?sceneBrief52(g.scene):undefined;
  const players=Object.keys(w.players).filter(id=>id!==w.humanDmId && !!w.characters?.[id]);
  const delivered=(w.narrative?.records ?? []).filter(beat=>players.length>0 && players.every(id=>beat.recipients.includes(id))).slice(-5).map(beat=>({sequence:beat.sequence,text:beat.text}));
- const required={A:['A3'],B:['B5'],C:['C2','C5'],D:['D5'],E:['E1']}[g.phase as Site];
- const blockers:string[]=[];
- if(g.cellarPending) blockers.push('ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก');
- if(w.caseMap?.battle) blockers.push('จบการเผชิญหน้าก่อนเปลี่ยนบท');
- if(required && !required.some(scene=>g.presented.includes(scene))) blockers.push('ส่งฉากนำทางอย่างน้อยหนึ่งฉาก: '+required.join(' หรือ '));
- if(g.phase==='FINAL') blockers.push('ช่วงสุดท้าย: ผู้เล่นใช้คำสั่งสรุปผลและปิดคดีเมื่อพร้อม');
- if(g.transition) blockers.push('รอผู้สืบสวนยืนยันเปลี่ยนบท หรือเลือกสำรวจต่อ');
- return {phase:g.phase,scene:g.scene,title:phase.title,opened:!!g.presented.includes(g.scene),hints:phase.hints,alternatives:phase.missed,exit:phase.exit,delivered,blockers,battle:!!w.caseMap?.battle};
+ const progression=chapterExit(w);
+ const blockers=g.transition ? ['รอผู้สืบสวนยืนยันเปลี่ยนบท หรือเลือกสำรวจต่อ'] : progression.reason ? [progression.reason] : [];
+ return {phase:g.phase,scene:g.scene,title:phase.title,opened:!!g.presented.includes(g.scene),hints:brief?[brief[0]]:phase.hints,alternatives:brief?[brief[1]]:phase.missed,exit:brief?.[1] ?? phase.exit,delivered,blockers,progression,battle:!!w.caseMap?.battle};
 }
 
 export function guidedCommand(w:World,player:string,command:string,target?:string) {
  const s=w.case001!,g=s?.guided;
  if(!g || s.report) throw Error('ไม่มีบทนำทางที่กำลังดำเนินอยู่');
  if(command.startsWith('v51:')) {
-  if(!s.v51 || player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่อง v5.1');
-  command51(w,command.slice(4));return;
+  if(!s.v51 || player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่องของบทนี้');
+  command51(w,command.slice(4));
+  if(noTimer(s) && command==='v51:wichai-risk')observeGuidedScene(w,'F6');
+  return;
  }
  if(command==='hint') throw Error('ระบบขอคำใบ้ถูกปิดแล้ว ให้พูดคุยกับผู้ดำเนินเรื่อง');
  if(command==='evacuate') {
@@ -171,13 +205,14 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   return;
  }
  if(command==='history') {
+  if(noTimer(s))throw Error('ใช้การเทียบหลักฐานใน H1 หรือการ์ดทอยของฉาก');
   if(g.scene!=='H1' || !g.presented.includes('H1') || !s.evidence.includes('E07') ||
    (!hasFact(s,'gate-testimony') && !hasFact(s,'v43-evacuation-records'))) throw Error('ยังไม่มีข้อมูลประกอบเพียงพอ');
   if(hasFact(s,'gate-truth')) throw Error('อ่านข้อมูลชุดนี้แล้ว');
   addFact(s,'gate-truth');addFact(s,'v41-flood-evidence');
   if(s.v51) {
    s.v51.FLOOD_TRUTH='evidence';
-   emitCaseBeat(s,'guided-history',scenes51.H1.cue,'party',s.site);return;
+   emitCaseBeat(s,'guided-history',storyContent(s).scenes.H1.cue,'party',s.site);return;
   }
   emitCaseBeat(s,'guided-history',v4.events.EV15.text!,'party',s.site);
   return;
@@ -196,6 +231,7 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   for(const id of travellers) travelCaseMap(w,id,nextSite,caseGrid(nextSite));
   s.site=nextSite;
   tick(s,transition.to==='FINAL'?0:travelMinutes);
+  if(noTimer(s) && g.phase==='FINAL' && !s.seals[2] && !s.v51!.coreApproached)return;
   observeGuidedScene(w,g.phase==='FINAL'?(s.seals[2]?'F5':'F1'):g.phase+'1');
   return;
  }
@@ -215,12 +251,9 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
  }
  if(command==='scene') {observeGuidedScene(w,target ?? '');return;}
  if(command==='propose') {
-  if(s.v51?.pending)throw Error('ให้ทีมรับมือเหตุคุกคามก่อนปิดบท');
-  const required={A:['A3'],B:['B5'],C:['C2','C5'],D:['D5'],E:['E1']}[g.phase as Site];
-  if(!required?.some(scene=>g.presented.includes(scene))) throw Error('เล่าเบาะแสจุดหมายในบทปัจจุบันก่อน');
-  if(w.caseMap?.battle || g.phase==='FINAL') throw Error('ยังเปลี่ยนบทไม่ได้');
+  const {to,reason}=chapterExit(w);
+  if(reason)throw Error(reason);
   if(g.transition) return;
-  const to=data.phase_order[data.phase_order.indexOf(g.phase)+1];
   g.transition={id:randomUUID(),from:g.phase,to,...summary(w)};
   return;
  }

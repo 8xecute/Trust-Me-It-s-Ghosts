@@ -5,11 +5,12 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {io} from 'socket.io-client';
 
-test('built server defaults to v5.1 and delivers only approved public cues over Socket.IO',{timeout:20000},async t=>{
+for(const version of ['5.2','5.1'])test('built server '+version+' delivers only approved public cues over Socket.IO',{timeout:20000},async t=>{
  const reservation=createServer().listen(0,'127.0.0.1');await once(reservation,'listening');
  const {port}=reservation.address();await new Promise(resolve=>reservation.close(resolve));
  const origin='https://game.example',env={...process.env,NODE_ENV:'production',CLIENT_ORIGIN:origin,PORT:String(port),CASE001_LETHAL:'true'};
- delete env.CASE_STORY_VERSION;delete env.CASE_SAVE_DIR;
+ if(version==='5.2')delete env.CASE_STORY_VERSION;else env.CASE_STORY_VERSION=version;
+ delete env.CASE_SAVE_DIR;
  const server=spawn(process.execPath,['packages/server/dist/index.js'],{env,stdio:['ignore','pipe','inherit']});
  t.after(()=>server.kill());
  await Promise.race([once(server.stdout,'data'),once(server,'exit').then(([code])=>{throw Error('Server exited '+code);})]);
@@ -32,14 +33,27 @@ test('built server defaults to v5.1 and delivers only approved public cues over 
  assert.equal(profile.playerName,'หนึ่ง');assert.equal(profile.characterName,'สายหมอก');assert.equal(profile.profession,'ritual_specialist');
  await action(dm,'caseStart',{mode:'story'});
  const before=(await req(a,'game:snapshot')).snapshot;
- assert.equal(before.guided.version,'5.1');assert.equal(before.guided.lethal,true);assert.deepEqual(before.case001.actions,[]);
+ assert.equal(before.guided.version,version);assert.equal(before.guided.lethal,undefined);assert.deepEqual(before.case001.actions,[]);
  const panel=(await req(dm,'dm:panel')).panel;
- assert.equal(panel.storyState.KAEW_D_RESULT,'not_met');assert.equal(panel.storyState.HOSTAGE_FATE.เพิ่ม,'alive');
- assert.ok(panel.guidedScenes.find(scene=>scene.id==='A1').script.includes('DM ลับ'));
+ assert.deepEqual(panel.storySummary,['ยังไม่พบผู้สูญหาย']);
+ assert.equal(panel.storyState,undefined);
+ assert.ok(panel.narration.some(card=>card.eventId==='v51:lethal' && /เหตุที่อาจถึงตาย/.test(card.text)));
+ if(version==='5.2') {
+  assert.equal(before.case001.time,undefined);
+  assert.equal(panel.storyReader.scenes.length,31);
+  assert.equal(panel.storyReader.checks.length,16);
+  assert.equal(panel.storyReader.scenes[0].sourceMarkdown,undefined);
+  assert.equal(panel.storyReader.checks[0].id,undefined);
+  const light=(await req(dm,'dm:panel',{includeReader:false})).panel;
+  assert.equal(light.storyReader,undefined);
+  assert.deepEqual(light.storyProgress,{observed:['A1'],presented:[]});
+  assert.equal((await req(a,'dm:panel',{includeReader:true})).ok,false);
+ }
+ if(version==='5.1')assert.ok(panel.guidedScenes.find(scene=>scene.id==='A1').script.includes('DM ลับ'));
  const cue=panel.narration.find(card=>card.eventId==='guided-cue:A1');assert.ok(cue);
  await action(dm,'dmPublish',{cardId:cue.id});
  const after=(await req(a,'game:snapshot')).snapshot;
  assert.match(after.guided.cue,/รถบริษัทเลี้ยวเข้าหมู่บ้านหนองตาล/);assert.equal(after.guided.prompts.length,3);
- for(const forbidden of ['DM ลับ','sourceMarkdown','storyState','KAEW_D_RESULT','contextConfirmed'])assert.ok(!JSON.stringify(after).includes(forbidden),forbidden);
+ for(const forbidden of ['DM ลับ','sourceMarkdown','storyState','KAEW_D_RESULT','contextConfirmed','storyReader','storySummary','RITUAL_0300','Lethal Variant'])assert.ok(!JSON.stringify(after).includes(forbidden),forbidden);
  assert.equal((await req(a,'dm:panel')).ok,false);
 });

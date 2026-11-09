@@ -33,7 +33,7 @@ export function DmPlayerView({playerId,preview,action,connected}:{playerId:strin
   return <section className="game-panel" aria-label="มุมมองผู้สืบสวน">
     <h2>มุมมองผู้สืบสวน</h2>
     {story && <>
-      <p>{story.location} · {story.time} · ช่วยแล้ว {story.rescued}/3 · หลักฐาน {story.evidence}/8 · ผนึก {story.seals}/3</p>
+      <p>{story.location}{story.time && ' · '+story.time} · ช่วยแล้ว {story.rescued}/3 · หลักฐาน {story.evidence}/8 · ผนึก {story.seals}/3</p>
     </>}
     {story && preview.caseMap && (preview.caseMap.battle ?
       <EncounterBoard site={preview.caseMap.site} battle={preview.caseMap.battle} players={preview.players} characters={preview.characters ?? {}} self={playerId} turns={preview.turns}/> :
@@ -45,7 +45,7 @@ export function DmPlayerView({playerId,preview,action,connected}:{playerId:strin
     {preview.narrative?.current ? <NarrativeJournal view={preview.narrative}/> : story && <section className="narration-card"><h3>เหตุการณ์ที่ผู้เล่นเห็น</h3><p className="story-text">{story.notice}</p></section>}
     {story?.report ? <pre className="story-text">{story.report.text}</pre> :
       story && <details><summary>คำสั่งที่ผู้เล่นเห็น</summary>
-        <ul>{story.actions.map(option=><li key={option.id}>{option.label} · {option.minutes} นาที</li>)}</ul>
+        <ul>{story.actions.map(option=><li key={option.id}>{option.label}{option.minutes>0 && ' · '+option.minutes+' นาที'}</li>)}</ul>
       </details>}
     <p>หลักฐานในห้อง {preview.evidence.join(', ') || 'ยังไม่มี'} · คลัง {preview.inventory[playerId]?.join(', ') || 'ว่าง'}</p>
   </section>;

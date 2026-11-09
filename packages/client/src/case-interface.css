@@ -1,0 +1,145 @@
+/* Shared visual language for the live investigation, lobby and DM console. */
+.case-ui {
+  --case-page: #10171c;
+  --panel: #172229;
+  --well: #111c22;
+  --border: #30424a;
+  --edge: #4d626b;
+  --muted: #a8b9bf;
+  --text: #edf4f2;
+  --accent: #a5d8c9;
+  --on-accent: #102824;
+  --case-gold: #edc484;
+  --dm-step-accent: var(--case-gold);
+  --dm-step-surface: #202831;
+  --case-radius: 14px;
+  color: var(--text);
+  font-family: "Leelawadee UI", "Noto Sans Thai", system-ui, sans-serif;
+  line-height: 1.6;
+}
+body:has(.case-ui) {
+  background: radial-gradient(ellipse at 75% 0%, #21343b 0%, transparent 55%), #0d151a;
+}
+.case-ui .online-heading {
+  gap: .65rem 1rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .85rem;
+  margin-bottom: .85rem;
+}
+.case-ui .online-heading h1 { margin: .1rem 0; font-size: clamp(1.55rem, 3.3vw, 2.7rem); line-height: 1.3; }
+.case-ui .eyebrow { color: var(--case-gold); }
+.case-ui .turn-chip { color: var(--accent); border-color: var(--border); background: var(--well); }
+.case-ui .case-main-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  background: var(--well);
+  padding: .35rem;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  margin-block: .65rem .85rem;
+}
+.case-ui .case-main-navigation button {
+  display: flex;
+  flex: 1 1 max-content;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 44px;
+  padding: .35rem .55rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 650;
+}
+.case-ui .case-main-navigation button[aria-pressed="true"] {
+  color: var(--accent);
+  background: #20362f;
+  border-color: #46675d;
+}
+.case-ui .case-nav-icon { width: 1.15rem; height: 1.15rem; flex: 0 0 auto; }
+.case-ui .dm-case-secondary button { display: inline-flex; align-items: center; gap: .4rem; }
+.case-ui button, .case-ui input, .case-ui select, .case-ui textarea { border-radius: 8px; }
+.case-ui button:focus-visible, .case-ui select:focus-visible, .case-ui summary:focus-visible,
+.case-ui textarea:focus-visible, .case-ui input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.case-ui button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.case-ui button.primary:disabled { opacity: .55; }
+.case-ui :is(.game-panel,.narration-card,.dm-quick-card,.case-actions-pane,.case-notebook,.lobby-entry) {
+  border-radius: var(--case-radius);
+  border-color: var(--border);
+  background: var(--panel);
+}
+.case-ui .case-mission-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem 1.5rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: .7rem .95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--case-radius);
+  background: var(--well);
+}
+.case-ui .case-mission-strip h2 { margin: .15rem 0; font-size: clamp(1.05rem, 2vw, 1.4rem); }
+.case-ui .case-mission-strip p { margin: 0; }
+.case-ui .case-mission-strip > p { flex: 1 1 230px; max-width: 34rem; color: var(--muted); }
+.case-ui .case-mission-strip > p strong { color: var(--accent); margin-inline-end: .25rem; }
+.case-ui .player-status-strip { margin-block: .7rem; padding: .55rem .7rem; background: var(--well); border-color: var(--border); }
+.case-ui .player-status-strip img { border-radius: 8px; }
+.case-ui-active .case-workspace[data-view="scene"] {
+  display: grid;
+  grid-template-columns: minmax(0,1.45fr) minmax(300px,1fr);
+  align-items: start;
+  gap: 1rem;
+}
+.case-ui-active .case-workspace[data-view="scene"].case-workspace-encounter {
+  grid-template-columns: minmax(0,1.75fr) minmax(280px,1fr);
+}
+.case-ui .case-actions-pane { min-width: 0; padding: .9rem; }
+.case-ui .case-actions-pane > .case-story-thread { margin-top: 0; }
+.case-ui .case-story-thread { background: var(--well); border-inline-start-color: var(--accent); }
+.case-ui .case-story-thread header span, .case-ui .case-thread-history small { color: var(--accent); }
+.case-ui .case-action-workbench .guided-panel { border: 0; background: transparent; padding: 0; margin-block: .65rem; }
+.case-ui .case-action-workbench .question-options { display: grid; gap: .35rem; }
+.case-ui .case-action-workbench .question-options button { min-height: 42px; margin: 0; text-align: left; }
+.case-ui .action-option > button { border-radius: 10px; min-height: 46px; }
+.case-ui .dm-controls-pane > .game-panel { box-shadow: none; }
+.case-ui .dm-case-status strong { font-size: 1.15rem; }
+.case-ui .dm-case-status .eyebrow { color: var(--accent); }
+.case-ui .dm-next-step { border-inline-start-color: var(--case-gold); }
+.case-ui .dm-next-step .eyebrow { font-weight: 700; }
+.case-ui .dm-quick-card h4 { color: var(--accent); }
+.case-ui .dm-reader { border-color: var(--border); }
+.case-ui .dm-reader-toolbar, .case-ui .dm-reader-nav { background: var(--well); }
+.case-ui .dm-reader-article { background: var(--panel); }
+@media (max-width: 850px) {
+  .case-ui-active .case-workspace[data-view="scene"],
+  .case-ui-active .case-workspace[data-view="scene"].case-workspace-encounter { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 540px) {
+  .case-ui .case-main-navigation { padding: .25rem; gap: .15rem; }
+  .case-ui .case-main-navigation button { flex-basis: 20%; padding: .35rem .15rem; gap: .15rem; font-size: .78rem; }
+  .case-ui .case-main-navigation .case-nav-icon { width: .95rem; height: .95rem; }
+  .case-ui .case-mission-strip { gap: .35rem; }
+  .case-ui .case-mission-strip > p { font-size: .87rem; }
+}
+.case-ui .case-jump-action {
+  display: none;
+  color: var(--accent);
+  padding: .4rem .65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+}
+.case-ui .case-action-workbench { scroll-margin-top: 1rem; }
+@media (max-width: 850px) {
+  .case-ui .case-jump-action { display: inline-flex; gap: .35rem; }
+}
+.case-ui-active.player-shell:has(.case-screen) .online-heading h1 { display: block; }
+.case-ui-active.player-shell .case-actions-pane { max-height: none; overflow: visible; }
+.case-ui-active.player-shell .case-actions-pane .story-text,
+.case-ui .dm-quick-card .story-text,
+.case-ui .case-story-thread .story-text { font-size: 1rem; line-height: 1.72; }
+.case-ui-active.player-shell > .session-members { background: var(--well); border-color: var(--border); }

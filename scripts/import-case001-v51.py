@@ -3,9 +3,11 @@ from pathlib import Path
 import hashlib
 import json
 import re
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = next((ROOT / '5.1').glob('CASE001_StoryScript_v5.1*'))
+SOURCE = Path(sys.argv[1]) if len(sys.argv)>1 else next((ROOT / '5.1').glob('CASE001_StoryScript_v5.1*'))
+VERSION = '5.2' if 'v5.2' in SOURCE.name else '5.1'
 DEST = ROOT / 'packages/server/scenarios/case-001'
 source = SOURCE.read_text(encoding='utf-8')
 old = json.loads((DEST / 'case-001.v4.3.GuidedScenes.json').read_text(encoding='utf-8'))
@@ -36,6 +38,10 @@ for act in ['A','B','C','D','E','F']:
         # paragraphs carry their original trigger in the private reader.
         opening = re.split(r'\n[ \t]*>[ \t]*\n|\n\s*\n',scene['dmReadAloud'])[0]
         scene['cue'] = '\n'.join(line.removeprefix('> ').removeprefix('>') for line in opening.splitlines()).strip()
+        if VERSION == '5.2':
+            # Separate quoted prose from scene instructions.
+            opening = re.search(r'^> (?!\*\*\[)(.+)', scene['dmReadAloud'], re.M)
+            scene['cue'] = opening[1] if opening else ''
         if sid == 'F2':
             scene['cue'] = ''  # Runtime selects the actual D result.
         scene['questions'] = old['scenes'][sid]['suggested_questions']
@@ -46,6 +52,41 @@ for act in ['A','B','C','D','E','F']:
         if sid=='E5':scene['questions']=['เหตุใดวิชัยถึงมาที่เรือนนี้?', 'จะให้วิชัยวางอาวุธได้อย่างไร?', 'ทีมจะคุ้มกันผู้ที่อยู่ใกล้อย่างไร?']
         if sid=='H1':scene['questions']=['ประตูน้ำถูกเปิดเมื่อใด?', 'หลักฐานยืนยันบทบาทของใครบ้าง?', 'ข้อมูลอพยพตรงกับเวลาเปิดประตูน้ำหรือไม่?']
         if sid=='F2':scene['questions']=['เธอรู้จักทีมมาก่อนหรือไม่?', 'ยังถูกด้ายบังคับอยู่ไหม?', 'มีทางสื่อสารโดยไม่สู้หรือไม่?']
+        if VERSION == '5.2':
+            prompts = {
+                'A1': ['ใครหายไปบ้าง?', 'แต่ละคนถูกพบครั้งสุดท้ายที่ไหน?', 'ทำไมถึงเรียกบริษัทมาช่วย?'],
+                'A2': ['เมื่อกี้ทุกคนได้ยินคำว่าอะไร?', 'เสียงน้ำกับเสียงพูดมาจากวิทยุหรือรอบรถ?', 'ลองฟังหรือบันทึกเสียงอีกครั้งได้ไหม?'],
+                'A3': ['แฟ้มฉบับเต็มอยู่ที่ไหน?', 'ไปบ้านผู้ใหญ่ทางไหน?'],
+                'B1': ['หมุดแดงกับวงสีน้ำเงินหมายถึงอะไร?', 'ใครทำเครื่องหมายบนแผนที่?'],
+                'B2': ['วิชัยเข้าไปสวนตอนไหน?', 'รอยข่วนที่มือเกิดจากอะไร?'],
+                'B3': ['ต้นเห็นอะไรที่ทางเข้าสวน?', 'อยากคุยเป็นส่วนตัวไหม?'],
+                'B4': ['คนในรูปเป็นใคร?', 'รูปนี้ถ่ายที่ไหนและเมื่อไร?'],
+                'B5': ['บ้านดลอยู่ตรงไหน?', 'ดลเก็บบันทึกไว้ที่ไหน?'],
+                'C1': ['มีร่องรอยใครเข้าบ้านไหม?', 'บนโต๊ะมีอะไรให้ตรวจ?'],
+                'C2': ['สมุดดลบันทึกเรื่องอะไร?', 'ทำไมดลจดให้กลับไปดูศาล?'],
+                'C3': ['เสียงเคาะมาจากไหน?', 'ตรวจคราบน้ำจากตรงนี้ได้ไหม?'],
+                'C4': ['สิ่งที่เห็นกำลังทำอะไร?', 'ช่วยเพื่อนหรือถอยออกทางไหนได้บ้าง?'],
+                'C5': ['ยายรู้จักแม่แก้วอย่างไร?', 'ยายเห็นอะไรแถวศาล?'],
+                'D1': ['รอยบนทางเดินพาไปไหน?', 'มองเห็นอะไรระหว่างทาง?'],
+                'D2': ['ชื่อบนด้ายเป็นของใครบ้าง?', 'ด้ายดำโยงไปทางไหน?'],
+                'D3': ['แม่แก้วกำลังพยายามบอกอะไร?', 'ทีมช่วยอะไรเธอได้บ้าง?'],
+                'D4': ['ตอนนี้ใครอยู่ในอันตราย?', 'มีทางถอยออกจากศาลไหม?'],
+                'D5': ['รอยล้อไปสิ้นสุดตรงไหน?', 'รอยล้อมุ่งไปทางเดียวกันหรือเปล่า?'],
+                'E1': ['เสียงคนดังจากตรงไหน?', 'มีทางเข้าเรือนทางไหนบ้าง?'],
+                'E2': ['ใครยังพูดคุยได้?', 'ใครต้องให้ทีมช่วยพาออก?'],
+                'E3': ['แต่ละคนเห็นหรือได้ยินอะไรด้วยตัวเอง?', 'ตอนนี้ใครพร้อมเล่าให้ฟัง?'],
+                'E4': ['กำไลอยู่ตรงไหน?', 'ตำราที่อยู่ข้างกล่องมีอะไร?', 'ใต้ฐานกล่องมีอะไร?'],
+                'E5': ['ทำไมวิชัยถึงมาที่เรือน?', 'เราจะคุยให้เขาวางมีดได้ไหม?'],
+                'H1': ['เอกสารบอกเวลาเปิดประตูน้ำว่าอย่างไร?', 'คำให้การตรงกับบันทึกส่วนไหน?'],
+                'E6': ['ใครอยู่ที่ไหนและปลอดภัยหรือยัง?', 'ทีมจะจัดการอะไรก่อน?'],
+                'F1': ['สัญญาณที่เตือนมาจากตรงไหน?', 'ใครอยู่ใกล้กำไลตอนนี้?'],
+                'F2': ['แม่แก้วจำอะไรเกี่ยวกับทีมได้บ้าง?', 'ตอนนี้เธออยากบอกอะไร?'],
+                'F3': ['ใครต้องการคนคุ้มกัน?', 'เข้าใกล้แกนจากตรงไหนได้บ้าง?'],
+                'F4': ['ในภาพน้ำท่วมเกิดอะไรขึ้น?', 'ภาพนี้บอกอะไรเกี่ยวกับแม่แก้ว?'],
+                'F5': ['แม่แก้วอยากให้ทีมทำอะไรต่อ?', 'ทีมจะเปิดเผยหลักฐานที่มีอย่างไร?'],
+                'F6': ['ใครอยู่ใกล้แกนตอนเกิดแรงสะท้อน?', 'ทีมจะหยุดมือหรือคุ้มกันใครได้ทัน?'],
+            }
+            scene['questions'] = prompts[sid]
         scene['checkId'] = old['scenes'][sid]['optional_check_id']
         lines = []
         for field in ['npcLines','responses']:
@@ -94,13 +135,44 @@ for act in ['A','B','C','D','E','F']:
                      for key,text in zip(['won','talked','fled_lost','not_met'],quotes)]
         scene['dialogue'] = lines
         scenes[sid] = scene
-    (DEST / f'case-001.v5.1.{act}.json').write_text(json.dumps(scenes,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (DEST / f'case-001.v{VERSION}.{act}.json').write_text(json.dumps(scenes,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(f'{act}: {len(scenes)} scenes imported')
 
 endings = {}
 for m in re.finditer(r'^## ENDING ([A-D]) — (.+)\n([\s\S]*?)(?=^## ENDING |^### Ending Resolver)',source,re.M):
     endings[m[1]] = dict(title=m[2],script=m[3].strip(), paragraphs=re.findall(r'^> (.+)$',m[3],re.M))
 assert len(endings)==4
-(DEST/'case-001.v5.1.endings.json').write_text(json.dumps(endings,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-(DEST/'case-001.v5.1.script.md').write_text(source,encoding='utf-8')
-(DEST/'case-001.v5.1.manifest.json').write_text(json.dumps(dict(version='5.1',source=SOURCE.name,sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),sceneCount=31,checkCount=16),indent=2)+'\n',encoding='utf-8')
+(DEST/f'case-001.v{VERSION}.endings.json').write_text(json.dumps(endings,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+(DEST/f'case-001.v{VERSION}.script.md').write_bytes(SOURCE.read_bytes())
+(DEST/f'case-001.v{VERSION}.manifest.json').write_text(json.dumps(dict(version=VERSION,source=SOURCE.name,sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),sceneCount=31,checkCount=16),indent=2)+'\n',encoding='utf-8')
+
+
+if VERSION == '5.2':
+    reference = json.loads((DEST / 'case-001.v4.3.DiceChecks.json').read_text(encoding='utf-8'))
+    expected = {check['id']: check for check in reference['checks']}
+    appendix = source.split('# ภาคผนวก ข', 1)[1].split('# ภาคผนวก ค', 1)[0]
+    cards = re.split(r'^### 🎲 (\w+) (.+)\n', appendix, flags=re.M)[1:]
+    checks = []
+    for check_id, title, card in zip(cards[::3], cards[1::3], cards[2::3]):
+        old_check = expected[check_id]
+        stat, dc = re.search(r'\*\*ค่าสถานะ:\*\* (.*?) · \*\*DC (\d+)\*\*', card).groups()
+        assert '|'.join(re.findall(r'`([A-Z|]+)`', stat)) == old_check['stat'] and int(dc) == old_check['dc'], check_id
+        check = {**old_check, 'title': title, 'sourceMarkdown': re.sub(r'\n---[\s\S]*\Z', '', card).strip()}
+        if check_id == 'C5_EVACUATION_RECORDS':
+            check['decision'] = 'รออนุมัติตำแหน่งเอกสารประกอบ B4 และ C5 (X02) การ์ดนี้ต้องใช้เอกสารสองแหล่งที่ทีมตรวจจริง'
+        for name, label in [('trigger','เรียกทอยเมื่อ'), ('baseline','ข้อมูลที่ได้แน่ ๆ'), ('bypass','ไม่ต้องทอยเมื่อ'), ('fallback','ถ้าทอยพลาดแล้วไปต่ออย่างไร')]:
+            check[name] = re.search(r'\*\*'+label+r':\*\* (.+)', card)[1]
+        chunks = re.split(r'^#### .+ (FULL SUCCESS|PARTIAL SUCCESS|FAILURE) — (.+)\n', card, flags=re.M)[1:]
+        assert len(chunks) == 9, check_id
+        for branch, bounds, body in zip(chunks[::3], chunks[1::3], chunks[2::3]):
+            name = {'FULL SUCCESS':'full','PARTIAL SUCCESS':'partial','FAILURE':'failure'}[branch]
+            assert list(map(int,re.findall(r'\d+', bounds))) == {'full':[int(dc)],'partial':[int(dc)-old_check['partial_margin'],int(dc)-1],'failure':[int(dc)-old_check['partial_margin']-1]}[name], (check_id, bounds)
+            check[name] = {
+                'dm': re.search(r'\*\*\[DM อ่าน\]\*\* (.+)',body)[1],
+                'dialogue': re.search(r'\*\*\[บทพูด / เสียง\]\*\* (.+)',body)[1],
+                'information': [re.search(r'\*\*ข้อมูล:\*\* (.+)',body)[1]],
+                'state': re.search(r'\*\*\[ผลต่อสถานะ\]\*\* (.+)',body)[1]
+            }
+        checks.append(check)
+    assert len(checks) == 16 and set(expected) == {check['id'] for check in checks}
+    (DEST / 'case-001.v5.2.checks.json').write_text(json.dumps(checks,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

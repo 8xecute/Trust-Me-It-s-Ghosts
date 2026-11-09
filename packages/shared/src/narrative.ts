@@ -1,5 +1,5 @@
 export interface NarrativeBeat {
-  sequence:number; eventId:string; text:string; site:string; actor:string; scope:'local'|'party';
+  sequence:number; eventId:string; text:string; site:string; scene?:string; phase?:string; actor:string; scope:'local'|'party';
 }
 export interface NarrativeView { current:NarrativeBeat|null; history:NarrativeBeat[]; pending:number; }
 
