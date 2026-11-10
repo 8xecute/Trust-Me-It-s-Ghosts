@@ -5,12 +5,13 @@ import { DmStoryReader } from './DmStoryReader';
 import {SessionSaveControls} from './SessionSaveControls';
 import type {Socket} from 'socket.io-client';
 import { DmOutcomeCard } from './DmOutcomeCard';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CaseDmPanel, GmChapter, Room, Snapshot } from '../../network/onlineTypes';
 import { DmStoryEvents, GuidedPanel } from '../case/GuidedPanel';
 import { D20Card, D20Result } from '../case/D20Card';
 import { DmHistory } from '../case/DmHistory';
 import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
+import { TurnConclusion, TurnEncounter } from '../combat/TurnEncounter';
 
 function DmQuestions({panel,available,action,playerName,speakers}:{
  speakers?:string[];
@@ -125,6 +126,8 @@ export function DmWorkspace({
   const dicePlayers=dmPanel?.investigators ?? [];
   const pendingDice=dicePlayers.filter(entry=>entry.check && entry.diceRequest?.die!==null);
   const battle=world?.caseMap?.battle;
+  const turnEncounter=!!battle?.turnEncounter;
+  useEffect(()=>{if(turnEncounter) setDmTab('queue');},[turnEncounter]);
   const currentScene=world?.caseMap?.site;
   const queue=(dmPanel?.narration ?? []).filter(card=>card.current ?? card.site===currentScene).sort((a,b)=>Number(b.eventId.startsWith('guided-cue:'))-Number(a.eventId.startsWith('guided-cue:')) || Number(!!b.answer)-Number(!!a.answer));
   const otherScenes=(dmPanel?.narration ?? []).filter(card=>!(card.current ?? card.site===currentScene));
@@ -181,12 +184,12 @@ export function DmWorkspace({
         <span>{investigators.length}/{limit} คน · ช่วยแล้ว {world.case001.rescued}/3{world.case001.time && ' · '+world.case001.time}</span>
       </div>
       <nav className="dm-case-tabs case-main-navigation" aria-label="หน้าหลัก DM">
-        <button type="button" aria-pressed={dmTab==='queue' || handlingRoll} onClick={()=>setDmTab('queue')}><CaseNavIcon name="play"/><span>ดำเนินเกม</span>{queue.length ? ' · '+queue.length : ''}</button>
+        <button type="button" aria-pressed={dmTab==='queue' || handlingRoll} onClick={()=>setDmTab('queue')}><CaseNavIcon name="play"/><span>{turnEncounter?'เผชิญหน้า':'ดำเนินเกม'}</span>{queue.length ? ' · '+queue.length : ''}</button>
         <button type="button" aria-pressed={['guide','npcs','backup','history'].includes(dmTab)} onClick={()=>setDmTab('guide')}><CaseNavIcon name="journal"/><span>คู่มือฉาก</span></button>
         <button type="button" aria-pressed={dmTab==='team'} onClick={()=>setDmTab('team')}><CaseNavIcon name="room"/><span>จัดการห้อง</span></button>
       </nav>
       {(dmTab==='queue' || handlingRoll) && <div className="dm-case-secondary" aria-label="เครื่องมือระหว่างเล่น">
-        {handlingRoll && <button type="button" onClick={()=>setDmTab('queue')}>กลับไปจ่ายบท</button>}
+        {handlingRoll && <button type="button" onClick={()=>setDmTab('queue')}>{turnEncounter?'กลับไปฉากเผชิญหน้า':'กลับไปจ่ายบท'}</button>}
         <button type="button" aria-pressed={dmTab==='questions'} onClick={()=>setDmTab('questions')}><CaseNavIcon name="questions"/>คำถาม{pendingQuestions>0?' · '+pendingQuestions:''}</button>
         <button type="button" aria-pressed={dmTab==='dice'} onClick={()=>setDmTab('dice')}><CaseNavIcon name="dice"/>D20{pendingDice.length>0?' · '+pendingDice.length:''}</button>
       </div>}
@@ -220,8 +223,13 @@ export function DmWorkspace({
         <details><summary>เมื่อทีมอยากพักหรือปิดคดี</summary><p>ใช้ปุ่มพักคดีหรือถอนทีมในหน้าจัดการห้อง ปุ่มพักจะหยุดการกระทำของทุกคนและเปิดเล่นต่อได้ ตกลงพักกับทีมได้ และให้สมาชิกกลับเข้าห้องเดิมเมื่อพร้อมตามการตั้งค่าบันทึกของเซิร์ฟเวอร์ อย่ากดออกจากห้องหากต้องการกลับด้วยตัวละครเดิม</p><p>DM ถอนทีมได้ทุกบท และระบบใช้ผลที่เกิดขึ้นจริง การปิดคดีแล้วกลับมาสืบต่อไม่ได้</p></details>
        </> : <p>แผนสำรองนี้ใช้กับคดีแบบนำทางที่กำลังเล่น</p>}
       </section>
+      {dmTab==='queue' && battle?.turnEncounter && world.caseMap &&
+        <TurnEncounter site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
+          isDm enabled={available} paused={world.paused} action={action}
+          onManageRoll={pendingDice.some(entry=>entry.id===battle.active)?()=>setDmTab('dice'):undefined}/>}
       <section hidden={dmTab!=='queue'} className="gm-pane dm-live-grid">
         <div className="dm-live-main">
+        {world.caseMap?.turnConclusion && !battle && guided?.scene==='C4' && <TurnConclusion result={world.caseMap.turnConclusion}/>}
         <section className="dm-next-step" aria-label="ขั้นตอนถัดไป" aria-live="polite" ref={nextStep}>
           <p className="eyebrow">ทำตอนนี้</p>
           {nextCard ? <h3>{visibleBeat?.answer?'จ่ายบทตอบตามผลทอย':'อ่านและจ่ายบท'} <small>รอส่ง {queue.length}</small></h3> :

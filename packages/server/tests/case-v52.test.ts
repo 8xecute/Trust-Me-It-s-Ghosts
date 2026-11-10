@@ -263,11 +263,8 @@ test('optional scene sequence reaches B2–B4, C3–C5 and D3–D4 with authored
  r.scene('B5');r.next();r.scene('C2');r.scene('C3');
  r.send('a','start');r.publish('guided-cue:C4');
  assert.equal(r.view().caseMap!.battle!.id,'EN01');
- const checkpoint=r.saved();
- const active=checkpoint.world.caseMap!.battle!.active!;
- checkpoint.world.players[active]={x:0,y:0};
- r.store.delete(r.code);r.store.restore(r.code,checkpoint);
- r.send(active,'escape');
+ const active=r.view().caseMap!.battle!.active!;
+ r.send(active,'turnEncounter',{round:1,choice:'withdraw'});
  assert.equal(r.state().v51!.GHOST_ENCOUNTER,'escaped');
  r.scene('C5');
  assert.ok(!r.view().case001!.actions.some(a=>a.id.startsWith('dice:C5')));
@@ -277,6 +274,122 @@ test('optional scene sequence reaches B2–B4, C3–C5 and D3–D4 with authored
  assert.throws(()=>r.send('a','start'));
  r.act('engage-kaew');r.send('a','start');r.scene('D4');
  assert.equal(r.view().caseMap!.battle!.id,'EN02');
+});
+
+function c4(die=20) {
+ const r=room(die);
+ r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.scene('C3');
+ r.send('a','start');
+ const turn=(id:string,choice:string,extra:object={})=>r.send(id,'turnEncounter',{
+  round:r.view().caseMap!.battle!.round,choice,...extra,
+ });
+ return {...r,turn,publishC4:()=>r.publish('guided-cue:C4')};
+}
+
+test('C4 starts with the team, validates both roles and gives the DM one action after all six players',()=>{
+ const r=c4(8);
+ assert.equal(r.view().caseMap!.battle!.active,'a');
+ assert.throws(()=>r.turn('a','pass'),/รอ DM/);
+ r.publishC4();
+ const attacks=r.view('dm').caseMap!.battle!.turnEncounter!.attacks!;
+ assert.equal(r.view().caseMap!.battle!.turnEncounter!.attacks,undefined);
+ assert.throws(()=>r.turn('dm','pass'),/ยังไม่ถึงตา/);
+ assert.throws(()=>r.turn('b','strike'),/ยังไม่ถึงตา/);
+ assert.throws(()=>r.send('a','strike'),/หน้าเผชิญหน้า/);
+ const start=r.saved().world;
+ r.turn('a','guard');
+ for(const player of ['b','c','d','e','f']) r.turn(player,'pass');
+ const npcPhase=r.view('b').caseMap!.battle!;
+ assert.equal(npcPhase.active,null);
+ assert.deepEqual(npcPhase.turnEncounter!.acted,['a','b','c','d','e','f']);
+ assert.throws(()=>r.turn('a','attack',{attackId:attacks[0].id,targetId:'b'}));
+ assert.throws(()=>r.turn('dm','attack',{attackId:'forged',targetId:'a'}));
+ assert.throws(()=>r.turn('dm','attack',{attackId:attacks[0].id,targetId:'dm'}));
+ r.turn('dm','attack',{attackId:attacks[0].id,targetId:'a'});
+ const after=r.view();
+ assert.equal(after.caseMap!.battle!.round,2);
+ assert.equal(after.caseMap!.battle!.active,'a');
+ assert.deepEqual(after.caseMap!.battle!.turnEncounter!.acted,[]);
+ assert.deepEqual(after.caseMap!.battle!.turnEncounter!.history.at(-1)!.check,{die:8,total:11,outcome:'failure'});
+ assert.equal(after.characters!.a.hp,start.characters!.a.hp);
+ assert.equal(r.state().minute,start.case001!.minute);
+ assert.throws(()=>r.send('a','turnEncounter',{round:1,choice:'pass'}),/รอบนี้จบแล้ว/);
+});
+
+test('C4 resumes the same round, skips an absent player and does not repeat turns already taken',()=>{
+ const r=c4();
+ r.publishC4();r.turn('a','pass');r.send('dm','dmSessionControl',{command:'pause'});
+ const saved=r.saved();
+ r.store.delete(r.code);r.store.restore(r.code,saved);
+ r.send('dm','dmSessionControl',{command:'attendance',targetId:'b',absent:true});
+ r.send('dm','dmSessionControl',{command:'resume'});
+ assert.equal(r.view().caseMap!.battle!.round,1);
+ assert.equal(r.view().caseMap!.battle!.active,'c');
+ assert.deepEqual(r.view().caseMap!.battle!.turnEncounter!.acted,['a']);
+ assert.ok(!r.view().caseMap!.battle!.turnEncounter!.party.includes('b'));
+ assert.throws(()=>r.turn('b','pass'),/ตัวละครพัก/);
+ for(const player of ['c','d','e','f']) r.turn(player,'pass');
+ const npcSave=r.saved();
+ r.store.delete(r.code);r.store.restore(r.code,npcSave);
+ assert.equal(r.view().caseMap!.battle!.active,null);
+ const before=r.view().characters!.a.hp;
+ r.turn('dm','attack',{attackId:'WET_CLAW',targetId:'a'});
+ assert.equal(r.view().characters!.a.hp,before-2);
+ assert.equal(r.view().caseMap!.battle!.round,2);
+});
+
+test('C4 vision uses the original SPI 14 card and spends a turn only when the player rolls',()=>{
+ const r=c4(1);
+ r.publishC4();
+ const option=r.view().case001!.actions.find(a=>a.id==='dice:C4_DROWNED_ECHO_VISION:SPI')!;
+ assert.equal(option.dice!.dc,14);
+ r.send('a','caseAction',{actionId:option.id,site:'C'});
+ assert.equal(r.view().caseMap!.battle!.active,'a');
+ assert.throws(()=>r.turn('a','pass'),/คำขอทอย/);
+ const request=r.panel().investigators.find(entry=>entry.id==='a')!.check!;
+ r.send('dm','dmRequestRoll',{targetId:'a',checkId:request.id});
+ r.send('a','dmRoll',{requestId:r.view().diceRequest!.id});
+ const battle=r.view('b').caseMap!.battle!;
+ assert.equal(battle.active,'b');
+ assert.equal(battle.turnEncounter!.history.at(-1)!.check!.outcome,'failure');
+ assert.equal(r.state().v51!.GHOST_CLUE,'none');
+ assert.equal(r.view('b').narrative?.history.some(beat=>beat.eventId.startsWith(option.id)),false);
+});
+
+test('C4 pacification and NPC withdrawal settle with the existing story outcomes',()=>{
+ const peaceful=c4();
+ peaceful.publishC4();peaceful.turn('a','pacify');
+ assert.equal(peaceful.state().v51!.GHOST_ENCOUNTER,'pacified');
+ assert.equal(peaceful.state().v51!.GHOST_CLUE,'vision');
+ assert.equal(peaceful.view().caseMap!.turnConclusion?.check?.die,20);
+ const retreat=c4();
+ retreat.publishC4();
+ for(const player of ['a','b','c','d','e','f']) retreat.turn(player,'pass');
+ retreat.turn('dm','withdraw');
+ assert.equal(retreat.view().caseMap!.battle,undefined);
+ assert.equal(retreat.state().v51!.GHOST_ENCOUNTER,'won');
+ assert.equal(retreat.state().v51!.GHOST_CLUE,'trace');
+});
+
+test('C4 can revive a fallen investigator and resolves a total party defeat',()=>{
+ const r=c4();
+ r.publishC4();
+ const injured=r.saved();
+ injured.world.characters!.a.hp=2;
+ for(const id of ['b','c','d','e','f']) injured.world.characters![id].hp=0;
+ r.store.delete(r.code);r.store.restore(r.code,injured);
+ r.turn('a','stabilize',{targetId:'b'});
+ assert.equal(r.view().characters!.b.hp,1);
+ assert.equal(r.view().caseMap!.battle!.active,'b');
+ r.turn('b','strike');
+ assert.equal(r.view().caseMap!.battle!.enemies[0].hp,23);
+ r.turn('dm','attack',{attackId:'WET_CLAW',targetId:'b'});
+ assert.equal(r.view().caseMap!.battle!.active,'a');
+ r.turn('a','pass');
+ r.turn('dm','attack',{attackId:'WET_CLAW',targetId:'a'});
+ assert.equal(r.view().caseMap!.battle,undefined);
+ assert.equal(r.state().v51!.GHOST_ENCOUNTER,'lost');
+ assert.equal(r.view().caseMap!.turnConclusion?.outcome,'lost');
 });
 
 test('F1 and F2 require approach, and F4 opens after Combat clears the last projection',()=>{

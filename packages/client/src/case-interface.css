@@ -97,6 +97,9 @@ body:has(.case-ui) {
 .case-ui-active .case-workspace[data-view="scene"].case-workspace-encounter {
   grid-template-columns: minmax(0,1.75fr) minmax(280px,1fr);
 }
+.case-ui-active .case-workspace[data-view="scene"].case-workspace-c4 {
+  grid-template-columns: minmax(0,1fr);
+}
 .case-ui .case-actions-pane { min-width: 0; padding: .9rem; }
 .case-ui .case-actions-pane > .case-story-thread { margin-top: 0; }
 .case-ui .case-story-thread { background: var(--well); border-inline-start-color: var(--accent); }

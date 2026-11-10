@@ -4,7 +4,7 @@ import { observeGuidedScene, speakGuided } from './guidedCase.js';
 import { noTimer } from './v51Content.js';
 import { isStoryCheck, runStoryCheck } from './storyDice.js';
 import { applyCaseAction, failCase, tick } from './case001.js';
-import { caseOpportunity, startCaseBattle, syncCaseBattle, travelCaseMap } from './caseBattle.js';
+import { caseOpportunity, completeTurnPlayer, startCaseBattle, syncCaseBattle, travelCaseMap } from './caseBattle.js';
 
 export function completeCaseRound(w:World) {
  if(++w.caseMap!.rounds%3===0) tick(w.case001!,10);
@@ -18,8 +18,13 @@ export function completeCaseRound(w:World) {
 }
 
 export function executeCaseAction(w:World,player:string,a:{actionId:string;boost?:unknown;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats},roll:()=>number,coordinated=false) {
+ if(w.caseMap?.battle?.turnEncounter && !isStoryCheck(a.actionId)) throw Error('เลือกการกระทำจากหน้าเผชิญหน้า');
  if(a.actionId.startsWith('guided-talk:')) {speakGuided(w.case001!,a.actionId);return;}
- if(isStoryCheck(a.actionId)) {runStoryCheck(w,player,a.actionId,a.boost,roll,a.dcOverride);return;}
+ if(isStoryCheck(a.actionId)) {
+  runStoryCheck(w,player,a.actionId,a.boost,roll,a.dcOverride);
+  completeTurnPlayer(w,player,'ติดต่อขอภาพจากผี',w.lastCheck ?? undefined);
+  return;
+ }
  const first=w.case001?.narrativeEvents?.length ?? 0;
 
     if(!w.case001 || w.humanDmId===player) throw Error('เฉพาะผู้สืบสวนในคดี');

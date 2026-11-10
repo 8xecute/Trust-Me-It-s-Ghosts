@@ -10,6 +10,11 @@ const tokenArt=(key:string)=>cutouts['../../assets/case-001/combat/'+key+'.png']
 type Cell={x:number;y:number};
 export type BattleView={
   title:string; round:number; active:string|null; objective:boolean;
+  turnEncounter?:{
+    party:string[]; acted:string[]; maxHp:number; ready:boolean;
+    history:{round:number;actor:string;label:string;target?:string;check?:{die:number;total:number;outcome:'success'|'partial'|'failure'};effect?:string}[];
+    attacks?:{id:string;name:string;resource:'HP'|'Sanity';damage:number}[];
+  };
   phase?:'chains'|'flood_memory'|'choice';
   enemies:{id:string;name:string;position:Cell;hp:number;defense?:{PDEF:number;MDEF:number};telegraph?:{kind:'lash'|'wail';cells:Cell[];attack?:{name_th:string}}}[];
   danger:Cell[]; flooded:Cell[]; projections:Cell[];

@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import {
   ghostDecision, resolveCheck, spendAP, startGhostEncounter, startTurn, type GhostEncounter, type GhostGrid,
 } from '@baan/shared';
-import { advanceTactics, applyTechnique, negotiateV2, newTactics, stabilize, strikeV2, type Tactics } from '../tacticalEncounter.js';
+import { advanceTactics, applyTechnique, negotiateV2, newTactics, resolveNpcAttack, stabilize, strikeV2, type Tactics } from '../tacticalEncounter.js';
 import { caseNarration, emitCaseBeat, type CaseState, type Site } from './case001.js';
 import { caseCombatStats } from './caseCombatStats.js';
 import { addFact, hasFact, v4 } from './caseStory.js';
@@ -23,10 +23,17 @@ const enemies = {
   kaew_boss:{name:'แม่แก้ว',hp:12},
 };
 type Enemy = {id:string;kind:EnemyKind;state:GhostEncounter;tactics:Tactics};
+type TurnBeat = {
+  round:number; actor:string; label:string; target?:string;
+  check?:Pick<NonNullable<World['lastCheck']>,'die'|'total'|'outcome'>;
+  effect?:string;
+};
+type TurnEncounter = {acted:string[]; maxHp:number; history:TurnBeat[]};
 export interface CaseBattle {
   id:EncounterId;site:Site;title?:string;round:number;active:string|null;enemies:Enemy[];
   phase?:'chains'|'flood_memory'|'choice';
   initiative?: (string|null)[];
+  turnEncounter?:TurnEncounter;
   projections:Cell[];
   armorDisabled?:boolean;
   focusCell?:Cell;
@@ -39,6 +46,7 @@ export interface CaseMap {
   completed:EncounterId[];
   rounds:number;
   battle?:CaseBattle;
+  turnConclusion?:{outcome:'escaped'|'lost'|'pacified'|'won';check?:TurnBeat['check']};
 }
 export const newCaseMap = (players:Record<string,Cell>):CaseMap => ({
   sites:Object.fromEntries(Object.keys(players).map(id=>[id,'A'])),
@@ -56,6 +64,13 @@ export function removeCasePlayer(w:World,id:string,gridFor:(site:Site)=>GhostGri
   delete map.sites[id];
   for(const saved of Object.values(map.positions)) delete saved[id];
   const battle=map.battle;
+  if(battle?.turnEncounter) {
+    if(!readyPlayers(w,battle.site).length) {
+      completeRound();
+      if(map.battle===battle) finishCaseBattle(w);
+    } else if(battle.active===id) selectTurnPlayer(w,battle);
+    return;
+  }
   if(battle?.active===id) {
     if(battle.initiative) return nextCombatTurn(w,battle,gridFor(battle.site),roll,battle.initiative.indexOf(id),completeRound);
     battle.active=readyPlayers(w,battle.site)[0] ?? null;
@@ -101,6 +116,7 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
   if(!party.includes(actor)) return fail();
   const count=Math.max(2,party.length);
   const combat=isV4 && id!=='EN03' ? caseCombatStats[id] : undefined;
+  const turnEncounter=id==='EN01' && noTimer(w.case001!) && !!w.humanDmId && !!combat;
   const occupied=[...Object.values(localPlayers(w,site)),...grid.blocked];
   const slots=points(grid).reverse().filter(p=>!occupied.some(q=>distance(p,q)===0));
   const roster:EnemyKind[]=isV4 ? [id==='EN01' ? 'drowned_echo' : 'kaew_boss'] : definitions[id].roster.slice(0,count<=2 ? (id==='EN01'||id==='EN04'?1:2) : 3);
@@ -115,9 +131,10 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
   const projectionCount=isV4 && hasFact(w.case001!,'kaew-dispersed') ? 1 : 2;
   map.battle={id,site,...(isV4 && id==='EN02' ? {title:'เผชิญหน้าแม่แก้วในสวน'} : {}),round:1,active:party[0],enemies:members,
     ...(id==='EN04'?{phase:'chains' as const}:{}),projections:id==='EN04'?slots.slice(roster.length,roster.length+projectionCount):[],
-    ...(id==='EN03'||id==='EN01'?{focusCell:slots[roster.length]}:{})};
+    ...(turnEncounter ? {turnEncounter:{acted:[],maxHp:members[0].state.ghostHealth,history:[]}} :
+      id==='EN03'||id==='EN01' ? {focusCell:slots[roster.length]} : {})};
   for(const player of party) w.turns[player]=startTurn();
-  if(combat) {
+  if(combat && !turnEncounter) {
     const initiative=[...party.map(player=>({player,bonus:characterAttribute(w.characters![player],'mind')})),
       {player:null,bonus:combat.INIT}].map(entry=>({...entry,total:roll()+entry.bonus}));
     initiative.sort((a,b)=>b.total-a.total || Number(a.player===null)-Number(b.player===null) ||
@@ -141,6 +158,11 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
 
 export function finishCaseBattle(w:World,escaped=false) {
   const map=w.caseMap!, battle=map.battle!;
+  if(battle.turnEncounter) {
+    const outcome=escaped?'escaped':!readyPlayers(w,battle.site).length?'lost':
+      battle.enemies.some(enemy=>enemy.state.outcome==='pacified')?'pacified':'won';
+    map.turnConclusion={outcome,check:battle.turnEncounter.history.at(-1)?.check};
+  }
   if(!map.completed.includes(battle.id)) map.completed.push(battle.id);
   const s=w.case001;
   if(s?.storyVersion===4 && !s.report) {
@@ -225,6 +247,105 @@ function localWorld(w:World,b:CaseBattle,e:Enemy):World {
   return {...w,players:localPlayers(w,b.site),activePlayer:b.active,encounter:e.state,tactics:e.tactics};
 }
 
+function selectTurnPlayer(w:World,b:CaseBattle) {
+  b.active=readyPlayers(w,b.site).find(id=>!b.turnEncounter!.acted.includes(id)) ?? null;
+  if(b.active) w.turns[b.active]=startTurn();
+}
+
+function recordTurn(b:CaseBattle,beat:Omit<TurnBeat,'round'>) {
+  const history=b.turnEncounter!.history;
+  const check=beat.check;
+  history.push({round:b.round,...beat,check:check && {die:check.die,total:check.total,outcome:check.outcome}});
+  if(history.length>24) history.shift();
+}
+
+export function completeTurnPlayer(w:World,actor:string,label:string,check?:TurnBeat['check'],target?:string,effect?:string) {
+  const b=w.caseMap?.battle;
+  if(!b?.turnEncounter || b.active!==actor) return;
+  recordTurn(b,{actor,label,target,check,effect});
+  b.turnEncounter.acted.push(actor);
+  w.turns[actor]={...w.turns[actor],ap:0};
+  if(!activeEnemies(b).length) finishCaseBattle(w);
+  else selectTurnPlayer(w,b);
+}
+
+const npcAttacks=(b:CaseBattle)=>b.enemies[0].tactics.profile?.combat?.attacks.filter(attack=>!attack.requires) ?? [];
+
+export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown},
+  roll:()=>number,completeRound:()=>void) {
+  const b=w.caseMap?.battle;
+  if(!b?.turnEncounter || a.round!==b.round || w.case001?.report) return fail('รอบนี้จบแล้ว โปรดเลือกอีกครั้ง');
+  if(!w.case001?.guided?.presented.includes('C4')) return fail('รอ DM ส่งบทเปิดฉากก่อน');
+  const enemy=b.enemies[0];
+  if(actor===w.humanDmId) {
+    if(b.active) return fail('ยังไม่ถึงตาของผี');
+    if(a.choice==='withdraw') {
+      recordTurn(b,{actor:enemy.id,label:'ผีถอยกลับไปในคราบน้ำ'});
+      enemy.state.phase='resolved';
+      enemy.state.outcome='defeated';
+      finishCaseBattle(w);
+      return;
+    }
+    if(a.choice==='attack') {
+      const attack=npcAttacks(b).find(option=>option.id===a.attackId);
+      const target=a.targetId;
+      if(!attack || typeof target!=='string' || !readyPlayers(w,b.site).includes(target)) return fail('เลือกท่าและผู้สืบสวนที่ยังลงมือได้');
+      const result=resolveNpcAttack(w.characters![target],attack,enemy.tactics.profile!.combat!.ATK,roll(),
+        enemy.tactics.defense[target]===b.round);
+      recordTurn(b,{actor:enemy.id,target,label:attack.name_th,check:result,effect:result.damage ?
+        'เสีย'+(attack.damageResource==='HP'?'พลังชีวิต ':'สติ ')+result.damage : undefined});
+    } else if(a.choice==='pass') recordTurn(b,{actor:enemy.id,label:'รอดูท่าที'});
+    else return fail();
+    enemy.tactics.defense={};
+    completeRound();
+    if(w.caseMap?.battle!==b) return;
+    if(!readyPlayers(w,b.site).length) return finishCaseBattle(w);
+    b.round++;
+    b.turnEncounter.acted=[];
+    selectTurnPlayer(w,b);
+    return;
+  }
+  if(b.active!==actor || !readyPlayers(w,b.site).includes(actor)) return fail('ยังไม่ถึงตาของคุณ');
+  if(w.dmSession?.checks[actor] || w.dmSession?.rolls[actor]?.die===null) return fail('จัดการคำขอทอยที่ค้างก่อน');
+  const local=localWorld(w,b,enemy);
+  local.lastCheck=null;
+  let label:string, effect:string|undefined, target:string|undefined;
+  switch(a.choice) {
+    case 'strike': {
+      const before=enemy.state.ghostHealth;
+      strikeV2(local,actor,roll,false);
+      const damage=before-enemy.state.ghostHealth;
+      if(damage) effect='ผีเสียพลังชีวิต '+damage;
+      label='ขับไล่ผี';
+      break;
+    }
+    case 'pacify':
+      negotiateV2(local,actor,roll,false);
+      label='กล่อมให้ผีสงบ';
+      break;
+    case 'stabilize':
+      stabilize(local,actor,a.targetId,roll,false);
+      target=a.targetId as string;
+      label='พยุงเพื่อน';
+      if(w.characters![target].hp>0) effect='ฟื้นพลังชีวิต 1';
+      break;
+    case 'guard':
+      enemy.tactics.defense[actor]=b.round;
+      label='ตั้งรับ';
+      effect='ป้องกัน +2 ในตาผีรอบนี้';
+      break;
+    case 'pass':
+      label='ผ่านตา';
+      break;
+    case 'withdraw':
+      recordTurn(b,{actor,label:'พาทีมถอย'});
+      finishCaseBattle(w,true);
+      return;
+    default: return fail();
+  }
+  completeTurnPlayer(w,actor,label,local.lastCheck ?? undefined,target,effect);
+}
+
 function canReach(from:Cell,to:Cell,grid:GhostGrid,blocked:Cell[],budget:number,flooded:Cell[]) {
   const free=(p:Cell)=>p.x>=0 && p.y>=0 && p.x<grid.width && p.y<grid.height &&
     !blocked.some(q=>distance(p,q)===0);
@@ -278,6 +399,7 @@ export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unk
   const map=w.caseMap!, site=map.sites[actor] ?? 'A', b=map.battle;
   const inBattle=!!b && b.site===site;
   if(!w.characters?.[actor]?.hp || w.humanDmId===actor || w.case001?.report) return fail();
+  if(inBattle && b.turnEncounter) return fail('เลือกการกระทำจากหน้าเผชิญหน้า');
   if(a.type==='move') {
     if(inBattle && b.active!==actor) return fail('ยังไม่ถึงเทิร์น');
     const p=a.target as Cell|undefined, from=w.players[actor];
@@ -367,11 +489,18 @@ export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unk
   if(!activeEnemies(b).length) finishCaseBattle(w);
 }
 
-export function battleView(map:CaseMap,site:Site) {
+export function battleView(map:CaseMap,site:Site,w?:World,isDm=false) {
   const b=map.battle;
   if(!b || b.site!==site) return;
   const visible=activeEnemies(b).filter(e=>!e.tactics.dispersed && (!e.tactics.concealed || (e.tactics.scanned ?? 0)>=b.round));
+  const turn=b.turnEncounter;
   return {id:b.id,title:b.title ?? definitions[b.id].title,phase:b.phase,round:b.round,active:b.active,
+    turnEncounter:turn && w ? {
+      party:Object.keys(localPlayers(w,b.site)).filter(id=>!!w.characters?.[id]),
+      acted:turn.acted,history:turn.history,maxHp:turn.maxHp,
+      ready:!!w.case001?.guided?.presented.includes('C4'),
+      ...(isDm ? {attacks:npcAttacks(b).map(attack=>({id:attack.id,name:attack.name_th,resource:attack.damageResource,damage:attack.damage}))} : {}),
+    } : undefined,
     enemies:visible.map(e=>({id:e.id,name:enemies[e.kind].name,position:e.state.ghost,hp:e.state.ghostHealth,telegraph:e.tactics.telegraph,
       defense:e.tactics.profile?.combat && {PDEF:e.tactics.profile.combat.PDEF,MDEF:e.tactics.profile.combat.MDEF}})),
     danger:activeEnemies(b).flatMap(e=>e.tactics.telegraph?.cells ?? []),
@@ -383,6 +512,7 @@ export function battleView(map:CaseMap,site:Site) {
 export function resumeSessionBattle(w:World,roll:()=>number,completeRound:()=>void) {
  const b=w.caseMap?.battle;
  if(!b?.active || !w.inactivePlayers?.includes(b.active))return;
- if(b.initiative)nextCombatTurn(w,b,caseGridForSession(b.site),roll,b.initiative.indexOf(b.active),completeRound);
+ if(b.turnEncounter)selectTurnPlayer(w,b);
+ else if(b.initiative)nextCombatTurn(w,b,caseGridForSession(b.site),roll,b.initiative.indexOf(b.active),completeRound);
  else b.active=readyPlayers(w,b.site)[0] ?? null;
 }

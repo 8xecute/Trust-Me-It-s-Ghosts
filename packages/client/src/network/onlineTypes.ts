@@ -1,5 +1,6 @@
 import type { Background, CaseNotebookView, CaseSite, Character, DmEventPreview, DmLogEntry, DmRollCard, NarrativeBeat, StoryDiceInfo, NarrativeView } from '@baan/shared';
 import type { BattleView } from '../ui/combat/EncounterBoard';
+import type { TurnConclusionView } from '../ui/combat/TurnEncounter';
 
 export type GuidedJournal = {known_facts:string[];open_questions:string[];next_destination_rationale:string};
 export type GuidedScene = {id:string;cue:string;script:string;sent?:boolean;canOpen?:boolean};
@@ -17,7 +18,7 @@ export type Snapshot = {
   dmLog?:DmLogEntry[];
   pendingQuestionCount?:number;
   pendingCheck?:string;
-  caseMap?:{site:CaseSite;npcs?:import('@baan/shared').CaseNpcPlacement[];opportunity?:string;withdrawalBlocked?:boolean;battle?:BattleView};
+  caseMap?:{site:CaseSite;npcs?:import('@baan/shared').CaseNpcPlacement[];opportunity?:string;withdrawalBlocked?:boolean;battle?:BattleView;turnConclusion?:TurnConclusionView};
   players:Record<string,{x:number;y:number}>;
   turns:Record<string,{ap:number}>;
   characters?:Record<string,Character>;

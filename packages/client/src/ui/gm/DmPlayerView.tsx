@@ -8,6 +8,7 @@ import { CaseScene } from '../case/CaseScene';
 import { CharacterCreator } from '../characters/CharacterCreator';
 import { CastPortraits, visibleCast } from '../characters/CastPortraits';
 import { EncounterBoard, type BattleView } from '../combat/EncounterBoard';
+import { TurnEncounter } from '../combat/TurnEncounter';
 
 type Cell = {x:number;y:number};
 export type PlayerPreview = {
@@ -35,7 +36,9 @@ export function DmPlayerView({playerId,preview,action,connected}:{playerId:strin
     {story && <>
       <p>{story.location}{story.time && ' · '+story.time} · ช่วยแล้ว {story.rescued}/3 · หลักฐาน {story.evidence}/8 · ผนึก {story.seals}/3</p>
     </>}
-    {story && preview.caseMap && (preview.caseMap.battle ?
+    {story && preview.caseMap && (preview.caseMap.battle?.turnEncounter ?
+      <TurnEncounter site={preview.caseMap.site} battle={preview.caseMap.battle} characters={preview.characters ?? {}} self={playerId}/> :
+      preview.caseMap.battle ?
       <EncounterBoard site={preview.caseMap.site} battle={preview.caseMap.battle} players={preview.players} characters={preview.characters ?? {}} self={playerId} turns={preview.turns}/> :
       <CaseScene site={preview.caseMap.site} location={story.location} intro={story.intro} npcs={preview.caseMap.npcs} placeNpc={connected ? (npcId,position)=>action('dmPlaceNpc',{site:preview.caseMap!.site,npcId,position}) : undefined}/>)}
     {story && <CastPortraits roles={Object.values(preview.characters ?? {}).map(entry=>entry.profession)} speakers={[...(story.speakers ?? []),...visibleCast(story.actions)]}/>}
