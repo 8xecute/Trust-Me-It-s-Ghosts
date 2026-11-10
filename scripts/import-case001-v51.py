@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = Path(sys.argv[1]) if len(sys.argv)>1 else next((ROOT / '5.1').glob('CASE001_StoryScript_v5.1*'))
-VERSION = '5.2' if 'v5.2' in SOURCE.name else '5.1'
+VERSION = '5.3' if 'v5.3' in SOURCE.name else '5.2' if 'v5.2' in SOURCE.name else '5.1'
 DEST = ROOT / 'packages/server/scenarios/case-001'
 source = SOURCE.read_text(encoding='utf-8')
 old = json.loads((DEST / 'case-001.v4.3.GuidedScenes.json').read_text(encoding='utf-8'))
@@ -38,7 +38,7 @@ for act in ['A','B','C','D','E','F']:
         # paragraphs carry their original trigger in the private reader.
         opening = re.split(r'\n[ \t]*>[ \t]*\n|\n\s*\n',scene['dmReadAloud'])[0]
         scene['cue'] = '\n'.join(line.removeprefix('> ').removeprefix('>') for line in opening.splitlines()).strip()
-        if VERSION == '5.2':
+        if VERSION in ('5.2', '5.3'):
             # Separate quoted prose from scene instructions.
             opening = re.search(r'^> (?!\*\*\[)(.+)', scene['dmReadAloud'], re.M)
             scene['cue'] = opening[1] if opening else ''
@@ -52,7 +52,7 @@ for act in ['A','B','C','D','E','F']:
         if sid=='E5':scene['questions']=['เหตุใดวิชัยถึงมาที่เรือนนี้?', 'จะให้วิชัยวางอาวุธได้อย่างไร?', 'ทีมจะคุ้มกันผู้ที่อยู่ใกล้อย่างไร?']
         if sid=='H1':scene['questions']=['ประตูน้ำถูกเปิดเมื่อใด?', 'หลักฐานยืนยันบทบาทของใครบ้าง?', 'ข้อมูลอพยพตรงกับเวลาเปิดประตูน้ำหรือไม่?']
         if sid=='F2':scene['questions']=['เธอรู้จักทีมมาก่อนหรือไม่?', 'ยังถูกด้ายบังคับอยู่ไหม?', 'มีทางสื่อสารโดยไม่สู้หรือไม่?']
-        if VERSION == '5.2':
+        if VERSION in ('5.2', '5.3'):
             prompts = {
                 'A1': ['ใครหายไปบ้าง?', 'แต่ละคนถูกพบครั้งสุดท้ายที่ไหน?', 'ทำไมถึงเรียกบริษัทมาช่วย?'],
                 'A2': ['เมื่อกี้ทุกคนได้ยินคำว่าอะไร?', 'เสียงน้ำกับเสียงพูดมาจากวิทยุหรือรอบรถ?', 'ลองฟังหรือบันทึกเสียงอีกครั้งได้ไหม?'],
@@ -139,7 +139,7 @@ for act in ['A','B','C','D','E','F']:
     print(f'{act}: {len(scenes)} scenes imported')
 
 endings = {}
-for m in re.finditer(r'^## ENDING ([A-D]) — (.+)\n([\s\S]*?)(?=^## ENDING |^### Ending Resolver)',source,re.M):
+for m in re.finditer(r'^## ENDING ([A-D]) — (.+)\n([\s\S]*?)(?=^## ENDING |^### Ending Resolver|^### |^# |\Z)',source,re.M):
     endings[m[1]] = dict(title=m[2],script=m[3].strip(), paragraphs=re.findall(r'^> (.+)$',m[3],re.M))
 assert len(endings)==4
 (DEST/f'case-001.v{VERSION}.endings.json').write_text(json.dumps(endings,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
@@ -147,7 +147,7 @@ assert len(endings)==4
 (DEST/f'case-001.v{VERSION}.manifest.json').write_text(json.dumps(dict(version=VERSION,source=SOURCE.name,sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),sceneCount=31,checkCount=16),indent=2)+'\n',encoding='utf-8')
 
 
-if VERSION == '5.2':
+if VERSION in ('5.2', '5.3'):
     reference = json.loads((DEST / 'case-001.v4.3.DiceChecks.json').read_text(encoding='utf-8'))
     expected = {check['id']: check for check in reference['checks']}
     appendix = source.split('# ภาคผนวก ข', 1)[1].split('# ภาคผนวก ค', 1)[0]
@@ -158,7 +158,7 @@ if VERSION == '5.2':
         stat, dc = re.search(r'\*\*ค่าสถานะ:\*\* (.*?) · \*\*DC (\d+)\*\*', card).groups()
         assert '|'.join(re.findall(r'`([A-Z|]+)`', stat)) == old_check['stat'] and int(dc) == old_check['dc'], check_id
         check = {**old_check, 'title': title, 'sourceMarkdown': re.sub(r'\n---[\s\S]*\Z', '', card).strip()}
-        if check_id == 'C5_EVACUATION_RECORDS':
+        if check_id == 'C5_EVACUATION_RECORDS' and VERSION == '5.2':
             check['decision'] = 'รออนุมัติตำแหน่งเอกสารประกอบ B4 และ C5 (X02) การ์ดนี้ต้องใช้เอกสารสองแหล่งที่ทีมตรวจจริง'
         for name, label in [('trigger','เรียกทอยเมื่อ'), ('baseline','ข้อมูลที่ได้แน่ ๆ'), ('bypass','ไม่ต้องทอยเมื่อ'), ('fallback','ถ้าทอยพลาดแล้วไปต่ออย่างไร')]:
             check[name] = re.search(r'\*\*'+label+r':\*\* (.+)', card)[1]
@@ -175,4 +175,4 @@ if VERSION == '5.2':
             }
         checks.append(check)
     assert len(checks) == 16 and set(expected) == {check['id'] for check in checks}
-    (DEST / 'case-001.v5.2.checks.json').write_text(json.dumps(checks,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (DEST / f'case-001.v{VERSION}.checks.json').write_text(json.dumps(checks,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

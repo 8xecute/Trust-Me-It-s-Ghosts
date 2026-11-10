@@ -88,6 +88,16 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
        <p>{plain(line.text)}</p>
       </div>)}
      </details>}
+     {scene.clues && <details><summary>เบาะแสและจุดตรวจ</summary><p className="story-text">{scene.clues}</p></details>}
+     {scene.secret && <details><summary>ข้อมูลลับสำหรับ DM</summary><p className="story-text">{scene.secret}</p></details>}
+     {current && !!reader.qa?.length && <details>
+      <summary>คลังคำถามและคำตอบสำหรับ DM</summary>
+      <p>ค้นจากช่องค้นหาด้านข้าง รายการนี้ใช้ตรวจบริบทก่อนเลือกคำตอบ</p>
+      {reader.qa.filter(q=>[q.question,...q.aliases].some(label=>label.includes(query.trim()))).map(q=><details key={q.id}>
+       <summary>{q.question}</summary><p>{q.answer}</p><p>{q.dm_note}</p>
+       {!!q.requirements.length && <p>{q.requirements.join(' · ')}</p>}
+      </details>)}
+     </details>}
      {check && <details className="dm-reader-check">
       <summary>การทอยในฉาก · {check.title}</summary>
       {check.decision ? <p className="note">{check.decision}</p> : <>

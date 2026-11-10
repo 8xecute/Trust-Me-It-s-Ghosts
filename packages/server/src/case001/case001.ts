@@ -1,6 +1,6 @@
 import { caseCombatStats } from './caseCombatStats.js';
 import { guidedCellarRead, guidedEndingText } from './guidedCase.js';
-import { alive51, clock51, endingText51, resolveEnding51, wichaiHere51, sceneCue51, presentScene51, startBacklash52, delivered51, type State51 } from './storyV51.js';
+import { alive51, clock51, endingText51, resolveEnding51, safeHostages51, wichaiHere51, sceneCue51, presentScene51, startBacklash52, stopRitual51, delivered51, type State51 } from './storyV51.js';
 import { noTimer, storyContent } from './v51Content.js';
 import { characterAttribute } from '@baan/shared';
 import { caseNotebook } from './caseNotebook.js';
@@ -93,7 +93,7 @@ function finish(s:CaseState, ending:Ending,cause:'withdrawal'|'deadline'|'incapa
  const payable=base===null?null:base+rescueBonus+rootBonus-s.advance;
  const reputationText=reputation===null?'รอพิจารณา':String(reputation);
  const payText=payable===null?'รอพิจารณาค่าจ้างพื้นฐาน':payable+' บาท';
- const report:CaseReport={ending,title:s.v51 ? storyContent(s).endings[ending].title : isV4 ? v4.endings[ending].title : labels[ending],...(noTimer(s)?{}:{time:time(s.minute)}),haunt:s.haunt,rescued:s.evacuated.length,
+ const report:CaseReport={ending,title:s.v51 ? storyContent(s).endings[ending].title : isV4 ? v4.endings[ending].title : labels[ending],...(noTimer(s)?{}:{time:time(s.minute)}),haunt:s.haunt,rescued:s.v51?safeHostages51(s).length:s.evacuated.length,
   evidence:s.evidence.length,seals:s.seals.filter(Boolean).length,ghost:ghostLabels[s.ghost],
   accountability:accountable(s),advance:s.advance,base,rescueBonus,rootBonus,payable,reputation,
   decisions:[...s.decisions],text:''};
@@ -552,11 +552,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   if(s.v51.WICHAI_STATUS==='captured' && s.v51.pending?.kind==='crossfire')delete s.v51.pending;
   if((kind==='seal1' && s.seals[0] || kind==='seal2' && s.seals[1]) && s.v51.RITUAL_STATUS==='active')s.v51.RITUAL_STATUS='weakened';
   if(kind==='seal3' && s.seals[2]) {
-   s.v51.RITUAL_STATUS='stopped';
-   if(noTimer(s)) {
-    for(const name of Object.keys(s.v51.RITUAL_TETHER_INTACT) as (keyof State51['RITUAL_TETHER_INTACT'])[])s.v51.RITUAL_TETHER_INTACT[name]=false;
-    delete s.v51.backlash;
-   }
+   stopRitual51(s);
   }
   if(kind==='key' || kind==='open' && !noTimer(s))presentScene51(s,kind==='key'?'E4':'E2');
  }
@@ -578,7 +574,7 @@ export function caseView(s:CaseState, upgraded=false) {
  const actions=caseOptions(s,upgraded).map(option=>noTimer(s) && option.speaker ? {...option,label:'คุยกับ '+option.speaker} : option);
  const speakers=[...new Set(actions.flatMap(option=>option.speaker ? [option.speaker] : []))];
  return {notebook:caseNotebook(s),title:mission.title,location:locationName(s,s.site),storyVersion:s.storyVersion,diceVersion:s.diceVersion,
-  ...(noTimer(s)?{}:{time:time(s.minute)}),intro:sceneNarration(s),notice:s.notice,haunt:s.haunt,rescued:s.evacuated.length,escorting:s.escorts.length,
+  ...(noTimer(s)?{}:{time:time(s.minute)}),intro:sceneNarration(s),notice:s.notice,haunt:s.haunt,rescued:s.v51?safeHostages51(s).length:s.evacuated.length,escorting:s.escorts.length,
   evidence:s.evidence.length,seals:s.seals.filter(Boolean).length,progress:s.progress,containment:s.containment,
   ghost:s.v51?.KAEW_TEMP_DISPERSED?'ร่างปรากฏสลายชั่วคราว':s.ghost==='hidden'?null:ghostLabels[s.ghost],report:s.report,actions,speakers};
 }

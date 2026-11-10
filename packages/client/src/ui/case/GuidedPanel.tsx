@@ -15,7 +15,26 @@ export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isD
      {view.questionOptions?.length ? <div className="question-options">{view.questionOptions.map((q,i)=><button key={q.speaker+q.label+i} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:q.speaker+' · '+q.label})}>{q.speaker} · {q.label.replace(/^ถาม/,'')}</button>)}</div> : !view.prompts.length && <p>รอเปิดบทสนทนาหรือคุยกับ DM ถึงสิ่งที่สังเกตพบ</p>}
      {pendingQuestions>0 && <p role="status">ส่งแล้ว · รอ DM ตอบ {pendingQuestions} คำถาม</p>}
      {view.version!=='4.3' && view.prompts.length>0 && <section><h4>ชวนคุยในฉาก {view.scene}</h4><div className="question-options">{view.prompts.map(prompt=><button type="button" key={prompt} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:prompt})}>{prompt}</button>)}</div></section>}
+     {view.version==='5.3' && view.cue && <form onSubmit={event=>{
+      event.preventDefault();
+      const form=event.currentTarget;
+      const text=String(new FormData(form).get('question') ?? '').trim();
+      if(connected && site && pendingQuestions<5 && text)action('askGm',{site,text},()=>form.reset());
+     }}>
+      <label>พิมพ์คำถามถึง DM <input name="question" required maxLength={1000}/></label>
+      <button disabled={!connected || !site || pendingQuestions>=5}>ส่งคำถาม</button>
+     </form>}
    </div>}
+   {!isDm && !!view.disclosureOptions?.length && <form onSubmit={event=>{
+     event.preventDefault();
+     const form=new FormData(event.currentTarget);
+     send('select-disclosure',JSON.stringify({evidence:form.getAll('evidence'),recipient:form.get('recipient')}));
+   }}>
+     <h4>ส่งมอบหลักฐานในบทส่งท้าย</h4>
+     {view.disclosureOptions.map(item=><label key={item.id}><input type="checkbox" name="evidence" value={item.id} required={item.id==='E07'}/> {item.label}</label>)}
+     <label>ผู้รับหลักฐาน <input name="recipient" required maxLength={120}/></label>
+     <button disabled={!connected}>ส่งรายการให้ DM ตรวจ</button>
+   </form>}
    {view.canAnalyzeHistory && <button disabled={!connected} onClick={()=>send('history')}>อ่านบันทึกพร้อมข้อมูลประกอบ · ไม่ต้องทอย</button>}
    {!isDm && view.escorting>0 && <button disabled={!connected} onClick={()=>send('evacuate')}>พาผู้ที่กำลังช่วยไปจุดปลอดภัย · {view.escorting} คน</button>}
    {isDm && <>

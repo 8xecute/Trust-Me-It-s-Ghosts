@@ -20,7 +20,7 @@ try{
  async function evaluate(t,expression){const r=await cmd('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true},t);if(r.exceptionDetails)throw Error(r.exceptionDetails.text+': '+r.exceptionDetails.exception?.description);return r.result.value;}
  const text=t=>evaluate(t,'document.body.innerText');
  async function click(t,label,prefix=false){await cmd('Page.bringToFront',{},t);await wait(()=>evaluate(t,`(()=>{const b=[...document.querySelectorAll('button')].find(b=>!b.closest('[hidden]')&&!b.disabled&&b.textContent.trim()${prefix?'.startsWith('+JSON.stringify(label)+')':'==='+JSON.stringify(label)});if(!b)return false;for(let e=b.parentElement;e;e=e.parentElement)if(e.tagName==='DETAILS')e.open=true;if(!b.checkVisibility())return false;b.click();return true;})()`),'button '+label);await delay(180);}
- async function set(t,selector,value){await wait(()=>evaluate(t,`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)return false;Object.getOwnPropertyDescriptor(e instanceof HTMLSelectElement?HTMLSelectElement.prototype:HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(value)});e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`),selector);await delay(120);}
+ async function set(t,selector,value){await wait(()=>evaluate(t,`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)return false;Object.getOwnPropertyDescriptor(Object.getPrototypeOf(e),'value').set.call(e,${JSON.stringify(value)});e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`),selector);await delay(120);}
  const dm=await tab(),a=await tab(),b=await tab();const others=[];for(let i=2;i<count;i++)others.push(await tab());dump=async()=>JSON.stringify(await Promise.all([dm,a,b,...others].map(text)));for(const t of [dm,a,b,...others])await wait(async()=> (await text(t)).includes('เชื่อมต่อแล้ว'),'connection');
  await click(dm,'สร้างห้อง');const code=await wait(async()=> (await text(dm)).match(/ห้อง\s*([A-F0-9]{6})/)?.[1],'room code');
  await click(dm,'รับบทผู้ดำเนินเรื่อง');
@@ -29,6 +29,19 @@ try{
  }
  await set(a,'.player-names-form .character-name:nth-of-type(2) input','สายหมอก');await click(a,'บันทึกชื่อ');
  await click(dm,'เริ่มคดี 001');await wait(async()=> (await text(b)).includes('QA หนึ่ง (สายหมอก)'),'shared character names');
+ if(storyVersion==='5.3'){
+  await click(dm,'ส่งข้อความนี้ให้ผู้เล่น');
+  await set(a,'input[name="question"]','ใครหายไปบ้าง?');
+  await click(a,'ส่งคำถาม');
+  await click(dm,'คำถาม',true);
+  const reply='ดลหายก่อน ตามด้วยนิดและเพิ่มครับ';
+  await wait(()=>evaluate(dm,`document.querySelector('textarea[name="answer"]')?.value.includes('ดลหายก่อน')`),'v5.3 suggested reply');
+  await set(dm,'textarea[name="answer"]',reply);
+  await click(dm,'ยืนยันส่งคำตอบ');
+  for(const player of [a,b])await wait(async()=> (await text(player)).includes(reply),'edited reply broadcast');
+  console.log('PASS: v5.3 browser Q&A, editable reply, shared delivery.');
+  writeFileSync(path.join(out,'result.txt'),'PASS v5.3 browser Q&A\n');
+ }else{
  const queue=async()=>click(dm,'อ่าน / จ่ายบท',true);
  async function publish(){await queue();await click(dm,'ส่งข้อความนี้ให้ผู้เล่น');}
  async function scene(id){await click(dm,'ฉาก / คู่มือ');await wait(()=>evaluate(dm,`(()=>{const d=[...document.querySelectorAll('details')].find(d=>d.querySelector(':scope > summary')?.textContent.trim().startsWith(${JSON.stringify(id+' ·')}));if(!d)return false;for(let e=d;e;e=e.parentElement)if(e.tagName==='DETAILS')e.open=true;const b=[...d.querySelectorAll('button')].find(b=>b.textContent.includes('เปิดฉากนี้'));if(!b)return false;for(let e=b.parentElement;e;e=e.parentElement)if(e.tagName==='DETAILS')e.open=true;if(!b.checkVisibility())return false;b.click();return true;})()`),'scene '+id);await delay(180);await publish();}
@@ -65,5 +78,6 @@ try{
  await screenshot(a,'player-a-ending');await screenshot(b,'player-b-ending');
  console.log('PASS: '+count+' investigators + DM in isolated browser sessions, live NPC sync, pause, server restart/resume, A to Final, E2 rescue and delivered ending report. Artifacts: '+out);
  writeFileSync(path.join(out,'result.txt'),'PASS\nRoom '+code+'\n'+await text(a));
+ }
  }
 }catch(error){writeFileSync(path.join(out,'error.txt'),String(error)+'\n'+await dump());console.error(error);process.exitCode=1;}finally{writeFileSync(path.join(out,'process.log'),log.join(''));ws?.close();for(const p of children.reverse())p.kill();}

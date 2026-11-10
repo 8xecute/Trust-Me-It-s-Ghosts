@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type { World } from '../world.js';
 import { addFact, advanceStory, hasFact, v4 } from './caseStory.js';
-import { emitCaseBeat, tick, type Site } from './case001.js';
-import { caseOpportunity, travelCaseMap } from './caseBattle.js';
+import { emitCaseBeat, tick, type CaseState, type Site } from './case001.js';
+import { caseOpportunity, syncCaseBattle, travelCaseMap } from './caseBattle.js';
 import { caseGrid } from '@baan/shared';
 import { noTimer, sceneBrief52, storyContent } from './v51Content.js';
 import { alive51, command51, delivered51, dialogue51, historySources52, hostageNames, presentScene51, sceneCue51, speak51, wichaiHere51 } from './storyV51.js';
@@ -12,7 +12,7 @@ type Phase='A'|'B'|'C'|'D'|'E'|'FINAL'|'ENDING';
 type Scene={id:string;phase:Phase;entry_cue:string;entry_read?:string;suggested_questions:string[];optional_check_id:string|null;forward_bridge:string};
 type PhaseInfo={title:string;hints:string[];lead:string;missed:string[];exit:string};
 export type GuidedState={
- version:'4.3'|'5.1'|'5.2';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
+ version:'4.3'|'5.1'|'5.2'|'5.3';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
  hints:Partial<Record<Phase,number>>;questions:string[];
  journals:{phase:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string}[];
  transition?:{id:string;from:Phase;to:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string};
@@ -34,7 +34,7 @@ function authoredRead(section:string, label:string) {
 }
 export const guidedCellarRead=authoredRead(guidedScripts.E2,'DM อ่านเมื่อเปิด');
 if(!guidedCellarRead) throw Error('ไม่พบบทเปิดห้อง E2');
-export const newGuided=(version:'4.3'|'5.1'|'5.2'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
+export const newGuided=(version:'4.3'|'5.1'|'5.2'|'5.3'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
 export function guidedScript(s:import('./case001.js').CaseState,id:string) {
  return s.v51 ? id.startsWith('ENDING ') ? storyContent(s).endings[id.slice(-1)]?.script : storyContent(s).scenes[id]?.sourceMarkdown : guidedScripts[id];
 }
@@ -74,7 +74,7 @@ export function allowedGuidedScenes(w:World) {
    if(scene.id==='D4') return w.caseMap?.battle?.id==='EN02';
    if(scene.id==='F1'||scene.id==='F2') return v.RITUAL_STATUS!=='stopped' && (!noTimer(s) || !!v.coreApproached && (scene.id==='F1' || g.presented.includes('F1')));
    if(scene.id==='F3') return w.caseMap?.battle?.id==='EN04';
-   if(scene.id==='F4') return w.caseMap?.battle?.id==='EN04' && w.caseMap.battle.phase==='flood_memory';
+   if(scene.id==='F4') return g.version==='5.3'?!!v.memory53:w.caseMap?.battle?.id==='EN04' && w.caseMap.battle.phase==='flood_memory';
    if(scene.id==='F5') return v.RITUAL_STATUS==='stopped';
    if(scene.id==='F6') return s.minute>=240 && v.RITUAL_STATUS!=='stopped';
    return true;
@@ -126,6 +126,15 @@ export function observeGuidedScene(w:World,id:string) {
  // Recover facts through their authored new sources, without moving past NPCs.
  advanceStory(s);
 }
+function disclosureOptions53(s:CaseState) {
+ const g=s.guided,v=s.v51;
+ if(g?.version!=='5.3' || g.scene!=='F5' || !g.presented.includes('F5') || s.report ||
+    v?.RITUAL_STATUS!=='stopped' || v.pastDisclosed || !hasFact(s,'gate-truth') ||
+    !v.FLOOD_EVIDENCE_COLLECTED || !s.evidence.includes('E07'))return [];
+ return [{id:'E07',label:'บันทึกประตูน้ำและหลักฐานปี 2534'},
+  ...(v.LAND_EVIDENCE_COLLECTED && s.evidence.includes('E08')?[{id:'E08',label:'หลักฐานหนี้และซื้อขายที่ดิน'}]:[])];
+}
+
 export function guidedView(w:World) {
  const s=w.case001!,g=s.guided;
  if(!g) return;
@@ -136,7 +145,7 @@ export function guidedView(w:World) {
   previousLead:noTimer(s)?g.journals.at(-1)?.next_destination_rationale:undefined,
   cue:seen?noTimer(s) && w.dmSession ? w.dmSession.sent?.['guided-cue:'+g.scene]?.text : scene.entry_cue:undefined,prompts:seen?scene.suggested_questions:[],
   questionOptions:!noTimer(s) && seen && !w.caseMap?.battle && !s.report ? guidedDialogue(s).filter(line=>line.label.startsWith('ถาม') || s.v51 && 'field' in line && line.field==='responses' && line.label.endsWith('?')).map(line=>({label:line.label,speaker:line.speaker})) : [],
-  canAnalyzeHistory:!noTimer(s) && g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
+  disclosureOptions:disclosureOptions53(s),canAnalyzeHistory:!noTimer(s) && g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
 }
 export function sharedCaseStory(w:World) {
  const players=Object.keys(w.players).filter(id=>id!==w.humanDmId && !!w.characters?.[id] && !w.inactivePlayers?.includes(id));
@@ -186,9 +195,24 @@ export function guidedBackup(w:World) {
 export function guidedCommand(w:World,player:string,command:string,target?:string) {
  const s=w.case001!,g=s?.guided;
  if(!g || s.report) throw Error('ไม่มีบทนำทางที่กำลังดำเนินอยู่');
+ if(command==='select-disclosure') {
+  const options=disclosureOptions53(s);
+  if(player===w.humanDmId || !w.characters?.[player]?.hp || w.caseMap?.sites[player]!==s.site ||
+     w.caseMap?.battle || !options.length || typeof target!=='string' || target.length>500) throw Error('ยังเลือกหลักฐานส่งมอบไม่ได้');
+  let selection: {evidence?:unknown;recipient?:unknown}|undefined;
+  try {selection=JSON.parse(target);} catch {throw Error('ข้อมูลการส่งมอบไม่ถูกต้อง');}
+  const evidence=selection?.evidence, recipient=selection?.recipient;
+  if(!Array.isArray(evidence) || !evidence.includes('E07') ||
+     evidence.some(id=>!options.some(option=>option.id===id)) ||
+     typeof recipient!=='string' || !recipient.trim() || recipient.trim().length>120) throw Error('เลือกหลักฐานปี 2534 และระบุผู้รับ');
+  s.v51!.disclosure53={evidence:[...new Set(evidence)],recipient:recipient.trim()};
+  return;
+ }
  if(command.startsWith('v51:')) {
   if(!s.v51 || player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่องของบทนี้');
   command51(w,command.slice(4));
+  if(command==='v51:ritual-release')syncCaseBattle(w);
+  if(command.startsWith('v51:flood-memory:'))observeGuidedScene(w,'F4');
   if(noTimer(s) && command==='v51:wichai-risk')observeGuidedScene(w,'F6');
   return;
  }
@@ -198,6 +222,7 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
    w.caseMap?.battle || !s.escorts.length) throw Error('ยังพาผู้สูญหายไปจุดปลอดภัยไม่ได้');
   if(s.v51?.pending?.kind==='crossfire') throw Error('ต้องช่วยตัวประกันจากมีดตามกติกาก่อน');
   const names=[...s.escorts].filter(n=>!s.v51 || s.v51.HOSTAGE_FATE[n as 'ดล'|'นิด'|'เพิ่ม']==='alive');
+  if(s.v51?.protectedHostages53)s.v51.protectedHostages53=s.v51.protectedHostages53.filter(name=>!names.includes(name));
   s.evacuated.push(...names.filter(name=>!s.evacuated.includes(name)));
   s.escorts=[];
   tick(s,travelMinutes);

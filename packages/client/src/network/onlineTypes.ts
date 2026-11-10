@@ -4,7 +4,7 @@ import type { TurnConclusionView } from '../ui/combat/TurnEncounter';
 
 export type GuidedJournal = {known_facts:string[];open_questions:string[];next_destination_rationale:string};
 export type GuidedScene = {id:string;cue:string;script:string;sent?:boolean;canOpen?:boolean};
-export type GuidedView = {version:string;phase:string;scene:string;title?:string;previousLead?:string;canAnalyzeHistory:boolean;escorting:number;cue?:string;prompts:string[];questionOptions?:{label:string;speaker:string}[];hint?:string;journals:(GuidedJournal & {phase:string})[];transition?:GuidedJournal & {id:string;from:string;to:string}};
+export type GuidedView = {disclosureOptions?:{id:string;label:string}[];version:string;phase:string;scene:string;title?:string;previousLead?:string;canAnalyzeHistory:boolean;escorting:number;cue?:string;prompts:string[];questionOptions?:{label:string;speaker:string}[];hint?:string;journals:(GuidedJournal & {phase:string})[];transition?:GuidedJournal & {id:string;from:string;to:string}};
 
 export type Snapshot = {
   playerNames?:Record<string,{playerName?:string;characterName?:string}>;
@@ -40,6 +40,7 @@ export type GmChapter = {
 };
 
 type ReaderScene = {
+ secret?:string;clues?:string;
  id:string;title:string;phase:string;brief:[string,string];
  dialogue:{id:string;speaker:string;label:string;text:string}[];
 };
@@ -50,7 +51,7 @@ type ReaderCheck = {
 
 export type CaseDmPanel = {
   storyProgress?:{observed:string[];presented:string[]};
-  storyReader?:{scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
+  storyReader?:{qa?:{id:string;question:string;aliases:string[];answer:string;speaker:string;kind:string;dm_note:string;requirements:string[];guard_ids:string[]}[];scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
   caseMode:true;
   sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
   guide?:GmChapter[];
@@ -65,7 +66,7 @@ export type CaseDmPanel = {
   speakers?:string[];
   travel:{id:string;label:string}[];
   wichai?:{baseHPFor2:number;PDEF:number;MDEF:number;ATK:number;INIT:number;MOVE:number};
-  questions?:{id:string;playerId:string;label:string;open:boolean;suggestions?:{id:string;speaker:string;label:string;answer:string;confirmContext:boolean}[]}[];
+  questions?:{id:string;playerId:string;label:string;open:boolean;suggestions?:{id:string;speaker:string;label:string;answer:string;confirmContext:boolean;qa?:boolean}[]}[];
   investigators:{id:string;site:string;script:string;secret:string;check?:{id:string;label:string;stat?:keyof import('@baan/shared').LiteStats;dice?:StoryDiceInfo};diceRequest?:DmRollCard;narrative?:NarrativeView;events?:DmEventPreview[];choices:{id:string;label:string;speaker?:string;answer?:string}[]}[]};
 export type PublicRoom = {code:string;occupied:number;capacity:number};
 export type Room = {code:string; version?:2; players:{id:string;ready:boolean}[]};

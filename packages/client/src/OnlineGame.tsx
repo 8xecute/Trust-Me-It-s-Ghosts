@@ -294,9 +294,9 @@ export function OnlineGame() {
             characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} turns={world.turns} action={connected ? action : undefined}/> :
             <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro} npcs={world.caseMap.npcs}/>}
           {!battle && <CastPortraits roles={cast} speakers={[...(world.case001.speakers ?? []),...visibleCast(caseActions)]}/>}
-          {!turnEncounter && (world.guided?.version!=='5.2' || world.lastCheck) && <section className="narration-card case-response" aria-label="เหตุการณ์ล่าสุด" aria-live="polite">
-            <h3>{world.guided?.version==='5.2'?'ผลการทอย':'เหตุการณ์ล่าสุด'} <button type="button" onClick={()=>setCaseTab('story')}>อ่านบทเต็ม</button></h3>
-            {world.guided?.version!=='5.2' && <p className="story-text">{world.case001.notice}</p>}
+          {!turnEncounter && (!['5.2','5.3'].includes(world.guided?.version ?? '') || world.lastCheck) && <section className="narration-card case-response" aria-label="เหตุการณ์ล่าสุด" aria-live="polite">
+            <h3>{['5.2','5.3'].includes(world.guided?.version ?? '')?'ผลการทอย':'เหตุการณ์ล่าสุด'} <button type="button" onClick={()=>setCaseTab('story')}>อ่านบทเต็ม</button></h3>
+            {!['5.2','5.3'].includes(world.guided?.version ?? '') && <p className="story-text">{world.case001.notice}</p>}
             {world.lastCheck && !(!battle && world.latestRoll?.result && world.latestRoll.playerId===world.lastCheck.playerId && world.latestRoll.die===world.lastCheck.die && world.latestRoll.result.total===world.lastCheck.total && world.latestRoll.result.outcome===world.lastCheck.outcome) && <p className="roll-result" data-outcome={world.lastCheck.outcome}><strong>D20 {world.lastCheck.die} · รวม {world.lastCheck.total}</strong> · {
               world.lastCheck.outcome==='success'?'สำเร็จ':world.lastCheck.outcome==='partial'?'สำเร็จบางส่วน':'ไม่สำเร็จ'
             }</p>}
@@ -304,11 +304,11 @@ export function OnlineGame() {
         </>}
         </div><aside className="case-actions-pane" hidden={!(['scene','story','journal'] as string[]).includes(caseTab) || (turnEncounter && caseTab==='scene')} aria-label="คำสั่งภารกิจ">
 
-        {world.guided?.version==='5.2' && (caseTab==='scene' || caseTab==='story') && <CaseStoryThread
-          view={world.guided} beats={deliveredBeats} connected={connected && !world.paused && !!character?.hp && !world.inactivePlayers?.includes(self.current)}
+        {['5.2','5.3'].includes(world.guided?.version ?? '') && (caseTab==='scene' || caseTab==='story') && <CaseStoryThread
+          view={world.guided!} beats={deliveredBeats} connected={connected && !world.paused && !!character?.hp && !world.inactivePlayers?.includes(self.current)}
           showHistory={caseTab==='story'} onHistory={caseTab==='story'?undefined:()=>setCaseTab('story')}
           onConfirm={id=>action('guided',{command:'confirm',target:id})}/>}
-        <div hidden={caseTab!=='story'}>        {world.guided?.version==='5.2'?null:world.narrative?.current ? <NarrativeJournal view={world.narrative} onNext={world.manualDm ? undefined : sequence=>action('narrativeNext',{sequence})}/> : <section className="narration-card" aria-label="เหตุการณ์ล่าสุด">
+        <div hidden={caseTab!=='story'}>        {['5.2','5.3'].includes(world.guided?.version ?? '')?null:world.narrative?.current ? <NarrativeJournal view={world.narrative} onNext={world.manualDm ? undefined : sequence=>action('narrativeNext',{sequence})}/> : <section className="narration-card" aria-label="เหตุการณ์ล่าสุด">
           <h3>บทเล่า</h3><p className="note">อ่านบทที่ทีมได้รับแล้วในเหตุการณ์ล่าสุด หรือย้อนอ่านจากสมุดคดี</p>
         </section>}
         <details className="mission-progress"><summary>ความคืบหน้าคดี</summary>
@@ -324,11 +324,11 @@ export function OnlineGame() {
 </div>
         <div hidden={caseTab!=='journal'}>
           <CaseNotebook view={world.case001.notebook}/>
-          {world.guided && world.guided.version!=='5.2' && <GuidedPanel view={world.guided} showStory={world.guided.version!=='5.2'} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
+          {world.guided && !['5.2','5.3'].includes(world.guided.version) && <GuidedPanel view={world.guided} showStory={!['5.2','5.3'].includes(world.guided.version)} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
           {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName}/>}
         </div>
         <div hidden={caseTab!=='scene'} className="case-action-workbench" id="case-play-controls" tabIndex={-1}>
-        {world.guided && <GuidedPanel view={world.guided} showStory={world.guided.version!=='5.2'} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
+        {world.guided && <GuidedPanel view={world.guided} showStory={!['5.2','5.3'].includes(world.guided.version)} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
         <h3 className="pane-heading">ลงมือทำ</h3>
         {!caseActions.length && !battle && !world.case001.report && <p className="note">รอบทเปิดหรือการตอบจาก DM ก่อนเลือกการกระทำ</p>}
         {world.manualDm && !world.humanDmId && <button disabled={!connected || !!battle}

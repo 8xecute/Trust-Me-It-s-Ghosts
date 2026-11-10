@@ -9,7 +9,7 @@ export type StoryCheck={
  trigger:string;baseline:string;bypass:string;fallback:string;sourceMarkdown?:string;decision?:string;
  full:StoryBranch;partial:StoryBranch;failure:StoryBranch;
 };
-function loadStory(version:'5.1'|'5.2') {
+function loadStory(version:'5.1'|'5.2'|'5.3') {
  const path=(suffix:string)=>new URL('../../scenarios/case-001/case-001.v'+version+'.'+suffix,import.meta.url);
  const read=(suffix:string)=>JSON.parse(readFileSync(path(suffix),'utf8'));
  const scenes=Object.assign({},...['A','B','C','D','E','F'].map(act=>read(act+'.json'))) as Record<string,V51Scene>;
@@ -19,14 +19,16 @@ function loadStory(version:'5.1'|'5.2') {
   Object.values(scenes).some(scene=>scene.dialogue.some(line=>!script.includes(line.text)))) {
   throw Error('ต้นฉบับ CASE 001 v'+version+' ไม่ครบ');
  }
- return {scenes,endings,script,checks:version==='5.2'?read('checks.json') as StoryCheck[]:[]};
+ return {scenes,endings,script,checks:version!=='5.1'?read('checks.json') as StoryCheck[]:[]};
 }
 const legacy=loadStory('5.1');
 export const {scenes:scenes51,endings:endings51,script:script51}=legacy;
 const current=loadStory('5.2');
+const latest=loadStory('5.3');
 export const checks52=current.checks;
-export const noTimer=(state:{guided?:{version:string}})=>state.guided?.version==='5.2';
-export const storyContent=(state:{guided?:{version:string}})=>noTimer(state)?current:legacy;
+export const checks53=latest.checks;
+export const noTimer=(state:{guided?:{version:string}})=>['5.2','5.3'].includes(state.guided?.version ?? '');
+export const storyContent=(state:{guided?:{version:string}})=>state.guided?.version==='5.3'?latest:noTimer(state)?current:legacy;
 
 const briefs52=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.v5.2.briefs.json',import.meta.url),'utf8')) as Record<string,[string,string]>;
 if(Object.keys(briefs52).length!==31 || Object.keys(current.scenes).some(id=>!briefs52[id]))throw Error('สรุปฉาก v5.2 ไม่ครบ');
@@ -41,17 +43,19 @@ const endingBriefs:Record<string,string>={
  D:'ทีมต้องถอนตัวขณะพิธียังทำงาน หรือมีผู้สืบสวนเสียชีวิต',
 };
 
-export const reader52={
- scenes:Object.values(current.scenes).map(({id,title,phase,dialogue})=>({
-  id,title,phase,brief:briefs52[id],
+function makeReader(content:typeof current) {return {
+ scenes:Object.values(content.scenes).map(({id,title,phase,dialogue})=>({
+  id,title,phase,brief:content===latest?[content.scenes[id].purpose,content.scenes[id].nextSceneHandoff]:briefs52[id], secret:content===latest?content.scenes[id].dmSecret:undefined, clues:content===latest?content.scenes[id].clues:undefined,
   dialogue:dialogue.map(({id,speaker,label,text})=>({id,speaker,label:readerLabel(label),text})),
  })),
- endings:Object.fromEntries(Object.entries(current.endings).map(([id,{title,paragraphs}])=>[id,{title:title.split(' / ')[0],brief:endingBriefs[id],paragraphs}])),
- checks:current.checks.map(({scene_id,title,stat,dc,partial_margin,decision,full,partial,failure})=>({
+ endings:Object.fromEntries(Object.entries(content.endings).map(([id,{title,paragraphs}])=>[id,{title:title.split(' / ')[0],brief:endingBriefs[id],paragraphs}])),
+ checks:content.checks.map(({scene_id,title,stat,dc,partial_margin,decision,full,partial,failure})=>({
   scene_id,title,stat,dc,partial_margin,decision:decision?'การทอยนี้ยังไม่เปิดใช้ ทีมคุยกับยายและหาเบาะแสต่อได้':'',
   full:readerLabel(full.dm),partial:readerLabel(partial.dm),failure:readerLabel(failure.dm),
  })),
-};
+};}
+export const reader52=makeReader(current);
+export const reader53=makeReader(latest);
 
 export function readerLabel(text:string) {
  return text.replace(/^\[?v\d+(?:\.\d+)+(?:\s*·)?\s*/i,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b(?:\s*=\s*[a-z0-9_|]+)?/g,'').replace(/^เสนอเพิ่ม\s*·\s*/, '').replace(/[\[\]\x60*]/g,'').trim();

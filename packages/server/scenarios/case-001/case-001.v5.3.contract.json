@@ -1,0 +1,530 @@
+{
+  "caseId": "CASE001",
+  "storyVersion": "5.3",
+  "rulesMode": "No Timer / Event-Driven",
+  "status": "Author-approved continuity choices; implementation contract pending integration with repo and actual Core/Combat",
+  "sourceFiles": [
+    "CASE001_StoryScript_v5.3_Continuity_State_No_Timer.md",
+    "CASE001_v5.3_All_Scenes_QA_EDITABLE.json"
+  ],
+  "approvedChoices": {
+    "1": "C",
+    "2": "A",
+    "3": "C",
+    "4": "A",
+    "5": "C",
+    "6": "C",
+    "7": "C",
+    "8": "C",
+    "9": "C",
+    "10": "C"
+  },
+  "guardDefinitions": {
+    "B4_FILE_OPENED": {
+      "all": [
+        {
+          "field": "B4_FILE_OPENED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ผู้เล่นขอเปิดแฟ้มเก่าและได้ตรวจเอกสารจริง"
+    },
+    "D3_KAEW_PRESENT": {
+      "all": [
+        {
+          "field": "SCENE_ACTIVE",
+          "op": "eq",
+          "value": "D3"
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "D3 เกิดจริงและสื่อสารได้"
+    },
+    "E4_BOOK_READ": {
+      "all": [
+        {
+          "field": "E4_BOOK_READ",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ทีมเปิดอ่านตำราแล้วจริง; ไม่เท่ากับ prepared/stopped"
+    },
+    "E5_WICHAI_PRESENT": {
+      "all": [
+        {
+          "field": "WICHAI_STATUS",
+          "op": "eq",
+          "value": "free"
+        },
+        {
+          "field": "WICHAI_LOCATION",
+          "op": "eq",
+          "value": "abandoned_house"
+        },
+        {
+          "field": "WICHAI_ARRIVAL_EVENT",
+          "op": "in",
+          "value": [
+            "called_and_arrived",
+            "followed_and_arrived"
+          ]
+        },
+        {
+          "field": "E5_TRIGGERED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ยืนยันการเดินทางถึงจริง; free อย่างเดียวไม่พอ"
+    },
+    "F1_KAEW_CAN_SPEAK": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "เสียงผ่านพิธีได้ ไม่ต้องมีร่าง"
+    },
+    "F4_OCCURRED": {
+      "all": [
+        {
+          "field": "F4_TRIGGERED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "F4_TRIGGER_REASON",
+          "op": "in",
+          "value": [
+            "investigate_memory",
+            "ritual_memory_reaction"
+          ]
+        }
+      ],
+      "explanation": "ภาพความทรงจำเกิดจากการลงมือที่มีจริง ไม่เกิดเพราะเวลา"
+    },
+    "F5_EXECUTION_REACHABLE": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "eq",
+          "value": "stopped"
+        },
+        {
+          "field": "WICHAI_ALIVE",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "WICHAI_IN_REACH",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "KAEW_PHYSICAL_REACH",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "F5_EXECUTION_ATTEMPT_CONFIRMED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ต้องมีทางเข้าถึงจริงและเหตุ Execution Attempt; ไม่มีการฆ่าจากเสียงลอย"
+    },
+    "F5_KAEW_CAN_SPEAK": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "eq",
+          "value": "stopped"
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "บท F5 ใช้ทั้งร่างกับเสียง/เงาได้"
+    },
+    "F6_OCCURRED": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "WRONG_MANIPULATION_EXECUTED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_WARNING_GIVEN",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "F6_TRIGGERED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ผิดวิธีกับกำไล/ด้ายจริง หลังเตือนและเปิดโอกาสหยุด"
+    },
+    "FLOOD_PAIR_AVAILABLE": {
+      "all": [
+        {
+          "field": "FLOOD_GATE_OPERATION_RECORD_READ",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "FLOOD_SHELTER_ARRIVAL_LOG_READ",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "สองชนิดไม่ใช่เอกสารอพยพสองฉบับ"
+    },
+    "KAEW_D_MET_AND_COMMUNICATES": {
+      "all": [
+        {
+          "field": "KAEW_D_RESULT",
+          "op": "in",
+          "value": [
+            "talked",
+            "won",
+            "fled",
+            "lost"
+          ]
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "เคยพบจริง และขณะนี้พูดได้"
+    },
+    "KAEW_WON_D4": {
+      "all": [
+        {
+          "field": "KAEW_D_RESULT",
+          "op": "eq",
+          "value": "won"
+        },
+        {
+          "field": "KAEW_TEMP_DISPERSED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ชนะในสวนทำให้ร่างสลาย ไม่ลบพิธี"
+    },
+    "RITUAL_STOPPED": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "eq",
+          "value": "stopped"
+        }
+      ],
+      "explanation": "พิธีชุดเดียวหยุดแล้ว"
+    }
+  },
+  "initialExtensions": {
+    "WICHAI_LOCATION": "at_headman_house",
+    "WICHAI_ARRIVAL_EVENT": null,
+    "E5_TRIGGERED": false,
+    "KAEW_MANIFESTATION": "unseen",
+    "KAEW_RETURN_EVENT": null,
+    "RITUAL_ACTION_STAGE": "not_started",
+    "RITUAL_WARNING_GIVEN": false,
+    "F6_TRIGGERED": false,
+    "F4_TRIGGERED": false,
+    "F4_TRIGGER_REASON": null,
+    "FLOOD_FACT_LEVEL": "not_compared",
+    "FLOOD_PEOPLE_REMAINED_PROVEN": false,
+    "FLOOD_DISCLOSURE_STATUS": "not_done",
+    "FLOOD_TRUTH_DISCLOSED": false,
+    "HOSTAGE_POSITION": {
+      "ดล": "underfloor_room",
+      "นิด": "underfloor_room",
+      "เพิ่ม": "underfloor_room"
+    },
+    "HOSTAGE_PROTECTED": {
+      "ดล": false,
+      "นิด": false,
+      "เพิ่ม": false
+    }
+  },
+  "derivedFieldsNotFreeState": {
+    "HOSTAGES_SAFE": "count of living hostages protected from actual attacker/hazard at their location; inside or outside house possible; independent of tether",
+    "KAEW_COMMUNICATION_AVAILABLE": "true only when actual live voice/shadow/embodied manifestation or reachable communication is established",
+    "KAEW_PHYSICAL_REACH": "requires embodiment or actual reachable physical force per existing Core/Combat; voice/shadow alone is insufficient",
+    "WICHAI_ALIVE": "WICHAI_STATUS != dead AND death was not otherwise established",
+    "WICHAI_IN_REACH": "based on live NPC positions and existing action ranges",
+    "FLOOD_GATE_OPERATION_RECORD_READ": "player actually read/obtained gate operation document in B4 or E4",
+    "FLOOD_SHELTER_ARRIVAL_LOG_READ": "player actually read grandma personal prayer-book arrival log",
+    "WRONG_MANIPULATION_EXECUTED": "actual incorrect physical cut/yank/tamper of bracelet/binding threads after a telegraph; threats and harmless inspection are false",
+    "F5_EXECUTION_ATTEMPT_CONFIRMED": "existing F5 conditions plus explicitly DM/engine-resolved attempt; not automatically true on stop ritual"
+  },
+  "events": [
+    {
+      "id": "wic_arrived_called",
+      "scene": "E5",
+      "requires": [
+        "WICHAI_STATUS=free",
+        "actual contact or appointment occurred",
+        "confirmed travel and arrival at abandoned_house"
+      ],
+      "writes": {
+        "WICHAI_ARRIVAL_EVENT": "called_and_arrived",
+        "WICHAI_LOCATION": "abandoned_house",
+        "E5_TRIGGERED": true
+      },
+      "never": [
+        "teleport because called",
+        "clock trigger"
+      ]
+    },
+    {
+      "id": "wic_arrived_following",
+      "scene": "E5",
+      "requires": [
+        "WICHAI_STATUS=free",
+        "following was visibly seeded in actual play",
+        "confirmed arrival"
+      ],
+      "writes": {
+        "WICHAI_ARRIVAL_EVENT": "followed_and_arrived",
+        "WICHAI_LOCATION": "abandoned_house",
+        "E5_TRIGGERED": true
+      },
+      "never": [
+        "surprise spawn without trace"
+      ]
+    },
+    {
+      "id": "e5_skipped",
+      "scene": "E6",
+      "requires": [
+        "no confirmed arrival or WICHAI_STATUS != free"
+      ],
+      "writes": {
+        "E5_TRIGGERED": false
+      },
+      "never": [
+        "free alone implies presence"
+      ]
+    },
+    {
+      "id": "kaew_disperse",
+      "scene": "D4",
+      "requires": [
+        "Combat resolved win against manifestation"
+      ],
+      "writes": {
+        "KAEW_D_RESULT": "won",
+        "KAEW_TEMP_DISPERSED": true,
+        "KAEW_MANIFESTATION": "dispersed"
+      },
+      "never": [
+        "ritual stopped from D4"
+      ]
+    },
+    {
+      "id": "bracelet_reacted",
+      "scene": "E4/F1/F2",
+      "requires": [
+        "D4 won",
+        "living ritual still active/weakened",
+        "player actually touches/works with bracelet"
+      ],
+      "writes": {
+        "KAEW_MANIFESTATION": "voice_shadow",
+        "KAEW_RETURN_EVENT": "bracelet_reacted"
+      },
+      "never": [
+        "full body automatically",
+        "new Combat HP"
+      ]
+    },
+    {
+      "id": "ritual_stopped",
+      "scene": "E4/F1/F3/F5",
+      "requires": [
+        "controlled release of bracelet binding actually resolved with approved Core/Combat or DM rulings per existing rules"
+      ],
+      "writes": {
+        "RITUAL_STATUS": "stopped",
+        "RITUAL_TETHER_INTACT": {
+          "ดล": false,
+          "นิด": false,
+          "เพิ่ม": false
+        }
+      },
+      "never": [
+        "E4 dice full alone stops ritual"
+      ]
+    },
+    {
+      "id": "f4_memory",
+      "scene": "F4",
+      "requires": [
+        "actual investigation of spirit memory OR memory reaction during real ritual action"
+      ],
+      "writes": {
+        "F4_TRIGGERED": true
+      },
+      "never": [
+        "compulsory boss phase",
+        "clock trigger"
+      ]
+    },
+    {
+      "id": "f6_wrong_manipulation",
+      "scene": "F6",
+      "requires": [
+        "active/weakened",
+        "actor physically reaches bracelet/threads",
+        "incorrect manip action",
+        "explicit warning and chance to stop/Guard/Help",
+        "action continues despite warning"
+      ],
+      "writes": {
+        "F6_TRIGGERED": true
+      },
+      "never": [
+        "threat only",
+        "harmless inspect",
+        "automatic damage/death"
+      ]
+    },
+    {
+      "id": "hostage_secure",
+      "scene": "E2/E6",
+      "requires": [
+        "hostage alive",
+        "actual safe position",
+        "attacker cannot reach or protective guard successfully prevents access"
+      ],
+      "writes": {
+        "HOSTAGE_PROTECTED": "update by hostage",
+        "HOSTAGES_SAFE": "recompute"
+      },
+      "never": [
+        "opening cell door means safe",
+        "moving to exposed stair foot means safe"
+      ]
+    },
+    {
+      "id": "flood_compare",
+      "scene": "C5/H1",
+      "requires": [
+        "actual gate operation record",
+        "actual shelter arrival/prayer-book log",
+        "check/result as original Dice Card"
+      ],
+      "writes": {
+        "FLOOD_FACT_LEVEL": "opened_before_evacuation_confirmed"
+      },
+      "never": [
+        "absence from shelter log proves currently in garden"
+      ]
+    },
+    {
+      "id": "flood_people_proven",
+      "scene": "H1",
+      "requires": [
+        "additional direct eyewitness or positional records genuinely found and checked"
+      ],
+      "writes": {
+        "FLOOD_PEOPLE_REMAINED_PROVEN": true
+      },
+      "never": [
+        "use the missing names alone"
+      ]
+    },
+    {
+      "id": "public_disclosure",
+      "scene": "EPILOGUE",
+      "requires": [
+        "team chooses specific evidence",
+        "specific recipients",
+        "handoff or disclosure actually resolves"
+      ],
+      "writes": {
+        "FLOOD_DISCLOSURE_STATUS": "completed",
+        "FLOOD_TRUTH_DISCLOSED": true
+      },
+      "never": [
+        "promise or plan alone",
+        "evidence collected alone"
+      ]
+    }
+  ],
+  "ritualReleaseContract": {
+    "steps": [
+      "inspect bracelet and thread network",
+      "protect hostages and participants; mitigate line pull or detach safe strands where feasible",
+      "release controlled binding at bracelet without random yanking",
+      "resolve action with existing Core/Combat; verify no active binding"
+    ],
+    "permittedAlternatives": "player approaches that achieve same physical/ritual goals using established tools/abilities are eligible; DM adjudicates with existing rules",
+    "successCondition": "actual action resolved and single ritual binding stops; then set all residual tethers false",
+    "failForward": "unknown/basic plan can inspect more, protect, retry meaningfully different approach; no invented DC",
+    "noInventedStats": true
+  },
+  "endingAAdditionalGuards": [
+    "RITUAL_STATUS=stopped",
+    "HOSTAGES_SAFE=3",
+    "HOSTAGES_DEAD=0",
+    "PLAYER_DEATHS=0",
+    "WICHAI_STATUS != dead",
+    "human case evidence adequate",
+    "KAEW_FINAL in calm/departed",
+    "FLOOD_TRUTH_DISCLOSED=true after epilogue actual disclosure"
+  ],
+  "noTimer": {
+    "noClock": true,
+    "bannedActiveMechanics": [
+      "TIME_MINUTES",
+      "RITUAL_0300_PRESTATE",
+      "RITUAL_0300_FULL_POWER",
+      "ritual_toll",
+      "entrenched_from_time"
+    ],
+    "historicalTimestampProofStillValid": true
+  },
+  "forbiddenActions": [
+    "auto-send QA",
+    "expose DM secrets",
+    "spawn Wichai to force E5",
+    "auto restore Kaew physical body",
+    "kill ritual hostages via timer or F6",
+    "invent new Dice Check DC/AP/HP",
+    "send action guidance as NPC dialogue"
+  ]
+}

@@ -27,7 +27,7 @@ function DmQuestions({panel,available,action,playerName,speakers}:{
  const others=(panel.investigators.find(item=>item.id===card.playerId)?.choices ?? [])
   .filter(choice=>choice.answer && !suggested.some(item=>item.id===choice.id));
  const choices=[...suggested,...others];
- const choice=choices.find(item=>selection?.cardId===card.id && item.id===selection.choiceId) ?? choices[0];
+ const choice=choices.find(item=>selection?.cardId===card.id && item.id===selection.choiceId) ?? suggested[0];
  return <div className="dm-question-layout">
   <section className="dm-quick-card">
    <h3>คำถามจากทีม <small>{cards.length}</small></h3>
@@ -41,6 +41,11 @@ function DmQuestions({panel,available,action,playerName,speakers}:{
   </section>
   {card.open && <section className="dm-quick-card" key={card.id}>
    <h3>ตอบให้ทีม</h3>
+   {!choice && <p className="note">ไม่พบคำตอบแนะนำที่ตรงคำถาม เขียนคำตอบเองหรือเลือกบทในฉาก</p>}
+   {!choice && others.length>0 && <label>เลือกบทในฉาก <select value="" onChange={event=>setSelection({cardId:card.id,choiceId:event.target.value})}>
+    <option value="">เลือกด้วยตัวเอง</option>
+    {others.map(item=><option key={item.id} value={item.id}>{item.speaker} · {item.label}</option>)}
+   </select></label>}
    {choice && <>
     {choices.length>1 && <label>เลือกบทตอบ <select value={choice.id} onChange={event=>setSelection({cardId:card.id,choiceId:event.target.value})}>
      {!!suggested.length && <optgroup label="คำตอบที่เกี่ยวข้อง">{suggested.map(item=><option key={item.id} value={item.id}>{item.speaker} · {item.label}</option>)}</optgroup>}
@@ -48,7 +53,14 @@ function DmQuestions({panel,available,action,playerName,speakers}:{
     </select></label>}
     <p className="story-text">{choice.answer}</p>
     {'confirmContext' in choice && choice.confirmContext && <p className="note">ใช้เมื่อสถานการณ์ตรงกับบทตอบนี้</p>}
-    <button className="primary" type="button" disabled={!available} onClick={()=>action('dmAnswer',{cardId:card.id,actionId:choice.id,confirmContext:'confirmContext' in choice && choice.confirmContext})}>ส่งบทตอบที่เลือก</button>
+    {'qa' in choice && choice.qa ? <form key={choice.id} onSubmit={event=>{
+     event.preventDefault();
+     const data=new FormData(event.currentTarget);
+     action('dmReply',{cardId:card.id,qaId:choice.id,text:data.get('answer')});
+    }}>
+     <label>ตรวจหรือแก้คำตอบก่อนส่ง <textarea name="answer" required maxLength={1000} defaultValue={choice.answer}/></label>
+     <button className="primary" type="submit" disabled={!available}>ยืนยันส่งคำตอบ</button>
+    </form> : <button className="primary" type="button" disabled={!available} onClick={()=>action('dmAnswer',{cardId:card.id,actionId:choice.id,confirmContext:'confirmContext' in choice && choice.confirmContext})}>ส่งบทตอบที่เลือก</button>}
    </>}
    <form className="dm-own-reply" onSubmit={event=>{
     event.preventDefault();
@@ -269,7 +281,7 @@ export function DmWorkspace({
           <div className="dm-flow-followup"><h4>ให้ทีมรับมือก่อนเดินเรื่องต่อ</h4>
             <DmStoryEvents events={reactionEvents} connected={available} action={action} expanded/>
           </div>}
-          {guided?.version==='5.2' && <CaseStoryThread view={guided} beats={dmPanel.sharedStory ?? []} isDm onHistory={()=>setDmTab('history')}/>}
+          {guided && ['5.2','5.3'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel.sharedStory ?? []} isDm onHistory={()=>setDmTab('history')}/>}
         </div>
         <aside className="dm-live-side" aria-label="เครื่องมือประจำฉาก">
           {!guided?.transition && !world.case001.report && <div className="dm-quick-grid">
@@ -329,11 +341,11 @@ export function DmWorkspace({
               entry.check ?
               <form key={entry.check.id} onSubmit={event=>{
                 event.preventDefault();const data=new FormData(event.currentTarget);
-                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:['5.1','5.2'].includes(world.guided?.version ?? '') && entry.check!.dice ? entry.check!.dice.dc : Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
+                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:['5.1','5.2','5.3'].includes(world.guided?.version ?? '') && entry.check!.dice ? entry.check!.dice.dc : Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
               }}>
                 {entry.check.dice ? <p className="note">ใช้ {entry.check.dice.stat} ตามจุดทอยในบท · DC แนะนำ {entry.check.dice.dc}</p> :
                   <label>ค่าสถานะ <select name="stat" defaultValue={entry.check.stat ?? 'PER'}><option value="BODY">ร่างกาย BODY</option><option value="PER">การสังเกต PER</option><option value="INT">เชาวน์ปัญญา INT</option><option value="SOC">การเข้าสังคม SOC</option><option value="SPI">จิตวิญญาณ SPI</option><option value="RES">ความต้านทาน RES</option></select></label>}
-                <label>ความยากก่อนส่งการ์ด <select name="difficulty" disabled={['5.1','5.2'].includes(world.guided?.version ?? '') && !!entry.check.dice} defaultValue={entry.check.dice?.dc ?? 14}>
+                <label>ความยากก่อนส่งการ์ด <select name="difficulty" disabled={['5.1','5.2','5.3'].includes(world.guided?.version ?? '') && !!entry.check.dice} defaultValue={entry.check.dice?.dc ?? 14}>
                   <option value="11">ง่าย · DC 11</option><option value="14">ปกติ · DC 14</option><option value="17">ยาก · DC 17</option><option value="20">ยากมาก · DC 20</option><option value="22">พิเศษ · DC 22</option>
                 </select></label>
                 <button type="submit" className="primary" disabled={!connected || !!world.case001?.report}>ส่งการ์ดตามคำขอ</button>
@@ -363,7 +375,7 @@ export function DmWorkspace({
       </section>
       <div hidden={dmTab!=='history'} className="gm-pane">
       {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName} roomCode={room?.code}/>}
-      {guided?.version==='5.2' && <CaseStoryThread view={guided} beats={dmPanel?.sharedStory ?? []} isDm showHistory/>}
+      {guided && ['5.2','5.3'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel?.sharedStory ?? []} isDm showHistory/>}
       {!!recentlySent.length && <details><summary>บทที่ส่งแล้วในพื้นที่นี้ · {recentlySent.length}</summary>
         <ul>{recentlySent.map(([id,entry])=><li key={id}>{entry.text}</li>)}</ul>
       </details>}

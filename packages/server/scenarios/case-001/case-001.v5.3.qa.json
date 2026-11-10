@@ -1,0 +1,4545 @@
+{
+  "caseId": "CASE001",
+  "storyVersion": "5.3",
+  "sourceFiles": [
+    "CASE001_StoryScript_v5.3_Continuity_State_No_Timer.md",
+    "CASE001_v5.2_All_Scenes_Questions_Answers_EDITABLE.json",
+    "CASE001_v5.2_บทพูดและคู่คำถามสำหรับตรวจ.md"
+  ],
+  "editingNote": "เกลาสำนวนไทยสำหรับ DM และผู้เล่น โดยคง ID/State/Guard/ความคืบหน้าฉากเดิม; ข้อมูลแหล่งที่มาอยู่ใน origin สำหรับตรวจย้อนหลัง ไม่ใช่ข้อความที่ต้องแสดงแก่ผู้เล่น",
+  "rules": [
+    "ยึด Story Script v5.3 เป็น Canon ของ Playtest นี้ โดยไม่แก้ 16 DC/Combat",
+    "เลือก scene, speaker, state, evidence, spatial access ก่อนจัดอันดับข้อความ",
+    "kind=npc ใช้เป็นบทพูดเฉพาะผู้พูดอยู่/ติดต่อได้จริง; kind=environment/document เป็นบรรยาย/เอกสาร ไม่ใช่ NPC พูด",
+    "kind=action เป็นข้อมูลสำหรับ DM เท่านั้น ห้ามส่ง answer เป็นบทพูด NPC โดยตรง",
+    "ทุกคำตอบมีการตรวจของ DM ก่อนส่ง ไม่มีการเปิดการ์ดแล้วเปลี่ยน State",
+    "No Timer: ไม่มี 03:00/TIME_MINUTES/Ritual Toll และ F6 ต้องผิดวิธีกับกำไล/ด้ายหลังคำเตือน",
+    "ข้อกำหนด guard_ids อ้างไฟล์ CASE001_v5.3_State_Trigger_Contract.json; หาก Runtime ยังไม่แมปครบ ให้ fail closed/DM manual review"
+  ],
+  "scenes": [
+    {
+      "scene": "A1",
+      "title": "ทางเข้า: รถบริษัทถึงหมู่บ้าน",
+      "questions": [
+        {
+          "scene": "A1",
+          "question": "ใครหายบ้าง?",
+          "aliases": [
+            "ใครหายบ้าง",
+            "คนที่หายมีใครบ้าง",
+            "ใครหายไปบ้าง?"
+          ],
+          "answer": "ดลหายก่อน แล้วนิด แล้วก็เพิ่มครับ พวกเขาหายกันคนละคืน",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "ทราบลำดับจากการรับแจ้ง ไม่รู้ตัวคนจับใน ACT A",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A1_QA_01",
+          "id": "A1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A1",
+          "question": "คนหายไปตรงไหน?",
+          "aliases": [
+            "คนหายไปตรงไหน",
+            "ใครเห็นเป็นครั้งสุดท้าย",
+            "แต่ละคนถูกพบครั้งสุดท้ายที่ไหน?"
+          ],
+          "answer": "มีคนพูดถึงทางสวนกล้วยครับ แต่ยังไม่มีใครยืนยันได้ว่าทั้งสามเข้าไปลึกแค่ไหน",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "ข้อสงสัย ไม่ใช่พิสูจน์สถานที่ขัง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A1_QA_02",
+          "id": "A1_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A1",
+          "question": "ทำไมไม่ให้ตำรวจหา?",
+          "aliases": [
+            "ทำไมไม่ให้ตำรวจหา",
+            "ทำไมจ้างเรา",
+            "ทำไมถึงเรียกบริษัทมาช่วย?"
+          ],
+          "answer": "ตำรวจก็มาดูแล้วครับ รับเรื่องคนหายไว้แล้ว แต่เข้าไปสำรวจสวนได้ไม่ทั่ว ชาวบ้านกลัวกันหมด ผมเลยอยากให้พวกคุณช่วยตามอีกแรง",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "ห้ามอ้างว่าตำรวจจำเป็นต้องรอครบ 24 ชั่วโมงหรือไม่มีหน้าที่สืบสวน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A1_QA_03",
+          "id": "A1_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A1",
+          "question": "ผู้หญิงชุดเขียวคือใคร?",
+          "aliases": [
+            "ผู้หญิงชุดเขียวคือใคร",
+            "แม่แก้วคือใคร"
+          ],
+          "answer": "ผมคิดถึงแก้ว... เธอตายไปนานแล้ว แต่ผมไม่อยากสรุปว่าเธอทำอะไร",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "ไม่ยืนยันว่าผีเป็นคนลักพาตัว",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A1_QA_04",
+          "id": "A1_Q004",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A1",
+          "question": "คุณมีอะไรปิดบัง?",
+          "aliases": [
+            "คุณมีอะไรปิดบัง",
+            "ปี 2534 เกิดอะไรขึ้น"
+          ],
+          "answer": "ผมมีเรื่องที่ยังไม่พร้อมเล่า แต่ไม่ใช่เหตุผลให้ปล่อยคนหายไว้ครับ",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "ยังไม่ยอมรับความผิดก่อน H1 มีหลักฐาน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A1_QA_05",
+          "id": "A1_Q005",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A1",
+          "question": "ตำรวจเคยเข้ามาค้นคนหายแล้วหรือยัง?",
+          "aliases": [],
+          "answer": "ตำรวจมาดูทางเข้าสวนแล้วครับ รับแจ้งคนหายไว้แล้ว แต่เขายังตรวจพื้นที่ลึกได้ไม่ทั่ว และบอกว่าจะตามตรวจต่อ",
+          "speaker": "ประเสริฐ",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "คำบอกของประเสริฐ ไม่ใช่คำอ้างทางกฎหมายว่าต้องรอก่อนค้นหา",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A1_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A1",
+          "question": "ถ้ายังไม่รับงาน เราขอดูข้อมูลก่อนตัดสินใจได้ไหม?",
+          "aliases": [],
+          "answer": "ผมบังคับไม่ได้ แต่ขอดูแฟ้มที่บ้านก่อนตัดสินใจก็ยังดี",
+          "speaker": "ประเสริฐ",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "ไม่ตั้ง CASE_ACCEPTED จนกว่าทีมยอมรับงานจริง",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "A1_Q007",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "A2",
+      "title": "วิทยุบริษัทส่งเสียง (บรรยากาศ/ตรวจได้)",
+      "questions": [
+        {
+          "scene": "A2",
+          "question": "วิทยุพูดว่าอะไร?",
+          "aliases": [
+            "วิทยุพูดว่าอะไร",
+            "เสียงที่ได้ยินคือใคร",
+            "เมื่อกี้ทุกคนได้ยินคำว่าอะไร?"
+          ],
+          "answer": "น้ำ... น้ำมาแล้ว... ข้าจะช่วยเอ็ง... ดึงมือข้าไว้...!",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "เป็นเสียงสะท้อนที่ได้ยิน ไม่ยืนยันผู้พูดหรือผู้บงการ; SPI14 เฉพาะการตรวจเพิ่มเติม",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A2_QA_01",
+          "id": "A2_Q001",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A2",
+          "question": "เสียงน้ำกับเสียงผู้หญิงดังมาจากไหน?",
+          "aliases": [
+            "เสียงน้ำกับเสียงพูดมาจากวิทยุหรือรอบรถ?"
+          ],
+          "answer": "เสียงแทรกผ่านวิทยุในรถ และอุปกรณ์ที่ทีมมีอาจกระตุกตาม แต่ยังระบุเจ้าของเสียงไม่ได้",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A2_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A2",
+          "question": "ลองฟังหรือบันทึกเสียงอีกครั้งได้ไหม?",
+          "aliases": [],
+          "answer": "ลองปรับคลื่นหรือใช้เครื่องบันทึกได้ แต่สัญญาณไม่ให้ข้อมูลใหม่โดยอัตโนมัติ หากตั้งใจสัมผัสพลังวิญญาณให้ใช้ A2_RADIO_ECHO ตามกติกาเดิม",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "ผล Failure ไม่ใช่หลักฐานว่าเสียงไม่มีพลัง",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A2_Q003",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A2",
+          "question": "เสียงนี้คือเสียงแม่แก้วหรือคนหายใช่ไหม?",
+          "aliases": [],
+          "answer": "ยังยืนยันตัวผู้พูดไม่ได้ เสียงน้ำและคำร้องเป็นเพียงร่องรอยผิดปกติ ไม่ใช่การติดต่อสดจากคนหาย",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A2_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "A3",
+      "title": "จากทางเข้าหมู่บ้านสู่บ้านผู้ใหญ่",
+      "questions": [
+        {
+          "scene": "A3",
+          "question": "ไปไหนต่อ?",
+          "aliases": [
+            "ไปไหนต่อ",
+            "ขอดูหลักฐานหน่อย",
+            "แฟ้มฉบับเต็มอยู่ที่ไหน?"
+          ],
+          "answer": "แฟ้มคนหายกับแผนที่อยู่ที่บ้านผมครับ ไปดูด้วยกันก่อน",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "ให้เดินไป B ตามการตัดสินใจ ไม่มีจับเวลา",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "A3_QA_01",
+          "id": "A3_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A3",
+          "question": "บ้านผู้ใหญ่ไปทางไหน?",
+          "aliases": [
+            "ไปบ้านผู้ใหญ่ทางไหน?"
+          ],
+          "answer": "ประเสริฐชี้บ้านที่ยังเปิดไฟอยู่เหนือหลังคาไม้ และสามารถพาทีมเดินไปถึงได้ ไม่มีทางแยกซับซ้อน",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A3_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A3",
+          "question": "ที่บ้านผู้ใหญ่จะได้คุยกับใครบ้าง?",
+          "aliases": [],
+          "answer": "มีวิชัย ผู้ช่วยผู้ใหญ่ที่รวบรวมแผนที่ และต้น อาสาที่เคยเห็นคนแถวทางเข้าสวน ซึ่งประเสริฐเรียกมารอให้ข้อมูล",
+          "speaker": "ประเสริฐ",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A3_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "A3",
+          "question": "ถ้าไม่ไปบ้านผู้ใหญ่ตอนนี้จะเป็นอย่างไร?",
+          "aliases": [],
+          "answer": "ทีมยังอยู่ในช่วงสำรวจ ACT A และยังไม่ถือว่าเดินหน้าตามแฟ้มจนกว่าจะตัดสินใจไป",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "A3_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "B1",
+      "title": "บ้านผู้ใหญ่: เปิดแฟ้มคนหายและแผนที่สองชั้น",
+      "questions": [
+        {
+          "scene": "B1",
+          "question": "เริ่มตรงไหน?",
+          "aliases": [
+            "เริ่มตรงไหน",
+            "มีหลักฐานอะไรบ้าง"
+          ],
+          "answer": "ผมอยากให้พวกคุณเริ่มแกะรอยจากเรื่องที่เห็นกับตาก่อน",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "แฟ้มแดงคนหาย + แผ่นใสวงน้ำเงินงานที่ดิน แสดงให้เห็นได้โดยไม่ต้องทอย",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B1_QA_01",
+          "id": "B1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B1",
+          "question": "ทำไมวิชัยนั่งอยู่ด้วย?",
+          "aliases": [
+            "ทำไมวิชัยนั่งอยู่ด้วย",
+            "ทำไมให้ผู้ต้องสงสัยอยู่ต่อ"
+          ],
+          "answer": "ผมเรียกต้นมาให้ข้อมูลเป็นการลับ แต่บังเอิญวิชัยเข้ามาเอาแฟ้มงานที่ดิน ผมไม่อยากไล่เขาต่อหน้า เดี๋ยวเขาจะสงสัยว่าคุยอะไรกัน",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [
+            "ประเสริฐกับทีมคุยพ้นการได้ยินของวิชัย"
+          ],
+          "dm_note": "กระซิบกับทีมเมื่อถาม/แยกคุย วิชัยต้องไม่ได้ยิน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B1_QA_02",
+          "id": "B1_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B1",
+          "question": "หมุดแดงคืออะไร?",
+          "aliases": [
+            "หมุดแดงคืออะไร",
+            "วงสีน้ำเงินคืออะไร",
+            "ใครทำวงที่ดิน",
+            "หมุดสีแดงบนแผนที่คืออะไร?",
+            "หมุดแดงกับวงสีน้ำเงินหมายถึงอะไร?"
+          ],
+          "answer": "หมุดสีแดงคือจุดพบเห็นคนหายครั้งสุดท้าย ส่วนวงสีน้ำเงินคือแปลงงานประสานซื้อขายที่ดินของวิชัย ทั้งสองอยู่บนแผนที่เดียวกัน ไม่ใช่หลักฐานว่าสองเรื่องเกี่ยวกัน",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "ข้อมูลที่เห็นได้ตั้งแต่ B1 ไม่ใช่การยอมรับความผิด",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B1_QA_03",
+          "id": "B1_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B1",
+          "question": "ใครทำเครื่องหมายแผนที่?",
+          "aliases": [
+            "ใครทำเครื่องหมายบนแผนที่?"
+          ],
+          "answer": "ประเสริฐรวบรวมข้อมูลคนหายและหมุดแดง ส่วนวิชัยรับผิดชอบวงแปลงที่ดินสีน้ำเงินจากงานของเขา",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B1_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B1",
+          "question": "รูปเก่าบนผนังคือรูปอะไร?",
+          "aliases": [],
+          "answer": "เป็นภาพชาวบ้านข้างประตูน้ำ มีปี 2534 กำกับ และมีชายหนุ่มหน้าคล้ายประเสริฐอยู่ในภาพ",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "ยังไม่สรุปว่าเขาเป็นผู้สั่งเปิดประตูน้ำ",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B1_Q005",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B1",
+          "question": "ทำไมต้นไม่กล้าพูดตรงนี้?",
+          "aliases": [],
+          "answer": "ต้นมองวิชัยแล้วหลบตา และบอกเพียงว่าเห็นคนแถวทางเข้าสวน แต่ไม่แน่ใจว่าควรพูดต่อหน้าทุกคนหรือไม่",
+          "speaker": "ต้น",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B1_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "B2",
+      "title": "วิชัย: ผู้รับผิดชอบแผนที่สีน้ำเงิน",
+      "questions": [
+        {
+          "scene": "B2",
+          "question": "มือคุณไปโดนอะไรมา?",
+          "aliases": [
+            "มือคุณไปโดนอะไรมา",
+            "รอยข่วนมาจากไหน",
+            "รอยข่วนที่มือเกิดจากอะไร?"
+          ],
+          "answer": "หนามกล้วยเกี่ยวครับ ตอนเดินตรวจสวน",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [],
+          "dm_note": "คำโกหก; ผู้เล่นเห็นรอยแผลฟรี แต่จะสรุปว่าเป็นรอยขัดขืนได้ต้องมีพยาน E3 หรือหลักฐานเสริม",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B2_QA_01",
+          "id": "B2_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "วงสีน้ำเงินใกล้คนหายทำไม?",
+          "aliases": [
+            "วงสีน้ำเงินใกล้คนหายทำไม",
+            "ทำไมแผนที่ที่ดินทับกัน"
+          ],
+          "answer": "มันเป็นแผนที่ฉบับเดียวที่อัปเดตที่สุดในหมู่บ้านครับ งานที่ดินเป็นงานสุจริต ผมไม่มีอะไรต้องซ่อน",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [],
+          "dm_note": "หลบเลี่ยง ไม่แจกเอกสารหนี้ E4",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B2_QA_02",
+          "id": "B2_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "เมื่อคืนไปสวนไหม?",
+          "aliases": [
+            "เมื่อคืนไปสวนไหม",
+            "กลางคืนไปทำอะไรในสวน"
+          ],
+          "answer": "มีคนแจ้งเรื่องแปลก ผมก็ต้องเข้าไปตรวจหลายครั้ง",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [],
+          "dm_note": "ถามย้อนลำดับคืน/ดูพิรุธจึงเสนอ PER14 ไม่ทอยซ้ำอัตโนมัติ",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B2_QA_03",
+          "id": "B2_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "มีใครบังคับให้ขายไหม?",
+          "aliases": [
+            "มีใครบังคับให้ขายไหม",
+            "ขายราคาถูกเพราะอะไร"
+          ],
+          "answer": "หลายรายสนใจขายครับ แต่บางบ้านยังไม่ตกลง ไม่มีใครบังคับใคร",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [],
+          "dm_note": "เป็นคำโกหก ต้องตรวจสมุดดล C2",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B2_QA_04",
+          "id": "B2_Q004",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "แม่แก้วเคยช่วยคุณไหม?",
+          "aliases": [
+            "แม่แก้วเคยช่วยคุณไหม",
+            "รอดน้ำท่วมได้ไง"
+          ],
+          "answer": "ผมรอดจากน้ำท่วมจริงครับ จะเกี่ยวอะไรกับคนหาย?",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [],
+          "dm_note": "ตอบเท่าที่เขายอมพูด ไม่เฉลยพิธี",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B2_QA_05",
+          "id": "B2_Q005",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "วิชัยเข้าสวนคืนไหนแน่?",
+          "aliases": [
+            "วิชัยเข้าไปสวนตอนไหน?"
+          ],
+          "answer": "มีคนแจ้งเรื่องแปลก ผมก็ต้องตรวจหลายครั้ง... ไปหลายคืน จำคืนเป๊ะ ๆ ไม่ได้",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "ถ้าผู้เล่นตั้งใจดูจังหวะตอบ ใช้ B2_WICHAI_TELL; อย่าเปิดความผิดเป็นข้อเท็จจริงทันที",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B2_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "คุณทำเครื่องหมายในแผนที่เองใช่ไหม?",
+          "aliases": [],
+          "answer": "ผมเป็นคนทำเครื่องหมายแปลงที่ดินเองครับ ส่วนหมุดแดงเป็นข้อมูลคนหายของผู้ใหญ่",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B2_Q007",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "ดลหายไปได้อย่างไร?",
+          "aliases": [],
+          "answer": "ดลชอบไปตรวจอะไรของเขาคนเดียว ส่วนอีกสองคนอาจเข้าไปตาม",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "เป็นคำคาดเดาหรือคำเบี่ยงของวิชัย ไม่ใช่ข้อเท็จจริงที่ DM ยืนยัน",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "B2_Q008",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "มีใครเห็นคุณอยู่ที่สวนบ้าง?",
+          "aliases": [],
+          "answer": "ไปหลายคืน จำคืนเป๊ะ ๆ ไม่ได้",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "วิชัยไม่ยอมให้ชื่อพยานที่ตรวจสอบย้อนหลังได้จากคำถามนี้",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "B2_Q009",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B2",
+          "question": "คุณได้ประโยชน์อะไรจากการขายที่ดิน?",
+          "aliases": [],
+          "answer": "ผมทำหน้าที่ประสานครับ คนอื่นเป็นเจ้าของที่",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "ไม่เปิดเรื่องหนี้หรือค่าตอบแทนจนมีหลักฐาน",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "B2_Q010",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "B3",
+      "title": "ต้น: พยานที่ไม่กล้าพูด",
+      "questions": [
+        {
+          "scene": "B3",
+          "question": "เห็นใครเข็นรถ?",
+          "aliases": [
+            "เห็นใครเข็นรถ",
+            "คนในสวนใช่วิชัยไหม",
+            "ต้นเห็นอะไรที่ทางเข้าสวน?",
+            "ต้นเห็นหน้าคนเข็นรถชัดหรือไม่?"
+          ],
+          "answer": "ตอนนั้นมืดครับ ผมเห็นคนดันรถเข็น มีห่อผ้าดำคลุมอยู่... ผมไม่เห็นหน้าชัด",
+          "kind": "npc",
+          "speaker": "ต้น",
+          "requirements": [
+            "ถ้าวิชัยได้ยิน ต้นยังไม่เปิดเผยตัวผู้ต้องสงสัย"
+          ],
+          "dm_note": "หากวิชัยอยู่ในระยะได้ยินให้ใช้คำตอบสั้น ไม่ระบุชื่อวิชัย",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B3_QA_01",
+          "id": "B3_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B3",
+          "question": "คุณมั่นใจแค่ไหนว่าเป็นวิชัย?",
+          "aliases": [
+            "คุณมั่นใจแค่ไหนว่าเป็นวิชัย",
+            "ทำไมกลัววิชัย",
+            "อยากคุยเป็นส่วนตัวไหม?"
+          ],
+          "answer": "พอเมื่อกี้เขาเลื่อนแฟ้ม ผมเห็นแผลที่มือ เสื้อก็คล้ายที่เห็น แล้วยังมีโคลนติดกางเกงกับรองเท้า... ผมว่าพี่วิชัยแน่ ๆ อย่าเอาชื่อผมไปบอกแกนะครับ!",
+          "kind": "npc",
+          "speaker": "ต้น",
+          "requirements": [
+            "TON_TRUST=high หรือทีมแยกคุยอย่างปลอดภัย · วิชัยไม่ได้ยิน"
+          ],
+          "dm_note": "ต้องปลอดภัยจริง; ความมั่นใจจากการปะติดปะต่อไม่ใช่เห็นหน้าชัดในสวน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B3_QA_02",
+          "id": "B3_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B3",
+          "question": "ห่อดำนั้นมีคนไหม?",
+          "aliases": [
+            "ห่อดำนั้นมีคนไหม",
+            "คุณเห็นคนถูกอุ้มหรือเปล่า"
+          ],
+          "answer": "ผมเห็นเขาต้องออกแรงดันครับ แต่ไม่เห็นข้างใน ไม่รู้ว่าเป็นอะไร",
+          "kind": "npc",
+          "speaker": "ต้น",
+          "requirements": [
+            "ต้นยอมเล่ารายละเอียดแล้ว"
+          ],
+          "dm_note": "ห้ามบอกว่าข้างในเป็นตัวประกันก่อน E2/E3",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B3_QA_03",
+          "id": "B3_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B3",
+          "question": "ทำไมต้นถึงถูกเรียกมาที่นี่?",
+          "aliases": [],
+          "answer": "ผู้ใหญ่เรียกผมมาครับ ผมรายงานว่าเห็นคนเข็นของใกล้สวน แต่ไม่รู้ว่าวิชัยจะอยู่ด้วย",
+          "speaker": "ต้น",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B3_Q004",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B3",
+          "question": "ต้นเคยเห็นผีเปียกน้ำไหม?",
+          "aliases": [],
+          "answer": "เคยเห็นเงาคนเปียก แต่ไม่ได้เห็นมันแตะใคร",
+          "speaker": "ต้น",
+          "kind": "npc",
+          "requirements": [
+            "ต้นยอมตอบ/อยู่ในระยะพูดคุย"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "B3_Q005",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B3",
+          "question": "ถ้าทีมข่มขู่ให้ต้นพูด เขาจะตอบอย่างไร?",
+          "aliases": [],
+          "answer": "งั้นผมไม่พูดแล้วครับ",
+          "speaker": "ต้น",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "เป็นปฏิกิริยาหลังถูกข่มขู่จริง ไม่ให้ระบบบังคับเลือกเป็นคำตอบปกติ",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B3_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "B4",
+      "title": "ภาพปี 2534 และแฟ้มเก่า",
+      "questions": [
+        {
+          "scene": "B4",
+          "question": "รูปประตูน้ำคืออะไร?",
+          "aliases": [
+            "รูปประตูน้ำคืออะไร",
+            "ผู้ใหญ่อยู่ในรูปทำไม"
+          ],
+          "answer": "เป็นภาพสมัยน้ำท่วมปีสามสี่ครับ... ผมอยู่ตรงนั้นจริง แต่เรื่องมันยาว",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "รูปเพียงตั้งข้อสงสัย ไม่ยืนยันว่าเป็นคนสั่งสูงสุด",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B4_QA_01",
+          "id": "B4_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B4",
+          "question": "คนในรูปเก่าเป็นใคร?",
+          "aliases": [
+            "คนในรูปเป็นใคร?"
+          ],
+          "answer": "คนหนุ่มในภาพเป็นผมเองครับ ปีนั้นน้ำท่วมหนัก หลายคนไม่ได้กลับมา",
+          "speaker": "ประเสริฐ",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B4_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B4",
+          "question": "รูปนี้เกี่ยวกับเหตุปีไหนและที่ไหน?",
+          "aliases": [
+            "รูปนี้ถ่ายที่ไหนและเมื่อไร?"
+          ],
+          "answer": "รูปถ่ายในพื้นที่ประตูน้ำของหมู่บ้าน มีปี 2534 ระบุอยู่ใต้ภาพ",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B4_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B4",
+          "question": "ประตูน้ำเปิดก่อนหรือหลังอพยพคนครบ?",
+          "aliases": [],
+          "answer": "ภาพถ่ายปี 2534 ยังระบุเวลาการเปิดประตูไม่ได้ ต้องเปิดสำเนาบันทึกเวรประตูน้ำจากแฟ้มจริงแล้วนำไปเทียบกับสมุดยายที่บันทึกผู้มาถึงศูนย์อพยพ; การไม่มีชื่อไม่ได้พิสูจน์ว่าคนติดอยู่ในสวน",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "B4_Q004",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B4",
+          "question": "ในแฟ้มเก่ามีเอกสารอะไรให้ดู?",
+          "aliases": [],
+          "answer": "เมื่อทีมขอเปิดแฟ้มเก่า จะพบสำเนาบันทึกเวลาเวรประตูน้ำ/ช่วงผันน้ำบางส่วนของปี 2534 ไม่มีหลักฐานจากแฟ้มนี้ลำพังว่าใครสั่งสูงสุด",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [
+            "ผู้เล่นเปิดแฟ้มจริง"
+          ],
+          "dm_note": "เอกสารประกอบที่ Story Script ติดป้าย Editorial Prop",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "B4_Q005",
+          "guard_ids": [
+            "B4_FILE_OPENED"
+          ],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B4",
+          "id": "B4_Q006",
+          "question": "ประเสริฐเก็บแฟ้มปี 2534 ไว้ทำไม?",
+          "aliases": [
+            "ทำไมผู้ใหญ่ไม่ทิ้งหลักฐานเก่า"
+          ],
+          "answer": "มันเป็นแฟ้มงานที่ผมต้องเก็บ... แต่ผมก็ไม่กล้าทิ้งมันด้วย วันนั้นผมทำอะไรลงไป ผมจำได้ แค่ไม่กล้าเปิดให้ใครอ่าน",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [
+            "ประเสริฐอยู่หรือสื่อสารได้จริง · ถามเรื่องแฟ้ม"
+          ],
+          "guard_ids": [],
+          "dm_note": "ยังไม่รับผิดว่าตนสั่งเปิดสูงสุดหรือแจกเวลาจากเอกสารก่อนเปิดแฟ้ม",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "B5",
+      "title": "จากแฟ้มไปบ้านดล",
+      "questions": [
+        {
+          "scene": "B5",
+          "question": "ต้องไปบ้านดลทำไม?",
+          "aliases": [
+            "ต้องไปบ้านดลทำไม",
+            "ดลจดอะไรไว้"
+          ],
+          "answer": "ดลชอบจดเรื่องที่เขาสงสัยไว้ที่บ้าน ลองไปดูเถอะครับ",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [],
+          "dm_note": "นำไป C1/C2 ไม่แจกเนื้อหาสมุดล่วงหน้า",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "B5_QA_01",
+          "id": "B5_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B5",
+          "question": "บ้านดลอยู่ตรงไหน?",
+          "aliases": [],
+          "answer": "ประเสริฐวงตำแหน่งบ้านดลไว้บนแผนที่ให้ ทีมเดินไปตรวจได้",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B5_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B5",
+          "question": "สมุดที่ดลจดอยู่ที่ไหน?",
+          "aliases": [
+            "ดลเก็บบันทึกไว้ที่ไหน?"
+          ],
+          "answer": "ประเสริฐทราบเพียงว่าดลชอบจดเรื่องต่าง ๆ ไว้ที่บ้าน ต้องไปค้นของในบ้านเอง",
+          "speaker": "ประเสริฐ",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B5_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "B5",
+          "question": "วิชัยหรือต้นต้องตามไปบ้านดลด้วยไหม?",
+          "aliases": [],
+          "answer": "ไม่จำเป็น ต้องบันทึกว่าตัวละครใดเลือกเดินทางไปจริง ไม่มี NPC เดินทางตามทีมอัตโนมัติ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "B5_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "C1",
+      "title": "บ้านดล",
+      "questions": [
+        {
+          "scene": "C1",
+          "question": "ในบ้านมีอะไร?",
+          "aliases": [
+            "ในบ้านมีอะไร",
+            "ค้นโต๊ะทำงาน"
+          ],
+          "answer": "โต๊ะทำงานของดลมีสมุดและเอกสารที่เขาจดทิ้งไว้",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [],
+          "dm_note": "ให้ตรวจ C2 ตามการกระทำ ห้ามแจกผล Check ล่วงหน้า",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C1_QA_01",
+          "id": "C1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C1",
+          "question": "มีร่องรอยว่าใครเข้าบ้านดลหรือไม่?",
+          "aliases": [
+            "มีร่องรอยใครเข้าบ้านไหม?"
+          ],
+          "answer": "บ้านดูเหมือนถูกทิ้งไว้กะทันหัน แต่จากสภาพบ้านอย่างเดียวยังระบุคนที่เข้ามาหรือวันเกิดเหตุไม่ได้",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C1_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C1",
+          "question": "โต๊ะทำงานของดลมีอะไร?",
+          "aliases": [
+            "บนโต๊ะมีอะไรให้ตรวจ?"
+          ],
+          "answer": "บนโต๊ะมีกองกระดาษและสิ่งที่ดลกำลังจดค้างไว้ สามารถเข้าไปตรวจเพื่อค้นสมุด E02 ได้",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C1_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C1",
+          "question": "ค้นใต้พื้นบ้านจะพบตัวประกันหรือไม่?",
+          "aliases": [],
+          "answer": "ไม่พบคนถูกขังใต้พื้นบ้านดล; ข้อมูลเรื่องคนหายต้องสืบจากสมุดและเส้นทางต่อไป",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "ตรวจใต้พื้นจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C1_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "C2",
+      "title": "สมุดดล E02: รูปแบบการขายที่ดิน",
+      "questions": [
+        {
+          "scene": "C2",
+          "question": "สมุดเขียนอะไร?",
+          "aliases": [
+            "สมุดเขียนอะไร",
+            "เรื่องที่ดินกับผีเชื่อมกันอย่างไร",
+            "สมุดดลบันทึกเรื่องอะไร?"
+          ],
+          "answer": "หน้าที่ดลคั่นไว้จดวันที่มีข่าวผีใกล้กับวันนัดขายที่ดินหลายรายการ",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [],
+          "dm_note": "เห็นข้อความบนหน้าได้ตามการตรวจ; INT14 ช่วยเห็นรูปแบบลึกกว่า ไม่ยืนยันคนร้ายจนมีพยาน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C2_QA_01",
+          "id": "C2_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C2",
+          "question": "ด้ายดำมาจากไหน?",
+          "aliases": [
+            "ด้ายดำมาจากไหน",
+            "ดลจดเรื่องศาลไว้ไหม"
+          ],
+          "answer": "ที่สันสมุดมีเศษด้ายดำติดอยู่ ข้างบันทึกมีข้อความให้กลับไปดูศาล",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [],
+          "dm_note": "นำไป C5/D2 ไม่เฉลยแกนพิธี",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C2_QA_02",
+          "id": "C2_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C2",
+          "question": "ทำไมดลบอกให้กลับไปดูศาล?",
+          "aliases": [
+            "ทำไมดลจดให้กลับไปดูศาล?"
+          ],
+          "answer": "ในสมุดมีบันทึกว่าต้องกลับไปดูศาลและชื่อยายบุญมีผู้ดูแลศาล เพราะดลกำลังติดตามเรื่องด้ายดำและข่าวผี",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [
+            "พบและอ่านสมุด E02 จริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C2_Q003",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C2",
+          "question": "มีหลักฐานว่าวิชัยเป็นหนี้หรือยัง?",
+          "aliases": [],
+          "answer": "สมุดมีข่าวว่าถูกทวงหนี้ พร้อมคำว่า “ต้องตรวจสอบ” จึงยังไม่ใช่หลักฐานหนี้ที่ยืนยันได้",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C2_Q004",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C2",
+          "question": "ข่าวผีกับราคาที่ดินเกี่ยวกันอย่างไร?",
+          "aliases": [],
+          "answer": "มีบันทึกวันที่ให้เทียบได้ หากตรวจรูปแบบสำเร็จจาก C2_LAND_PATTERN จะเห็นว่าข่าวผีมักนำหน้าการเร่งขายหรือการเปลี่ยนราคา แต่ยังไม่พิสูจน์ผู้บงการ",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [
+            "ตรวจบันทึกและใช้ผล C2_LAND_PATTERN ที่เกิดจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C2_Q005",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C2",
+          "question": "ตอนนี้ขอถามดลโดยตรงได้หรือไม่?",
+          "aliases": [],
+          "answer": "ยังไม่ได้ เพราะดลยังเป็นคนหาย ต้องพบและช่วยเขาก่อนจึงจะรับคำให้การตรงได้",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C2_Q006",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "C3",
+      "title": "เคาะสามครั้ง: สิ่งที่เหลืออยู่หลังน้ำ",
+      "questions": [
+        {
+          "scene": "C3",
+          "question": "อะไรเคาะสามครั้ง?",
+          "aliases": [
+            "อะไรเคาะสามครั้ง",
+            "มีใครอยู่ในบ้าน",
+            "เสียงเคาะมาจากไหน?"
+          ],
+          "answer": "มีเสียงเคาะสามครั้งจากพื้น/ผนังชื้นของบ้าน แต่ไม่พบคนหรือห้องขังใต้พื้น เสียงผิดธรรมชาติยังไม่ระบุต้นตอ",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "ความแปลกไม่เท่ากับรู้ตัวผู้ลักพาตัว; SPI14 เป็นการตรวจผลเพิ่มเติม",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C3_QA_01",
+          "id": "C3_Q001",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C3",
+          "question": "ตรวจคราบน้ำหรือเศษด้ายได้อะไร?",
+          "aliases": [
+            "ตรวจคราบน้ำจากตรงนี้ได้ไหม?"
+          ],
+          "answer": "พบคราบชื้นและร่องรอยผิดปกติ หากต้องการสัมผัสพลังจึงใช้ C3_SPIRIT_RESIDUE เพื่อแยกระดับข้อมูล",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C3_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C3",
+          "question": "ตอนนี้ออกจากบ้านดลได้ไหม?",
+          "aliases": [],
+          "answer": "ออกได้ตามทางเข้าออกจริง ไม่จำเป็นต้องบังคับให้ผู้เล่นติดการต่อสู้",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C3_Q003",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "C4",
+      "title": "ผีเงาจมน้ำ: บทสอนการเผชิญหน้า (Encounter ทางเลือก)",
+      "questions": [
+        {
+          "scene": "C4",
+          "question": "ผีต้องการอะไร?",
+          "aliases": [
+            "ผีต้องการอะไร",
+            "นี่คนหายหรือเปล่า"
+          ],
+          "answer": "น้ำ... ช่วย... ยัง... อยู่...",
+          "kind": "npc",
+          "speaker": "ผีเงาจมน้ำ",
+          "requirements": [],
+          "dm_note": "ผีเงาจมน้ำเป็นเศษอาฆาต/ความทรงจำ ไม่ได้ลักพาตัว; encounter ตาม Combat Lite ไม่เปิดเฉลย",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C4_QA_01",
+          "id": "C4_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C4",
+          "question": "ผีเงาจมน้ำกำลังทำอะไร?",
+          "aliases": [
+            "สิ่งที่เห็นกำลังทำอะไร?"
+          ],
+          "answer": "ร่างที่เปียกโชกพุ่งเข้าประชิด กางแขนหมายกดคนที่อยู่ตรงหน้าลงกับน้ำขุ่นบนพื้นไม้",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "C4 encounter เกิดจริง"
+          ],
+          "dm_note": "ให้โอกาสผู้เล่นตั้งรับตามกติกาการต่อสู้ก่อนตัดสินผลโจมตี",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C4_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C4",
+          "question": "ผีตัวนี้เป็นคนจับตัวดล นิด เพิ่มหรือไม่?",
+          "aliases": [],
+          "answer": "ยังไม่มีหลักฐานว่าผีเงาจมน้ำจับคนหาย มันเป็นร่องรอยอาฆาตและความทรงจำ ไม่ใช่พยานยืนยันตัวผู้ลักพาตัว",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C4_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C4",
+          "question": "ช่วยเพื่อนหรือถอยออกทางไหนได้บ้าง?",
+          "aliases": [],
+          "answer": "ช่วยตาม Guard/Help/Retreat ใน Combat Lite และถอยผ่านประตูที่เข้าได้จริง ผีชะงักใกล้ธรณีประตูเมื่อทีมออกจากบริเวณ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "C4 encounter เกิดจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C4_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C4",
+          "question": "เราขอสงบหรือติดต่อผีแทนการสู้ได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ถ้าการกระทำ/ความสามารถรองรับ; หากสำเร็จอาจเห็นภาพน้ำกับคนขนของไปทางเรือน แต่ไม่เห็นใบหน้าคนขน",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "ใช้ความสามารถและผลตามกติกาจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C4_Q005",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "C5",
+      "title": "ยายบุญมี: ผู้จำได้ แต่ไม่ได้เห็นทุกอย่าง",
+      "questions": [
+        {
+          "scene": "C5",
+          "question": "แม่แก้วตายยังไง?",
+          "aliases": [
+            "แม่แก้วตายยังไง",
+            "เหตุใดจึงมีศาล"
+          ],
+          "answer": "ตอนน้ำท่วมปีสามสี่ มีเด็กติดอยู่ แก้วช่วยเขาขึ้นคันดิน แต่สะพานพังเสียก่อน น้ำเลยพัดแก้วไป",
+          "kind": "npc",
+          "speaker": "ยายบุญมี",
+          "requirements": [],
+          "dm_note": "ยายรู้จากประวัติ/คำบอก ไม่ใช่เห็นประตูน้ำเปิด",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C5_QA_01",
+          "id": "C5_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "เด็กคนนั้นคือใคร?",
+          "aliases": [
+            "เด็กคนนั้นคือใคร",
+            "แม่แก้วช่วยกี่คน"
+          ],
+          "answer": "วิชัย ผู้ช่วยผู้ใหญ่นั่นแหละ ตอนนั้นยังตัวนิดเดียว แก้วลงไปช่วยเขาคนเดียว",
+          "kind": "npc",
+          "speaker": "ยายบุญมี",
+          "requirements": [],
+          "dm_note": "ให้ KNOWS_WICHAI_SAVED เมื่อได้บทนี้จริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C5_QA_02",
+          "id": "C5_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "ยายเห็นใครเปิดประตูไหม?",
+          "aliases": [
+            "ยายเห็นใครเปิดประตูไหม",
+            "ใครสั่งเปิดประตู",
+            "ยายเห็นใครเปิดประตูน้ำกับตาไหม?"
+          ],
+          "answer": "ตอนนั้นข้าจดได้แค่ว่าใครมาถึงศูนย์แล้ว ใครยังไม่ได้มา... ข้ารู้ทีหลังว่ามีคนตัดสินใจปล่อยน้ำ ทั้งที่ยังเช็กคนกันไม่ครบ แต่ข้าไม่เห็นว่าใครเปิดกับตาตัวเอง",
+          "kind": "npc",
+          "speaker": "ยายบุญมี",
+          "requirements": [],
+          "dm_note": "ยายไม่ยืนยันด้วยตาว่ามีคนยังอยู่ในสวน ณ นาทีที่เปิดประตู",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "C5_QA_03",
+          "id": "C5_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "วิธีแก้คำสาปคืออะไร?",
+          "aliases": [
+            "วิธีแก้คำสาปคืออะไร",
+            "ต้องหากำไลไหม"
+          ],
+          "answer": "ด้ายดำพวกนั้นไม่ใช่ของแก้ว ข้าว่ามีคนทำของใส่มัน... ถ้าหาได้ว่าใครผูกไว้ บางทีมันอาจสงบลง ข้าเองก็ไม่รู้วิธีแก้ดอก",
+          "kind": "npc",
+          "speaker": "ยายบุญมี",
+          "requirements": [],
+          "dm_note": "เป็นความเชื่อยาย ไม่รู้กำไล/พิธีแน่ชัด",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "C5_QA_04",
+          "id": "C5_Q004",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "ยายมีบันทึกไหม?",
+          "aliases": [
+            "ยายมีบันทึกไหม",
+            "ตอนอพยพใครมาถึงบ้าง"
+          ],
+          "answer": "ตอนนั้นข้าใช้สมุดสวดมนต์จดชื่อกับเวลาของคนที่มาถึงศูนย์อพยพ... ถ้าเอาไปเทียบกับบันทึกเวลาเปิดประตูน้ำ พวกเอ็งจะรู้ว่าเขาตรวจคนกันครบหรือยัง",
+          "kind": "npc",
+          "speaker": "ยายบุญมี",
+          "requirements": [
+            "ต้องหยิบ/ตรวจสมุดจริงก่อนนับว่าได้หลักฐาน"
+          ],
+          "dm_note": "สมุดยายไม่ใช่เอกสารรัฐ; การไม่อยู่ในรายชื่อยังไม่พิสูจน์ตำแหน่งของคนคนนั้น",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "C5_QA_05",
+          "id": "C5_Q005",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "ยายบุญมีรู้จักแม่แก้วอย่างไร?",
+          "aliases": [
+            "ยายรู้จักแม่แก้วอย่างไร?"
+          ],
+          "answer": "ยายรู้จักแก้วในฐานะคนหมู่บ้านเดียวกันและยังไหว้เธอที่ศาล ยายรู้ว่าแม่แก้วเสียชีวิตในน้ำท่วมปี 2534",
+          "speaker": "ยายบุญมี",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C5_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "ยายเห็นด้ายหรือป้ายชื่อที่ศาลหรือไม่?",
+          "aliases": [
+            "ยายเห็นอะไรแถวศาล?"
+          ],
+          "answer": "ข้าเห็นด้ายตรงเสาศาล แต่หลังจากคนเริ่มหายข้าก็ไม่กล้าเดินอ้อมไปด้านหลัง ไม่เคยเห็นป้ายชื่อสามคนนั้นกับตา",
+          "speaker": "ยายบุญมี",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "C5_Q007",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "แม่แก้วช่วยคนจากน้ำท่วมกี่คน?",
+          "aliases": [],
+          "answer": "ข้ารู้ว่าแก้วลงไปช่วยวิชัยคนเดียว อย่าเอาเรื่องคนอื่นมายัดให้มัน",
+          "speaker": "ยายบุญมี",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "C5_Q008",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "สมุดของยายเป็นเอกสารอะไร?",
+          "aliases": [],
+          "answer": "เป็นสมุดสวดมนต์ส่วนตัวที่ยายใช้จดชื่อเพื่อนบ้านและเวลาเมื่อมาถึงศูนย์อพยพ ไม่ใช่บันทึกเวลาเปิดประตูน้ำของทางการ",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [
+            "ยายหยิบสมุดให้ดูจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "C5_Q009",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "question": "ขอให้ยายตามเข้าไปในสวนได้ไหม?",
+          "aliases": [],
+          "answer": "ขาไม่ไหวแล้ว ฝากบอกแก้วด้วยว่าข้ายังไหว้เธอ และข้าขอโทษ",
+          "speaker": "ยายบุญมี",
+          "kind": "npc",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "C5_Q010",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "C5",
+          "id": "C5_Q011",
+          "question": "ใช้บันทึกชนิดไหนสองชิ้นจึงเทียบเหตุปี 2534 ได้?",
+          "aliases": [],
+          "answer": "สำหรับ DM: ใช้บันทึกเวรเปิดประตูน้ำจากแฟ้มที่ทีมเปิดจริง คู่กับสมุดสวดมนต์ยายที่จดผู้มาถึงศูนย์ ไม่จำเป็นต้องเป็นเอกสารอพยพสองฉบับ; ถ้ายังไม่พบทั้งคู่ อย่าเฉลยเอกสารจากฉากอนาคตแก่ผู้เล่น",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "DM-only; ตอบผู้เล่นตามหลักฐานที่มี ณ ฉาก ห้ามเปิด E4 ล่วงหน้า",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "D1",
+      "title": "เข้าสวนกล้วย",
+      "questions": [
+        {
+          "scene": "D1",
+          "question": "เห็นอะไรบนดิน?",
+          "aliases": [
+            "เห็นอะไรบนดิน",
+            "มีรอยอะไรในสวน",
+            "รอยบนทางเดินพาไปไหน?"
+          ],
+          "answer": "พื้นดินมีรอยกดเป็นเส้นคู่ทอดไปตามทางในสวน",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [],
+          "dm_note": "เห็นรอยได้ ไม่รู้ว่าเป็นรถอะไรจนตรวจ D5",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D1_QA_01",
+          "id": "D1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D1",
+          "question": "ระหว่างเดินในสวนกล้วยเห็นอะไร?",
+          "aliases": [
+            "มองเห็นอะไรระหว่างทาง?"
+          ],
+          "answer": "เห็นแนวต้นกล้วย ทางดินชื้น และเส้นทางนำไปยังศาล; ใบกล้วยและเงาเปียกยังไม่ยืนยันว่าเป็นร่างผี",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D1_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D1",
+          "question": "เส้นทางไปศาลอยู่ด้านไหน?",
+          "aliases": [],
+          "answer": "ทางดินนำไปถึงศาลได้โดยไม่ต้องทอยตรวจเส้นทางหลัก",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D1_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D1",
+          "question": "ถ้ากลัวจะถอยออกจากสวนได้ไหม?",
+          "aliases": [],
+          "answer": "ถอยกลับทางเดิมได้ ไม่มีเหตุบังคับสู้เพียงเพราะเข้ามาสวน",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D1_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "D2",
+      "title": "ศาล: ชื่อคนหายบนเส้นด้าย",
+      "questions": [
+        {
+          "scene": "D2",
+          "question": "ป้ายชื่อใคร?",
+          "aliases": [
+            "ป้ายชื่อใคร",
+            "เชือกดำพาไปไหน",
+            "บนป้ายชื่อที่ศาลเขียนว่าอะไร?",
+            "ชื่อบนด้ายเป็นของใครบ้าง?"
+          ],
+          "answer": "บนป้ายผ้าสามชิ้นที่ศาลเขียนชื่อ “ดล”, “นิด” และ “เพิ่ม” ด้ายสีดำพันขึ้นไปบนยอดกล้วยจนมองตามต่อไม่เห็น",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "บอกเฉพาะที่เห็น ไม่ระบุแกนกำไลใน D2",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "D2_QA_01",
+          "id": "D2_Q001",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D2",
+          "question": "ตัดด้ายได้เลยไหม?",
+          "aliases": [
+            "ตัดด้ายได้เลยไหม",
+            "ตัดชื่อคนหายจะหายไหม",
+            "ตัดด้ายที่ศาลแล้วพิธีจะหยุดไหม?"
+          ],
+          "answer": "การจัดการด้ายที่ปลายสายอาจทำให้พิธีอ่อนลงหากทำถูกวิธี แต่ไม่ใช่การหยุดแกนกำไล การตัดมั่วอาจสะท้อนกลับ",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "ให้ DM อธิบายความเสี่ยงก่อน Action; อ่อนกำลังได้ถ้าใช้วิธีถูกตามกติกา ห้ามจบพิธีทันที; ไม่ให้เกิด F6 โดยไม่มี Action เสี่ยงจริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D2_QA_02",
+          "id": "D2_Q002",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D2",
+          "question": "เส้นด้ายดำโยงไปถึงไหน?",
+          "aliases": [
+            "ด้ายดำโยงไปทางไหน?"
+          ],
+          "answer": "ด้ายเลื้อยสูงขึ้นพันยอดกล้วยและเถาวัลย์จนมองตามไม่เห็นจากศาล จึงยังระบุตำแหน่งแกนพิธีไม่ได้",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D2_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D2",
+          "question": "ชื่อบนป้ายแปลว่าทั้งสามคนตายแล้วหรือ?",
+          "aliases": [],
+          "answer": "ไม่ใช่หลักฐานว่าคนหายเสียชีวิต ป้ายแสดงการผูกชื่อเข้ากับพิธีและใช้ทำให้ชาวบ้านเข้าใจว่าผีเอาคนไป",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D2_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D2",
+          "question": "ตรวจรูปแบบด้ายจะรู้ตำแหน่งกำไลไหม?",
+          "aliases": [],
+          "answer": "เมื่อ D2_BINDING_PATTERN สำเร็จเต็มที่จะรู้ว่าพิธีชุดเดียวมีแกนอยู่อีกแห่ง แต่ยังไม่ทราบว่ากำไลอยู่ห้องใด",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "ผล D2_BINDING_PATTERN=full"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D2_Q005",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "D3",
+      "title": "แม่แก้ว: คนที่อยากบอกแต่ถูกห้าม",
+      "questions": [
+        {
+          "scene": "D3",
+          "question": "คุณจับคนหายไหม?",
+          "aliases": [
+            "คุณจับคนหายไหม",
+            "คนหายอยู่ไหน"
+          ],
+          "answer": "ข้าเคยหลอกหลอนให้พวกเขากลัว... แต่ข้าไม่เคยจับใครไปขังไว้ที่ไหน",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [],
+          "dm_note": "เธอไม่รู้ห้องขังใต้ถุน ไม่ต้องยืนยันที่อยู่ตัวประกัน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D3_QA_01",
+          "id": "D3_Q001",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "ทำไมออกมาหลอก?",
+          "aliases": [
+            "ทำไมออกมาหลอก",
+            "ทำไมต้องทำให้คนกลัว"
+          ],
+          "answer": "ตอนแรกข้าหวังให้คนเป็นหันมาถามเรื่องน้ำท่วม... แต่พอเห็นเขาหอบของหนีบ้าน ข้าก็รู้ว่าข้าถูกหลอกใช้",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [],
+          "dm_note": "ปมอยากเปิดความจริง ไม่ใช่อยากทำร้ายคน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D3_QA_02",
+          "id": "D3_Q002",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "ใครทำพิธีบังคับคุณ?",
+          "aliases": [
+            "ใครทำพิธีบังคับคุณ",
+            "ใครเป็นคนผูกด้าย",
+            "แม่แก้วกำลังพยายามบอกใครเป็นคนบังคับ?",
+            "แม่แก้วกำลังพยายามบอกอะไร?"
+          ],
+          "answer": "คนที่อยู่ข้างผู้ใหญ่... คนที่ข้าเคยช่ว— อึก!",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "D3 แม่แก้วปรากฏและสนทนาได้",
+            "ทีมถามผู้บงการและแม่แก้วสามารถเปล่งคำได้บางส่วน"
+          ],
+          "dm_note": "ด้ายรัดก่อนเอ่ยชื่อ/กล่าวหาตรง ๆ; ห้ามให้ชื่อวิชัยหลุดเต็ม; ด้ายรัดก่อนเธอระบุชื่อคนทำพิธีได้",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D3_QA_03",
+          "id": "D3_Q003",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "ตัดด้ายเลยได้ไหม?",
+          "aliases": [
+            "ตัดด้ายเลยได้ไหม",
+            "กำไลอยู่ไหน",
+            "ทีมช่วยอะไรเธอได้บ้าง?"
+          ],
+          "answer": "อย่าเพิ่ง! ที่นี่เป็นปลายสาย รากอยู่ที่อื่น... อย่าตัดด้ายมั่ว ๆ แรงมันจะตีกลับ! ตามรอยคนเป็นไปหาของข้าให้เจอ",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "D3 แม่แก้วปรากฏและสนทนาได้"
+          ],
+          "dm_note": "การตัดอย่างถูกวิธีตาม Core อาจทำให้ weakened; ไม่ใช่คำห้ามตัดสายทุกกรณี",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "D3_QA_04",
+          "id": "D3_Q004",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "คนหายตายหรือยัง?",
+          "aliases": [
+            "คนหายตายหรือยัง",
+            "คุณได้ยินพวกเขาไหม",
+            "แม่แก้วรู้หรือไม่ว่าดล นิด เพิ่มยังมีชีวิต?"
+          ],
+          "answer": "ข้าได้ยินเสียงพวกเขา... แต่ชื่อที่ผูกอยู่ไม่ปล่อยง่าย ๆ",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "แม่แก้วพูดได้ใน D3"
+          ],
+          "dm_note": "ไม่ยืนยันชีพจร/ตำแหน่งปัจจุบันของแต่ละคน; ไม่ได้เห็นสภาพร่างกายของแต่ละคนขณะตอบ",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D3_QA_05",
+          "id": "D3_Q005",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "คุณรู้จักวิชัยไหม?",
+          "aliases": [
+            "คุณรู้จักวิชัยไหม",
+            "แม่แก้วช่วยเขาใช่ไหม",
+            "แม่แก้วจำวิชัยได้หรือไม่?"
+          ],
+          "answer": "ข้าจำเด็กที่เคยดึงขึ้นจากน้ำได้",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "ทีมถามความทรงจำ ไม่ใช่ขอให้ระบุผู้บงการพิธี"
+          ],
+          "dm_note": "ตอบความจำได้ แต่ไม่สามารถกล่าวหาวิชัยว่าทำพิธีโดยตรง; ถ้าถามยืนยันว่าเขาทำพิธี เธอติดอาคมและเอ่ยชื่อไม่ได้",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D3_QA_06",
+          "id": "D3_Q006",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "แม่แก้วรู้ไหมว่าใครจับคนหาย?",
+          "aliases": [],
+          "answer": "ข้าเคยหลอกหลอนให้พวกนั้นกลัว... แต่ข้าไม่เคยจับใครไปขังไว้ที่ไหน",
+          "speaker": "แม่แก้ว",
+          "kind": "npc",
+          "requirements": [
+            "แม่แก้วพบทีมและพูดได้จริง"
+          ],
+          "dm_note": "เธอไม่ทราบตำแหน่งห้องขังและไม่เฉลยวิชัยเป็นคนจับแทนหลักฐาน",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D3_Q007",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D3",
+          "question": "แม่แก้วรู้ตำแหน่งกำไลไหม?",
+          "aliases": [],
+          "answer": "รากของมันอยู่ที่อื่น... ข้ามองไม่เห็นว่าเขาเอาของข้าไปซ่อนไว้ตรงไหน ด้ายมันบดบังตาข้า",
+          "speaker": "แม่แก้ว",
+          "kind": "npc",
+          "requirements": [
+            "พบแม่แก้วและเธอยังถูกผูกด้วยพิธี"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D3_Q008",
+          "guard_ids": [
+            "D3_KAEW_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "D4",
+      "title": "เผชิญหน้าแม่แก้วในสวน (optional)",
+      "questions": [
+        {
+          "scene": "D4",
+          "question": "ถ้าชนะผีคำสาปหายไหม?",
+          "aliases": [
+            "ถ้าชนะผีคำสาปหายไหม",
+            "จะฆ่าแม่แก้วได้ไหม",
+            "ถ้าชนะการต่อสู้กับแม่แก้ว จะหยุดพิธีเลยไหม?"
+          ],
+          "answer": "เมื่อร่างเธอสลาย เสียงจากด้ายดำที่ศาลยังดังอยู่",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [
+            "ชนะ D4 จริง"
+          ],
+          "dm_note": "ชนะ D4 สลายชั่วคราวเท่านั้น ไม่หยุดกำไล; ผลขึ้นกับการเล่นจริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "D4_QA_01",
+          "id": "D4_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D4",
+          "question": "มีทางถอยออกจากศาลโดยไม่สู้ไหม?",
+          "aliases": [
+            "มีทางถอยออกจากศาลไหม?"
+          ],
+          "answer": "ถอยได้ตามทางที่เปิดจริง ผลการเผชิญหน้าบันทึกจากการกระทำ ไม่จำเป็นต้องบังคับการต่อสู้",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D4_Q002",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D4",
+          "question": "เราลองเจรจาแทนการโจมตีได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ หากพูดคุยแล้วเดินต่อโดยไม่สู้ ให้บันทึกผลพบแม่แก้วเป็น talked ตามเหตุการณ์จริง",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D4_Q003",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D4",
+          "question": "ตอนนี้ใครอยู่ในอันตราย?",
+          "aliases": [],
+          "answer": "ตรวจจากตำแหน่งจริงว่าใครกำลังถูกแม่แก้วหรือด้ายคุกคาม ผู้ที่อยู่ใกล้สามารถเข้าช่วยหรือถอยได้ตามกติกาการต่อสู้",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [
+            "D4 encounter เริ่มแล้ว"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D4_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D4",
+          "id": "D4_Q005",
+          "question": "ชนะร่างแม่แก้วแล้วเธอยังพูดต่อทันทีได้ไหม?",
+          "aliases": [],
+          "answer": "ไม่ได้โดยอัตโนมัติ เมื่อร่างสลายให้เหลือคำพูดสุดท้ายและความเงียบ จนการจัดการกำไลที่ E4/F1 ทำให้เสียงหรือเงากลับมาสื่อสารได้ จึงไม่คืนร่างใน D5",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [
+            "KAEW_WON_D4"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "D5",
+      "title": "รอยล้อไปยังเรือนไม้",
+      "questions": [
+        {
+          "scene": "D5",
+          "question": "ตามรอยล้อ?",
+          "aliases": [
+            "ตามรอยล้อ",
+            "ทางนี้ไปไหน"
+          ],
+          "answer": "รอยล้อทอดจากหลังศาลลึกไปทางเรือนไม้ท้ายสวน ไม่ต้องถามแม่แก้วเพื่อรู้ทาง",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "เชื่อม E1; PER11 ช่วยเห็นรายละเอียด ไม่ให้ fail ปิดทางหลัก",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "D5_QA_01",
+          "id": "D5_Q001",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D5",
+          "question": "รอยล้อจบที่ไหน?",
+          "aliases": [
+            "รอยล้อไปสิ้นสุดตรงไหน?"
+          ],
+          "answer": "รอยล้อและทางขนของนำไปยังเรือนไม้ร้างท้ายสวนได้เมื่อทีมเดินตามจริง",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D5_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D5",
+          "question": "รอยล้อบอกได้ไหมว่าใครเข็น?",
+          "aliases": [
+            "รอยล้อมุ่งไปทางเดียวกันหรือเปล่า?"
+          ],
+          "answer": "รอยล้อเพียงอย่างเดียวยืนยันตัวคนเข็นไม่ได้ ต้องเทียบคำพยาน/รอยรองเท้าที่พบจริง; D5_CART_TRACKS เพิ่มรายละเอียดตามผลทอย",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "สำรวจรอยล้อ; รายละเอียดตามผล D5_CART_TRACKS"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "D5_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D5",
+          "question": "จำเป็นต้องทอยเพื่อเดินไปถึงเรือนไม้ไหม?",
+          "aliases": [],
+          "answer": "ไม่จำเป็น เส้นทางหลักไปเรือนไม้เปิดให้เดินได้ การทอย PER DC11 เพิ่มรายละเอียดรอยล้อ ไม่ได้ปิดทางหากทอยพลาด",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "D5_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "D5",
+          "id": "D5_Q005",
+          "question": "แม่แก้วเห็นตัวประกันอยู่ที่เรือนไม้แน่หรือ?",
+          "aliases": [],
+          "answer": "เธอได้ยินเสียงคนจากทางนั้นแต่ยังมองไม่เห็นว่าใครอยู่ตรงไหน ข้อมูลไปถึงเรือนไม้ต้องยืนยันจากรอยล้อและเสียงคนที่ E1",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "ไม่ให้แม่แก้วเฉลยห้องขัง",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "E1",
+      "title": "เรือนไม้ร้าง",
+      "questions": [
+        {
+          "scene": "E1",
+          "question": "ใครอยู่หลังประตู?",
+          "aliases": [
+            "ใครอยู่หลังประตู",
+            "มีคนขังอยู่ไหม",
+            "คนที่อยู่หลังประตูเป็นใคร?"
+          ],
+          "answer": "ใครอยู่ข้างนอกน่ะ! วิชัย! มึงจะเอาอะไรจากพวกกูอีก! ถอยไปนะเว้ย!",
+          "kind": "npc",
+          "speaker": "ดล",
+          "requirements": [
+            "ดลยังมีชีวิตอยู่ในห้องขัง"
+          ],
+          "dm_note": "ดลคิดว่าคนข้างนอกคือวิชัย ยังไม่รู้ว่าเป็นทีม; เสียงต้องดังจากตำแหน่งจริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E1_QA_01",
+          "id": "E1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E1",
+          "question": "เสียงคนดังมาจากไหน?",
+          "aliases": [
+            "เสียงคนดังจากตรงไหน?"
+          ],
+          "answer": "เสียงคนและการเคลื่อนไหวแผ่ว ๆ ดังมาจากใต้ถุน/ด้านหลังประตู ขณะที่ชั้นบนมีแสงหรือเสียงจากพิธี",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E1_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E1",
+          "question": "มีทางเข้าเรือนไม้ทางไหนบ้าง?",
+          "aliases": [
+            "มีทางเข้าเรือนทางไหนบ้าง?"
+          ],
+          "answer": "มองเห็นทางเข้าส่วนใต้ถุนและบันไดขึ้นชั้นบน ผู้เล่นเลือกตรวจหรือจัดคนเฝ้าได้ตามตำแหน่งจริง ไม่มีทางลัดที่ไม่ปรากฏในบท",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E1_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E1",
+          "id": "E1_Q004",
+          "question": "ถ้าวิชัยไม่ได้ตามมาหรือถูกเรียก เขาจะโผล่ในเรือนไหม?",
+          "aliases": [],
+          "answer": "ไม่ เขาไม่อยู่ที่เรือนโดยอัตโนมัติ ต้องมีเหตุการณ์ให้เขาเดินทางมาถึงจริงก่อนเปิด E5; ทีมเลือกค้นใต้ถุนหรือชั้นบนต่อได้โดยไม่ต้องพบเขา",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "E2",
+      "title": "เปิดห้องใต้ถุน: คนหายทั้งสามยังมีชีวิต",
+      "questions": [
+        {
+          "scene": "E2",
+          "question": "ใครขังพวกคุณ?",
+          "aliases": [
+            "ใครขังพวกคุณ",
+            "คนจับคือใคร"
+          ],
+          "answer": "วิชัย... ไอ้ผู้ช่วยนั่นแหละที่จับพวกเรามา... ได้โปรด พาเราออกไปที",
+          "kind": "npc",
+          "speaker": "ดล",
+          "requirements": [
+            "ดลยังมีชีวิตและมีสติ"
+          ],
+          "dm_note": "พูดได้หากยังมีสติ; E2 คำให้การตรงและ E3 ขยาย อย่าทำให้เพิ่มต้องพูดยาว",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E2_QA_01",
+          "id": "E2_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "จะช่วยพวกคุณยังไง?",
+          "aliases": [
+            "จะช่วยพวกคุณยังไง",
+            "อยากให้เราทำอะไร"
+          ],
+          "answer": "พาฉันออกไปจากที่นี่ที... ขอร้องล่ะ... ฉันไม่อยากได้ยินเสียงสวดนั่นแล้ว",
+          "kind": "npc",
+          "speaker": "นิด",
+          "requirements": [
+            "นิดยังมีชีวิตและพูดได้"
+          ],
+          "dm_note": "Found ≠ Safe, พาออกต้องมีทางคุ้มกันจริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E2_QA_02",
+          "id": "E2_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "ข้างบนมีอะไร?",
+          "aliases": [
+            "ข้างบนมีอะไร",
+            "ใครสวดมนต์"
+          ],
+          "answer": "อย่า... อย่าขึ้นไป... ข้างบน... เสียงสวด...",
+          "kind": "npc",
+          "speaker": "เพิ่ม",
+          "requirements": [
+            "เพิ่มยังมีชีวิตและพูดได้"
+          ],
+          "dm_note": "อ่อนแรงมาก ไม่ให้บทสมบูรณ์ตั้งแต่พบครั้งแรก",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E2_QA_03",
+          "id": "E2_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "ตัวประกันทั้งสามยังมีชีวิตไหม?",
+          "aliases": [],
+          "answer": "เมื่อเปิดห้องตามฉาก E2 ทั้งดล นิด และเพิ่มยังมีชีวิต แต่บาดเจ็บและอ่อนแรง ต้องดูแลและพาออกจริง",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "ทีมเปิด/เห็นห้องขังตาม E2 ก่อนเกิดเหตุเสียชีวิตในรอบเล่นนี้"
+          ],
+          "dm_note": "หากหลัง E2 มีการตาย ให้ใช้ HOSTAGE_FATE ล่าสุดแทนข้อความนี้",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E2_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "ตอนนี้ใครยังพูดได้บ้าง?",
+          "aliases": [
+            "ใครยังพูดคุยได้?"
+          ],
+          "answer": "ดลและนิดพอพูดเป็นช่วง ๆ ได้หากไม่ฝืนบาดแผล เพิ่มหอบหนักและพูดได้เพียงคำขาดห้วงหรือชี้มือ",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "ตัวละครยังมีชีวิตและอยู่ตรงนั้นจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E2_Q005",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "ใครต้องได้รับความช่วยเหลือก่อน?",
+          "aliases": [
+            "ใครต้องให้ทีมช่วยพาออก?"
+          ],
+          "answer": "ดลมีแผลศีรษะ นิดเล็บฉีกและหวาดผวา เพิ่มอ่อนแรงมาก ผู้เล่นต้องพิจารณาการดูแลและเคลื่อนย้ายตามกติกาที่มี ไม่ใช้การพบตัวเท่ากับปลอดภัย",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E2_Q006",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "เพิ่มถูกด้ายดำทำอะไรอยู่?",
+          "aliases": [],
+          "answer": "ที่ข้อเท้าของเพิ่มมีด้ายสีดำพันอยู่ ทุกครั้งที่ด้ายกระตุก เขาจะสะดุ้งและหอบหนักกว่าเดิม",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "ทีมตรวจสภาพเพิ่มหรือเห็นด้ายได้จริง"
+          ],
+          "dm_note": "ไม่มีการนับเวลาหรือการตายอัตโนมัติจากพันธนาการ",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E2_Q007",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "question": "พาออกจากห้องแล้วถือว่าปลอดภัยเลยไหม?",
+          "aliases": [],
+          "answer": "ยังไม่ปลอดภัยเพราะเพียงเปิดประตูหรือพามายืนตีนบันได อาจปลอดภัยได้ทั้งจุดคุ้มกันที่กันภัยจริงภายในเรือน หรือการอพยพออกไปพ้นระยะ; ต้องเช็กตำแหน่ง ผู้คุ้มกัน การเข้าถึงของวิชัย และแยกสายผูกพิธีออกจากความปลอดภัยทางกายภาพ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "E2_Q008",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E2",
+          "id": "E2_Q009",
+          "question": "ถ้าคุ้มกันคนหายไว้ในเรือนยังนับ SAFE ได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ถ้าจุดนั้นกันวิชัยและอันตรายที่เข้าถึงจริงได้ มีคนคุ้มกันและทางหนีที่ใช้ได้; ถ้าพักใกล้ตีนบันไดโดยคนร้ายเอื้อมถึง ยังไม่ปลอดภัย สายพิธีก็ยังผูกอยู่ได้",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "คำนวณ SAFE รายคนทุกครั้งที่ภัยเปลี่ยน",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "E3",
+      "title": "ดล นิด เพิ่ม: ความจริงคนละชิ้น",
+      "questions": [
+        {
+          "scene": "E3",
+          "question": "นิดข่วนมือใคร?",
+          "aliases": [
+            "นิดข่วนมือใคร",
+            "รอยแผลที่มือวิชัยใช่ฝีมือเธอไหม"
+          ],
+          "answer": "เขาลากฉันขึ้นรถเข็น... ฉันข่วนมือเขาไปเต็มแรง แต่ผ้ามันคลุมอยู่ ไม่เห็นทางทั้งหมด",
+          "kind": "npc",
+          "speaker": "นิด",
+          "requirements": [
+            "นิดยังมีชีวิตและมีแรงพอเล่า"
+          ],
+          "dm_note": "เชื่อม B2 และ B3 แต่เธอไม่รู้ทุกเหตุ/ทุกแผล",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E3_QA_01",
+          "id": "E3_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "สมุดสีดำเป็นของคุณไหม?",
+          "aliases": [
+            "สมุดสีดำเป็นของคุณไหม",
+            "คุณสืบเรื่องที่ดินทำไม",
+            "ดลจดเรื่องที่ดินไว้ในสมุดจริงหรือ?"
+          ],
+          "answer": "ใช่... สมุดผม เก็บไว้ให้ดี ผมจดวันที่พวกเขาเร่งขายไว้",
+          "kind": "npc",
+          "speaker": "ดล",
+          "requirements": [
+            "ดลมีชีวิตและมีแรงพอเล่า · ทีมแสดงสมุด E02 จริง",
+            "ดลยังมีชีวิต และทีมยกเรื่องสมุดหรือแสดงสมุด E02"
+          ],
+          "dm_note": "ต้องถือ/แสดงสมุด E02 จริง; ถ้าไม่มีให้ถามถึงเรื่องการจดอย่างอื่นโดยไม่ทำเป็นว่าทีมมี",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E3_QA_02",
+          "id": "E3_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "ใครโดนจับก่อน?",
+          "aliases": [
+            "ใครโดนจับก่อน",
+            "สามคนถูกจับพร้อมกันไหม",
+            "ดล นิด เพิ่มถูกจับตามลำดับไหน?"
+          ],
+          "answer": "ผมโดนจับก่อน... นิดตามมา... แล้วเพิ่ม ผมจำเสียงรองเท้าลาก ๆ กับเสียงหอบตอนมันผลักคนเข้ามาได้... วิชัย... มันนั่นแหละ",
+          "kind": "npc",
+          "speaker": "ดล",
+          "requirements": [
+            "ดลมีชีวิตและมีสติ",
+            "ดลยังมีชีวิตและมีสติให้คำให้การ"
+          ],
+          "dm_note": "รู้จากเสียงในที่ขัง ไม่เห็นการลักพาตัวทั้งหมด; ข้อมูลลำดับไม่มีการเปิดเผยกลไกพิธีเกินกว่าที่ดลเห็น",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E3_QA_03",
+          "id": "E3_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "นิดไปถามใครเรื่องด้าย?",
+          "aliases": [
+            "นิดไปถามใครเรื่องด้าย",
+            "ใครทรยศนิด"
+          ],
+          "answer": "ฉันเห็นด้ายดำที่ศาล... เลยรีบไปบอกวิชัย คิดว่าเขาจะช่วย... ใครจะไปรู้ว่าคืนนั้นมันกลับคลุมหัวฉัน",
+          "kind": "npc",
+          "speaker": "นิด",
+          "requirements": [
+            "นิดยังมีชีวิตและพูดได้"
+          ],
+          "dm_note": "นิดเห็นด้ายก่อนป้ายชื่อตนเอง ไม่เห็นคนแขวนป้าย",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E3_QA_04",
+          "id": "E3_Q004",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "เพิ่มเห็นกล่องอะไร?",
+          "aliases": [
+            "เพิ่มเห็นกล่องอะไร",
+            "ของที่วิชัยหวงคืออะไร",
+            "เพิ่มเห็นกล่องพิธีเมื่อไร?"
+          ],
+          "answer": "กล่อง... สีเข้ม... แกหวง... แกถือขึ้นไป... แล้วผู้หญิงร้อง...",
+          "kind": "npc",
+          "speaker": "เพิ่ม",
+          "requirements": [
+            "เพิ่มยังมีชีวิตและพอพูดได้",
+            "เพิ่มยังมีชีวิตและพูดไหว"
+          ],
+          "dm_note": "เพิ่มยังไม่รู้ว่ากล่องใส่กำไล; อย่าบังคับพูดเมื่อไม่ไหว; ไม่ให้เพิ่มรู้เนื้อหาเอกสารชั้นบน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E3_QA_05",
+          "id": "E3_Q005",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "นิดรู้ได้อย่างไรว่าคนจับคือวิชัย?",
+          "aliases": [],
+          "answer": "ฉันเคยเอาเรื่องด้ายดำไปบอกวิชัย คืนนั้นเขากลับมาคลุมหัวแล้วลากฉันไป... ฉันดิ้นข่วนมือเขาไว้",
+          "speaker": "นิด",
+          "kind": "npc",
+          "requirements": [
+            "นิดยังมีชีวิตและได้รับโอกาสตั้งสติ"
+          ],
+          "dm_note": "ใช้เป็นพยานตรงเรื่องรอยมือ ไม่ใช่ความรู้ทุกอย่างในตำรา",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E3_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "สมุดของดลยืนยันว่าร้ายทุกเรื่องเลยหรือ?",
+          "aliases": [],
+          "answer": "สมุดเป็นบันทึกวันที่และข้อสงสัยของดล ใช้เทียบหลักฐานได้ แต่ไม่พิสูจน์ทุกขั้นของการลักพาตัวโดยตัวเอง",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E3_Q007",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "ดล นิด เพิ่ม แต่ละคนเห็นหรือได้ยินอะไรด้วยตัวเอง?",
+          "aliases": [
+            "แต่ละคนเห็นหรือได้ยินอะไรด้วยตัวเอง?"
+          ],
+          "answer": "ดลรู้เรื่องสมุดและลำดับที่ถูกขัง; นิดจำผู้จับและรอยที่เธอข่วนมือ; เพิ่มเห็นกล่องขณะถูกพาเข้ามาและได้ยินเสียงสวดจากชั้นบน ให้แต่ละคนเล่าเฉพาะสิ่งที่ตัวเองเห็นหรือได้ยิน",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [
+            "ตัวประกันแต่ละคนยังมีชีวิตและพูดได้"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E3_Q008",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E3",
+          "question": "ตอนนี้ใครพร้อมเล่ารายละเอียดมากที่สุด?",
+          "aliases": [
+            "ตอนนี้ใครพร้อมเล่าให้ฟัง?"
+          ],
+          "answer": "ดลกับนิดพูดได้ทีละช่วง หยุดพักหอบอยู่บ่อยครั้ง ส่วนเพิ่มอ่อนแรงจนแทบไม่มีเสียง ได้แต่ยกมือชี้",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "ผู้เสียชีวิตหรือผู้ที่ไม่อยู่ในฉากต้องไม่มีบทพูด",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E3_Q009",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "E4",
+      "title": "ห้องพิธี: กำไลของแม่แก้ว",
+      "questions": [
+        {
+          "scene": "E4",
+          "question": "กำไลคืออะไร?",
+          "aliases": [
+            "กำไลคืออะไร",
+            "กล่องคือแกนหรือเปล่า",
+            "กำไลกับกล่อง อะไรคือแกนพิธี?"
+          ],
+          "answer": "เมื่อตรวจกล่อง/ตำราในห้องชั้นบนจะพบว่ากำไลทองเหลืองสลัก “แก้ว” เป็นแกนของพิธีผูกเดียว ตัวกล่องเป็นที่ใส่ ไม่ใช่แกน",
+          "kind": "document",
+          "speaker": "DM",
+          "requirements": [
+            "พบและตรวจกล่องพิธี E4 จริง",
+            "ทีมตรวจวัตถุหรือตำราเพียงพอ"
+          ],
+          "dm_note": "ห้ามอ่านเป็น NPC กล่าวเอง",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "E4_QA_01",
+          "id": "E4_Q001",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "question": "หนังสือทวงหนี้อยู่ไหน?",
+          "aliases": [
+            "หนังสือทวงหนี้อยู่ไหน",
+            "เอกสารที่ดินอยู่บนโต๊ะไหม",
+            "หนังสือทวงหนี้และแฟ้มปี 2534 อยู่ตรงไหน?"
+          ],
+          "answer": "ใต้ฐานกล่องที่มีผ้าปิดซ่อนกระเป๋าวิชัยไว้ เมื่อผู้เล่นค้นจริงจึงพบหนังสือทวงหนี้ ตารางที่ดิน และแฟ้มปี 2534",
+          "kind": "environment",
+          "speaker": "DM",
+          "requirements": [
+            "ผู้เล่นค้นใต้ฐานกล่องพิธีจริง",
+            "ค้นพบกระเป๋าจริง"
+          ],
+          "dm_note": "บอกเฉพาะเมื่อค้นใต้ฐานกล่องจริง ห้ามสปอยล์ตำแหน่งให้ก่อนค้น",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "E4_QA_02",
+          "id": "E4_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "question": "ต้องทำยังไงถึงหยุด?",
+          "aliases": [
+            "ต้องทำยังไงถึงหยุด",
+            "ตัดด้ายเลยได้ไหม",
+            "เราจะคลายกำไลอย่างไรโดยไม่เกิดแรงสะท้อน?"
+          ],
+          "answer": "ตำราบอกหลักการ: ตรวจแกน/โครงด้าย → วางผู้คุ้มกันและกันแรงดึงที่สายชื่อ → ปลดวงที่กำไลอย่างควบคุม ไม่กระชากสุ่ม → ยืนยันว่าแกนหยุดจริง ผู้เล่นประยุกต์วิธีได้ตาม Core/Combat ที่มีอยู่ การอ่านสำเร็จยังไม่ตั้ง RITUAL_STATUS=stopped",
+          "kind": "document",
+          "speaker": "DM",
+          "requirements": [
+            "ผู้เล่นตรวจตำราพิธีจริง",
+            "ผู้เล่นตรวจตำราหรือมี RITUAL_PLAN ที่ใช้ได้จริง"
+          ],
+          "dm_note": "ไม่มี DC/AP/DMG เพิ่มและไม่แจกผล prepared เมื่อไม่ได้ทอยจริง",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "E4_QA_03",
+          "id": "E4_Q003",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "question": "กำไลอยู่ที่ไหน?",
+          "aliases": [
+            "กำไลอยู่ตรงไหน?"
+          ],
+          "answer": "อยู่ในกล่องพิธีบนโต๊ะชั้นบน เมื่อผู้เล่นเปิดตรวจกล่องจึงเห็นกำไลทองเหลืองเป็นแกนผูกพิธี",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "เข้าถึงห้องพิธีและตรวจกล่องจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E4_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "question": "ตำราข้างกล่องเขียนเรื่องอะไร?",
+          "aliases": [
+            "ตำราที่อยู่ข้างกล่องมีอะไร?"
+          ],
+          "answer": "ตำราพิธีเปิดค้างอยู่ข้างกล่องและด้ายดำ อธิบายการผูกผ่านกำไลเป็นแกนเดียว; วิธีคลายต้องอ่าน/ตรวจตาม E4 และ RITUAL_PLAN",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [
+            "ผู้เล่นเปิดอ่านตำราจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E4_Q005",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "question": "ใต้ฐานกล่องมีอะไรซ่อนอยู่?",
+          "aliases": [
+            "ใต้ฐานกล่องมีอะไร?"
+          ],
+          "answer": "มีกระเป๋าสะพายของวิชัยซุกไว้ใต้ฐาน/ผ้า เมื่อค้นจริงพบหนังสือทวงหนี้ ตารางซื้อขายที่ดิน และแฟ้มปี 2534",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "ค้นใต้ฐานกล่องหรือบริเวณที่ซ่อนจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E4_Q006",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "question": "เปิดกล่องแล้วพิธีหยุดทันทีหรือไม่?",
+          "aliases": [],
+          "answer": "ไม่หยุด การค้นพบหรืออ่านตำรายังไม่ใช่การปลดพันธนาการ ต้องทำ Action ตามแผนที่ตรวจพบจริง",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E4_Q007",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E4",
+          "id": "E4_Q008",
+          "question": "วิธีปลดกำไลต้องทำทีละขั้นอย่างไร?",
+          "aliases": [],
+          "answer": "ในตำราอธิบายว่ากำไลเป็นแกนผูกด้ายทุกเส้น ต้องตรวจว่าด้ายเส้นใดผูกกับใคร จัดการแรงดึงและคลายสายก่อน แล้วค่อยปลดปมที่กำไลอย่างระมัดระวัง ไม่ใช่กระชากทำลายกล่อง",
+          "kind": "document",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [
+            "E4_BOOK_READ"
+          ],
+          "dm_note": "อ่านแล้วไม่เท่ากับ RITUAL_STATUS=stopped; เป็นคำอ่านจากตำราเมื่อพบและเปิดอ่านแล้ว; การเข้าใจวิธีไม่ได้ทำให้พิธีหยุด ต้องลงมือจริงตามกติกาเดิม ไม่มีการเพิ่มค่า DC",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "E5",
+      "title": "วิชัย: เผชิญหน้ากับคนร้าย (conditional)",
+      "questions": [
+        {
+          "scene": "E5",
+          "question": "ทำไมจับคนไป?",
+          "aliases": [
+            "ทำไมจับคนไป",
+            "ทำไมถึงทำแบบนี้",
+            "ทำไมวิชัยต้องลักพาตัวสามคน?"
+          ],
+          "answer": "หนี้มันไล่หลังผม ถ้าคนกลัวจนขายที่ ผมก็มีทางรอด",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "วิชัยอยู่ E5 จริง · วิชัยถูกซักด้วยหลักฐานหรือเหตุจนตรอก",
+            "วิชัยอยู่จริง มีชีวิต และมีเหตุให้ต้องตอบ/หลักฐานกดดัน"
+          ],
+          "dm_note": "ก่อนให้สารภาพต้องถูกเผชิญด้วยหลักฐาน/พยานและสถานะจนตรอก; ไม่ตอบยอมรับเต็มตั้งแต่ B2",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E5_QA_01",
+          "id": "E5_Q001",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "ดลนิดเพิ่มเกี่ยวอะไร?",
+          "aliases": [
+            "ดลนิดเพิ่มเกี่ยวอะไร",
+            "ทำไมจับเพิ่ม"
+          ],
+          "answer": "ดลมันขุดเรื่องราคาที่ดิน นิดเอาด้ายดำมาถามผม... ไอ้เพิ่มมันตามมาถึงเรือนไม้ เห็นผมตั้งกล่องพิธี",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "วิชัยถูกเผชิญด้วยหลักฐานจริง"
+          ],
+          "dm_note": "ให้เมื่อถูกกดดันจริง/สารภาพตามสถานการณ์ ไม่เปิดตั้งแต่เริ่ม E5",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E5_QA_02",
+          "id": "E5_Q002",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "แม่แก้วยอมร่วมมือไหม?",
+          "aliases": [
+            "แม่แก้วยอมร่วมมือไหม",
+            "ใครผูกเธอ"
+          ],
+          "answer": "ตอนแรกเธอยอม เพราะผมบอกว่าจะเปิดเรื่องน้ำท่วม... พอเธอไม่ยอมทำต่อ ผมเลยใช้กำไล",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "ทีมมีข้อสงสัย/หลักฐานเรื่องด้ายหรือกำไล"
+          ],
+          "dm_note": "ต้องมีข้อมูลย้อนแย้ง D3/E4 หรือคำถามเจาะที่มีหลักฐาน",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E5_QA_03",
+          "id": "E5_Q003",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "ใครขายตำรา?",
+          "aliases": [
+            "ใครขายตำรา",
+            "คนกลางคือใคร",
+            "ใครสอนวิชัยทำพิธีหรือขายตำราให้?"
+          ],
+          "answer": "ตำราบ้าบอนั่นผมก็แค่ซื้อต่อมา! ไม่รู้เว้ยว่าใครขาย!",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "วิชัยอยู่และถูกถามเรื่องตำรา"
+          ],
+          "dm_note": "เป็นคำอ้าง ไม่เพิ่มผู้บงการ/คนขายให้เป็น NPC ใหม่; เป็นคำอ้างที่ตรวจไม่ได้ในคดีนี้ ไม่เพิ่มตัวบงการคนใหม่",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E5_QA_04",
+          "id": "E5_Q004",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "ยอมมอบตัวไหม?",
+          "aliases": [
+            "ยอมมอบตัวไหม",
+            "ช่วยบอกวิธีปลดพิธีได้ไหม"
+          ],
+          "answer": "ยอมแล้ว! กูยอมแล้ว! กำไลในกล่องนั่นแหละ... แกนพิธี! รีบทำสิ กูไม่อยากตาย!",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "CHECK_RESULTS.E5_WICHAI_NEGOTIATE=full · วิชัยยังอยู่และมีชีวิต"
+          ],
+          "dm_note": "ใช้เฉพาะ E5_WICHAI_NEGOTIATE Full และวิชัยมีโอกาสยอมจริง; ไม่ให้จับ/มอบตัว auto",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E5_QA_05",
+          "id": "E5_Q005",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "จะฆ่าใครไหม?",
+          "aliases": [
+            "จะฆ่าใครไหม",
+            "จะทำลายกำไลไหม"
+          ],
+          "answer": "พวกมึงคิดว่าตัดฉับเดียวแล้วจบหรือไงวะ!? กูไม่ยอมนั่งรอให้มันมาฉีกอกกูอยู่ที่นี่!",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "วิชัยจนตรอกจริง · วิชัยยังมีชีวิตและยังพูดได้"
+          ],
+          "dm_note": "คำขู่ไม่ใช่การทำลายแกนได้ฟรี; Crossfire ต้องมีอาวุธและตัวประกันในระยะจริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E5_QA_06",
+          "id": "E5_Q006",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "วิชัยเข้ามาที่เรือนจากทางไหนและอยู่ตรงไหน?",
+          "aliases": [],
+          "answer": "ต้องมีเหตุเรียกวิชัยแล้วเขามาถึงจริง หรือพบหลักฐานว่าแอบตามมาจนถึงเรือน หากไม่มี Arrival Event ให้ข้าม E5 และใช้ E2/E3/E4 → E6; เมื่อเขาอยู่จริงจึงบรรยายตำแหน่งตามที่เดินถึง",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q007",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "วิชัยจะปล่อยพวกเขาหลังได้เงินจริงไหม?",
+          "aliases": [],
+          "answer": "ผมคิดว่าพอได้เงินแล้วคงมีคนไปเจอพวกเขาทีหลัง...",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [
+            "ทีมมีคำให้การหรือเอกสารจนวิชัยต้องอธิบายแผน"
+          ],
+          "dm_note": "ไม่มีแผนปล่อยตัวที่น่าเชื่อถือ คำพูดไม่ใช่ข้อรับประกัน",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q008",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "วิชัยใช้แม่แก้วให้ชาวบ้านกลัวได้อย่างไร?",
+          "aliases": [],
+          "answer": "ตอนแรกผมบอกว่าจะเปิดเรื่องน้ำท่วมให้คนรู้ เธอเลยยอมปรากฏตัว พอไม่ยอมทำต่อ ผมใช้กำไลบังคับ",
+          "speaker": "วิชัย",
+          "kind": "npc",
+          "requirements": [
+            "มีหลักฐาน/เงื่อนไขเจรจาให้วิชัยยอมพูด"
+          ],
+          "dm_note": "วิชัยโกหกหรือปิดข้อมูลได้ หากยังไม่ถูกกดด้วยหลักฐาน",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q009",
+          "guard_ids": [
+            "E5_WICHAI_PRESENT"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "เจรจาให้วิชัยวางมีดได้ไหม?",
+          "aliases": [
+            "เราจะคุยให้เขาวางมีดได้ไหม?"
+          ],
+          "answer": "ได้ ใช้ E5_WICHAI_NEGOTIATE SOC DC17 เมื่อสถานการณ์จริงรองรับ ผล Full ให้ร่วมมือ, Partial ต่อรอง, Failure ไม่ร่วมมือหรือพยายามหนีถ้ามีทาง",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "วิชัยยังอยู่/มีชีวิตและมีการเจรจาจริง"
+          ],
+          "dm_note": "ไม่ฆ่าตัวประกันหรือทำให้วิชัยหนีเพียงเพราะทอยพลาด",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q010",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "ถ้าตัวประกันออกจากจุดนั้นหมดแล้ว วิชัยใช้คนเป็นโล่ได้ไหม?",
+          "aliases": [],
+          "answer": "ไม่ได้ หากไม่มีตัวประกันในระยะที่เขาคว้าถึงจริง จะไม่เกิดการคว้าตัวประกันหรือ Crossfire Death",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q011",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "วิชัยขู่กระชากกำไลได้เมื่อไร?",
+          "aliases": [],
+          "answer": "เฉพาะตอนที่เขายังอยู่ใกล้และเข้าถึงแกนจริง หากทีมคุมกำไลแล้ว ให้ใช้บทขู่ไม่บอกวิธีแทนการเอื้อมหยิบกำไลจากระยะไกล",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q012",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "question": "ทำไมวิชัยถึงกลับมาที่เรือนไม้?",
+          "aliases": [
+            "ทำไมวิชัยถึงมาที่เรือน?"
+          ],
+          "answer": "มีเพียงสองทางที่ทำให้วิชัยปรากฏใน E5 ได้: ทีมติดต่อ/เรียกตัวและเขาเดินทางถึงจริง หรือมีเหตุเห็น/ตรวจได้ว่าเขาแอบตามทีมมาถึงเรือน ถ้าไม่มีเหตุทั้งสองให้ข้าม E5 โดยไม่เสกเขามา",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "ข้อกำกับ DM; ไม่ใช่ประโยคคำตอบของวิชัย",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "E5_Q013",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "id": "E5_Q014",
+          "question": "ถ้าเราโทรเรียกวิชัย เขาจะมาทันทีไหม?",
+          "aliases": [],
+          "answer": "ไม่ใช่ทันที ต้องติดต่อได้จริง เขายอมรับหรือมีเหตุเดินทางมา และตรวจว่ามาถึงสถานที่จริงก่อนจึงตั้ง E5_TRIGGERED=true ไม่ใช้ Timer แต่ก็ไม่วาร์ป",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E5",
+          "id": "E5_Q015",
+          "question": "ถ้าวิชัยไม่มาถึง E5 จะข้ามได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ ข้าม E5 ไป E6 โดยใช้คำให้การ E2/E3 และเอกสาร E4 สำหรับสรุปคดี ไม่สร้างเสียงสารภาพหรือผล SOC17 ที่ไม่ได้เกิด",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "H1",
+      "title": "คืนปี 2534: ความจริงจากเอกสาร (Flexible Reveal, ไม่ใช่สถานที่)",
+      "questions": [
+        {
+          "scene": "H1",
+          "question": "ผู้ใหญ่เปิดประตูน้ำใช่ไหม?",
+          "aliases": [
+            "ผู้ใหญ่เปิดประตูน้ำใช่ไหม",
+            "ปี 2534 ใครตัดสินใจ"
+          ],
+          "answer": "ผม... ผมร่วมตัดสินใจเปิดประตูน้ำคืนนั้นจริง ทั้งที่เรายังเช็กคนข้างล่างไม่ครบ... ผมหลบหน้ามาสามสิบกว่าปี คราวนี้ผมจะไม่หนีแล้ว",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [
+            "มีหลักฐานปี 2534 เพียงพอ · ประเสริฐเข้าถึงการสนทนาได้จริง"
+          ],
+          "dm_note": "ใช้เฉพาะได้ยื่นหลักฐานและติดต่อประเสริฐจริง; ยอมรับเปิดก่อนยืนยัน ไม่ยืนยันว่าเห็นคนยังอยู่ในสวน",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "H1_QA_01",
+          "id": "H1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "ทำไมไม่ยอมพูด?",
+          "aliases": [
+            "ทำไมไม่ยอมพูด",
+            "ทำไมโกหกมานาน"
+          ],
+          "answer": "ตอนแรกผมนึกว่าเดี๋ยวค่อยพูด... พอปีแรกผ่านไป ผมก็ยิ่งไม่กล้า กลัวคนจะถามว่าทำไมไม่พูดตั้งแต่แรก",
+          "kind": "npc",
+          "speaker": "ประเสริฐ",
+          "requirements": [
+            "ประเสริฐเข้าถึงการสนทนาได้จริง"
+          ],
+          "dm_note": "เฉพาะเมื่อสนทนาได้และหลักฐานเข้าถึงจริง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "H1_QA_02",
+          "id": "H1_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "ยายเห็นใครเปิดจริงไหม?",
+          "aliases": [
+            "ยายเห็นใครเปิดจริงไหม",
+            "ยายรู้ได้ยังไง"
+          ],
+          "answer": "ข้าไม่เห็นเขาเปิดกับตา แต่ข้าจำได้ว่าตอนนั้นคนยังมาไม่ครบ",
+          "kind": "npc",
+          "speaker": "ยายบุญมี",
+          "requirements": [
+            "ยายบุญมีเข้าถึงการสนทนาได้จริง"
+          ],
+          "dm_note": "ยายอยู่จริงหรือโทรจริง และได้รับข้อมูลถึงตัวก่อนตอบ",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "H1_QA_03",
+          "id": "H1_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "เอกสารบอกว่าเปิดประตูน้ำก่อนหรือหลังอพยพครบ?",
+          "aliases": [
+            "เอกสารบอกเวลาเปิดประตูน้ำว่าอย่างไร?"
+          ],
+          "answer": "เมื่อเทียบบันทึกเวลาเปิดประตูน้ำกับบันทึกผู้ที่มาถึงศูนย์อพยพได้จริง ผลที่พิสูจน์คือมีการเปิดก่อนยืนยันการอพยพครบ ไม่ใช่การพิสูจน์โดยอัตโนมัติว่ามีคนอยู่ในสวน ณ นาทีนั้น",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [
+            "ผู้เล่นพบและเทียบเอกสารจริง; ใช้ H1_FLOOD_TIMELINE หากจำเป็น"
+          ],
+          "dm_note": "คงผล Full/Partial/Failure และ DC17 ของ H1 เดิม",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "H1_Q004",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "ใครเป็นคนสั่งเปิดประตูน้ำสูงสุด?",
+          "aliases": [],
+          "answer": "หลักฐานในคดีนี้ยังไม่พอระบุผู้สั่งสูงสุดเพียงคนเดียว ประเสริฐมีส่วนร่วมตัดสินใจและดำเนินการ แต่ไม่ใช่คำพิสูจน์ว่าเขาสั่งเองทั้งหมด",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "H1_Q005",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "ประเสริฐยอมรับเรื่องประตูน้ำหรือยัง?",
+          "aliases": [],
+          "answer": "ผมร่วมตัดสินใจเปิดประตูน้ำจริง... ทั้งที่ยังเช็กคนไม่ครบ ผมปิดเรื่องนี้มานาน คราวนี้ผมจะไม่หนีแล้ว",
+          "speaker": "ประเสริฐ",
+          "kind": "npc",
+          "requirements": [
+            "ประเสริฐอยู่/ติดต่อถึงจริง และทีมแสดงเอกสารยืนยันเพียงพอ"
+          ],
+          "dm_note": "ประเสริฐไม่ได้รับว่าเป็นผู้สั่งสูงสุด; ต้องเห็นหลักฐานและติดต่อถึงจริง",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "H1_Q006",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "ถ้าประเสริฐไม่อยู่ จะได้คำสารภาพได้ไหม?",
+          "aliases": [],
+          "answer": "ไม่ได้ ให้ DM แสดงเฉพาะสิ่งที่เอกสารรองรับและผลการวิเคราะห์ ห้ามสร้างเสียงคำสารภาพจาก NPC ที่ไม่อยู่หรือไม่ได้ติดต่อ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "H1_Q007",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "question": "คำให้การยายกับบันทึกเวลาเหมือนกันทุกอย่างไหม?",
+          "aliases": [
+            "คำให้การตรงกับบันทึกส่วนไหน?"
+          ],
+          "answer": "ยายจดเวลาที่ชาวบ้านมาถึงศูนย์อพยพ ไม่ได้เห็นคนเปิดประตูเอง ต้องเทียบสมุดของยายกับบันทึกเวรประตูน้ำอีกแหล่ง",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "H1_Q008",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "H1",
+          "id": "H1_Q009",
+          "question": "เอกสารพิสูจน์ว่าเปิดก่อนตรวจคนครบ หรือพิสูจน์ว่าคนยังติดอยู่ในสวน?",
+          "aliases": [],
+          "answer": "ยืนยันได้เพียงว่ามีการเปิดก่อนยืนยันการอพยพครบ การพิสูจน์ว่าใครยังอยู่ในสวน ณ เวลานั้นต้องมีพยานตรงหรือบันทึกที่ระบุตำแหน่งจริงอีกชิ้น ไม่อาศัยแค่สมุดที่ไม่มีชื่อ",
+          "kind": "document",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "E6",
+      "title": "ก่อนเข้าสู่ Final: เลือกว่าจะรับมืออะไร",
+      "questions": [
+        {
+          "scene": "E6",
+          "question": "ต้องทำอะไรก่อนปิดบท?",
+          "aliases": [
+            "ต้องทำอะไรก่อนปิดบท",
+            "เริ่มหยุดพิธีเลยได้ไหม",
+            "ทีมจะจัดการอะไรก่อน?"
+          ],
+          "answer": "ตรวจว่าพบคนหายและได้จัดการความปลอดภัยจริงไหม กำไลอยู่ในมือใคร และทีมวางแผนหยุดพิธีอย่างไร",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [],
+          "dm_note": "เป็น check-list DM ไม่ใช่คำพูด NPC; ให้ผู้เล่นตัดสินใจเอง",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "E6_QA_01",
+          "id": "E6_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E6",
+          "question": "ตอนนี้คนหายทั้งสามอยู่ที่ไหนและปลอดภัยหรือยัง?",
+          "aliases": [
+            "ใครอยู่ที่ไหนและปลอดภัยหรือยัง?"
+          ],
+          "answer": "ตรวจตำแหน่งและสถานะรายคนตามเหตุการณ์จริง: พบตัว ไม่เท่ากับคุ้มกันถึงที่ปลอดภัย และไม่มีใครถูกนับปลอดภัยหากเสียชีวิต",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E6_Q002",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E6",
+          "question": "เรายังกลับไปสำรวจห้องพิธีหรือสอบวิชัยก่อน Final ได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ภายใน ACT E ตราบที่ฉาก/ตัวละครยังเข้าถึงจริง เช่น E2 ช่วยคน E4 เก็บหลักฐาน E5 เจรจา H1 วิเคราะห์เอกสาร",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E6_Q003",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E6",
+          "question": "ต้องบังคับให้เกิดการสู้ Final หรือไม่?",
+          "aliases": [],
+          "answer": "ไม่จำเป็น หากทีมหยุดพิธีสำเร็จแล้ว ไม่ต้องสร้างบอสหรือฉากปะทะเพิ่มเพื่อให้ครบสคริปต์",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E6_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E6",
+          "question": "ต้องเร่งเพราะใกล้เวลา 03:00 หรือเปล่า?",
+          "aliases": [],
+          "answer": "ไม่ต้องเร่งเพราะเวลา เกมนี้ไม่มีเส้นตาย อันตรายเกิดจากการตัดสินใจและการต่อสู้จริง",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "E6_Q005",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "E6",
+          "id": "E6_Q006",
+          "question": "ถ้าคนหายปลอดภัยทางกายภาพแล้ว สายพิธียังทำงานอยู่ได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ HOSTAGES_SAFE เป็นสถานะทางกายภาพ ส่วน RITUAL_TETHER_INTACT เก็บว่าสายชื่อยังผูกอยู่ไหม; ต้องปลดสายหรือหยุดกำไลจริง จึงตัดแรงบังคับได้",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "F1",
+      "title": "เสียงที่ไม่ได้มาจากสวนอีกแล้ว",
+      "questions": [
+        {
+          "scene": "F1",
+          "question": "ทำไมยังไม่สงบ?",
+          "aliases": [
+            "ทำไมยังไม่สงบ",
+            "หยุดมือได้ไหม"
+          ],
+          "answer": "ที่กำไล! หยุดมันก่อน... อย่ากระชากด้ายมั่ว ๆ ข้าหยุดมือตัวเองไม่ได้!",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "แม่แก้วสื่อสารได้จากอาคมที่ยังทำงาน · RITUAL_STATUS=active|weakened"
+          ],
+          "dm_note": "เสียงผ่านอาคมได้โดยไม่จำเป็นต้องมีร่าง ไม่ใช่คำสั่งตัดทุกเส้น",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "F1_QA_01",
+          "id": "F1_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F1",
+          "question": "แรงหรือเสียงผิดปกติในห้องมาจากไหน?",
+          "aliases": [
+            "สัญญาณที่เตือนมาจากตรงไหน?"
+          ],
+          "answer": "มาจากสายด้ายและกำไลที่ยังส่งแรงบังคับอยู่ตามสถานะพิธี ไม่ใช่หลักฐานว่าแม่แก้วสมัครใจโจมตี",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F1_Q002",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F1",
+          "question": "ใครอยู่ใกล้กำไลตอนนี้?",
+          "aliases": [],
+          "answer": "ตรวจและแสดงตำแหน่งล่าสุดของผู้เล่น วิชัย แม่แก้ว และตัวประกันตามที่อยู่จริงในฉาก ห้ามสมมติว่าทุกคนยืนอยู่ใกล้กำไล",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F1_Q003",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F1",
+          "question": "เริ่มปลดกำไลก่อนแม่แก้วปรากฏได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ถ้าทีมมีความรู้และเข้าถึงแกนจริง ไม่ต้องรอให้ภาพบอสปรากฏหรือเข้าฉาก F3 เสมอ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F1_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F1",
+          "id": "F1_Q005",
+          "question": "แม่แก้วกำลังบอกให้ตัดด้ายทุกเส้นใช่ไหม?",
+          "aliases": [],
+          "answer": "ที่กำไล! หยุดมันก่อน... อย่ากระชากด้ายมั่ว ๆ ข้าหยุดมือตัวเองไม่ได้!",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [],
+          "guard_ids": [
+            "F1_KAEW_CAN_SPEAK"
+          ],
+          "dm_note": "เป็นคำเตือน ไม่ใช่คำสั่งตัดทุกเส้นแบบสุ่ม",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "F2",
+      "title": "แม่แก้วจำสิ่งที่ทีมเคยทำในสวน",
+      "questions": [
+        {
+          "scene": "F2",
+          "question": "จำพวกเราได้ไหม?",
+          "aliases": [
+            "จำพวกเราได้ไหม",
+            "เคยสู้ไปแล้วนี่",
+            "แม่แก้วจำอะไรเกี่ยวกับทีมได้บ้าง?"
+          ],
+          "answer": "ข้าจำได้... พวกเอ็งเคยยืนต่อหน้าข้าที่ศาล",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "KAEW_D_RESULT != not_met · แม่แก้วปรากฏ/สื่อสารได้"
+          ],
+          "dm_note": "ตอบต่างกันตาม KAEW_D_RESULT; ถ้า not_met ห้ามอ้างว่าเคยพบ, ถ้า won ร่างต้องฟื้นด้วยเหตุในระบบ ไม่ใช่เวลา",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "F2_QA_01",
+          "id": "F2_Q001",
+          "guard_ids": [
+            "KAEW_D_MET_AND_COMMUNICATES"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F2",
+          "question": "แม่แก้วจำเราได้ไหม ถ้าไม่เคยพบกันในสวน?",
+          "aliases": [],
+          "answer": "ถ้า KAEW_D_RESULT=not_met ให้ใช้บทเผชิญหน้าครั้งแรก เธอไม่มีทางจำคำพูดหรือการสู้ที่ไม่เคยเกิด",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "KAEW_D_RESULT=not_met"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F2_Q002",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F2",
+          "question": "ถ้าเคยคุยกันใน D3 แต่ไม่ได้สู้ล่ะ?",
+          "aliases": [],
+          "answer": "ใช้บท F2 สำหรับ KAEW_D_RESULT=talked ให้เธอจำการพบและคำที่คุยจริง โดยไม่อ้างว่ามีการต่อสู้",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "KAEW_D_RESULT=talked"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F2_Q003",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F2",
+          "question": "ถ้าเราเคยชนะร่างแม่แก้วที่ศาล ทำไมเธอกลับมา?",
+          "aliases": [],
+          "answer": "การชนะ D4 ทำให้ร่างแม่แก้วสลายชั่วคราว แต่กำไลยังผูกเธออยู่ เมื่อทีมแตะหรือเริ่มจัดการกำไลจริง เสียง/เงาอาจสื่อสารกลับมาได้ **ก่อน** มีร่าง; ไม่คืนร่างเพราะเข้า F2 หรือเวลาผ่านไป",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [
+            "KAEW_D_RESULT=won"
+          ],
+          "dm_note": "อย่าให้กลับเป็นร่างเต็มโดยไม่มีเหตุฟื้นที่ระบบรับรอง",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "F2_Q004",
+          "guard_ids": [
+            "KAEW_WON_D4"
+          ],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F2",
+          "question": "หยุดแกนได้แล้วต้องสู้แม่แก้วต่อไหม?",
+          "aliases": [],
+          "answer": "ไม่จำเป็น หาก RITUAL_STATUS=stopped ให้ไปพิจารณาผล F5/การเจรจาตามเหตุจริง ไม่สร้างการโจมตีบังคับ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F2_Q005",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F2",
+          "question": "ตอนนี้แม่แก้วอยากบอกอะไรกับทีม?",
+          "aliases": [
+            "ตอนนี้เธออยากบอกอะไร?"
+          ],
+          "answer": "ให้เลือกบทตาม KAEW_D_RESULT ที่เกิดจริงและสถานะพิธี หากยังถูกบังคับ เธอสื่อความเจ็บปวด/คำเตือนเรื่องด้ายได้ แต่ไม่ยืนยันว่าทีมเคยพบหรือทำร้ายเธอถ้าเหตุการณ์นั้นไม่เคยเกิด",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [
+            "F2 เกิดจริงและแม่แก้วปรากฏหรือส่งเสียงได้"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F2_Q006",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F2",
+          "id": "F2_Q007",
+          "question": "ถ้า D4 เราชนะแล้ว แม่แก้วกลับมาเป็นร่างโดยไม่มีเหตุได้ไหม?",
+          "aliases": [],
+          "answer": "ไม่ได้ เมื่อทีมเริ่มแตะหรือจัดการกำไลที่ยังทำงาน เสียง/เงาของเธอกลับมาตอบได้ แต่ร่างเต็มต้องมีเหตุคืนร่างที่เกิดจริงและกติกาเดิมรองรับ",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [
+            "KAEW_WON_D4"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "F3",
+      "title": "พันธนาการ: ปกป้องคนทำพิธีหรือปะทะ",
+      "questions": [
+        {
+          "scene": "F3",
+          "question": "คุณคุมรากไม้ได้ไหม?",
+          "aliases": [
+            "คุณคุมรากไม้ได้ไหม",
+            "ทำไมสู้กับพวกเรา",
+            "ทำไมรากไม้กับแขนแม่แก้วโจมตีเอง?"
+          ],
+          "answer": "ระวัง! ข้าบังคับ... รากไม้... ไม่ได้! หลบไปซะ!",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "เกิดการเคลื่อนไหวของรากไม้จริง"
+          ],
+          "dm_note": "บรรยายเฉพาะเหตุจริงตาม Combat Lite; ไม่ใช่สั่งให้ผู้เล่นโดนดาเมจฟรี",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F3_QA_01",
+          "id": "F3_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F3",
+          "question": "ใครควรคุ้มกันคนกำลังปลดกำไล?",
+          "aliases": [
+            "ใครต้องการคนคุ้มกัน?"
+          ],
+          "answer": "ทีมเป็นผู้เลือกแบ่งหน้าที่ Guard/Help ตาม Combat Lite จากตำแหน่งและทรัพยากรจริง ไม่มี NPC มาช่วยให้ฟรี",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F3_Q002",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F3",
+          "question": "เข้าใกล้แกนพิธีจากตรงไหน?",
+          "aliases": [
+            "เข้าใกล้แกนจากตรงไหนได้บ้าง?"
+          ],
+          "answer": "ยึดตำแหน่งกล่องกับกำไลบนโต๊ะพิธีและเส้นทางในห้องตามฉาก E4 ผู้เล่นต้องเข้าถึงวัตถุได้จริงก่อนลงมือ",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F3_Q003",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F3",
+          "question": "คุยหรือถอยระหว่างสู้ได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ตาม Combat Lite และสภาพเหตุการณ์จริง การหยุดอาคมหรือเจรจาอาจลดการปะทะ ไม่บังคับตี HP จนหมด",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F3_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "F4",
+      "title": "คืนที่น้ำไหลกลับมา (conditional Phase 2)",
+      "questions": [
+        {
+          "scene": "F4",
+          "question": "จำวิชัยได้ไหม?",
+          "aliases": [
+            "จำวิชัยได้ไหม",
+            "ช่วยใครตอนน้ำท่วม"
+          ],
+          "answer": "ข้ารู้จักเด็กคนนั้น... ข้าเคยดึงมันขึ้นจากน้ำ",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [],
+          "dm_note": "ความทรงจำแม่แก้ว ไม่เปลี่ยนเป็นการเห็นผู้สั่งเปิดประตู",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F4_QA_01",
+          "id": "F4_Q001",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F4",
+          "question": "ภาพน้ำท่วมกำลังแสดงอะไร?",
+          "aliases": [
+            "ในภาพน้ำท่วมเกิดอะไรขึ้น?"
+          ],
+          "answer": "ภาพน้ำท่วมเป็นเศษความทรงจำของแม่แก้วที่ช่วยเด็กวิชัยก่อนสะพานพัง ไม่ใช่หลักฐานว่าใครเป็นผู้สั่งเปิดประตูน้ำ; ภาพปรากฏเฉพาะเมื่อผู้เล่นสืบความทรงจำหรือพิธีตอบสนองต่อการกระทำที่เกี่ยวข้อง",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "F4_Q002",
+          "guard_ids": [
+            "F4_OCCURRED"
+          ],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F4",
+          "question": "แม่แก้วช่วยใครในน้ำท่วม?",
+          "aliases": [
+            "ภาพนี้บอกอะไรเกี่ยวกับแม่แก้ว?"
+          ],
+          "answer": "ข้าช่วยเด็กคนนั้น... วิชัย คนที่พวกเอ็งเรียกว่าผู้ช่วยผู้ใหญ่",
+          "speaker": "แม่แก้ว",
+          "kind": "npc",
+          "requirements": [
+            "แม่แก้วอยู่ในสภาพเล่าความทรงจำได้จริง"
+          ],
+          "dm_note": "เธอช่วยวิชัยเพียงคนเดียว ไม่อ้างคนอื่น",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F4_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F4",
+          "question": "ภาพนี้ยืนยันว่าใครสั่งเปิดประตูน้ำไหม?",
+          "aliases": [],
+          "answer": "ไม่ยืนยันผู้สั่งสูงสุด การชี้ความรับผิดต้องอาศัยเอกสาร H1 และพยานที่รู้จริง",
+          "speaker": "DM",
+          "kind": "environment",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F4_Q004",
+          "guard_ids": [],
+          "delivery": "scene_narration",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F4",
+          "question": "ทีมขอพักศึกเพื่อแสดงหลักฐานได้ไหม?",
+          "aliases": [],
+          "answer": "ทำได้หากสถานการณ์เปิดช่องและผู้เล่นมีหลักฐานจริง แต่ไม่เปลี่ยน KAEW_FINAL=calm โดยอัตโนมัติ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F4_Q005",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F4",
+          "id": "F4_Q006",
+          "question": "ถ้าไม่มีใครขอเห็นอดีตและพิธีไม่สะท้อนภาพ ข้าม F4 ได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ F4 เป็นฉากทางเลือก เปิดจากผู้เล่นสำรวจความทรงจำโดยความสามารถจริง หรือมีปฏิกิริยาความทรงจำเมื่อจัดการพิธีจริงเท่านั้น; ไม่เปิดเพราะเข้า Phase 2 ครบเวลา",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "F5",
+      "title": "อิสรภาพ: หลังด้ายไม่บังคับอีกต่อไป",
+      "questions": [
+        {
+          "scene": "F5",
+          "question": "จะหยุดแก้แค้นไหม?",
+          "aliases": [
+            "จะหยุดแก้แค้นไหม",
+            "จะยอมสงบหรือเปล่า"
+          ],
+          "answer": "หากพวกเอ็งกล้าเอาความจริงไปให้คนเป็นเห็น... ข้าก็จะยอมหยุด แต่ถ้าตระบัดสัตย์ ข้าจะกลับมาทวง",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "RITUAL_STATUS=stopped หรือแม่แก้วได้อิสระจริง"
+          ],
+          "dm_note": "คำสัญญายังไม่ใช่การเปิดเผยจริง; ต้องใช้หลักฐานและแผนรับผิดตาม F5/Ending A",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F5_QA_01",
+          "id": "F5_Q001",
+          "guard_ids": [
+            "F5_KAEW_CAN_SPEAK"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "จะให้วิชัยรับผิดยังไง?",
+          "aliases": [
+            "จะให้วิชัยรับผิดยังไง",
+            "ยุติธรรมไหม"
+          ],
+          "answer": "ข้าต้องการทั้งหลักฐานและคนที่ยอมยืนรับผิด ไม่ใช่แค่คำว่าขอสัญญาอีกหน",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "แม่แก้วได้อิสระ/สื่อสารได้"
+          ],
+          "dm_note": "ถ้าวิชัยไม่อยู่ในห้อง ไม่ให้แม่แก้วพูดราวกับอยู่ตรงหน้า",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F5_QA_02",
+          "id": "F5_Q002",
+          "guard_ids": [
+            "F5_KAEW_CAN_SPEAK"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "วิชัยพูดอะไรตอนถูกจับคอ?",
+          "aliases": [
+            "วิชัยพูดอะไรตอนถูกจับคอ",
+            "เขาขอความช่วยเหลือยังไง"
+          ],
+          "answer": "ช่วยด้วย! พวกคุณเป็นบริษัทรับจ้างไม่ใช่เหรอ! จะยืนดูมันฆ่าผมหรือไง! ช่วยผม!!",
+          "kind": "npc",
+          "speaker": "วิชัย",
+          "requirements": [
+            "Execution Attempt F5 เกิดขึ้นจริง · วิชัยยังมีชีวิตและยังพูดได้ · แม่แก้วเข้าถึงวิชัยจริง"
+          ],
+          "dm_note": "ห้ามให้วิชัยขอชีวิตถ้าแม่แก้วเป็นเพียงเสียง/เงาที่เข้าถึงเขาไม่ได้ หรือวิชัยอยู่คนละพื้นที่",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "F5_QA_03",
+          "id": "F5_Q003",
+          "guard_ids": [
+            "F5_EXECUTION_REACHABLE"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "แม่แก้วจับคนหายใช่ไหม?",
+          "aliases": [
+            "แม่แก้วจับคนหายใช่ไหม",
+            "คุณยอมรับผิดไหม"
+          ],
+          "answer": "ข้าเคยทำให้คนกลัว แล้วคิดว่าพวกเขาจะฟัง ข้าผิด... แต่ข้าไม่ได้เอาคนไปขัง",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [],
+          "dm_note": "ให้ตามหลักฐาน E2/E3 ไม่ทำให้แม่แก้วสารภาพลักพาตัว",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F5_QA_04",
+          "id": "F5_Q004",
+          "guard_ids": [
+            "F5_KAEW_CAN_SPEAK"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "แม่แก้วอยากให้ทีมทำอะไรต่อ?",
+          "aliases": [],
+          "answer": "เอาความจริงไปให้คนเป็นเห็น และให้ผู้มีส่วนผิดยืนรับผิด ไม่ใช่แค่สัญญาว่าจะไม่ลืม",
+          "speaker": "แม่แก้ว",
+          "kind": "npc",
+          "requirements": [
+            "พิธีหยุดแล้วและแม่แก้วมีอิสระพูด"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F5_Q005",
+          "guard_ids": [
+            "F5_KAEW_CAN_SPEAK"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "คำสัญญาว่าจะเปิดโปงอย่างเดียวพอไหม?",
+          "aliases": [],
+          "answer": "คำสัญญาข้าเคยฟังมาแล้ว เอาหลักฐานไปให้คนเป็นเห็น",
+          "speaker": "แม่แก้ว",
+          "kind": "npc",
+          "requirements": [
+            "แม่แก้วพูดได้ใน F5"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (quoted)",
+          "runbook_id": null,
+          "id": "F5_Q006",
+          "guard_ids": [
+            "F5_KAEW_CAN_SPEAK"
+          ],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "เรามีหลักฐานเอาผิดวิชัยพอหรือยัง?",
+          "aliases": [],
+          "answer": "ต้องแยกบันทึกที่ดิน สมุดดล คำให้การตัวประกัน และเอกสารที่ทีมเก็บจริง การมีหลักฐานไม่เท่ากับส่งต่อเจ้าหน้าที่หรือเปิดเผยแล้ว",
+          "speaker": "DM",
+          "kind": "document",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F5_Q007",
+          "guard_ids": [],
+          "delivery": "evidence_readout",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "แม่แก้วจะพยายามฆ่าวิชัยในกรณีไหน?",
+          "aliases": [],
+          "answer": "Execution Attempt จะมีได้ก็ต่อเมื่อแม่แก้วเป็นอิสระและมีร่าง/แรงที่เข้าถึงวิชัยจริง วิชัยยังมีชีวิตและอยู่ในระยะจริง รวมทั้งเงื่อนไขความโกรธ/หลักฐานตาม F5 ครบ ไม่ใช่เพราะพิธีหยุดอย่างเดียว",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "เงื่อนไข Execution Attempt ที่ระบุใน F5 ครบจริง"
+          ],
+          "dm_note": "ไม่ฆ่าวิชัยจากผล Failure ปกติเพียงอย่างเดียว",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "F5_Q008",
+          "guard_ids": [
+            "F5_EXECUTION_REACHABLE"
+          ],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "ช่วยวิชัยจากแม่แก้วได้ไหม แม้เขาเป็นคนร้าย?",
+          "aliases": [],
+          "answer": "ได้หากผู้เล่นอยู่ในระยะและลงมือแทรกแซงสำเร็จตาม Combat Lite หรือแสดงหลักฐาน/แผนรับผิดที่ใช้ยับยั้งได้จริง",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "Execution Attempt เกิดขึ้นจริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F5_Q009",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "ถ้าวิชัยถูกคุมตัวไปแล้ว แม่แก้วฆ่าเขาได้ไหม?",
+          "aliases": [],
+          "answer": "ไม่ได้ในฉากนี้ ถ้าวิชัยไม่อยู่ในระยะจริง จะไม่มี Execution Attempt แบบวาร์ปไปฆ่าเขา",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F5_Q010",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "question": "ทีมจะนำหลักฐานไปเปิดเผยให้คนอื่นทราบอย่างไร?",
+          "aliases": [
+            "ทีมจะเปิดเผยหลักฐานที่มีอย่างไร?"
+          ],
+          "answer": "ให้ทีมระบุจะเปิดเผยเอกสารชิ้นใด ต่อเจ้าหน้าที่หรือชุมชนกลุ่มใด และมีการส่งมอบหรือประกาศเกิดขึ้นจริงใน Epilogue จึงตั้ง FLOOD_TRUTH_DISCLOSED=true; แค่สัญญากับแม่แก้วยังไม่พอสำหรับ Ending A",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "การเปิดเผยจริงเป็นเงื่อนไข Ending A แยกจากการเก็บเอกสาร",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "F5_Q011",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "id": "F5_Q012",
+          "question": "ถ้าแม่แก้วยังเป็นแค่เสียงหลังพิธีหยุด จะคุยกันได้ไหม?",
+          "aliases": [],
+          "answer": "ได้ เสียงหรือเงาจากกำไลสื่อสารเรื่องความรับผิดและข้อเสนอของทีมใน F5 ได้ ไม่ต้องคืนร่าง; แต่การคว้าตัว/ฆ่าวิชัยต้องมีพลังและระยะเข้าถึงที่เกิดขึ้นจริง",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [
+            "RITUAL_STOPPED"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F5",
+          "id": "F5_Q013",
+          "question": "เพียงรับปากว่าจะเปิดเผยอดีต ได้ Ending A เลยไหม?",
+          "aliases": [],
+          "answer": "ไม่ได้ ต้องมีการส่งมอบหลักฐานหรือการเปิดเผยจริงต่อผู้รับที่ระบุได้ใน Epilogue และตั้ง FLOOD_TRUTH_DISCLOSED=true โดยยังต้องผ่านเงื่อนไขคนรอด พิธีหยุด และแม่แก้วสงบ",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    },
+    {
+      "scene": "F6",
+      "title": "แรงสะท้อนจากพันธนาการ (ฉากทางเลือก / ไม่จับเวลา)",
+      "questions": [
+        {
+          "scene": "F6",
+          "question": "เวลาใกล้หมดหรือยัง?",
+          "aliases": [
+            "เวลาใกล้หมดหรือยัง",
+            "ตีสามจะเกิดอะไร",
+            "มีเวลาจำกัดก่อนเพิ่มตายหรือไม่?"
+          ],
+          "answer": "ไม่มีการจับเวลา ไม่ว่าเล่นนานแค่ไหนก็ไม่ทำให้ F6 เกิด; เปิด F6 เฉพาะลงมือผิดวิธีกับกำไลหรือด้ายจริง หลังมีสัญญาณเตือนและโอกาสตอบสนอง",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "dm_note": "กฎ DM เท่านั้น ไม่อ่านเป็นบท NPC, ไม่ใช้ TIME_MINUTES/ritual_toll",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": "F6_QA_01",
+          "id": "F6_Q001",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "question": "ตัดด้ายผิดจะตายไหม?",
+          "aliases": [
+            "ตัดด้ายผิดจะตายไหม",
+            "ผูกอยู่ต้องทำไง"
+          ],
+          "answer": "หยุดมือก่อน! ด้ายมันกำลังดึงกลับ!",
+          "kind": "npc",
+          "speaker": "แม่แก้ว",
+          "requirements": [
+            "มี Action ผิดเสี่ยงที่เกิดจริง · แม่แก้วสื่อสารได้"
+          ],
+          "dm_note": "เตือนและให้โอกาสตอบสนองตาม Core/Combat; ไม่มี DC/DMG ใหม่จาก Q&A",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F6_QA_02",
+          "id": "F6_Q002",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "question": "พาเพิ่มออกแล้วปลอดภัยไหม?",
+          "aliases": [
+            "พาเพิ่มออกแล้วปลอดภัยไหม",
+            "ช่วยเพิ่มต้องรอเวลาไหม",
+            "ช่วยเพิ่มออกจากเรือนแล้วจะรอดแน่ไหม?"
+          ],
+          "answer": "การพาเพิ่มออกจากพื้นที่ช่วยเรื่องความปลอดภัยทางกายภาพ แต่ต้องปลดด้ายที่ผูกชื่อจริงจึงพ้นอิทธิพลของพิธี",
+          "kind": "npc",
+          "speaker": "ผู้บรรยาย DM",
+          "requirements": [],
+          "dm_note": "ไม่มีการตายเพราะรอนาน; หยุดแกนสมบูรณ์แล้วปลดสายทั้งสาม",
+          "origin": "Q&A Runbook v5.2 (DM paraphrase)",
+          "runbook_id": "F6_QA_03",
+          "id": "F6_Q003",
+          "guard_ids": [],
+          "delivery": "npc_dialogue",
+          "audience": "dm_review_before_player",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "question": "ต้องเข้าฉาก F6 เมื่อไร?",
+          "aliases": [],
+          "answer": "มีคนอยู่ในระยะกำไลหรือด้าย และลงมือกระชาก/ตัดผิดวิธีจริงหลังได้รับคำเตือนกับจังหวะตอบสนองเท่านั้น จึง F6_TRIGGERED=true; การขู่เฉย ๆ หรือ Combat ทั่วไปไม่ใช่เหตุ",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "F6_Q004",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "question": "ถ้าดึงหรือตัดด้ายผิดจะเกิดอะไรขึ้น?",
+          "aliases": [
+            "ทีมจะหยุดมือหรือคุ้มกันใครได้ทัน?"
+          ],
+          "answer": "หากมีคนตัดหรือกระชากกำไลและด้ายผิดวิธี ให้แสดงสัญญาณแรงดึงอย่างชัดเจนก่อนเปิดโอกาสให้หยุดมือ ป้องกัน ช่วยเหลือ หรือถอย แล้วจึงตัดสินผลตามกติกาเดิม",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [
+            "มี Action เสี่ยงที่เกิดขึ้นจริง"
+          ],
+          "dm_note": "ห้ามเพิ่มความเสียหาย ค่า DC หรือเหตุเสียชีวิตนอกกติกาเดิม",
+          "origin": "Story Script v5.3 (approved continuity adaptation)",
+          "runbook_id": null,
+          "id": "F6_Q005",
+          "guard_ids": [
+            "F6_OCCURRED"
+          ],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "question": "ถ้าปลดกำไลสำเร็จแล้วต้องเกิด F6 ต่อหรือไม่?",
+          "aliases": [],
+          "answer": "ไม่ต้อง หาก RITUAL_STATUS=stopped ให้ไป F5 ได้ ไม่บังคับเปิดฉากแรงสะท้อน",
+          "speaker": "DM",
+          "kind": "action",
+          "requirements": [],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F6_Q006",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "question": "ใครอยู่ใกล้แกนตอนแรงสะท้อนเกิดขึ้น?",
+          "aliases": [
+            "ใครอยู่ใกล้แกนตอนเกิดแรงสะท้อน?"
+          ],
+          "answer": "ตรวจตำแหน่งจริงของผู้เล่น วิชัย ตัวประกัน และแม่แก้วตอนเกิดแรงสะท้อน ใครไม่ได้อยู่ใกล้แกนต้องไม่ถูกนับว่าอยู่ตรงนั้น",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [
+            "แรงสะท้อน F6 เกิดจาก Action จริง"
+          ],
+          "dm_note": "",
+          "origin": "Story Script v5.2 (DM adaptation)",
+          "runbook_id": null,
+          "id": "F6_Q007",
+          "guard_ids": [],
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        },
+        {
+          "scene": "F6",
+          "id": "F6_Q008",
+          "question": "วิชัยขู่จะกระชากด้าย แต่ยังไม่ได้ลงมือ ต้องเข้า F6 ไหม?",
+          "aliases": [],
+          "answer": "ไม่ต้อง เมื่อเป็นเพียงคำขู่หรือถูกห้ามลงมือก่อนถึงแกน ยังไม่เกิด F6; ต้องมีการกระทำผิดกับกำไล/ด้ายจริงหลังเห็นคำเตือนและมีโอกาสหยุดหรือ Guard",
+          "kind": "action",
+          "speaker": "DM",
+          "requirements": [],
+          "guard_ids": [],
+          "dm_note": "",
+          "origin": "Story Script v5.3 (10 approved continuity decisions)",
+          "runbook_id": null,
+          "delivery": "dm_action_guidance",
+          "audience": "dm_only",
+          "stateMutationOnView": false,
+          "requiresDmApprovalBeforeSend": true
+        }
+      ]
+    }
+  ],
+  "qaCount": 206,
+  "codexExampleCoverage": "65/65 representative sample questions mapped to one answer intent each; not runtime verified",
+  "newV53QuestionIds": [
+    "B4_Q006",
+    "C5_Q011",
+    "D4_Q005",
+    "D5_Q005",
+    "E1_Q004",
+    "E2_Q009",
+    "E4_Q008",
+    "E5_Q014",
+    "E5_Q015",
+    "H1_Q009",
+    "E6_Q006",
+    "F1_Q005",
+    "F2_Q007",
+    "F4_Q006",
+    "F5_Q012",
+    "F5_Q013",
+    "F6_Q008"
+  ],
+  "modifiedQuestionIds": [
+    "B4_Q004",
+    "B4_Q005",
+    "C5_Q003",
+    "C5_Q005",
+    "D2_Q001",
+    "D3_Q004",
+    "D5_Q001",
+    "D5_Q003",
+    "E2_Q008",
+    "E4_Q001",
+    "E4_Q002",
+    "E4_Q003",
+    "E5_Q007",
+    "E5_Q013",
+    "F1_Q001",
+    "F2_Q001",
+    "F2_Q004",
+    "F4_Q002",
+    "F5_Q003",
+    "F5_Q008",
+    "F5_Q011",
+    "F6_Q001",
+    "F6_Q004",
+    "F6_Q005",
+    "H1_Q001",
+    "H1_Q004",
+    "H1_Q006"
+  ],
+  "stateContractFile": "CASE001_v5.3_State_Trigger_Contract.json",
+  "schemaVersion": "v5.3.0",
+  "displayTextPolish": "Thai natural-language cleanup only; routing and scene/check IDs preserved."
+}

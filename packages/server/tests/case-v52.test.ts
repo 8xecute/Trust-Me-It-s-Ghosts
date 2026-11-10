@@ -6,11 +6,11 @@ import {caseOptions, caseView, newCase, tick} from '../src/case001/case001.js';
 import {allowedGuidedScenes, newGuided} from '../src/case001/guidedCase.js';
 import {newState51, resolveEnding51, validateSave51} from '../src/case001/storyV51.js';
 import {storyContent} from '../src/case001/v51Content.js';
-import {hasFact} from '../src/case001/caseStory.js';
+import {addFact, hasFact} from '../src/case001/caseStory.js';
 
-function room(die=20,lethal=false) {
+function room(die=20,lethal=false,version:'5.2'|'5.3'='5.2') {
  let serial=0;
- const store=new WorldStore(()=>die,true,true,true,false,'5.2',lethal),code='V52';
+ const store=new WorldStore(()=>die,true,true,true,false,version,lethal),code='V52';
  store.create(code,2);
  store.addPlayer(code,'dm');
  const send=(player:string,type:string,data:object={})=>store.apply(code,player,{id:String(++serial),type,...data}).snapshot;
@@ -492,6 +492,156 @@ test('DM can confirm and send the matched answer directly from a player question
  r.send('dm','dmAnswer',{cardId:card.id,actionId:choice.id,confirmContext:choice.confirmContext});
  assert.equal(r.panel().questions!.length,0);
  assert.match(r.view().narrative!.history.at(-1)!.text,/ดลหายก่อน/);
+});
+test('v5.3 runtime loads the story and confirms only a matching private answer',()=>{
+ const r=room(20,false,'5.3');
+ const reader=r.panel().storyReader!;
+ assert.equal(reader.scenes.length,31);
+ assert.equal(reader.checks.length,16);
+ assert.equal(Object.keys(reader.endings).length,4);
+ assert.throws(()=>r.store.dmPanel(r.code,'a'));
+ const qa=reader.qa!.find(entry=>entry.id==='A1_Q001')!;
+ assert.ok(qa);
+ assert.ok(!JSON.stringify(r.view()).includes(qa.dm_note));
+ r.send('a','askGm',{site:'A',text:'ใครหายไปบ้าง?'});
+ const before=r.state();
+ const card=r.panel().questions![0];
+ assert.deepEqual(r.state(),before);
+ assert.deepEqual(card.suggestions.map(choice=>choice.id),[qa.id]);
+ assert.throws(()=>r.send('a','dmReply',{cardId:card.id,qaId:qa.id,text:qa.answer}));
+ assert.throws(()=>r.send('dm','dmReply',{cardId:card.id,qaId:'A1_Q002',text:qa.answer}));
+ r.send('dm','dmReply',{cardId:card.id,qaId:qa.id,text:qa.answer});
+ assert.match(r.view().narrative!.history.at(-1)!.text,/ประเสริฐ · ดลหายก่อน/);
+ r.send('a','askGm',{site:'A',text:'ใครเดินผ่านตรงนี้เมื่อวาน?'});
+ assert.deepEqual(r.panel().questions![0].suggestions,[]);
+});
+test('v5.3 keeps the grove question separate from land sales and hides private testimony',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B2');
+ r.send('a','askGm',{site:'B',text:'วิชัยเข้าสวนคืนไหนแน่?'});
+ const card=r.panel().questions![0];
+ assert.deepEqual(card.suggestions.map(choice=>choice.id),['B2_Q006']);
+ r.send('dm','dmDismiss',{cardId:card.id});
+ r.scene('B3');
+ r.send('a','askGm',{site:'B',text:'คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'});
+ assert.deepEqual(r.panel().questions![0].suggestions,[]);
+});
+for(const reason of ['called','followed'])test('v5.3 requires the '+reason+' route and actual arrival before E5',()=>{
+ const r=room(20,false,'5.3');
+ r.toE();
+ assert.throws(()=>r.event('wichai-arrived'));
+ assert.throws(()=>r.scene('E5'));
+ assert.throws(()=>r.send('a','guided',{command:'v51:wichai-route:'+reason}));
+ r.event('wichai-route:'+reason);
+ assert.throws(()=>r.scene('E5'));
+ r.event('wichai-arrived');
+ r.scene('E5');
+ assert.deepEqual(r.state().v51!.wichaiArrival53,{reason,arrived:true});
+});
+
+test('v5.3 allows a controlled release and requires evidence selection before disclosure',()=>{
+ const r=room(20,false,'5.3');
+ r.toE();
+ const checkpoint=r.saved(), state=checkpoint.world.case001!;
+ state.guided!.scene='E4';
+ state.guided!.presented.push('E4');
+ state.key=true;
+ state.v51!.coreApproached=true;
+ state.evidence.push('E05','E07');
+ state.v51!.FLOOD_EVIDENCE_COLLECTED=true;
+ addFact(state,'gate-truth');
+ r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ assert.throws(()=>r.event('ritual-release'));
+ const warned=r.saved();
+ warned.world.case001!.v51!.coreWarningDelivered=true;
+ r.store.delete(r.code);r.store.restore(r.code,warned);
+ assert.throws(()=>r.send('a','guided',{command:'v51:ritual-release'}));
+ r.event('ritual-release');
+ assert.equal(r.state().v51!.RITUAL_STATUS,'stopped');
+ assert.ok(Object.values(r.state().v51!.RITUAL_TETHER_INTACT).every(tether=>!tether));
+ const finale=r.saved();
+ finale.world.case001!.guided!.phase='FINAL';
+ finale.world.case001!.guided!.scene='F5';
+ finale.world.case001!.guided!.presented.push('F5');
+ r.store.delete(r.code);r.store.restore(r.code,finale);
+ assert.throws(()=>r.event('disclosed'));
+ const select=(evidence:string[],recipient:string)=>r.send('a','guided',{command:'select-disclosure',target:JSON.stringify({evidence,recipient})});
+ assert.throws(()=>select(['E07','forged'],'ประเสริฐ'));
+ select(['E07'],'ประเสริฐ');
+ assert.equal(r.state().v51!.pastDisclosed,false);
+ r.event('disclosed');
+ assert.equal(r.state().v51!.pastDisclosed,true);
+});
+test('v5.3 needs two separate documents before comparing the flood timeline',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B4');
+ r.event('read-gate:B4');
+ assert.throws(()=>r.scene('H1'));
+ r.scene('B5');r.next();r.scene('C2');r.scene('C5');
+ assert.ok(!r.view().case001!.actions.some(action=>action.id.startsWith('dice:C5')));
+ r.event('read-shelter');
+ assert.equal(r.view().case001!.actions.find(action=>action.id.startsWith('dice:C5'))?.dice?.dc,17);
+ r.act('dice:C5_EVACUATION_RECORDS:INT');
+ assert.equal(r.state().v51!.floodSources53?.compared,true);
+ assert.equal(r.state().v51!.floodSources53?.peopleProven,undefined);
+ r.scene('H1');
+});
+
+test('v5.3 protection can change without affecting the ritual tether',()=>{
+ const r=room(20,false,'5.3');
+ r.toE();r.act('open');r.scene('E2');
+ assert.equal(r.view().case001!.rescued,0);
+ r.event('protect-hostage:ดล');
+ assert.equal(r.view().case001!.rescued,1);
+ assert.equal(r.state().v51!.RITUAL_TETHER_INTACT.ดล,true);
+ r.event('lose-protection:ดล');
+ assert.equal(r.view().case001!.rescued,0);
+});
+test('v5.3 completes Ending A after the team hands off the verified evidence',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B4');r.event('read-gate:B4');
+ r.scene('B5');r.next();r.scene('C2');r.scene('C5');r.event('read-shelter');
+ r.next();r.scene('D5');r.next();
+ r.rescue();r.scene('E4');r.act('search-ritual-bag');r.event('collect-land');
+ r.scene('H1');r.event('history-supported');r.event('evidence-supported');r.event('plan-credible');
+ r.scene('E4');r.act('seal3');r.next();r.event('voluntary-calm');r.scene('F5');
+ assert.equal(resolveEnding51(r.state()),'C');
+ r.send('a','guided',{command:'select-disclosure',target:JSON.stringify({evidence:['E07'],recipient:'ประเสริฐ'})});
+ assert.equal(resolveEnding51(r.state()),'C');
+ r.event('disclosed');r.act('finish');
+ assert.equal(r.state().report!.ending,'A');
+});
+
+test('v5.3 allows Kaew to speak through the bracelet without restoring her body',()=>{
+ const r=room(20,false,'5.3');r.toE();r.scene('E4');
+ const save=r.saved();
+ save.world.case001!.v51!.KAEW_D_RESULT='won';
+ save.world.case001!.v51!.KAEW_TEMP_DISPERSED=true;
+ r.store.delete(r.code);r.store.restore(r.code,save);
+ assert.throws(()=>r.event('bracelet-reacted'));
+ r.act('approach-ritual-core');
+ r.event('bracelet-reacted');
+ assert.equal(r.state().v51!.kaewVoice53,true);
+ assert.equal(r.state().v51!.KAEW_TEMP_DISPERSED,true);
+});
+test('v5.3 rechecks the document and witness gates before delivering a Q&A reply',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B3');
+ r.send('a','askGm',{site:'B',text:'คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'});
+ assert.deepEqual(r.panel().questions![0].suggestions,[]);
+ r.send('dm','guided',{command:'protect'});
+ assert.equal(r.panel().questions![0].suggestions[0]?.id,'B3_Q002');
+ r.send('dm','dmDismiss',{cardId:r.panel().questions![0].id});
+ r.scene('B5');r.next();r.scene('C2');r.next();r.scene('D5');r.next();r.scene('E4');
+ r.send('a','askGm',{site:'E',text:'กำไลคืออะไร?'});
+ const card=r.panel().questions![0];
+ assert.deepEqual(card.suggestions,[]);
+ assert.throws(()=>r.send('dm','dmReply',{cardId:card.id,qaId:'E4_Q001',text:'ก่อนอ่าน'}));
+ r.event('read-ritual-book');
+ const answer=r.panel().questions![0].suggestions[0];
+ assert.equal(answer.id,'E4_Q001');
+ r.send('dm','dmReply',{cardId:card.id,qaId:answer.id,text:answer.answer});
+ assert.match(r.view().narrative!.history.at(-1)!.text,/กำไลทองเหลือง/);
 });
 test('shared continuity follows only delivered story and keeps the previous chapter separate',()=>{
  const r=room();
