@@ -643,6 +643,74 @@ test('v5.3 rechecks the document and witness gates before delivering a Q&A reply
  r.send('dm','dmReply',{cardId:card.id,qaId:answer.id,text:answer.answer});
  assert.match(r.view().narrative!.history.at(-1)!.text,/กำไลทองเหลือง/);
 });
+test('v5.3 player prompts always resolve to an eligible answer in the current scene',()=>{
+ const r=room(20,false,'5.3');
+ const verify=()=>{
+  const prompts=r.view().guided!.prompts;
+  for(const prompt of prompts) {
+   r.send('a','askGm',{site:r.view().caseMap!.site,text:prompt});
+   const card=r.panel().questions![0];
+   assert.equal(card.suggestions.length,1,prompt);
+   r.send('dm','dmDismiss',{cardId:card.id});
+  }
+ };
+ verify();
+ r.scene('A3');r.next();r.scene('B3');verify();
+ assert.ok(!r.view().guided!.prompts.includes('คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'));
+ r.send('dm','guided',{command:'protect'});
+ assert.ok(r.view().guided!.prompts.includes('คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'));
+ verify();
+});
+
+test('v5.3 DM can inspect an action consequence before recording it and see the recorded result',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B4');
+ const before=r.saved();
+ const event=r.panel().storyEvents!.find(event=>event.id==='read-gate:B4')!;
+ assert.match(event.when!,/เปิดแฟ้ม/);
+ assert.match(event.effect!,/C5/);
+ assert.deepEqual(r.saved(),before);
+ r.event(event.id);
+ assert.ok(!r.panel().storyEvents!.some(item=>item.id===event.id));
+ assert.ok(r.panel().storySummary!.some(text=>text.includes('บันทึกแล้ว') && text.includes('เปิดแฟ้ม')));
+ assert.ok(!JSON.stringify(r.view()).includes(event.effect!));
+});
+for(const ending of ['A','B','C','D'] as const)test('v5.3 playable route delivers Ending '+ending+' to all six investigators',()=>{
+ const r=room(20,false,'5.3');
+ if(ending==='A') {
+  r.scene('A3');r.next();r.scene('B4');r.event('read-gate:B4');
+  r.scene('B5');r.next();r.scene('C2');r.scene('C5');r.event('read-shelter');
+  r.next();r.scene('D5');r.next();
+ } else r.toE();
+ if(ending==='D')r.send('dm','dmSessionControl',{command:'withdraw'});
+ else {
+  if(ending==='C') {
+   r.act('open');r.scene('E2');r.act('escort:ดล');
+   r.send('a','guided',{command:'evacuate'});
+  } else r.rescue();
+  r.scene('E4');
+  if(ending!=='C') {
+   r.act('search-ritual-bag');r.event('collect-land');r.event('evidence-supported');
+  }
+  if(ending==='A') {
+   r.scene('H1');r.event('history-supported');r.event('plan-credible');r.scene('E4');
+  }
+  r.act('seal3');r.next();r.scene('F5');
+  if(ending==='A') {
+   r.event('voluntary-calm');
+   r.send('a','guided',{command:'select-disclosure',target:JSON.stringify({evidence:['E07'],recipient:'ประเสริฐ'})});
+   r.event('disclosed');
+  }
+  if(ending==='B')r.event('kaew-hostile');
+  r.act('finish');
+ }
+ assert.equal(r.state().report!.ending,ending);
+ r.publish('ending:'+ending);
+ for(const player of r.players) {
+  assert.ok(r.view(player).case001!.report);
+  assert.ok(r.view(player).narrative!.history.some(beat=>beat.eventId==='ending:'+ending));
+ }
+});
 test('shared continuity follows only delivered story and keeps the previous chapter separate',()=>{
  const r=room();
  assert.equal(r.panel().sharedStory!.at(-1)!.scene,'A1');

@@ -251,8 +251,8 @@ export function DmWorkspace({
             <p>ให้ผู้สืบสวนคนหนึ่งกดยืนยันในหน้าของตน จากนั้นบทใหม่จะมาอยู่ในคิวนี้</p>
             <button type="button" disabled={!available} onClick={()=>action('guided',{command:'cancel'})}>ยกเลิกการเปลี่ยนบท</button>
            </> : leadScenes.length>0 ? <>
-            <h3>คิวหมดแล้ว · เปิดฉากนำทาง</h3>
-            <p>เลือกฉากและจ่ายบทเปิดตรงนี้ เพื่อให้ทีมมีเบาะแสไปต่อ</p>
+            <h3>เล่าฉากนี้จบแล้ว · เลือกทำต่อ</h3>
+            <p>ตรวจคำถามหรือบันทึกผลที่เกิดขึ้นในฉากนี้ก่อน เมื่อทีมพร้อมจึงเปิดฉากถัดไป</p>
             {leadScenes.map(scene=><button key={scene.id} type="button" className="primary" disabled={!available} onClick={()=>openScene(scene.id)}>เปิด {sceneName(scene.id)}</button>)}
            </> : progression?.canPropose ? <>
             <h3>ขอให้ทีมยืนยันไป{nextChapter}</h3>
@@ -282,6 +282,12 @@ export function DmWorkspace({
             <DmStoryEvents events={reactionEvents} connected={available} action={action} expanded/>
           </div>}
           {guided && ['5.2','5.3'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel.sharedStory ?? []} isDm onHistory={()=>setDmTab('history')}/>}
+            {!nextCard && (sceneEvents.length>0 || guided?.scene==='H1' || guided?.scene==='B3') && <section className="dm-quick-card">
+              <h4>บันทึกสิ่งที่ทีมทำในฉากนี้</h4>
+              {guided?.scene==='H1' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐหลังวิเคราะห์หลักฐานครบ</button>}
+              {guided?.scene==='B3' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'protect'})}>ยืนยันว่าคุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
+              <DmStoryEvents events={sceneEvents} connected={available} action={action} expanded/>
+            </section>}
         </div>
         <aside className="dm-live-side" aria-label="เครื่องมือประจำฉาก">
           {!guided?.transition && !world.case001.report && <div className="dm-quick-grid">
@@ -301,12 +307,7 @@ export function DmWorkspace({
                 <button type="button" disabled={!available || !!nextCard} onClick={()=>{setSelectedLine(line.id);action('guided',{command:'v51:context:'+line.id.slice('guided-talk:'.length)});}}>เปิดใช้บทนี้</button>
               </> : <button type="button" disabled={!available} onClick={()=>action('caseDm',{targetId:lead?.id,actionId:line.id})}>{sent[line.id]?'ส่งอีกครั้ง':'ส่งบทพูดให้ทีม'}</button>}
             </section>}
-            {!nextCard && (sceneEvents.length>0 || guided?.scene==='H1' || guided?.scene==='B3') && <section className="dm-quick-card">
-              <h4>เหตุการณ์ในฉาก</h4>
-              {guided?.scene==='H1' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐหลังวิเคราะห์หลักฐานครบ</button>}
-              {guided?.scene==='B3' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'protect'})}>ยืนยันว่าคุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
-              <DmStoryEvents events={sceneEvents} connected={available} action={action} expanded/>
-            </section>}
+
           </div>}
           <section className="dm-quick-card dm-quick-reference">
             <h4>สถานะคดี</h4>

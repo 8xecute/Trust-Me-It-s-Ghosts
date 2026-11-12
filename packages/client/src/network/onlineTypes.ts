@@ -56,7 +56,7 @@ export type CaseDmPanel = {
   sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
   guide?:GmChapter[];
   guidedScenes?:GuidedScene[];
-  storyEvents?:{id:string;label:string;detail?:string}[];
+  storyEvents?:{id:string;label:string;detail?:string;when?:string;effect?:string}[];
   storySummary?:string[];
   sharedStory?:NarrativeBeat[];
   backup?:{phase:string;scene:string;title:string;opened:boolean;hints:string[];alternatives:string[];exit:string;delivered:{sequence:number;text:string}[];blockers:string[];progression?:{to?:string;leadScenes:string[];canPropose:boolean;reason?:string};battle:boolean};

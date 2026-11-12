@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import {availableQa53} from './qa53.js';
 import { randomUUID } from 'node:crypto';
 import type { World } from '../world.js';
 import { addFact, advanceStory, hasFact, v4 } from './caseStory.js';
@@ -143,7 +144,8 @@ export function guidedView(w:World) {
  return {version:g.version,phase:g.phase,scene:g.scene,
   title:seen && noTimer(s)?storyContent(s).scenes[g.scene]?.title:undefined,
   previousLead:noTimer(s)?g.journals.at(-1)?.next_destination_rationale:undefined,
-  cue:seen?noTimer(s) && w.dmSession ? w.dmSession.sent?.['guided-cue:'+g.scene]?.text : scene.entry_cue:undefined,prompts:seen?scene.suggested_questions:[],
+  cue:seen?noTimer(s) && w.dmSession ? w.dmSession.sent?.['guided-cue:'+g.scene]?.text : scene.entry_cue:undefined,
+  prompts:seen && !w.caseMap?.battle ? g.version==='5.3'?availableQa53(s).map(question=>question.question):scene.suggested_questions:[],
   questionOptions:!noTimer(s) && seen && !w.caseMap?.battle && !s.report ? guidedDialogue(s).filter(line=>line.label.startsWith('ถาม') || s.v51 && 'field' in line && line.field==='responses' && line.label.endsWith('?')).map(line=>({label:line.label,speaker:line.speaker})) : [],
   disclosureOptions:disclosureOptions53(s),canAnalyzeHistory:!noTimer(s) && g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
 }

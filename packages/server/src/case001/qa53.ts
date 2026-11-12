@@ -27,6 +27,11 @@ export function qaForScene53(scene:string) {
 
 const normalize=(value:string)=>value.normalize('NFC').replace(/[\p{White_Space}\p{Punctuation}]/gu,'').toLowerCase();
 
+export function availableQa53(state:CaseState) {
+ return qaForScene53(state.guided?.scene ?? '').filter(question=>
+  matchQa53(state,question.question).some(answer=>answer.id===question.id));
+}
+
 export function matchQa53(state:CaseState,query:string) {
  const scene=state.guided?.scene;
  if(state.guided?.version!=='5.3' || !scene || !state.v51 || !state.guided.presented.includes(scene)) return [];

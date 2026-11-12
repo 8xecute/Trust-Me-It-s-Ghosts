@@ -39,6 +39,23 @@ try{
   await set(dm,'textarea[name="answer"]',reply);
   await click(dm,'ยืนยันส่งคำตอบ');
   for(const player of [a,b])await wait(async()=> (await text(player)).includes(reply),'edited reply broadcast');
+  for(const player of [a,b])await wait(()=>evaluate(player,`(()=>{const root=document.querySelector('[aria-label="เส้นเรื่องของทีม"]');return root?.textContent.includes('เปิดฉากนี้')&&root.textContent.includes(${JSON.stringify(reply)});})()`),'opening and answer stay together');
+  await click(dm,'คู่มือฉาก',true);
+  await click(dm,'A3 ',true);await click(dm,'เริ่มฉากนี้');
+  await click(dm,'ส่งข้อความนี้ให้ผู้เล่น');
+  await click(dm,'ส่งสรุปและขอยืนยันไปบท B');
+  await click(a,'ยืนยันไปบท B');
+  await click(dm,'ส่งข้อความนี้ให้ผู้เล่น');
+  await click(dm,'คู่มือฉาก',true);
+  await click(dm,'B4 ',true);await click(dm,'เริ่มฉากนี้');
+  await click(dm,'ส่งข้อความนี้ให้ผู้เล่น');
+  const eventSelector='.dm-event-actions select';
+  await set(dm,eventSelector,'read-gate:B4');
+  await wait(async()=> (await text(dm)).includes('เพิ่มหลักฐานเวลาเปิดประตูน้ำ ใช้เทียบกับสมุดยายใน C5/H1'),'consequence preview');
+  const shot=await cmd('Page.captureScreenshot',{format:'png',captureBeyondViewport:true},dm);
+  writeFileSync(path.join(out,'dm-action-preview.png'),Buffer.from(shot.data,'base64'));
+  await click(dm,'ยืนยันบันทึกผล');
+  await wait(async()=> (await text(dm)).includes('บันทึกแล้ว · ยืนยันว่าทีมเปิดแฟ้มเก่า'),'saved result feedback');
   console.log('PASS: v5.3 browser Q&A, editable reply, shared delivery.');
   writeFileSync(path.join(out,'result.txt'),'PASS v5.3 browser Q&A\n');
  }else{

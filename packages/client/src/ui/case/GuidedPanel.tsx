@@ -1,4 +1,5 @@
 import type { GuidedView, GuidedScene, CaseDmPanel } from '../../network/onlineTypes';
+import {useState} from 'react';
 import { DmScript } from '../gm/DmScript';
 
 export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isDm=false,dmNavigation=true,showStory=true,site,pendingQuestions=0}:{
@@ -71,11 +72,24 @@ export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isD
  </section>;
 }
 export function DmStoryEvents({events,connected,action,dialogue=false,expanded=false}:{dialogue?:boolean;expanded?:boolean;events:NonNullable<CaseDmPanel['storyEvents']>;connected:boolean;action:(type:string,payload?:object)=>void}) {
+ const [selected,setSelected]=useState('');
  if(!events.length)return null;
- const items=<div className="dm-event-actions">{events.map(event=><div key={event.id} className="dm-event-action">
-   <p>{event.label}</p>{event.detail && <p className="note">{event.detail}</p>}
-   <button type="button" disabled={!connected} onClick={()=>action('guided',{command:'v51:'+event.id})}>{dialogue?'เปิดใช้บทนี้':'บันทึกผลนี้'}</button>
- </div>)}</div>;
+ const event=events.find(event=>event.id===selected);
+ const items=<div className="dm-event-actions">
+  <label>ทีมทำอะไรสำเร็จหรือเกิดเหตุใดขึ้นแล้ว
+   <select value={event?.id ?? ''} disabled={!connected} onChange={event=>setSelected(event.target.value)}>
+    <option value="">เลือกผลที่เกิดขึ้นจริง</option>
+    {events.map(event=><option key={event.id} value={event.id}>{event.label}</option>)}
+   </select>
+  </label>
+  {event && <div className="dm-event-action">
+   <h4>{event.label}</h4>
+   {event.when && <p><strong>กดเมื่อ</strong> {event.when}</p>}
+   {event.detail && <p className="note">{event.detail}</p>}
+   <p><strong>หลังกด</strong> {event.effect ?? (dialogue?'เปิดบทนี้ให้เลือกส่ง':'บันทึกเหตุการณ์นี้ตามที่ยืนยัน')}</p>
+   <button type="button" disabled={!connected} onClick={()=>{action('guided',{command:'v51:'+event.id});setSelected('');}}>{dialogue?'ยืนยันเปิดใช้บทนี้':'ยืนยันบันทึกผล'}</button>
+  </div>}
+ </div>;
  if(expanded)return items;
  return <details className="dm-secondary-disclosure"><summary>{dialogue?'เตรียมบทพูดเสริม':'บันทึกผลที่เกิดขึ้นจริง'}</summary>{items}</details>;
 }

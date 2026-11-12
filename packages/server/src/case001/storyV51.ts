@@ -1,4 +1,5 @@
 import type { CaseState } from './case001.js';
+import {readFileSync} from 'node:fs';
 import type { World } from '../world.js';
 import { emitCaseBeat } from './case001.js';
 import { addFact, hasFact } from './caseStory.js';
@@ -34,8 +35,9 @@ export type State51={
  humanCaseSupported:boolean|null;pastDisclosed:boolean;disclosurePlan:boolean|null;
  contextConfirmed:string[];deathKnown:Record<string,Hostage[]>;
  pending?:{kind:'crossfire';target:Hostage;announced:boolean}|{kind:'execution';announced:boolean};
- adjudications:{event:string;minute?:number}[];
+ adjudications:{event:string;minute?:number;label?:string;effect?:string}[];
 };
+const actionHelp=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.dm-action-help.json',import.meta.url),'utf8')) as Record<string,{when:string;effect:string}>;
 export function newState51(lethal=false,eventDriven=false):State51 {
  return {lethal,CASE_ACCEPTED:false,KNOWN_MISSING_NAMES:false,LOCATION_B_KNOWN:false,LOCATION_C_KNOWN:false,LOCATION_D_KNOWN:false,LOCATION_E_KNOWN:false,
  TON_TRUST:'low',SUSPECT_WICHAI:'unknown',FLOOD_TRUTH:'unknown',KNOWS_WICHAI_SAVED:false,GHOST_ENCOUNTER:'not_started',GHOST_CLUE:'none',
@@ -285,6 +287,8 @@ export function storySummary51(s:CaseState) {
   else if(v.FLOOD_EVIDENCE_COLLECTED)summary.push('ทีมเก็บเอกสารปี 2534 แล้ว ยังไม่ได้เปิดเผย');
   if(v.KAEW_FINAL==='calm')summary.push('แม่แก้วยอมยุติภัยแล้ว');
  }
+ if(s.guided?.version==='5.3')for(const entry of v.adjudications.filter(entry=>entry.label).slice(-3))
+  summary.push('บันทึกแล้ว · '+entry.label+(entry.effect?' — '+entry.effect:''));
  return summary;
 }
 
@@ -308,7 +312,7 @@ export function startBacklash52(s:CaseState,actor:'player'|'wichai') {
 }
 
 export function dmOptions51(s:CaseState) {
- const v=s.v51!,g=s.guided!,out:{id:string;label:string;detail?:string}[]=[];
+ const v=s.v51!,g=s.guided!,out:{id:string;label:string;detail?:string;when?:string;effect?:string}[]=[];
  const add=(id:string,label:string,detail?:string)=>out.push({id,label,detail});
  if(g.phase==='A' && !v.lethal) add('enable-lethal','เปิดเหตุเสี่ยงถึงตายสำหรับคดีนี้',lethalAnnouncement51(s));
  if(g.scene==='D4' && v.KAEW_TRUST!=='low')add('unnecessary-attack','ยืนยันทีมโจมตีแม่แก้วโดยไม่จำเป็นจริงแล้ว');
@@ -408,11 +412,12 @@ export function dmOptions51(s:CaseState) {
    add('informed:'+witness+':'+n,'ยืนยันทีมแจ้งข่าวการเสียชีวิตของ '+n+' ให้ '+witness+' ทราบจริงแล้ว');
   }
  }
- return out;
+ return out.map(option=>({...option,...(g.version==='5.3'?actionHelp[option.id.split(':')[0]]:undefined)}));
 }
 export function command51(w:World,command:string) {
  const s=w.case001!,v=s.v51!;
- if(!dmOptions51(s).some(o=>o.id===command))throw Error('เหตุการณ์ไม่ตรงเงื่อนไขจริง');
+ const option=dmOptions51(s).find(o=>o.id===command);
+ if(!option)throw Error('เหตุการณ์ไม่ตรงเงื่อนไขจริง');
  const [kind,...parts]=command.split(':');
  if(kind==='context')v.contextConfirmed.push(parts.join(':'));
  if(kind==='enable-lethal') {v.lethal=true;emitCaseBeat(s,'v51:lethal',lethalAnnouncement51(s),'party');}
@@ -514,7 +519,7 @@ export function command51(w:World,command:string) {
   (v.deathKnown[witness]??=[]).push(target as Hostage);
   if(kind==='witness')v.contextConfirmed.push('witness:'+witness+':'+target);
  }
- v.adjudications.push({event:command,...(noTimer(s)?{}:{minute:s.minute})});
+ v.adjudications.push({event:command,...(s.guided?.version==='5.3'?{label:option.label,effect:option.effect}:{}),...(noTimer(s)?{}:{minute:s.minute})});
 }
 export function delivered51(s:CaseState,eventId:string) {
  if(noTimer(s) && s.v51) {

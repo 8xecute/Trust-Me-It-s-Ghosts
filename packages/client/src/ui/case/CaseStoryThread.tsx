@@ -6,16 +6,24 @@ export function CaseStoryThread({view,beats,isDm=false,showHistory=false,onHisto
  view:GuidedView;beats:NarrativeBeat[];isDm?:boolean;showHistory?:boolean;
  onHistory?:()=>void;onConfirm?:(id:string)=>void;connected?:boolean;
 }) {
- const latest=beats.at(-1);
+ const ordered=[...beats].sort((a,b)=>a.sequence-b.sequence);
+ const latest=ordered.at(-1);
  const sceneOf=(beat:NarrativeBeat)=>beat.scene ?? (beat.eventId.startsWith('guided-cue:')?beat.eventId.slice('guided-cue:'.length):undefined);
  const sameScene=latest && sceneOf(latest)===view.scene;
+ const currentBeats=ordered.filter(beat=>sceneOf(beat)===view.scene && beat.eventId!=='guided-cue:'+view.scene && beat.text!==view.cue);
  const next=view.transition?.to;
  const destination=next==='FINAL'?'ช่วงท้าย':'บท '+next;
  return <section className="case-story-thread" aria-label="เส้นเรื่องของทีม">
   <header><span>เส้นเรื่องของทีม</span><strong>{view.title ? view.scene+' · '+view.title : view.phase==='ENDING'?'บทสรุป':'ฉาก '+view.scene}</strong></header>
   {view.previousLead && <p className="case-thread-bridge"><strong>เหตุผลที่มาถึงช่วงนี้</strong> {view.previousLead}</p>}
   {!view.cue && view.phase!=='ENDING' && <p className="case-thread-bridge" role="status">ฉากนี้ยังรอ DM จ่ายบทเปิด</p>}
-  {latest && <div className="case-thread-latest" aria-live="polite">
+  {!showHistory && view.cue && <div className="case-thread-latest">
+   <h4>เปิดฉากนี้</h4><p className="story-text">{view.cue}</p>
+  </div>}
+  {!showHistory && currentBeats.length>0 && <ol className="case-thread-history" aria-label="เหตุการณ์ในฉากนี้ตามลำดับ">
+   {currentBeats.map(beat=><li key={beat.sequence}><p className="story-text">{beat.text}</p></li>)}
+  </ol>}
+  {!showHistory && !view.cue && latest && <div className="case-thread-latest" aria-live="polite">
    <h4>{sameScene?'เรื่องล่าสุดในฉากนี้':latest.scope==='party'?'เรื่องที่ทีมได้รับล่าสุด':'เรื่องล่าสุดที่คุณได้รับ'}{!sameScene && sceneOf(latest) ? ' · '+sceneOf(latest) : ''}</h4>
    <p className="story-text">{latest.text}</p>
   </div>}
@@ -27,8 +35,8 @@ export function CaseStoryThread({view,beats,isDm=false,showHistory=false,onHisto
    </details>
    {onConfirm && <button type="button" className="primary" disabled={!connected} onClick={()=>onConfirm(view.transition!.id)}>ยืนยันไป{destination}</button>}
   </section>}
-  {showHistory && beats.length>1 && <ol className="case-thread-history">
-   {beats.slice(0,-1).map(beat=><li key={beat.sequence}><small>{sceneOf(beat)?'ฉาก '+sceneOf(beat):'พื้นที่ '+beat.site}</small><p>{beat.text}</p></li>)}
+  {showHistory && ordered.length>0 && <ol className="case-thread-history">
+   {ordered.map(beat=><li key={beat.sequence}><small>{sceneOf(beat)?'ฉาก '+sceneOf(beat):'พื้นที่ '+beat.site}</small><p>{beat.text}</p></li>)}
   </ol>}
   {onHistory && latest && <button type="button" onClick={onHistory}>ย้อนอ่านเรื่องตามลำดับ</button>}
  </section>;
