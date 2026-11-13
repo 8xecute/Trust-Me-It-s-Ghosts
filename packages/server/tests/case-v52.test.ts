@@ -39,12 +39,14 @@ function room(die=20,lethal=false,version:'5.2'|'5.3'|'5.5'='5.2') {
  const event=(id:string)=>send('dm','guided',{command:'v51:'+id});
  const next=()=>{
   send('dm','guided',{command:'propose'});
-  send('a','guided',{command:'confirm',target:view().guided!.transition!.id});
+  if(view().guided!.transition)send(version==='5.5'?'dm':'a','guided',{command:'confirm',target:view().guided!.transition!.id});
   const cue=panel().narration.find(c=>c.current && c.eventId==='guided-cue:'+view().guided!.scene);
   if(cue)publish(cue.eventId);
  };
  const act=(actionId:string)=>{
-  send('a','caseAction',{actionId,site:view().caseMap!.site});
+  if(version==='5.5' || panel().investigators.find(entry=>entry.id==='a')?.actions.some(option=>option.id===actionId && option.check))
+   send('dm','caseDm',{targetId:'a',actionId});
+  else send('a','caseAction',{actionId,site:view().caseMap!.site});
   const check=panel().investigators.find(p=>p.id==='a')?.check;
   if(check){
    send('dm','dmRequestRoll',{targetId:'a',checkId:check.id});
@@ -96,15 +98,15 @@ test('v5.2 imports all 31 complete scenes, four endings and 48 source branches w
  }
 });
 
-test('six-player v5.2 room: private reader is passive, A2 requires an action, optional failure allows progress',()=>{
+test('six-player v5.2 room: private reader is passive, DM opens A2, optional failure allows progress',()=>{
  const r=room(1);
  const start=r.state();
  assert.equal(r.panel().storyReader!.scenes.length,31);
  assert.deepEqual(r.state(),start);
  assert.throws(()=>r.store.dmPanel(r.code,'a'));
- assert.throws(()=>r.scene('A2'));
+ r.scene('A2');
  assert.throws(()=>r.scene('F6'));
- r.act('survey-arrival');r.scene('A2');r.act('dice:A2_RADIO_ECHO:SPI');
+ r.act('dice:A2_RADIO_ECHO:SPI');
  assert.equal(r.state().storyChecks!.A2_RADIO_ECHO.at(-1)!.outcome,'failure');
  r.publish('dice:A2_RADIO_ECHO:SPI');
  assert.match(r.view().narrative!.history.at(-1)!.text,/สัญญาณหายไปแล้ว/);
@@ -120,6 +122,81 @@ test('six-player v5.2 room: private reader is passive, A2 requires an action, op
  assert.equal(r.state().minute,0);
  assert.equal(r.state().v51!.KAEW_D_RESULT,'not_met');
  assert.ok(!r.panel().guidedScenes!.some(s=>s.id==='E5'));
+});
+
+for(const version of ['5.2','5.3','5.5'] as const)test(version+' DM opens A2 and grants only a supported roll',()=>{
+ const r=room(20,false,version);
+ r.scene('A2');
+ assert.ok(!r.state().milestones.includes('arrival-investigated'));
+ const actionId='dice:A2_RADIO_ECHO:SPI';
+ const before=r.saved();
+ r.panel();r.panel();
+ assert.deepEqual(r.saved(),before);
+ assert.throws(()=>r.send('a','caseAction',{actionId,site:'A'}),/DM/);
+ assert.throws(()=>r.send('dm','dmRequestRoll',{targetId:'a',stat:'SPI',difficulty:14}),/ฉากรองรับ/);
+ assert.throws(()=>r.send('dm','caseDm',{targetId:'a',actionId:'dice:E4_BRACELET_DECODE:INT'}));
+ r.send('dm','caseDm',{targetId:'a',actionId});
+ const check=r.panel().investigators.find(entry=>entry.id==='a')!.check!;
+ const original=storyContent(r.state()).checks.find(check=>check.id==='A2_RADIO_ECHO')!;
+ assert.equal(check.dice!.stat,original.stat);
+ assert.equal(check.dice!.dc,original.dc);
+ assert.ok(!r.view().diceRequest);
+ assert.throws(()=>r.send('dm','dmRequestRoll',{targetId:'a',checkId:check.id,difficulty:original.dc===14?17:14}),/รักษา DC/);
+ r.send('dm','dmRequestRoll',{targetId:'a',checkId:check.id});
+ const request=r.view().diceRequest!;
+ assert.equal(request.die,null);
+ assert.throws(()=>r.send('b','dmRoll',{requestId:request.id}));
+ r.send('a','dmRoll',{requestId:request.id});
+ assert.equal(r.state().storyChecks!.A2_RADIO_ECHO.length,1);
+});
+
+test('v5.5 reader stays concise and DM sends reviewed Q&A directly without a player ticket',()=>{
+ const r=room(20,false,'5.5');
+ const reader=r.panel().storyReader!;
+ assert.equal(reader.scenes.length,31);
+ assert.equal(reader.qa!.length,262);
+ for(const scene of reader.scenes) {
+  assert.ok(scene.brief[0],scene.id);
+  assert.doesNotMatch(scene.brief.join(' '),/ACTION-DRIVEN|Visible Cue|DM GUIDE|<a |\*\*|^>/);
+ }
+ assert.ok(reader.scenes.find(scene=>scene.id==='A3')!.brief[0].length<250);
+ const qa=reader.qa!.find(q=>reader.sendableQaIds!.includes(q.id) && q.answer)!;
+ assert.ok(qa);
+ const state=r.state();
+ assert.equal(r.panel().questions!.length,0);
+ assert.throws(()=>r.send('a','dmSendQa',{qaId:qa.id,text:'ปลอมสิทธิ์'}));
+ assert.throws(()=>r.send('dm','dmSendQa',{qaId:'E5_Q001',text:'ผิดฉาก'}));
+ assert.throws(()=>r.send('dm','dmSendQa',{qaId:qa.id,text:''}));
+ r.send('dm','dmSendQa',{qaId:qa.id,text:qa.answer});
+ assert.deepEqual(r.state(),state);
+ assert.equal(r.panel().storyReader!.answers!.at(-1)!.qaId,qa.id);
+ for(const id of r.players)assert.ok(r.view(id).narrative!.history.at(-1)!.text.includes(qa.answer));
+ const checkpoint=r.saved();r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ assert.equal(r.panel().storyReader!.answers!.at(-1)!.qaId,qa.id);
+ r.scene('A3');
+ assert.throws(()=>r.send('dm','dmSendQa',{qaId:qa.id,text:qa.answer}));
+ const guide=r.panel().storyReader!.qa!.find(q=>q.kind==='action')!;
+ assert.equal(guide.answer,'');
+ assert.throws(()=>r.send('dm','dmSendQa',{qaId:guide.id,text:'คำสั่ง DM'}));
+});
+
+test('v5.5 DM alone controls story changes and advances without player confirmation',()=>{
+ const r=room(20,false,'5.5');
+ assert.throws(()=>r.send('a','askGm',{site:'A',text:'ข้อความ'}),/ไม่ใช้ระบบส่งข้อความ/);
+ assert.throws(()=>r.send('a','guided',{command:'propose'}),/DM/);
+ assert.throws(()=>r.send('a','caseAction',{actionId:'survey-arrival',site:'A'}),/DM/);
+ assert.throws(()=>r.send('a','guided',{command:'scene',target:'A3'}),/DM/);
+ r.scene('A3');
+ const before=r.saved();
+ assert.throws(()=>r.send('a','guided',{command:'confirm',target:'ปลอม'}),/DM/);
+ r.send('dm','guided',{command:'propose'});
+ assert.equal(r.state().guided!.phase,'B');
+ assert.equal(r.state().guided!.scene,'B1');
+ assert.equal(r.state().guided!.transition,undefined);
+ assert.equal(r.state().guided!.journals.length,before.world.case001!.guided!.journals.length+1);
+ assert.ok(r.players.every(id=>r.view(id).caseMap!.site==='B'));
+ assert.throws(()=>r.send('a','guided',{command:'evacuate'}),/DM/);
+ assert.throws(()=>r.send('a','guided',{command:'select-disclosure',target:'{}'}),/DM/);
 });
 
 test('E4 bag is required, H1 follows actual evidence and testimony without moving any player',()=>{
@@ -286,6 +363,39 @@ function c4(die=20) {
  return {...r,turn,publishC4:()=>r.publish('guided-cue:C4')};
 }
 
+test('D4 uses team turns and native DM attacks, retains restraint and retreat history',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();
+ r.scene('D2');r.scene('D3');r.act('engage-kaew');r.send('a','start');
+ assert.equal(r.view().guided!.scene,'D4');
+ assert.equal(r.view().caseMap!.battle!.turnEncounter!.ready,false);
+ r.publish('guided-cue:D4');
+ const turn=(actor:string,choice:string,extra:object={})=>r.send(actor,'turnEncounter',{round:r.view().caseMap!.battle!.round,choice,...extra});
+ assert.throws(()=>turn('dm','attack'));
+ for(const player of r.players)turn(player,'pass');
+ const attack=r.view('dm').caseMap!.battle!.turnEncounter!.attacks!.find(attack=>attack.id==='ROOT_BIND')!;
+ const before=r.view().characters!.a.hp;
+ turn('dm','attack',{attackId:attack.id,targetId:'a'});
+ assert.equal(r.view().characters!.a.hp,before-1);
+ assert.equal(r.view().caseMap!.battle!.restrained.a,2);
+ assert.equal(r.view().caseMap!.battle!.active,'a');
+ const checkpoint=r.saved();r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ assert.equal(r.view().caseMap!.battle!.round,2);
+ turn('a','withdraw');
+ assert.equal(r.state().v51!.KAEW_D_RESULT,'fled');
+ assert.equal(r.view().caseMap!.battle,undefined);
+});
+
+test('D4 negotiation preserves the existing peaceful story result',()=>{
+ const r=room(20,false,'5.3');
+ r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();
+ r.scene('D2');r.scene('D3');r.act('engage-kaew');r.send('a','start');r.publish('guided-cue:D4');
+ r.send('a','turnEncounter',{round:1,choice:'pacify'});
+ assert.equal(r.state().v51!.KAEW_D_RESULT,'talked');
+ assert.equal(r.state().v51!.KAEW_TEMP_DISPERSED,false);
+ assert.equal(r.view().caseMap!.battle,undefined);
+});
+
 test('C4 starts with the team, validates both roles and gives the DM one action after all six players',()=>{
  const r=c4(8);
  assert.equal(r.view().caseMap!.battle!.active,'a');
@@ -343,7 +453,7 @@ test('C4 vision uses the original SPI 14 card and spends a turn only when the pl
  r.publishC4();
  const option=r.view().case001!.actions.find(a=>a.id==='dice:C4_DROWNED_ECHO_VISION:SPI')!;
  assert.equal(option.dice!.dc,14);
- r.send('a','caseAction',{actionId:option.id,site:'C'});
+ r.send('dm','caseDm',{targetId:'a',actionId:option.id});
  assert.equal(r.view().caseMap!.battle!.active,'a');
  assert.throws(()=>r.turn('a','pass'),/คำขอทอย/);
  const request=r.panel().investigators.find(entry=>entry.id==='a')!.check!;
@@ -408,7 +518,7 @@ test('F1 and F2 require approach, and F4 opens after Combat clears the last proj
  const active=battle.active!;
  battle.projections=[checkpoint.world.players[active]];
  r.store.delete(r.code);r.store.restore(r.code,checkpoint);
- r.send(active,'caseObjective');r.scene('F4');
+ r.send(active,'turnEncounter',{round:battle.round,choice:'objective'});r.scene('F4');
  assert.equal(r.view().caseMap!.battle!.phase,'flood_memory');
  assert.match(r.view().guided!.cue!,/น้ำเชี่ยว/);
 });
@@ -747,7 +857,7 @@ test('v5.5 opens the shield encounter through the actual player action',()=>{
  const prepared=r.saved(),battle=prepared.world.caseMap!.battle!,actor=battle.active!;
  prepared.world.players[actor]={x:battle.focusCell!.x,y:battle.focusCell!.y-1};
  r.store.delete(r.code);r.store.restore(r.code,prepared);
- const command={id:'v55-step-zero',type:'caseObjective',step:0} as const;
+ const command={id:'v55-step-zero',type:'turnEncounter',round:battle.round,choice:'objective',step:0} as const;
  r.store.apply(r.code,actor,command);
  assert.equal(r.view().caseMap!.battle!.final55?.step,1);
  const ap=r.saved().world.turns[actor].ap;
@@ -769,6 +879,14 @@ test('v5.5 opens the shield encounter through the actual player action',()=>{
  assert.equal(r.saved().world.caseMap!.battle!.final55!.trustUsed,true);
  assert.equal(r.saved().world.turns[actor].ap,ap);
  assert.throws(()=>r.event('forbear55'));
+ for(const step of [1,2,3]) {
+  const active=r.view().caseMap!.battle!.active!;
+  r.send(active,'turnEncounter',{round:1,choice:'objective',step});
+ }
+ assert.equal(r.view().caseMap!.battle,undefined);
+ assert.equal(r.state().v51!.RITUAL_STATUS,'stopped');
+ assert.equal(r.view().guided!.scene,'F5');
+ assert.ok(r.panel().narration.some(card=>card.eventId==='guided-cue:F5'));
 });
 test('v5.5 door card opens the door without marking hostages found or safe',()=>{
  const r=room(20,false,'5.5');

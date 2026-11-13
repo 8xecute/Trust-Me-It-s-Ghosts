@@ -193,7 +193,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
  if(s.diceVersion==='4.1' && s.site==='B' && !hasFact(s,'v41-photo')) add('view-flood-photo','ตรวจรูปถ่ายเก่าคู่กับแผนที่หมู่บ้าน',0);
  if(s.guided?.phase==='FINAL') add('finish','สรุปผลและปิดคดี',0);
  if(s.site==='D') {
-  if(eventDriven && s.guided!.scene==='D3' && !s.v51!.KAEW_TEMP_DISPERSED && !s.milestones.includes('kaew-engaged'))add('engage-kaew','เลือกเข้าปะทะแม่แก้วตาม Initiative');
+  if(eventDriven && s.guided!.scene==='D3' && !s.v51!.KAEW_TEMP_DISPERSED && !s.milestones.includes('kaew-engaged'))add('engage-kaew','เริ่มเผชิญหน้าแม่แก้ว');
   if(s.evidence.includes('E03')&&!s.understood) add('study','ศึกษาผ้ายันต์เพิ่มเติม');
   if(s.evidence.includes('E04')&&!s.seals[0]) {
    add('seal1',s.lore?'คลายด้ายดำตามวิธียายบุญมี':'คลายด้ายดำ · ความรู้ DC 12');

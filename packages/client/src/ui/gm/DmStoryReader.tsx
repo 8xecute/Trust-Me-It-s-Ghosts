@@ -8,7 +8,7 @@ const plain=(text:string)=>text.replace(/^>\s?/gm,'').replace(/\*\*|\x60/g,'').t
 const stats:Record<string,string>={BODY:'ร่างกาย',PER:'การสังเกต',INT:'เชาวน์ปัญญา',SOC:'การเข้าสังคม',SPI:'จิตวิญญาณ',RES:'ความต้านทาน'};
 
 export function DmStoryReader({reader,allowed,view,connected,action}:{reader:NonNullable<CaseDmPanel['storyReader']>;
- allowed:CaseDmPanel['guidedScenes'];view:GuidedView;connected:boolean;action:(type:string,payload?:object)=>void}) {
+ allowed:CaseDmPanel['guidedScenes'];view:GuidedView;connected:boolean;action:(type:string,payload?:object,onSuccess?:()=>void)=>void}) {
  const article=useRef<HTMLElement>(null);
  const [selected,setSelected]=useState<string>();
  const [query,setQuery]=useState('');
@@ -17,12 +17,12 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
  const [qaQuery,setQaQuery]=useState('');
  const [allQuestions,setAllQuestions]=useState(false);
  const answers=reader.answers ?? [];
+ const id=selected ?? view.scene;
  const questions=(reader.qa ?? []).filter(q=>(allQuestions || q.scene===id) &&
   [q.question,q.answer,q.speaker,...q.aliases].join(' ').toLocaleLowerCase().includes(qaQuery.trim().toLocaleLowerCase()));
  const scenes=reader.scenes;
  const endings=Object.entries(reader.endings).map(([key,ending])=>({id:'ENDING '+key,title:ending.title,phase:'ENDING',brief:[ending.brief],dialogue:[]}));
  const items=[...scenes,...endings];
- const id=selected ?? view.scene;
  const scene=scenes.find(item=>item.id===id);
  const ending=id.startsWith('ENDING ') ? reader.endings[id.slice(-1)] : undefined;
  const check=scene && reader.checks.find(item=>item.scene_id===scene.id);
@@ -69,7 +69,7 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
    </aside>
    <article className="dm-reader-article" key={id} ref={article} tabIndex={-1}>
     {scene && <>
-     <div className="dm-reader-kicker">{scene.phase==='FINAL'?'ช่วงท้าย':scene.id==='H1'?'เล่าได้เมื่อหลักฐานครบ':'บท '+scene.phase} · {scene.id}</div>
+     <div className="dm-reader-kicker">v{view.version} · {scene.phase==='FINAL'?'ช่วงท้าย':scene.id==='H1'?'เล่าได้เมื่อหลักฐานครบ':'บท '+scene.phase} · {scene.id}</div>
      <h2>{scene.title}</h2>
      <div className="dm-reader-status">
       <span>{current?'ฉากปัจจุบัน':'ดูบทล่วงหน้า'} · {seen?'ส่งบทแล้ว':reader.observed.includes(id)?'รอส่งบท':'ยังไม่เริ่ม'}</span>
@@ -105,9 +105,19 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
        return <section className="dm-qa-card" key={q.id} data-sent={!!sent.length}>
         <header><small>{q.scene} · {q.speaker} · {q.kind==='action'?'คำแนะนำ DM':'ตรวจบริบทก่อนใช้'}</small>
          <strong>{sent.length?'ส่งแล้ว '+sent.length+' ครั้ง':'ยังไม่ส่ง'}</strong></header>
-        <h4>{q.question}</h4><p className="story-text">{q.answer}</p>
-        {!!q.requirements.length && <p className="note">ใช้เมื่อ: {q.requirements.join(' · ')}</p>}
-        {q.dm_note && <details><summary>ข้อควรระวังสำหรับ DM</summary><p>{q.dm_note}</p></details>}
+        <h4>{q.question}</h4>
+        {q.kind==='action'?<p className="note">แนวทางตัดสินผลสำหรับ DM ไม่ใช่บทส่งให้ผู้เล่น</p>:<form key={q.id+':'+view.scene} onSubmit={event=>{
+         event.preventDefault();const form=event.currentTarget;
+         action('dmSendQa',{qaId:q.id,text:new FormData(form).get('answer')});
+        }}>
+         <label>ตรวจหรือแก้คำตอบก่อนส่ง<textarea name="answer" required maxLength={1000} defaultValue={q.answer} placeholder="เขียนบทตอบให้ทีม โดยอิงข้อมูลที่พบจริง"/></label>
+         <button type="submit" className="primary" disabled={!connected || !reader.sendableQaIds?.includes(q.id)}>ยืนยันส่งคำตอบให้ผู้เล่น</button>
+         {!reader.sendableQaIds?.includes(q.id) && <p className="note">ยังส่งไม่ได้: ต้องเปิดฉาก ส่งบทเปิด และผ่านเงื่อนไขของคำตอบก่อน</p>}
+        </form>}
+        {(q.guidance || q.dm_note || !!q.requirements.length) && <details><summary>เงื่อนไขและแนวทางสำหรับ DM</summary>
+         {q.guidance && <p>{q.guidance}</p>}{q.dm_note && <p>{q.dm_note}</p>}
+         {!!q.requirements.length && <p>ใช้เมื่อ: {q.requirements.join(' · ')}</p>}
+        </details>}
         {!!sent.length && <p className="note">ส่งล่าสุด: {sent.at(-1)!.text}</p>}
        </section>;
       })}</div>

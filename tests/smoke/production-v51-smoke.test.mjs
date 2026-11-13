@@ -9,7 +9,7 @@ for(const version of ['5.2','5.1'])test('built server '+version+' delivers only 
  const reservation=createServer().listen(0,'127.0.0.1');await once(reservation,'listening');
  const {port}=reservation.address();await new Promise(resolve=>reservation.close(resolve));
  const origin='https://game.example',env={...process.env,NODE_ENV:'production',CLIENT_ORIGIN:origin,PORT:String(port),CASE001_LETHAL:'true'};
- if(version==='5.2')delete env.CASE_STORY_VERSION;else env.CASE_STORY_VERSION=version;
+ env.CASE_STORY_VERSION=version;
  delete env.CASE_SAVE_DIR;
  const server=spawn(process.execPath,['packages/server/dist/index.js'],{env,stdio:['ignore','pipe','inherit']});
  t.after(()=>server.kill());
@@ -46,7 +46,10 @@ for(const version of ['5.2','5.1'])test('built server '+version+' delivers only 
   assert.equal(panel.storyReader.checks[0].id,undefined);
   const light=(await req(dm,'dm:panel',{includeReader:false})).panel;
   assert.equal(light.storyReader,undefined);
-  assert.deepEqual(light.storyProgress,{observed:['A1'],presented:[]});
+  assert.deepEqual(light.storyProgress.observed,['A1']);
+  assert.deepEqual(light.storyProgress.presented,[]);
+  assert.deepEqual(light.storyProgress.answers,[]);
+  assert.deepEqual(light.storyProgress.sendableQaIds,[]);
   assert.equal((await req(a,'dm:panel',{includeReader:true})).ok,false);
  }
  if(version==='5.1')assert.ok(panel.guidedScenes.find(scene=>scene.id==='A1').script.includes('DM ลับ'));

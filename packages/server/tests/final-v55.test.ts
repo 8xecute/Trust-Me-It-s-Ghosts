@@ -4,7 +4,7 @@ import {caseGrid,createCharacter,startTurn,liteGhostHP} from '@baan/shared';
 import {newCase} from '../src/case001/case001.js';
 import {newGuided} from '../src/case001/guidedCase.js';
 import {newState51} from '../src/case001/storyV51.js';
-import {newCaseMap,startCaseBattle,caseBattleAction} from '../src/case001/caseBattle.js';
+import {newCaseMap,startCaseBattle,caseBattleAction,turnEncounterAction,battleView} from '../src/case001/caseBattle.js';
 import {caseCombatStats} from '../src/case001/caseCombatStats.js';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -13,7 +13,7 @@ import {sceneCue51} from '../src/case001/storyV51.js';
 import {learnedStoryInformation} from '../src/case001/storyDice.js';
 import type {World} from '../src/world.js';
 
-function finalRoom(count:number) {
+function finalRoom(count:number,dm=false) {
  const players=Object.fromEntries(Array.from({length:count},(_,i)=>['p'+i,{x:i+2,y:7}]));
  const map=newCaseMap(players);
  for(const id in players)map.sites[id]='E';
@@ -24,7 +24,7 @@ function finalRoom(count:number) {
   characters:Object.fromEntries(Object.keys(players).map(id=>[id,createCharacter('medium',undefined,undefined,true)])),
   turns:Object.fromEntries(Object.keys(players).map(id=>[id,startTurn()])),
   objects:{},inventory:{},evidence:[],encounter:null,activePlayer:null,roundStart:null,lastCheck:null,
-  scenario:{sceneId:'yard',evidence:[],objectives:[],firedTriggers:[],endingId:null},humanDmId:null,diceRequest:null,basicMode:true};
+  scenario:{sceneId:'yard',evidence:[],objectives:[],firedTriggers:[],endingId:null},humanDmId:dm?'dm':null,diceRequest:null,basicMode:true};
  const grid=caseGrid('E');
  startCaseBattle(w,'p0',grid,()=>20);
  const b=map.battle!;
@@ -74,6 +74,50 @@ for(const count of [2,3,4,5,6])test('v5.5 shield and ordered release with '+coun
  assert.equal(w.caseMap!.battle,undefined);
 });
 
+for(const count of [2,3,4,5,6])test('no-board Final preserves shield actions and DM turns with '+count+' players',()=>{
+ const {w,b}=finalRoom(count,true);
+ const turn=(actor:string,choice:string,extra:object={},die=20)=>turnEncounterAction(w,actor,{round:b.round,choice,...extra},()=>die,()=>{});
+ const nextRound=()=>{
+  while(b.active)turn(b.active,'pass');
+  turn('dm','pass');
+ };
+ assert.ok(b.turnEncounter);
+ assert.equal(b.active,'p0');
+ assert.throws(()=>turn('dm','attack'));
+ assert.throws(()=>turn('p1','objective',{step:0}));
+ const hp=b.enemies[0].state.ghostHealth;
+ turn('p0','strike');
+ assert.equal(b.enemies[0].state.ghostHealth,hp);
+ assert.equal(b.final55!.damageBlocked,true);
+ assert.equal(b.active,'p1');
+ nextRound();
+ turn('p0','objective',{step:0},1);
+ assert.equal(b.final55!.step,0);
+ nextRound();
+ for(const step of [0,1,2]) {
+  turn('p0','objective',{step});
+  assert.equal(b.final55!.step,step+1);
+  assert.throws(()=>turn('p0','objective',{step}));
+  nextRound();
+ }
+ assert.equal(b.final55!.shield,'down');
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'active');
+ turn('p0','strike');
+ assert.equal(b.enemies[0].state.ghostHealth,hp-2);
+ while(b.active)turn(b.active,'pass');
+ const attack=battleView(w.caseMap!,'E',w,true)!.turnEncounter!.attacks![0];
+ assert.equal(battleView(w.caseMap!,'E',w,false)!.turnEncounter!.attacks,undefined);
+ assert.throws(()=>turn('dm','attack',{attackId:attack.id,targetId:'p0'}));
+ turn('dm','declareAttack',{attackId:attack.id,targetId:'p0'});
+ const before=w.characters!.p0.hp;
+ turn('dm','attack',{attackId:attack.id,targetId:'p0'},1);
+ assert.equal(w.characters!.p0.hp,before);
+ assert.equal(b.turnEncounter!.history.at(-1)!.check!.die,1);
+ turn('p0','objective',{step:3});
+ assert.equal(w.caseMap!.battle,undefined);
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'stopped');
+});
+
 test('v5.5 body defeat cannot stop the ritual or respawn the Final body',()=>{
  const {w,b,action,nextRound}=finalRoom(2);
  const enemy=b.enemies[0], focus=b.focusCell!;
@@ -93,6 +137,34 @@ test('v5.5 body defeat cannot stop the ritual or respawn the Final body',()=>{
  action('caseObjective',3);
  assert.equal(w.case001!.v51!.RITUAL_STATUS,'stopped');
  assert.match(sceneCue51(w.case001!,'F5'),/เงา/);
+});
+
+test('no-board Final keeps a defeated body defeated and preserves the delayed flood attack',()=>{
+ const {w,b}=finalRoom(2,true);
+ const turn=(actor:string,choice:string,extra:object={})=>turnEncounterAction(w,actor,{round:b.round,choice,...extra},()=>20,()=>{});
+ const cycle=()=>{while(b.active)turn(b.active,'pass');turn('dm','pass');};
+ for(const step of [0,1]){turn('p0','objective',{step});cycle();}
+ turn('p0','objective',{step:2});turn('p1','pass');
+ const flood=battleView(w.caseMap!,'E',w,true)!.turnEncounter!.attacks!.find(attack=>attack.id==='FLOOD_MEMORY')!;
+ const sanity=w.characters!.p0.sanity;
+ turn('dm','declareAttack',{attackId:flood.id,targetId:'p0'});
+ assert.equal(w.characters!.p0.sanity,sanity);
+ assert.equal(b.active,'p0');
+ assert.equal(b.round,4);
+ while(b.active)turn(b.active,'pass');
+ turn('dm','attack',{attackId:flood.id,targetId:'p0'});
+ assert.equal(w.characters!.p0.sanity,sanity-2);
+ b.enemies[0].state.ghostHealth=2;
+ turn('p0','strike');
+ assert.equal(b.enemies[0].state.ghostHealth,0);
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'active');
+ assert.ok(battleView(w.caseMap!,'E',w)!.enemies.length);
+ cycle();
+ assert.equal(b.enemies[0].state.ghostHealth,0);
+ assert.deepEqual(battleView(w.caseMap!,'E',w,true)!.turnEncounter!.attacks,[]);
+ turn('p0','objective',{step:3});
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'stopped');
+ assert.equal(w.caseMap!.turnConclusion!.check!.outcome,'success');
 });
 
 test('v5.5 retains its complete source, 17 original cards, 262 unique Q&A and four endings',()=>{

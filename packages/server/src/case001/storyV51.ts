@@ -341,7 +341,7 @@ export function dmOptions51(s:CaseState) {
  if(g.version==='5.5' && ['E2','E3'].includes(g.scene) && s.opened && alive51(s,'ดล') && !v.dolUngagged55)
   add('ungag-dol','ยืนยันทีมแก้ผ้าปากและดลมีสติพอให้คำตอบแล้ว');
 
- if(g.phase==='A' && !v.lethal) add('enable-lethal','เปิดเหตุเสี่ยงถึงตายสำหรับคดีนี้',lethalAnnouncement51(s));
+ if(g.phase==='A' && !v.lethal) add('enable-lethal','ตั้งค่าคดี: อนุญาตเหตุถึงตายตามบทและเตรียมแจ้งทีม',lethalAnnouncement51(s));
  if(g.scene==='D4' && v.KAEW_TRUST!=='low')add('unnecessary-attack','ยืนยันทีมโจมตีแม่แก้วโดยไม่จำเป็นจริงแล้ว');
  if(g.presented.includes(g.scene)) for(const line of dialogue51(s,true)) if(!v.contextConfirmed.includes(line.id) && !automaticLine51(line)) add('context:'+line.id,line.speaker+' · '+(readerLabel(line.label).replace(/^บทหลัก$/,'บทพูดตามสถานการณ์') || 'บทพูดตามสถานการณ์'),line.text);
  if(g.scene==='E4' && g.presented.includes('E4') && (!noTimer(s) || v.bagSearched)) {

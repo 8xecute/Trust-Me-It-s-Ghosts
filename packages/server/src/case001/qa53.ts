@@ -39,7 +39,6 @@ export function matchQa53(state:CaseState,query:string) {
  if(!state.guided || !['5.3','5.5'].includes(state.guided.version) || !scene || !state.v51 || !state.guided.presented.includes(scene)) return [];
  const key=normalize(query);
  if(!key)return [];
- if(state.guided.version==='5.5' && ['E3','E5','H1'].includes(scene))return [];
  const speakers=new Set(dialogue51(state,true).map(line=>line.speaker));
  const v=state.v51,arrived=v.wichaiArrival53;
  const execution=v.pending?.kind==='execution' && v.pending.announced && wichaiHere51(state,true) && !v.KAEW_TEMP_DISPERSED;
@@ -72,12 +71,41 @@ export function matchQa53(state:CaseState,query:string) {
  if(matches.length!==1)return [];
  return matches.filter(q=>{
   if(q.delivery==='dm_action_guidance') return false;
-  if(!q.guard_ids.every(id=>(state.guided!.version==='5.5'?contract55:contract).guardDefinitions[id]?.all.every(rule=>
+  if(!q.guard_ids.every(id=>state.guided!.version==='5.5' && id==='F4_OCCURRED'?v.finalPhaseTwo55===true:(state.guided!.version==='5.5'?contract55:contract).guardDefinitions[id]?.all.every(rule=>
    Object.hasOwn(fields,rule.field) && (rule.op==='eq'?fields[rule.field]===rule.value:
     rule.op==='in' && Array.isArray(rule.value) && rule.value.includes(fields[rule.field])))))return false;
   if(q.delivery==='npc_dialogue' && !speakers.has(q.speaker))return false;
   const hostagePresent=(name:string)=>state.opened && alive51(state,name) &&
    !state.evacuated.includes(name) && !state.escorts.includes(name);
+  if(state.guided!.version==='5.5') {
+   if(scene==='E3') {
+    if(!hostageNames.every(hostagePresent))return false;
+    if(q.id==='E3_Q007')return state.evidence.includes('E02');
+    // Showing a book and opening an additional document need explicit observations.
+    if(['E3_Q002','E3_Q003'].includes(q.id))return false;
+    return q.kind==='environment' && q.requirements.length===0;
+   }
+   if(scene==='E5') {
+    if(!wichaiHere51(state))return false;
+    const land=state.evidence.includes('E02') || v.LAND_EVIDENCE_COLLECTED;
+    const guards:Record<string,boolean>={
+     E5_Q001:land,E5_Q002:hasFact(state,'current-testimony'),E5_Q003:!!v.ritualBook53,
+     E5_Q004:!!v.ritualBook53,E5_Q005:state.storyChecks?.E5_WICHAI_NEGOTIATE?.at(-1)?.outcome==='full',
+     E5_Q006:!!v.e5Threat,E5_Q008:land || v.SUSPECT_WICHAI==='confirmed',E5_Q009:!!v.ritualBook53,
+    };
+    return guards[q.id]===true;
+   }
+   if(scene==='H1') {
+    const compared=v.floodSources53?.compared===true;
+    const guards:Record<string,boolean>={
+     H1_Q001:!!v.floodSources53?.gate,H1_Q003:!!v.floodSources53?.shelter,
+     H1_Q004:compared,H1_Q005:!!v.floodSources53?.gate,H1_Q008:compared,
+     H1_Q009:state.storyChecks?.H1_FLOOD_TIMELINE?.some(roll=>roll.outcome==='full')===true ||
+      state.storyChecks?.C5_EVACUATION_RECORDS?.some(roll=>roll.outcome==='full')===true,
+    };
+    return guards[q.id]===true;
+   }
+  }
   if(hostageNames.some(name=>name===q.speaker) && scene!=='E1' && !hostagePresent(q.speaker))return false;
   if(['E2_Q004','E2_Q005','E2_Q006','E3_Q008'].includes(q.id))return hostageNames.every(hostagePresent);
   if(q.id==='E2_Q007')return hostagePresent('เพิ่ม') && v.RITUAL_TETHER_INTACT.เพิ่ม;

@@ -2,7 +2,6 @@ import {useCaseUpdates} from './ui/case/useCaseUpdates';
 import { BASIC_RULES_MODE, professions } from '@baan/shared';
 import { CaseNavIcon } from './ui/case/CaseNavIcon';
 import { CaseStoryThread } from './ui/case/CaseStoryThread';
-import { GuidedPanel } from './ui/case/GuidedPanel';
 import { D20Card } from './ui/case/D20Card';
 import { CaseNotebook } from './ui/case/CaseNotebook';
 import { NarrativeJournal } from './ui/case/NarrativeJournal';
@@ -170,7 +169,8 @@ export function OnlineGame() {
     });
     return ()=>{live=false;};
   },[!!character,connected,room?.code]);
-  const caseActions=(world?.case001?.actions ?? [])
+  const dmLed=!!world?.manualDm && ['5.2','5.3','5.5'].includes(world.guided?.version ?? '');
+  const caseActions=(dmLed?[]:world?.case001?.actions ?? [])
     .filter(option=>!battle || option.dice || ['seal1','seal2','seal3','ritual','suppress','show-clue'].includes(option.id))
     .filter(option=>option.id!=='hint' || character?.profession==='paranormal_investigator')
     .filter(option=>option.id!=='sense' || character?.profession==='medium');
@@ -235,9 +235,9 @@ export function OnlineGame() {
         {world.paused && <p className="narration-card" role="status">พักคดีอยู่ · รอ DM เปิดเล่นต่อ สถานะและผลทอยเดิมยังอยู่</p>}
 
         {!showEncounter && <header className="case-heading case-mission-strip">
-          <div><p className="eyebrow">{world.guided?'ฉาก '+world.guided.scene:'แฟ้มภารกิจ · คดี 001'}</p><h2>{world.case001.location}</h2></div>
+          <div><p className="eyebrow">แฟ้มภารกิจ · คดี 001</p><h2>{world.case001.location}</h2></div>
           {world.case001.notebook?.objective && <p><strong>เป้าหมายตอนนี้</strong> {world.case001.notebook.objective}</p>}
-          {caseTab==='scene' && !turnEncounter && !world.case001.report && <a className="case-jump-action" href="#case-play-controls">ลงมือทำ <span aria-hidden="true">↓</span></a>}
+          {caseTab==='scene' && !dmLed && !turnEncounter && !world.case001.report && <a className="case-jump-action" href="#case-play-controls">ลงมือทำ <span aria-hidden="true">↓</span></a>}
           {world.case001.time && <div className="case-clock"><span>เวลาในภารกิจ</span><strong>{world.case001.time}</strong></div>}
         </header>}
         <nav className="workspace-tabs player-main-tabs case-main-navigation" aria-label="หน้าต่างคดี">
@@ -305,9 +305,9 @@ export function OnlineGame() {
         </div><aside className="case-actions-pane" hidden={!(['scene','story','journal'] as string[]).includes(caseTab) || (turnEncounter && caseTab==='scene')} aria-label="คำสั่งภารกิจ">
 
         {['5.2','5.3','5.5'].includes(world.guided?.version ?? '') && (caseTab==='scene' || caseTab==='story') && <CaseStoryThread
-          view={world.guided!} beats={deliveredBeats} connected={connected && !world.paused && !!character?.hp && !world.inactivePlayers?.includes(self.current)}
+          view={world.guided!} beats={deliveredBeats}
           showHistory={caseTab==='story'} onHistory={caseTab==='story'?undefined:()=>setCaseTab('story')}
-          onConfirm={id=>action('guided',{command:'confirm',target:id})}/>}
+          />}
         <div hidden={caseTab!=='story'}>        {['5.2','5.3','5.5'].includes(world.guided?.version ?? '')?null:world.narrative?.current ? <NarrativeJournal view={world.narrative} onNext={world.manualDm ? undefined : sequence=>action('narrativeNext',{sequence})}/> : <section className="narration-card" aria-label="เหตุการณ์ล่าสุด">
           <h3>บทเล่า</h3><p className="note">อ่านบทที่ทีมได้รับแล้วในเหตุการณ์ล่าสุด หรือย้อนอ่านจากสมุดคดี</p>
         </section>}
@@ -324,13 +324,11 @@ export function OnlineGame() {
 </div>
         <div hidden={caseTab!=='journal'}>
           <CaseNotebook view={world.case001.notebook}/>
-          {world.guided && !['5.2','5.3','5.5'].includes(world.guided.version) && <GuidedPanel view={world.guided} showStory={!['5.2','5.3','5.5'].includes(world.guided.version)} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
           {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName}/>}
         </div>
         <div hidden={caseTab!=='scene'} className="case-action-workbench" id="case-play-controls" tabIndex={-1}>
-        {world.guided && <GuidedPanel view={world.guided} showStory={!['5.2','5.3','5.5'].includes(world.guided.version)} connected={connected} action={action} site={world.caseMap?.site} pendingQuestions={world.pendingQuestionCount}/>}
-        <h3 className="pane-heading">ลงมือทำ</h3>
-        {!caseActions.length && !battle && !world.case001.report && <p className="note">รอบทเปิดหรือการตอบจาก DM ก่อนเลือกการกระทำ</p>}
+        {!dmLed && <h3 className="pane-heading">ลงมือทำ</h3>}
+        {!dmLed && !caseActions.length && !battle && !world.case001.report && <p className="note">รอบทเปิดหรือการตอบจาก DM ก่อนเลือกการกระทำ</p>}
         {world.manualDm && !world.humanDmId && <button disabled={!connected || !!battle}
           onClick={()=>action('claimDm')}>รับช่วงเป็นผู้ดำเนินเรื่อง</button>}
         {world.caseMap?.opportunity && <button disabled={!connected || !character?.hp || world.paused} onClick={()=>action('start')}>เริ่มเผชิญหน้า</button>}

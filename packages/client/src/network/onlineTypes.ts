@@ -50,8 +50,8 @@ type ReaderCheck = {
 };
 
 export type CaseDmPanel = {
-  storyProgress?:{observed:string[];presented:string[];answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[]};
-  storyReader?:{answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[];qa?:{id:string;scene:string;question:string;aliases:string[];answer:string;speaker:string;kind:string;dm_note:string;requirements:string[];guard_ids:string[]}[];scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
+  storyProgress?:{observed:string[];presented:string[];sendableQaIds?:string[];answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[]};
+  storyReader?:{sendableQaIds?:string[];answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[];qa?:{guidance?:string;id:string;scene:string;question:string;aliases:string[];answer:string;speaker:string;kind:string;dm_note:string;requirements:string[];guard_ids:string[]}[];scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
   caseMode:true;
   sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
   guide?:GmChapter[];
@@ -67,7 +67,7 @@ export type CaseDmPanel = {
   travel:{id:string;label:string}[];
   wichai?:{baseHPFor2:number;PDEF:number;MDEF:number;ATK:number;INIT:number;MOVE:number};
   questions?:{id:string;playerId:string;label:string;open:boolean;suggestions?:{id:string;speaker:string;label:string;answer:string;confirmContext:boolean;qa?:boolean}[]}[];
-  investigators:{id:string;site:string;script:string;secret:string;check?:{id:string;label:string;stat?:keyof import('@baan/shared').LiteStats;dice?:StoryDiceInfo};diceRequest?:DmRollCard;narrative?:NarrativeView;events?:DmEventPreview[];choices:{id:string;label:string;speaker?:string;answer?:string}[]}[]};
+  investigators:{id:string;site:string;script:string;secret:string;actions?:{id:string;label:string;check:boolean}[];check?:{id:string;label:string;stat?:keyof import('@baan/shared').LiteStats;dice?:StoryDiceInfo};diceRequest?:DmRollCard;narrative?:NarrativeView;events?:DmEventPreview[];choices:{id:string;label:string;speaker?:string;answer?:string}[]}[]};
 export type PublicRoom = {code:string;occupied:number;capacity:number};
 export type Room = {code:string; version?:2; players:{id:string;ready:boolean}[]};
 export type Reply = {ok:boolean; persistent?:boolean; error?:string; room?:Room; playerId?:string; token?:string; snapshot?:Snapshot};

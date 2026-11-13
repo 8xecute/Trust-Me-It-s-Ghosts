@@ -10,6 +10,7 @@ export interface CaseAttack {
  targetDefense:LiteDefense;
  damageResource:'HP'|'Sanity';
  condition?:'ROOTED';
+ telegraphOneBossTurnBeforeUse?:boolean;
  requires?:string;
 }
 export interface CaseCombatStats {

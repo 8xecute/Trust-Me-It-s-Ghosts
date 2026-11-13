@@ -6,3 +6,10 @@ dist/
 packages/server/saves/
 artifacts/
 combat-balance-report.json
+.local-logs/
+.local-session-saves/
+docs/reference/case001/v5.2/
+docs/reference/case001/v5.3/
+docs/reference/case001/v5.5/
+docs/reference/encounter-analysis/
+docs/reference/ui-proposals/

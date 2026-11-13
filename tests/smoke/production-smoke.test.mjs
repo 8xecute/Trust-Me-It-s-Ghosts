@@ -4,7 +4,7 @@ import { createServer } from 'node:net';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { io } from 'socket.io-client';
-import { readServerConfig } from './packages/server/dist/config.js';
+import { readServerConfig } from '../../packages/server/dist/config.js';
 
 test('production configuration fails fast for missing or invalid values', () => {
   assert.throws(() => readServerConfig({NODE_ENV:'production'}), /CLIENT_ORIGIN/);

@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import {brief55} from './dmPresentation55.js';
 import {availableQa53} from './qa53.js';
 import { randomUUID } from 'node:crypto';
 import type { World } from '../world.js';
@@ -61,7 +62,7 @@ export function allowedGuidedScenes(w:World) {
    if(scene.id==='H1') return ['B','C','E','FINAL'].includes(g.phase) && (noTimer(s)?historySources52(s):s.evidence.includes('E07') && hasFact(s,'gate-testimony'));
    if(noTimer(s) && scene.id==='F6')return ['E','FINAL'].includes(g.phase) && s.site==='E' && !!v.backlash && v.RITUAL_STATUS!=='stopped';
    if(scene.phase!==g.phase && !(noTimer(s) && g.phase==='FINAL' && scene.phase==='E')) return false;
-   if(scene.id==='A2')return g.presented.includes('A1') && (!noTimer(s) || s.milestones.includes('arrival-investigated'));
+   if(scene.id==='A2')return g.presented.includes('A1');
    if(noTimer(s) && ['B3','B4'].includes(scene.id))return g.presented.includes('B1');
    if(noTimer(s) && scene.id==='E6')return s.opened || s.key;
    if(scene.id==='B2') return g.presented.includes('B1') && wichaiHere51(s);
@@ -190,20 +191,22 @@ export function guidedBackup(w:World) {
  if(!s || !g || g.phase==='ENDING' || s.report) return undefined;
  const phase=data.phases[g.phase];
  const currentScene=g.version==='5.5'?storyContent(s).scenes[g.scene]:undefined;
- const brief=currentScene?[currentScene.purpose,currentScene.nextSceneHandoff]:noTimer(s)?sceneBrief52(g.scene):undefined;
+ const brief=currentScene?brief55(g.scene,currentScene.sourceMarkdown):noTimer(s)?sceneBrief52(g.scene):undefined;
  const players=Object.keys(w.players).filter(id=>id!==w.humanDmId && !!w.characters?.[id]);
  const delivered=(w.narrative?.records ?? []).filter(beat=>players.length>0 && players.every(id=>beat.recipients.includes(id))).slice(-5).map(beat=>({sequence:beat.sequence,text:beat.text}));
  const progression=chapterExit(w);
- const blockers=g.transition ? ['รอผู้สืบสวนยืนยันเปลี่ยนบท หรือเลือกสำรวจต่อ'] : progression.reason ? [progression.reason] : [];
+ const blockers=g.transition ? ['DM ยืนยันเปิดบทถัดไป หรือเลือกดำเนินฉากเดิมต่อ'] : progression.reason ? [progression.reason] : [];
  return {phase:g.phase,scene:g.scene,title:phase.title,opened:!!g.presented.includes(g.scene),hints:brief?[brief[0]]:phase.hints,alternatives:brief?[brief[1]]:phase.missed,exit:brief?.[1] ?? phase.exit,delivered,blockers,progression,battle:!!w.caseMap?.battle};
 }
 
 export function guidedCommand(w:World,player:string,command:string,target?:string) {
  const s=w.case001!,g=s?.guided;
  if(!g || s.report) throw Error('ไม่มีบทนำทางที่กำลังดำเนินอยู่');
+ const dmControl=noTimer(s) && player===w.humanDmId;
+ if(g.version==='5.5' && !dmControl)throw Error('DM เป็นผู้ควบคุมฉากและผลการกระทำ');
  if(command==='select-disclosure') {
   const options=disclosureOptions53(s);
-  if(player===w.humanDmId || !w.characters?.[player]?.hp || w.caseMap?.sites[player]!==s.site ||
+  if(!dmControl && (player===w.humanDmId || !w.characters?.[player]?.hp || w.caseMap?.sites[player]!==s.site) ||
      w.caseMap?.battle || !options.length || typeof target!=='string' || target.length>500) throw Error('ยังเลือกหลักฐานส่งมอบไม่ได้');
   let selection: {evidence?:unknown;recipient?:unknown}|undefined;
   try {selection=JSON.parse(target);} catch {throw Error('ข้อมูลการส่งมอบไม่ถูกต้อง');}
@@ -224,7 +227,7 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
  }
  if(command==='hint') throw Error('ระบบขอคำใบ้ถูกปิดแล้ว ให้พูดคุยกับผู้ดำเนินเรื่อง');
  if(command==='evacuate') {
-  if(player===w.humanDmId || !w.characters?.[player]?.hp || !['E','FINAL'].includes(g.phase) ||
+  if(!dmControl && (player===w.humanDmId || !w.characters?.[player]?.hp) || !['E','FINAL'].includes(g.phase) ||
    w.caseMap?.battle || !s.escorts.length) throw Error('ยังพาผู้สูญหายไปจุดปลอดภัยไม่ได้');
   if(s.v51?.pending?.kind==='crossfire') throw Error('ต้องช่วยตัวประกันจากมีดตามกติกาก่อน');
   const names=[...s.escorts].filter(n=>!s.v51 || s.v51.HOSTAGE_FATE[n as 'ดล'|'นิด'|'เพิ่ม']==='alive');
@@ -250,7 +253,7 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
  }
  if(command==='cancel') {delete g.transition;return;}
  if(command==='confirm') {
-  if(player===w.humanDmId || !w.characters?.[player]?.hp || !g.transition || g.transition.id!==target) throw Error('ให้ผู้สืบสวนยืนยันสรุปบทล่าสุด');
+  if(!dmControl && (player===w.humanDmId || !w.characters?.[player]?.hp) || !g.transition || g.transition.id!==target) throw Error('ยืนยันสรุปบทล่าสุดก่อนเปลี่ยนฉาก');
   const transition=g.transition;
   if(s.v51 && g.phase==='A') s.v51.CASE_ACCEPTED=true;
   g.journals.push({phase:g.phase,known_facts:transition.known_facts,open_questions:transition.open_questions,next_destination_rationale:transition.next_destination_rationale});
@@ -286,6 +289,7 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   if(reason)throw Error(reason);
   if(g.transition) return;
   g.transition={id:randomUUID(),from:g.phase,to,...summary(w)};
+  if(g.version==='5.5')return guidedCommand(w,player,'confirm',g.transition.id);
   return;
  }
  throw Error('ไม่รู้จักคำสั่งนำทาง');

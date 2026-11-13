@@ -673,7 +673,6 @@ body:has(.dm-shell) { background: radial-gradient(ellipse at 72% 0%, #282b43 0%,
 .case-updates { display:flex; flex-wrap:wrap; gap:6px; }
 .roll-opportunity { margin:10px 0; padding:12px; border:2px solid var(--accent); border-radius:10px; background:var(--well); }
 .roll-opportunity p { margin:4px 0; }
-.question-options { display:flex; flex-wrap:wrap; gap:6px; }
 .player-status-strip { flex-wrap:wrap; }
 
 .team-identity { display:flex; flex-wrap:wrap; gap:6px 12px; margin:8px 0; color:var(--muted); font-size:.8rem; }

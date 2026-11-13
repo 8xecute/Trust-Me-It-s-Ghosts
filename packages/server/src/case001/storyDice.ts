@@ -186,7 +186,7 @@ function checkNarration(w:World,id:string,outcome:Outcome,text:string) {
  if(override)return override.narration;
  const s=w.case001!;
  if(!s.v51)return text;
- if(id==='F5_KAEW_RECONCILE' && outcome==='full' && s.v51.KAEW_FINAL!=='calm')return 'ผลทอยถึง Full แต่ยังต้องมีเหตุผลหลักฐานและการรับผิดที่เกิดขึ้นจริง';
+ if(id==='F5_KAEW_RECONCILE' && outcome==='full' && s.v51.KAEW_FINAL!=='calm')return 'ยังต้องมีหลักฐานและการรับผิดชอบที่เกิดขึ้นจริง';
  if(noTimer(s) && id==='E3_HOSTAGES_ORDER' && outcome==='full' && !['ดล','นิด','เพิ่ม'].every(name=>hostageReachable52(s,name as 'ดล'|'นิด'|'เพิ่ม')))return 'ทีมช่วยผู้รอดชีวิตที่อยู่ตรงหน้าตั้งสติและเริ่มเทียบคำให้การที่มีจริงกับรายชื่อคนหาย';
  if(id==='E3_HOSTAGES_ORDER')return text.replaceAll('ทั้งสาม','ผู้รอดชีวิตที่อยู่จริง');
  if(!noTimer(s) && id==='H1_FLOOD_TIMELINE')return outcome==='full'?'มีการเปิดประตูผันน้ำก่อนพื้นที่สวนได้รับการยืนยันว่าอพยพครบ':outcome==='partial'?'เวลาเปิดประตูกับข้อมูลอพยพไม่สอดคล้องกัน แต่ยังอธิบายไม่ได้ว่าใครตัดสินใจ':'ยังเรียงลำดับจากข้อมูลที่มีไม่ชัด เก็บหลักฐานที่พบไว้';

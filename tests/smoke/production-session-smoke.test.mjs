@@ -4,9 +4,9 @@ import {createServer} from 'node:net';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {io} from 'socket.io-client';
-import {Rooms} from './packages/server/dist/rooms.js';
-import {WorldStore} from './packages/server/dist/world.js';
-import {exportSession} from './packages/server/dist/portableSession.js';
+import {Rooms} from '../../packages/server/dist/rooms.js';
+import {WorldStore} from '../../packages/server/dist/world.js';
+import {exportSession} from '../../packages/server/dist/portableSession.js';
 
 test('portable file restores six members over Socket.IO and DM selects four for the next session',{timeout:20000},async t=>{
  const rooms=new Rooms(),worlds=new WorldStore(()=>20,true,true,true,false,'5.1');

@@ -2,40 +2,16 @@ import type { GuidedView, GuidedScene, CaseDmPanel } from '../../network/onlineT
 import {useState} from 'react';
 import { DmScript } from '../gm/DmScript';
 
-export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isDm=false,dmNavigation=true,showStory=true,site,pendingQuestions=0}:{
- view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;dmNavigation?:boolean;showStory?:boolean;site?:string;pendingQuestions?:number;
+export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isDm=false,dmNavigation=true,showStory=true}:{
+ view:GuidedView;scenes?:GuidedScene[];connected:boolean;isDm?:boolean;dmNavigation?:boolean;showStory?:boolean;
  npcDossiers?:CaseDmPanel['npcDossiers'];events?:CaseDmPanel['storyEvents'];
  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
 }) {
+ if(!isDm)return null;
  const send=(command:string,target?:string)=>action('guided',{command,target});
  return <section className="case-notebook guided-panel" aria-label="การดำเนินบท">
    {showStory && <><h3>{view.phase==='FINAL'?'ช่วงท้าย':view.phase==='ENDING'?'บทสรุป':'บท '+view.phase} · {view.scene}</h3>
    {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}</>}
-   {!isDm && <div aria-label="คำถามที่มีบทตอบในฉาก">
-     <p className="note">ถามหรือบอกสิ่งที่อยากทำกับ DM ได้อย่างอิสระ</p>
-     {pendingQuestions>0 && <p role="status">ส่งแล้ว · รอ DM ตอบ {pendingQuestions} คำถาม</p>}
-     {['5.3','5.5'].includes(view.version ?? '') && view.cue && <form onSubmit={event=>{
-      event.preventDefault();
-      const form=event.currentTarget;
-      const text=String(new FormData(form).get('question') ?? '').trim();
-      if(connected && site && pendingQuestions<5 && text)action('askGm',{site,text},()=>form.reset());
-     }}>
-      <label>พิมพ์คำถามถึง DM <input name="question" required maxLength={1000}/></label>
-      <button disabled={!connected || !site || pendingQuestions>=5}>ส่งคำถาม</button>
-     </form>}
-   </div>}
-   {!isDm && !!view.disclosureOptions?.length && <form onSubmit={event=>{
-     event.preventDefault();
-     const form=new FormData(event.currentTarget);
-     send('select-disclosure',JSON.stringify({evidence:form.getAll('evidence'),recipient:form.get('recipient')}));
-   }}>
-     <h4>ส่งมอบหลักฐานในบทส่งท้าย</h4>
-     {view.disclosureOptions.map(item=><label key={item.id}><input type="checkbox" name="evidence" value={item.id} required={item.id==='E07'}/> {item.label}</label>)}
-     <label>ผู้รับหลักฐาน <input name="recipient" required maxLength={120}/></label>
-     <button disabled={!connected}>ส่งรายการให้ DM ตรวจ</button>
-   </form>}
-   {view.canAnalyzeHistory && <button disabled={!connected} onClick={()=>send('history')}>อ่านบันทึกพร้อมข้อมูลประกอบ · ไม่ต้องทอย</button>}
-   {!isDm && view.escorting>0 && <button disabled={!connected} onClick={()=>send('evacuate')}>พาผู้ที่กำลังช่วยไปจุดปลอดภัย · {view.escorting} คน</button>}
    {isDm && <>
      {events && <DmStoryEvents events={events} connected={connected} action={action}/>}
      {dmNavigation && view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
@@ -61,8 +37,7 @@ export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isD
      <Journal journal={view.transition}/>
      <p>เมื่อยืนยันแล้ว ทีมจะปิดบทนี้และเดินหน้าต่อ</p>
      <button disabled={!connected} onClick={()=>send('cancel')}>สำรวจต่อในบทนี้</button>
-     {!isDm && <button className="primary" disabled={!connected} onClick={()=>send('confirm',view.transition!.id)}>ยืนยันไป{view.transition.to==='FINAL'?'ช่วงท้าย':'บท '+view.transition.to}</button>}
-     {isDm && <p>รอผู้สืบสวนยืนยันให้ทีมเดินทาง</p>}
+     <p>DM เลือกเปิดฉากถัดไปจากหน้าดำเนินเกม</p>
    </section>}
    {showStory && !!view.journals.length && <details><summary>สมุดคดีจากบทก่อน · {view.journals.length}</summary>
      {view.journals.map(journal=><section key={journal.phase}><h4>บท {journal.phase}</h4><Journal journal={journal}/></section>)}

@@ -1,9 +1,9 @@
 # Combat cutouts
 
-Web derivatives of the project's `ART dicut` originals. Source images remain unchanged.
+Web derivatives of the project's `assets/source/ART dicut` originals. Source images remain unchanged.
 PNG with alpha, 320 × 480; nine derivatives total approximately 1.8 MiB.
 
-| Runtime file | Source under ART dicut |
+| Runtime file | Source under assets/source/ART dicut |
 | --- | --- |
 | ritual_specialist.png | main character/หมอพิธี.png |
 | paranormal_investigator.png | main character/นักสืบ.png |

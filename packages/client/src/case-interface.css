@@ -105,8 +105,6 @@ body:has(.case-ui) {
 .case-ui .case-story-thread { background: var(--well); border-inline-start-color: var(--accent); }
 .case-ui .case-story-thread header span, .case-ui .case-thread-history small { color: var(--accent); }
 .case-ui .case-action-workbench .guided-panel { border: 0; background: transparent; padding: 0; margin-block: .65rem; }
-.case-ui .case-action-workbench .question-options { display: grid; gap: .35rem; }
-.case-ui .case-action-workbench .question-options button { min-height: 42px; margin: 0; text-align: left; }
 .case-ui .action-option > button { border-radius: 10px; min-height: 46px; }
 .case-ui .dm-controls-pane > .game-panel { box-shadow: none; }
 .case-ui .dm-case-status strong { font-size: 1.15rem; }
