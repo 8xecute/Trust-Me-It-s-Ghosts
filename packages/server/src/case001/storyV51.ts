@@ -29,6 +29,7 @@ export type State51={
  protectedHostages53?:Hostage[];
  memory53?:'investigate_memory'|'ritual_memory_reaction';
  backlashOccurred53?:true;
+ doorAccess55?:true;doorOpened55?:true;dolUngagged55?:true;finalBody55?:'embodied'|'dispersed';finalReleaseCommitted55?:true;finalDefense55?:true;finalPhaseTwo55?:true;
  KAEW_FINAL:null|'calm'|'hostile'|'sealed'|'departed'|'controlled';ENDING_MODIFIER:string|null;
  LAND_EVIDENCE_COLLECTED:boolean;FLOOD_EVIDENCE_COLLECTED:boolean;PLAYER_DEATHS:number;
  // These are DM observations of real actions, not new evidence sufficiency rules.
@@ -57,12 +58,12 @@ export function contract51(s:CaseState) {
 }
 export function safeHostages51(s:CaseState) {
  return hostageNames.filter(name=>alive51(s,name) && (s.evacuated.includes(name) ||
-  s.guided?.version==='5.3' && s.v51?.protectedHostages53?.includes(name) &&
+  ['5.3','5.5'].includes(s.guided?.version ?? '') && s.v51?.protectedHostages53?.includes(name) &&
   !(s.v51.pending?.kind==='crossfire' && s.v51.pending.target===name)));
 }
-export const kaewVoice53=(s:CaseState)=>s.guided?.version==='5.3' && s.v51?.kaewVoice53===true;
+export const kaewVoice53=(s:CaseState)=>['5.3','5.5'].includes(s.guided?.version ?? '') && s.v51?.kaewVoice53===true;
 export function wichaiHere51(s:CaseState,includeCaptured=false) {
- if(s.guided?.version==='5.3' && s.site==='E' && !s.v51?.wichaiArrival53?.arrived)return false;
+ if(['5.3','5.5'].includes(s.guided?.version ?? '') && s.site==='E' && !s.v51?.wichaiArrival53?.arrived)return false;
  return s.wichai?.site===s.site && (s.v51?.WICHAI_STATUS==='free' || includeCaptured && s.v51?.WICHAI_STATUS==='captured');
 }
 export function stopRitual51(s:CaseState) {
@@ -103,13 +104,25 @@ export function clock51(s:CaseState,previous:number) {
 }
 export function sceneCue51(s:CaseState,id:string) {
  const v=s.v51!,scene=storyContent(s).scenes[id];
- if(s.guided?.version==='5.3' && id==='F5' && (!v.KAEW_TEMP_DISPERSED || kaewVoice53(s))) {
+ if(s.guided?.version==='5.5' && id==='E2' && !s.opened)return storyContent(s).scenes.E1.cue;
+ if(s.guided?.version==='5.5' && id==='F2') {
+  const rows=scene.dmReadAloud.split('\n').filter(row=>row.trim().startsWith('-'));
+  const key=v.KAEW_D_RESULT;
+  if(key==='talked' && v.KAEW_TRUST!=='high')return '';
+  const row=rows.find(row=>row.includes(key==='fled'||key==='lost'?'fled':key)) ?? rows[0];
+  return row?.match(/“([^”]+)”/)?.[1] ?? '';
+ }
+ if(s.guided?.version==='5.5' && ['E2','E3'].includes(id) && hostageNames.some(name=>!alive51(s,name)))return 'ผู้รอดชีวิตที่อยู่ตรงหน้าพยายามตั้งสติ';
+ if(s.guided?.version==='5.5' && id==='E6')return scene.cue;
+ if(s.guided?.version==='5.5' && id==='H1')return scene.cue.replaceAll('**','');
+
+ if(['5.3','5.5'].includes(s.guided?.version ?? '') && id==='F5' && (!v.KAEW_TEMP_DISPERSED || kaewVoice53(s))) {
   const openings=scene.dmReadAloud.split('\n').filter(line=>line.startsWith('> **['));
   return (openings[v.KAEW_TEMP_DISPERSED?1:0] ?? '')
    .replace(/^> \*\*\[[^\]]+\]\*\* /,'').replace(/ \(ถ้ายังไม่เคยปลดสายใดให้เห็นทั้งสามเส้นคลายพร้อมกัน\)/,'')
    .split(' — **')[0];
  }
- if(s.guided?.version==='5.3' && id==='B3' && !wichaiHere51(s,true)) {
+ if(['5.3','5.5'].includes(s.guided?.version ?? '') && id==='B3' && !wichaiHere51(s,true)) {
   return scene.cue.replace(/^ต้นเหลือบมองแขนเสื้อและหลังมือวิชัย ก่อนรีบหันมาหาพวกคุณ /,'ต้นหันมาหาพวกคุณ ');
  }
  if(id==='F2') {
@@ -120,11 +133,11 @@ export function sceneCue51(s:CaseState,id:string) {
   if(!row) throw Error('ตรวจ State D ก่อนเปิด F2');
   return row.match(/“([^”]+)”/)![1];
  }
- if(s.guided?.version==='5.3' && id==='F1' && v.KAEW_TEMP_DISPERSED && !kaewVoice53(s))return scene.cue.split(' เสียงร้อง')[0];
+ if(['5.3','5.5'].includes(s.guided?.version ?? '') && id==='F1' && v.KAEW_TEMP_DISPERSED && !kaewVoice53(s))return scene.cue.split(' เสียงร้อง')[0];
  if(noTimer(s) && id==='F6' && v.KAEW_TEMP_DISPERSED)return scene.cue.split(' เสียงแม่แก้ว')[0];
  if(!noTimer(s) && id==='F6' && v.KAEW_TEMP_DISPERSED)return scene.cue.split('แม่แก้วทรุดลง')[0].trim();
  if(id==='F5' && v.KAEW_TEMP_DISPERSED)return 'วงพิธีดับราวกับมีคนเป่าเทียน';
- if(s.guided?.version==='5.3' && id==='H1')return scene.cue.split(' — **')[0].replaceAll('**','');
+ if(['5.3','5.5'].includes(s.guided?.version ?? '') && id==='H1')return scene.cue.split(' — **')[0].replaceAll('**','');
  if(noTimer(s) && id==='H1')return 'บันทึกฉบับหนึ่งมีเวลา «เปิดประตูผันน้ำ» ทีมมีคำบอกเล่าว่าคนในสวนยังออกมาไม่ครบ';
  if(id==='H1')return 'บันทึกฉบับหนึ่งมีเวลา «เปิดประตูผันน้ำ»\n'+(hasFact(s,'gate-testimony')?'ยายบุญมีให้ข้อมูลว่าไม่ได้เห็นคนเปิดประตูกับตา และมีคนยังออกมาไม่ครบ':'');
  if(id==='E2' && hostageNames.some(n=>!alive51(s,n))) return 'กลอนคลายออกพร้อมกลิ่นอับและเหงื่อค้าง';
@@ -151,7 +164,7 @@ export function presentScene51(s:CaseState,id:string) {
  if(id==='C5') addFact(s,'met-boonmee');
  if(id==='D2') {for(const key of ['E03','E04'])if(!s.evidence.includes(key))s.evidence.push(key);if(s.ghost==='hidden')s.ghost='cautious';}
  if(id==='D5') {v.LOCATION_E_KNOWN=true;if(!s.evidence.includes('E06'))s.evidence.push('E06');}
- if(id==='E2') {s.opened=true;v.HOSTAGES_FOUND=3;}
+ if(id==='E2' && (s.guided?.version!=='5.5' || s.opened)) {s.opened=true;v.HOSTAGES_FOUND=3;}
  if(id==='E4') {s.key=true;if(!s.evidence.includes('E05'))s.evidence.push('E05');}
  if(id==='F2' && !v.KAEW_TEMP_DISPERSED) s.ghost='cautious';
  if(id==='F5' && !v.KAEW_TEMP_DISPERSED && !['pacified','freed','sealed'].includes(s.ghost)) s.ghost='cautious';
@@ -159,6 +172,12 @@ export function presentScene51(s:CaseState,id:string) {
 
 function hardLineAllowed(s:CaseState,line:V51Line) {
  const v=s.v51!,c=line.context,t=line.text;
+ if(s.guided?.version==='5.5') {
+  if(['นิด','เพิ่ม'].includes(line.speaker))return false;
+  if(line.speaker==='ดล' && !v.dolUngagged55)return false;
+  if(line.speaker==='ประเสริฐ' && line.scene==='H1' && v.RITUAL_STATUS!=='stopped')return false;
+ }
+
  if(hostageNames.includes(line.speaker as Hostage) && (!alive51(s,line.speaker) || !s.opened && line.scene!=='E1' || s.evacuated.includes(line.speaker))) return false;
  if(noTimer(s)) {
   if(line.scene==='E4' && /กระเป๋า|ทวงหนี้|พลิกดู/.test(c) && !v.bagSearched)return false;
@@ -180,7 +199,7 @@ function hardLineAllowed(s:CaseState,line:V51Line) {
  if(line.scene==='E3' && t==='อย่าให้มันรอดไปได้' && v.WICHAI_STATUS==='captured')return false;
  if(line.scene==='E3' && t==='อย่าให้มันปฏิเสธได้' && v.WICHAI_STATUS!=='captured')return false;
  if(line.scene==='B3' && /ส่วนตัว|รถเข็นหนัก/.test(line.label) && v.TON_TRUST!=='high') return false;
- if(s.guided?.version==='5.3' && line.scene==='B3' && /ส่วนตัว|รถเข็นหนัก/.test(line.label) && !hasFact(s,'v43-ton-protected'))return false;
+ if(['5.3','5.5'].includes(s.guided?.version ?? '') && line.scene==='B3' && /ส่วนตัว|รถเข็นหนัก/.test(line.label) && !hasFact(s,'v43-ton-protected'))return false;
  if(line.scene==='B3' && line.label.includes('ต่อหน้าวิชัย') && !wichaiHere51(s)) return false;
  if(c.includes('ฝากคำขอโทษยาย') && !hasFact(s,'v43-boonmee-apology')) return false;
  if((c.includes('แสดง E02') || c.includes('แสดงสมุด')) && !s.evidence.includes('E02')) return false;
@@ -230,7 +249,7 @@ export function resolveEnding51(s:CaseState):'A'|'B'|'C'|'D' {
  if(c.HOSTAGES_SAFE===3 && v.WICHAI_DEATH_CAUSE==='kaew_execution') {v.ENDING_MODIFIER='vigilante_ghost';return 'B';}
  if(c.HOSTAGES_SAFE!==3 || v.WICHAI_STATUS==='escaped' || v.humanCaseSupported!==true) return 'C';
  if(v.KAEW_FINAL==='hostile' || noTimer(s) && v.KAEW_FINAL==='sealed') return 'B';
- if((v.KAEW_FINAL==='calm' || s.guided?.version==='5.3' && v.KAEW_FINAL==='departed') && v.pastDisclosed && v.WICHAI_STATUS!=='dead') return 'A';
+ if((v.KAEW_FINAL==='calm' || ['5.3','5.5'].includes(s.guided?.version ?? '') && v.KAEW_FINAL==='departed') && v.pastDisclosed && v.WICHAI_STATUS!=='dead') return 'A';
  return 'C';
 }
 export function endingText51(s:CaseState,ending:string) {
@@ -287,7 +306,7 @@ export function storySummary51(s:CaseState) {
   else if(v.FLOOD_EVIDENCE_COLLECTED)summary.push('ทีมเก็บเอกสารปี 2534 แล้ว ยังไม่ได้เปิดเผย');
   if(v.KAEW_FINAL==='calm')summary.push('แม่แก้วยอมยุติภัยแล้ว');
  }
- if(s.guided?.version==='5.3')for(const entry of v.adjudications.filter(entry=>entry.label).slice(-3))
+ if(['5.3','5.5'].includes(s.guided?.version ?? ''))for(const entry of v.adjudications.filter(entry=>entry.label).slice(-3))
   summary.push('บันทึกแล้ว · '+entry.label+(entry.effect?' — '+entry.effect:''));
  return summary;
 }
@@ -301,7 +320,7 @@ export function hostageReachable52(s:CaseState,name:Hostage) {
 }
 
 export function historySources52(s:CaseState) {
- if(s.guided?.version==='5.3')return !!(s.v51?.floodSources53?.gate && s.v51.floodSources53.shelter);
+ if(['5.3','5.5'].includes(s.guided?.version ?? ''))return !!(s.v51?.floodSources53?.gate && s.v51.floodSources53.shelter);
  return !!s.v51?.FLOOD_EVIDENCE_COLLECTED && hasFact(s,'gate-testimony');
 }
 
@@ -314,6 +333,14 @@ export function startBacklash52(s:CaseState,actor:'player'|'wichai') {
 export function dmOptions51(s:CaseState) {
  const v=s.v51!,g=s.guided!,out:{id:string;label:string;detail?:string;when?:string;effect?:string}[]=[];
  const add=(id:string,label:string,detail?:string)=>out.push({id,label,detail});
+ if(g.version==='5.5' && s.site==='E' && ['E1','E2'].includes(g.scene) && g.presented.includes(g.scene) && !s.opened) {
+  if(!v.doorAccess55)add('door-access55','ยืนยันทีมเคลียร์กระสอบและเข้าถึงบานประตูได้แล้ว');
+  if(v.doorAccess55 && !v.doorOpened55)add('door-tools55','ยืนยันทีมปลดกลอนด้วยเครื่องมือจริงสำเร็จแล้ว');
+  if(v.doorOpened55)add('enter-room55','ยืนยันทีมเปิดบานประตูและเข้าไปเห็นผู้สูญหายจริงแล้ว');
+ }
+ if(g.version==='5.5' && ['E2','E3'].includes(g.scene) && s.opened && alive51(s,'ดล') && !v.dolUngagged55)
+  add('ungag-dol','ยืนยันทีมแก้ผ้าปากและดลมีสติพอให้คำตอบแล้ว');
+
  if(g.phase==='A' && !v.lethal) add('enable-lethal','เปิดเหตุเสี่ยงถึงตายสำหรับคดีนี้',lethalAnnouncement51(s));
  if(g.scene==='D4' && v.KAEW_TRUST!=='low')add('unnecessary-attack','ยืนยันทีมโจมตีแม่แก้วโดยไม่จำเป็นจริงแล้ว');
  if(g.presented.includes(g.scene)) for(const line of dialogue51(s,true)) if(!v.contextConfirmed.includes(line.id) && !automaticLine51(line)) add('context:'+line.id,line.speaker+' · '+(readerLabel(line.label).replace(/^บทหลัก$/,'บทพูดตามสถานการณ์') || 'บทพูดตามสถานการณ์'),line.text);
@@ -322,7 +349,7 @@ export function dmOptions51(s:CaseState) {
   if(!v.FLOOD_EVIDENCE_COLLECTED)add('collect-flood','ทีมเก็บบันทึกเปิดประตูน้ำแล้ว');
  }
  if(noTimer(s)) {
-  if(g.version==='5.3' && s.wichai && v.WICHAI_STATUS==='free' && ['B','C','D','E'].includes(s.site) && g.presented.includes(g.scene)) {
+  if(['5.3','5.5'].includes(g.version ?? '') && s.wichai && v.WICHAI_STATUS==='free' && ['B','C','D','E'].includes(s.site) && g.presented.includes(g.scene)) {
    if(!v.wichaiArrival53) {
     add('wichai-route:called','ยืนยันทีมติดต่อหรือนัดวิชัยจริงแล้ว');
     add('wichai-route:followed','ยืนยันทีมเห็นร่องรอยว่าวิชัยตามมาจริง');
@@ -334,7 +361,7 @@ export function dmOptions51(s:CaseState) {
     !v.backlash && v.RITUAL_STATUS!=='stopped' && ['E4','F1','F3'].includes(g.scene) && g.presented.includes(g.scene)) {
    add('ritual-release','ยืนยันว่าทีมปลดกำไลอย่างควบคุมและพิธีหยุดแล้วตามกติกาเดิม');
   }
-  if(g.version==='5.3' && g.presented.includes(g.scene)) {
+  if(['5.3','5.5'].includes(g.version ?? '') && g.presented.includes(g.scene)) {
    const sources=v.floodSources53;
    if(g.scene==='B4' && !sources?.archive)add('read-gate:B4','ยืนยันว่าทีมเปิดแฟ้มเก่าและอ่านบันทึกเวรประตูน้ำจริง');
    if(g.scene==='E4' && v.bagSearched && !sources?.gate)add('read-gate:E4','ยืนยันว่าทีมอ่านบันทึกเวรประตูน้ำจากกระเป๋าแล้ว');
@@ -350,7 +377,7 @@ export function dmOptions51(s:CaseState) {
     if(v.coreApproached)add('flood-memory:ritual_memory_reaction','ยืนยันว่าภาพความทรงจำตอบสนองต่อการลงมือกับพิธีจริง');
    }
   }
-  if(g.version==='5.3' && s.site==='E' && s.opened && g.presented.includes(g.scene)) {
+  if(['5.3','5.5'].includes(g.version ?? '') && s.site==='E' && s.opened && g.presented.includes(g.scene)) {
    for(const name of hostageNames.filter(name=>alive51(s,name) && !s.evacuated.includes(name))) {
     if(v.protectedHostages53?.includes(name))add('lose-protection:'+name,'ยืนยันภัยเข้าถึง '+name+' ได้อีกครั้ง');
     else if(['E2','E6'].includes(g.scene) && !s.escorts.includes(name) &&
@@ -360,7 +387,7 @@ export function dmOptions51(s:CaseState) {
   }
   if(s.wichai && v.WICHAI_STATUS==='free' && s.wichai.site===s.site && ['B','D'].includes(s.site) && g.presented.includes(s.site+'1')) {
    const destination=s.site==='B'?'D':'E';
-   if(g.version!=='5.3' || destination!=='E')add('wichai-depart:'+destination,'วิชัยเดินทางไป'+(destination==='D'?'สวนกล้วย':'เรือนไม้')+'แล้ว');
+   if(!['5.3','5.5'].includes(g.version ?? '') || destination!=='E')add('wichai-depart:'+destination,'วิชัยเดินทางไป'+(destination==='D'?'สวนกล้วย':'เรือนไม้')+'แล้ว');
   }
   if(g.scene==='E4' && g.presented.includes('E4') && v.FLOOD_EVIDENCE_COLLECTED && !hasFact(s,'gate-testimony') && !v.boonmeeCallPending) {
    add('contact-boonmee','โทรหายายบุญมีเมื่อมีเบอร์ติดต่อจริงและให้ยายเล่าเรื่องการอพยพ');
@@ -380,7 +407,7 @@ export function dmOptions51(s:CaseState) {
   if(v.humanCaseSupported!==false)add('evidence-insufficient','DM ยืนยันหลักฐานเอาผิดวิชัยยังไม่พอ');
   if(v.disclosurePlan!==true)add('plan-credible','DM ยืนยันทีมมีแผนเปิดเผย/รับผิดที่ทำได้จริง');
   if(v.disclosurePlan!==false)add('plan-insufficient','DM ยืนยันยังไม่มีแผนเปิดเผย/รับผิดที่น่าเชื่อถือ');
-  if(hasFact(s,'gate-truth') && !v.pastDisclosed && (g.version!=='5.3' ||
+  if(hasFact(s,'gate-truth') && !v.pastDisclosed && (!['5.3','5.5'].includes(g.version ?? '') ||
    g.scene==='F5' && v.RITUAL_STATUS==='stopped' && v.disclosure53?.evidence.every(id=>s.evidence.includes(id)))) {
    const plan=v.disclosure53;
    add('disclosed','ยืนยันส่ง/เปิดเผยหลักฐานปี 2534 จริงแล้ว พร้อมบันทึกการกระทำ',
@@ -412,13 +439,28 @@ export function dmOptions51(s:CaseState) {
    add('informed:'+witness+':'+n,'ยืนยันทีมแจ้งข่าวการเสียชีวิตของ '+n+' ให้ '+witness+' ทราบจริงแล้ว');
   }
  }
- return out.map(option=>({...option,...(g.version==='5.3'?actionHelp[option.id.split(':')[0]]:undefined)}));
+ const filtered=g.version==='5.5'?out.filter(option=>
+  !['e5-threat','ritual-release','fatal'].includes(option.id) &&
+  !option.id.startsWith('shield:') && !option.id.startsWith('context:') &&
+  !(option.id==='contact-boonmee') &&
+  !(option.id==='flood-memory:ritual_memory_reaction') &&
+  !(option.id==='flood-memory:investigate_memory') &&
+  !(option.id==='bracelet-reacted')
+ ):out;
+ return filtered.map(option=>({...option,...(['5.3','5.5'].includes(g.version ?? '')?actionHelp[option.id.split(':')[0]]:undefined)}));
 }
 export function command51(w:World,command:string) {
  const s=w.case001!,v=s.v51!;
  const option=dmOptions51(s).find(o=>o.id===command);
  if(!option)throw Error('เหตุการณ์ไม่ตรงเงื่อนไขจริง');
  const [kind,...parts]=command.split(':');
+ if(kind==='ungag-dol')v.dolUngagged55=true;
+ if(kind==='door-access55')v.doorAccess55=true;
+ if(kind==='door-tools55')v.doorOpened55=true;
+ if(kind==='enter-room55') {
+  s.opened=true;v.HOSTAGES_FOUND=hostageNames.filter(name=>alive51(s,name)).length;
+  emitCaseBeat(s,'enter-room55',storyContent(s).scenes.E2.cue,'party');
+ }
  if(kind==='context')v.contextConfirmed.push(parts.join(':'));
  if(kind==='enable-lethal') {v.lethal=true;emitCaseBeat(s,'v51:lethal',lethalAnnouncement51(s),'party');}
  if(kind==='wichai-depart'){s.wichai!.site=parts[0] as 'D'|'E';s.wichai!.status='idle';}
@@ -450,8 +492,8 @@ export function command51(w:World,command:string) {
  if(kind==='lose-protection')v.protectedHostages53=v.protectedHostages53?.filter(name=>name!==parts[0]);
  if(kind==='history-supported') {
   addFact(s,'gate-truth');addFact(s,'v41-flood-evidence');v.FLOOD_TRUTH='evidence';
-  if(s.guided?.version==='5.3')(v.floodSources53 ??= {}).compared=true;
-  emitCaseBeat(s,'guided-history',s.guided?.version==='5.3'?'บันทึกสองฉบับชี้ว่าประตูผันน้ำเปิดก่อนมีการยืนยันว่าคนจากสวนถึงศูนย์อพยพครบ':'หลักฐานยืนยันว่ามีการเปิดประตูผันน้ำก่อนพื้นที่สวนอพยพครบ','party');
+  if(['5.3','5.5'].includes(s.guided?.version ?? ''))(v.floodSources53 ??= {}).compared=true;
+  emitCaseBeat(s,'guided-history',['5.3','5.5'].includes(s.guided?.version ?? '')?'บันทึกสองฉบับชี้ว่าประตูผันน้ำเปิดก่อนมีการยืนยันว่าคนจากสวนถึงศูนย์อพยพครบ':'หลักฐานยืนยันว่ามีการเปิดประตูผันน้ำก่อนพื้นที่สวนอพยพครบ','party');
  }
  if(kind==='contact-boonmee') {
   v.boonmeeCallPending=true;
@@ -466,7 +508,7 @@ export function command51(w:World,command:string) {
  }
  if(kind==='wichai-risk')startBacklash52(s,'wichai');
  if(kind==='backlash-prevented' || kind==='backlash-resolved') {
-  if(kind==='backlash-resolved' && s.guided?.version==='5.3')v.backlashOccurred53=true;
+  if(kind==='backlash-resolved' && ['5.3','5.5'].includes(s.guided?.version ?? ''))v.backlashOccurred53=true;
   if(kind==='backlash-resolved')emitCaseBeat(s,'v52:backlash','ปมด้ายเหวี่ยงกลับจนเทียนบนโต๊ะดับไปเล่มหนึ่ง เศษโคลนเปียกพุ่งออกจากร่องไม้','local');
   delete v.backlash;
  }
@@ -519,7 +561,7 @@ export function command51(w:World,command:string) {
   (v.deathKnown[witness]??=[]).push(target as Hostage);
   if(kind==='witness')v.contextConfirmed.push('witness:'+witness+':'+target);
  }
- v.adjudications.push({event:command,...(s.guided?.version==='5.3'?{label:option.label,effect:option.effect}:{}),...(noTimer(s)?{}:{minute:s.minute})});
+ v.adjudications.push({event:command,...(['5.3','5.5'].includes(s.guided?.version ?? '')?{label:option.label,effect:option.effect}:{}),...(noTimer(s)?{}:{minute:s.minute})});
 }
 export function delivered51(s:CaseState,eventId:string) {
  if(noTimer(s) && s.v51) {

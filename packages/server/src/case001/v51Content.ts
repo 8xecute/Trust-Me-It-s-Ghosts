@@ -9,7 +9,7 @@ export type StoryCheck={
  trigger:string;baseline:string;bypass:string;fallback:string;sourceMarkdown?:string;decision?:string;
  full:StoryBranch;partial:StoryBranch;failure:StoryBranch;
 };
-function loadStory(version:'5.1'|'5.2'|'5.3') {
+function loadStory(version:'5.1'|'5.2'|'5.3'|'5.5') {
  const path=(suffix:string)=>new URL('../../scenarios/case-001/case-001.v'+version+'.'+suffix,import.meta.url);
  const read=(suffix:string)=>JSON.parse(readFileSync(path(suffix),'utf8'));
  const scenes=Object.assign({},...['A','B','C','D','E','F'].map(act=>read(act+'.json'))) as Record<string,V51Scene>;
@@ -25,10 +25,15 @@ const legacy=loadStory('5.1');
 export const {scenes:scenes51,endings:endings51,script:script51}=legacy;
 const current=loadStory('5.2');
 const latest=loadStory('5.3');
+const playtest55=loadStory('5.5');
+const presentationOverrides55=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.v5.5.overrides.json',import.meta.url),'utf8')) as {
+ overrides:{checkId:string;results:Record<'full'|'partial'|'failure',{dmNarration:string}>}[];
+};
+export const checks55=playtest55.checks;
 export const checks52=current.checks;
 export const checks53=latest.checks;
-export const noTimer=(state:{guided?:{version:string}})=>['5.2','5.3'].includes(state.guided?.version ?? '');
-export const storyContent=(state:{guided?:{version:string}})=>state.guided?.version==='5.3'?latest:noTimer(state)?current:legacy;
+export const noTimer=(state:{guided?:{version:string}})=>['5.2','5.3','5.5'].includes(state.guided?.version ?? '');
+export const storyContent=(state:{guided?:{version:string}})=>state.guided?.version==='5.5'?playtest55:state.guided?.version==='5.3'?latest:noTimer(state)?current:legacy;
 
 const briefs52=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.v5.2.briefs.json',import.meta.url),'utf8')) as Record<string,[string,string]>;
 if(Object.keys(briefs52).length!==31 || Object.keys(current.scenes).some(id=>!briefs52[id]))throw Error('สรุปฉาก v5.2 ไม่ครบ');
@@ -45,17 +50,20 @@ const endingBriefs:Record<string,string>={
 
 function makeReader(content:typeof current) {return {
  scenes:Object.values(content.scenes).map(({id,title,phase,dialogue})=>({
-  id,title,phase,brief:content===latest?[content.scenes[id].purpose,content.scenes[id].nextSceneHandoff]:briefs52[id], secret:content===latest?content.scenes[id].dmSecret:undefined, clues:content===latest?content.scenes[id].clues:undefined,
+  id,title,phase,brief:content!==current?[content.scenes[id].purpose,content.scenes[id].nextSceneHandoff]:briefs52[id], secret:content!==current?content.scenes[id].dmSecret:undefined, clues:content!==current?content.scenes[id].clues:undefined,
   dialogue:dialogue.map(({id,speaker,label,text})=>({id,speaker,label:readerLabel(label),text})),
  })),
  endings:Object.fromEntries(Object.entries(content.endings).map(([id,{title,paragraphs}])=>[id,{title:title.split(' / ')[0],brief:endingBriefs[id],paragraphs}])),
- checks:content.checks.map(({scene_id,title,stat,dc,partial_margin,decision,full,partial,failure})=>({
+ checks:content.checks.map(({id,scene_id,title,stat,dc,partial_margin,decision,full,partial,failure})=>({
   scene_id,title,stat,dc,partial_margin,decision:decision?'การทอยนี้ยังไม่เปิดใช้ ทีมคุยกับยายและหาเบาะแสต่อได้':'',
-  full:readerLabel(full.dm),partial:readerLabel(partial.dm),failure:readerLabel(failure.dm),
+  ...Object.fromEntries((['full','partial','failure'] as const).map(outcome=>[outcome,readerLabel(
+   (content===playtest55?presentationOverrides55.overrides.find(entry=>entry.checkId===id)?.results[outcome].dmNarration:undefined) ??
+   ({full,partial,failure})[outcome].dm)])) as Record<'full'|'partial'|'failure',string>,
  })),
 };}
 export const reader52=makeReader(current);
 export const reader53=makeReader(latest);
+export const reader55=makeReader(playtest55);
 
 export function readerLabel(text:string) {
  return text.replace(/^\[?v\d+(?:\.\d+)+(?:\s*·)?\s*/i,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b(?:\s*=\s*[a-z0-9_|]+)?/g,'').replace(/^เสนอเพิ่ม\s*·\s*/, '').replace(/[\[\]\x60*]/g,'').trim();

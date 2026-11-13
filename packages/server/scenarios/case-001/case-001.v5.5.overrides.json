@@ -1,0 +1,166 @@
+{
+  "caseId": "CASE001",
+  "version": "v5.5",
+  "status": "Legacy 1A Dice Cards unchanged; v5.5 F puzzle separately defined in Story/State Contract; DM overrides E3/E5/H1 still required",
+  "confirmedChoice": "1A",
+  "sourceDiceCards": "original 17 scripted cards (16 canonical + E2_DOOR_BREAK BODY14) are immutable; do not edit them",
+  "applyAfter": "a real scripted roll is resolved and CHECK_RESULTS/state changes from the immutable card are committed",
+  "routing": "for E3/E5/H1 intercept original NPC dialogue and any auto narrative action; project only this guarded DM-authored output. Read-only Q&A never mutates state",
+  "requirements": [
+    "matching scene + checkId + actual roll result; never on preview/search",
+    "do not expose DM-only hidden info",
+    "do not run action/state reducer on legacy prose; narrative side effects denied",
+    "check tier and original approved mechanical state changes unchanged",
+    "if override cannot run, block legacy text/action and ask DM to review; do not send inconsistent NPC dialogue"
+  ],
+  "doNotOverride": [
+    "D20 roll computation",
+    "stat/DC/thresholds",
+    "CHECK_RESULTS id or tier",
+    "legitimate checked state writes",
+    "Core Combat Lite mechanics",
+    "Ending A–D resolver"
+  ],
+  "overrides": [
+    {
+      "checkId": "E3_HOSTAGES_ORDER",
+      "scene": "E3",
+      "audience": "dm_review_before_player",
+      "presentCondition": "only on actual E3 roll, based on available known evidence and hostage presence",
+      "results": {
+        "full": {
+          "dmNarration": "ดลรวบรวมคำสั้น ๆ ได้ชัดพอระบุว่าวิชัยเป็นผู้กักขังและเคยขึ้นชั้นบน ทีมเทียบรายชื่อและวันจากแฟ้ม B1/สมุด C2 เท่าที่เก็บมาจริง นิดตอบด้วยท่าทางเมื่อพร้อม เพิ่มพยายามชี้ขึ้นชั้นบน; หากมีเอกสาร E4 ที่เปิดจริงแล้วจึงเรียงลำดับป้ายชื่อได้ชัดขึ้น",
+          "npcDialogue": {
+            "speaker": "ดล",
+            "text": "วิชัย... มันขังพวกเรา... ข้างบนมีอะไรไม่รู้..."
+          },
+          "note": "ห้ามให้นิด/เพิ่มพูดหรือบอกข้อมูลเอกสาร E4 ที่ทีมยังไม่พบ"
+        },
+        "partial": {
+          "dmNarration": "ดลพูดได้เพียงชื่อวิชัยกับเสียงที่ได้ยินจากชั้นบน นิดกับเพิ่มยังไม่พร้อมเล่าเรื่อง ทีมมีข้อเท็จจริงพอจะตรวจต่อแต่เรียงเหตุไม่ได้ครบ",
+          "npcDialogue": null,
+          "note": "ไม่สร้างบทคำให้การหลายพยาน"
+        },
+        "failure": {
+          "dmNarration": "ดลยังไม่อาจเรียงช่วงเวลาที่เกิดเหตุได้ แต่ถ้ามีสติและเปิดผ้าปากแล้วเขายืนยันชื่อวิชัยได้ตามข้อมูลพื้นฐาน นิด/เพิ่มไม่พูด",
+          "npcDialogue": null,
+          "note": "ผล Failure ไม่ลบเบาะแสหลัก ไม่สร้างบทใหม่"
+        }
+      },
+      "suppressLegacyContent": [
+        "oral testimony spoken by Nid",
+        "oral testimony spoken by Phoem",
+        "unstudied E4 ritual evidence",
+        "new hostage statements asserted from a roll"
+      ],
+      "suppressLegacyActions": [
+        "auto future event",
+        "auto hostage state/position change"
+      ],
+      "preserveOriginalCheckResultAndConditionalMechanicalState": true,
+      "viewMustNotMutateState": true
+    },
+    {
+      "checkId": "E5_WICHAI_NEGOTIATE",
+      "scene": "E5",
+      "audience": "dm_review_before_player",
+      "presentCondition": "only if Wichai alive, free and physically present and actual player negotiation occurred",
+      "results": {
+        "full": {
+          "dmNarration": "วิชัยมองเอกสารและผู้ที่คุมทางเข้าถึงกำไล ก่อนค่อย ๆ ถอนมือจากแนวด้ายและยอมลดการขัดขืน ต้องมีการคุมตัวจริงจึงถือว่า captured",
+          "npcDialogue": {
+            "speaker": "วิชัย",
+            "text": "ยอมแล้ว... ผมจะไม่แตะกำไล พวกคุณจะทำอะไรต่อก็บอก..."
+          },
+          "note": "ผล Full คงการร่วมมือ ไม่ปลดพิธี/จับกุมฟรี"
+        },
+        "partial": {
+          "dmNarration": "วิชัยหยุดถอยจากโต๊ะเพียงเล็กน้อย แต่ยังขอต่อรองเรื่องการปล่อยตัว ไม่มีการทำร้ายหรือกระตุ้นกำไลฟรี",
+          "npcDialogue": {
+            "speaker": "วิชัย",
+            "text": "คุยได้... แต่ต้องมีข้อแลกเปลี่ยน"
+          },
+          "note": "ต่อรองตามสถานะจริง"
+        },
+        "failure": {
+          "dmNarration": "วิชัยปฏิเสธข้อตกลงและเหลือบมองกำไล ผู้เล่นเห็นเจตนาแต่เขายังไม่ได้เข้าถึงหรือเปิดใช้มัน การขัดขืนต้องเล่นเป็น Action จริง",
+          "npcDialogue": {
+            "speaker": "วิชัย",
+            "text": "ไม่... ผมไม่ยอมให้พวกคุณเอาของนี่ไป"
+          },
+          "note": "ไม่ auto-grab, auto-knife, auto-ritual attack, auto capture or auto kill"
+        }
+      },
+      "suppressLegacyContent": [
+        "knife/weapon drawing",
+        "hand raised away from a knife",
+        "grabbing hostage as human shield",
+        "automatic lethal threat to hostage"
+      ],
+      "suppressLegacyActions": [
+        "legacy_failure_grab_hostage",
+        "legacy_auto_draw_knife",
+        "legacy_crossfire",
+        "automatic_ritual_activation_from_SOC_failure",
+        "automatic_villain_escape"
+      ],
+      "preserveOriginalCheckResultAndConditionalMechanicalState": true,
+      "viewMustNotMutateState": true
+    },
+    {
+      "checkId": "H1_FLOOD_TIMELINE",
+      "scene": "H1",
+      "audience": "dm_review_before_player",
+      "results": {
+        "full": {
+          "dmNarration": "ทีมวางบันทึกเปิดประตูผันน้ำเทียบกับบันทึกผู้ถึงศูนย์อพยพที่ได้มาจริง จึงยืนยันได้ว่ามีการเปิดทางผันน้ำก่อนมีบันทึกยืนยันว่าอพยพครบ ไม่อาจสรุปจากเอกสารนี้เพียงอย่างเดียวว่าใครยังอยู่ในสวนหรือใครสั่งเปิดประตูน้ำสูงสุด",
+          "npcDialogue": null,
+          "note": "นำข้อสรุปที่ได้และเอกสารจริงเข้าสู่การพิจารณาความรับผิดใน Epilogue หลัง FINAL; ไม่ให้ประเสริฐสารภาพใน ACT E"
+        },
+        "partial": {
+          "dmNarration": "เวลาในเอกสารสองชุดมีจุดไม่สอดคล้อง ทีมยังชี้ผู้ร่วมตัดสินใจหรือข้อเท็จจริงทุกช่วงไม่ได้",
+          "npcDialogue": null,
+          "note": "รักษาสำเนาเอกสารและสิทธิ์ตรวจเพิ่มเติมหลัง FINAL"
+        },
+        "failure": {
+          "dmNarration": "ทีมยังเรียงเอกสารให้เป็นข้อสรุปที่น่าเชื่อถือไม่ได้ แต่เอกสารที่ค้นพบยังอยู่ในมือจริง",
+          "npcDialogue": null,
+          "note": "ไม่มีการสารภาพอัตโนมัติและไม่มีการลบเอกสารหรือย้อนเปลี่ยนข้อมูล C5 ที่รู้จริง"
+        }
+      },
+      "presentCondition": "only_after_actual_H1_check_resolution_or_existing_supported_documentary_conclusion",
+      "preserveOriginalCheckId": true,
+      "preserveOriginalStatDcAndThresholds": true,
+      "preserveOriginalResultFlag": true,
+      "preserveOriginalConditionalStateUpdates": true,
+      "viewMustNotMutateState": true,
+      "epilogueConfessionGuard": [
+        "FINAL has actually concluded",
+        "Prasert is contacted or physically present by an actual event",
+        "the supporting documents have been actually gathered and presented",
+        "Prasert only acknowledges what he actually knows; no invented proof of an ultimate order-giver"
+      ],
+      "preserveOriginalCheckResultAndConditionalMechanicalState": true,
+      "suppressLegacyContent": [
+        "Prasert confession before FINAL",
+        "Prasert on-site voice within H1",
+        "claim ultimate gate order-giver based on two records"
+      ],
+      "suppressLegacyActions": [
+        "auto_appear_Prasert",
+        "auto_confession_from_H1_roll",
+        "auto_FLOOD_TRUTH_DISCLOSED_on_H1"
+      ],
+      "status": "confirmed_1A_overlay"
+    }
+  ],
+  "endingNarrativeGuards": [
+    {
+      "ending": "C",
+      "legacyNarrativeTextMatch": "หากวิชัยฆ่าตัวประกันใน E5",
+      "replacedDMPresentation": "สำหรับโครง 4A วิชัยไม่ฆ่าพยานใน E5; ให้แสดงผลผู้บาดเจ็บ/ผู้เสียชีวิตเฉพาะหลัง Party Defeat และการลงมือใช้พิธีที่ Resolve จริงรายคน. ตรวจ Ending Resolver เดิมตาม PLAYER_DEATHS/RITUAL_STATUS/HOSTAGE_FATE; ข้อความตัวอย่าง crossfire_wichai ใน Ending C ไม่ใช่เหตุการณ์ที่อนุญาตใน Playtest นี้",
+      "originalEndingResolverImmutable": true,
+      "readOnly": true
+    }
+  ]
+}

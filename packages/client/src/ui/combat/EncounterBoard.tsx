@@ -9,6 +9,7 @@ const tokenArt=(key:string)=>cutouts['../../assets/case-001/combat/'+key+'.png']
 
 type Cell={x:number;y:number};
 export type BattleView={
+  final55?:{step:0|1|2|3;shield:'up'|'down';damageBlocked?:boolean};
   title:string; round:number; active:string|null; objective:boolean;
   turnEncounter?:{
     party:string[]; acted:string[]; maxHp:number; ready:boolean;
@@ -103,7 +104,10 @@ export function EncounterBoard({site,battle,players,characters,self,ap,turns,act
       <button disabled={!canAct || !canMove || !ap} onClick={()=>send('move',{target:selected})}>เดิน (1 AP)</button>
       <button disabled={!canAct || enemyDistance!==1 || (ap ?? 0)<2} onClick={()=>send('strike')}>โจมตี (2 AP · ระยะ 1{BASIC_RULES_MODE?' · 2 HP':''})</button>
       <button disabled={!canAct || enemyDistance!==1 || (ap ?? 0)<2} onClick={()=>send('pacify')}>เจรจา (2 AP · ระยะ 1)</button>
-      {battle.objective && <button disabled={!canAct || (ap ?? 0)<2} onClick={()=>send('caseObjective')}>คลายจุดอาคม (2 AP)</button>}
+      {battle.final55 && <p role="status">เกราะ{battle.final55.shield==='up'?'ยังป้องกันร่างอยู่':'เปิดแล้ว'} · สำเร็จ {battle.final55.step}/3 ขั้น{battle.final55.damageBlocked?' · การโจมตีโดนแต่เกราะรับความเสียหายไว้':''}</p>}
+      {battle.objective && <button disabled={!canAct || (ap ?? 0)<2} onClick={()=>send('caseObjective',battle.final55?{step:battle.final55.step}:undefined)}>
+        {battle.final55?['ยึดจุดรับแรงสะท้อน','แยกสายคำสั่ง','คลายปมเกราะ','ปลดกำไลอย่างควบคุม'][battle.final55.step]:'คลายจุดอาคม'} (2 AP{battle.final55?' · INT DC12':''})
+      </button>}
       <button disabled={!canAct} onClick={()=>send('escape')}>ถอยจากสนาม</button>
       {BASIC_RULES_MODE && <>
         <label className="combat-help-target">ช่วยเพื่อน <select value={ally} onChange={event=>setAlly(event.target.value)}>{Object.keys(players).map(id=><option key={id} value={id}>{name(id)}</option>)}</select></label>

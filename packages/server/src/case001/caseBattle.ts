@@ -38,6 +38,7 @@ export interface CaseBattle {
   armorDisabled?:boolean;
   focusCell?:Cell;
   flooded?:Cell[];
+  final55?:{step:0|1|2|3;shield:'up'|'down';actionWindow:boolean;ritualActor?:string;damageBlocked?:boolean;trustUsed?:boolean;withheldAttack?:boolean};
 }
 export interface CaseMap {
   npcPlacements?:Partial<Record<Site,import('@baan/shared').CaseNpcPlacement[]>>;
@@ -95,10 +96,11 @@ export function travelCaseMap(w:World, actor:string, site:Site, grid:GhostGrid) 
 export function caseOpportunity(s:CaseState,map:CaseMap):EncounterId|undefined {
   const available=(id:EncounterId)=>!map.completed.includes(id) && definitions[id].site===s.site;
   if(s.report || map.battle) return;
+  if(s.guided?.version==='5.5' && s.site==='E' && s.v51?.finalReleaseCommitted55 && !s.seals[2] && available('EN04'))return 'EN04';
   if(s.storyVersion===4) {
     if(available('EN01') && (s.evidence.includes('E01') || s.evidence.includes('E02'))) return 'EN01';
     if(available('EN02') && !s.seals[2] && (s.ghost==='cautious' || s.ghost==='hostile') && (!noTimer(s) || s.milestones.includes('kaew-engaged'))) return 'EN02';
-    if((!s.guided || s.guided.phase==='FINAL' && !hasFact(s,'kaew-dispersed')) && available('EN04') && !s.seals[2] && s.seals[0] && s.seals[1] && s.evidence.includes('E05') &&
+    if(s.guided?.version!=='5.5' && (!s.guided || s.guided.phase==='FINAL' && !hasFact(s,'kaew-dispersed')) && available('EN04') && !s.seals[2] && s.seals[0] && s.seals[1] && s.evidence.includes('E05') &&
       (s.ghost==='hostile' || (noTimer(s) ? s.guided?.phase==='FINAL' && !!s.v51?.coreApproached : s.minute>=210 || s.milestones.includes('unsafe-bracelet')))) return 'EN04';
     return;
   }
@@ -122,7 +124,8 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
   const roster:EnemyKind[]=isV4 ? [id==='EN01' ? 'drowned_echo' : 'kaew_boss'] : definitions[id].roster.slice(0,count<=2 ? (id==='EN01'||id==='EN04'?1:2) : 3);
   const members=roster.map((kind,index)=>{
     const state=startGhostEncounter(w.players[actor],slots[index]);
-    state.ghostHealth=combat ? liteGhostHP(combat.baseHPFor2,Math.max(2,Math.min(w.basicMode?4:6,Object.keys(localPlayers(w,site)).length))) : kind==='kaew_boss' && (!isV4 || id==='EN04') ?Math.min(20,8+4*count):enemies[kind].hp;
+    const partySize=w.case001!.guided?.version==='5.5'?party.length:Object.keys(localPlayers(w,site)).length;
+    state.ghostHealth=combat ? liteGhostHP(combat.baseHPFor2,Math.max(2,Math.min(w.basicMode && w.case001!.guided?.version!=='5.5'?4:6,partySize))) : kind==='kaew_boss' && (!isV4 || id==='EN04') ?Math.min(20,8+4*count):enemies[kind].hp;
     const tactics=newTactics({combat,movement:combat?.MOVE ?? (kind==='kaew_boss'?3:1),armor:kind==='ritual_guardian'?1:0,
       special:kind==='drowned_echo'?'wail':kind==='kaew_boss'?undefined:'lash',restrains:kind!=='ritual_guardian',
       boss:kind==='kaew_boss' && (!isV4 || id==='EN04'),canPacify:kind!=='kaew_boss' || isV4 && id==='EN02',anchorActive:kind==='kaew_boss' && (!isV4 || id==='EN04')});
@@ -133,6 +136,15 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
     ...(id==='EN04'?{phase:'chains' as const}:{}),projections:id==='EN04'?slots.slice(roster.length,roster.length+projectionCount):[],
     ...(turnEncounter ? {turnEncounter:{acted:[],maxHp:members[0].state.ghostHealth,history:[]}} :
       id==='EN03'||id==='EN01' ? {focusCell:slots[roster.length]} : {})};
+  if(id==='EN04' && w.case001!.guided?.version==='5.5') {
+    map.battle.final55={step:0,shield:'up',actionWindow:false};
+    map.battle.projections=[];
+    map.battle.focusCell=slots[roster.length];
+    members[0].tactics.profile!.anchorActive=false;
+    w.case001!.v51!.finalDefense55=true;
+    w.case001!.v51!.finalBody55='embodied';
+    w.case001!.v51!.KAEW_TEMP_DISPERSED=false;
+  }
   for(const player of party) w.turns[player]=startTurn();
   if(combat && !turnEncounter) {
     const initiative=[...party.map(player=>({player,bonus:characterAttribute(w.characters![player],'mind')})),
@@ -142,6 +154,7 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
     map.battle.initiative=initiative.map(entry=>entry.player);
     nextCombatTurn(w,map.battle,grid,roll,-1,()=>{});
   }
+  if(map.battle.final55)map.battle.final55.actionWindow=true;
   w.case001!.notice=map.battle.title ?? definitions[id].title;
   const script=isV4 ? v4.encounters[id] : caseNarration.encounters[id];
   let text=script.start;
@@ -369,7 +382,7 @@ function canReach(from:Cell,to:Cell,grid:GhostGrid,blocked:Cell[],budget:number,
 function nextCombatTurn(w:World,b:CaseBattle,grid:GhostGrid,roll:()=>number,index:number,completeRound:()=>void) {
   const order=b.initiative!;
   const enemy=b.enemies[0];
-  while(readyPlayers(w,b.site).length && activeEnemies(b).length) {
+  while(readyPlayers(w,b.site).length && (activeEnemies(b).length || !!b.final55)) {
     index++;
     if(index===order.length) {
       index=0;
@@ -380,6 +393,8 @@ function nextCombatTurn(w:World,b:CaseBattle,grid:GhostGrid,roll:()=>number,inde
     }
     const player=order[index];
     if(player===null) {
+      if(b.final55 && !activeEnemies(b).length)continue;
+      if(b.final55?.withheldAttack) {delete b.final55.withheldAttack;continue;}
       const local=localWorld(w,b,enemy);
       advanceTactics(local,grid,roll,false);
       continue;
@@ -394,12 +409,13 @@ function nextCombatTurn(w:World,b:CaseBattle,grid:GhostGrid,roll:()=>number,inde
   if(w.caseMap?.battle===b) finishCaseBattle(w);
 }
 
-export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unknown;targetId?:unknown;allyTarget?:unknown;boost?:unknown;enemyId?:unknown},
+export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unknown;targetId?:unknown;allyTarget?:unknown;boost?:unknown;enemyId?:unknown;step?:unknown},
  grid:GhostGrid,roll:()=>number,completeRound:()=>void) {
   const map=w.caseMap!, site=map.sites[actor] ?? 'A', b=map.battle;
   const inBattle=!!b && b.site===site;
   if(!w.characters?.[actor]?.hp || w.humanDmId===actor || w.case001?.report) return fail();
   if(inBattle && b.turnEncounter) return fail('เลือกการกระทำจากหน้าเผชิญหน้า');
+  if(inBattle && b.final55 && !w.case001?.guided?.presented.includes('F1'))return fail('รอ DM ส่งบทเปิดวงป้องกันก่อน');
   if(a.type==='move') {
     if(inBattle && b.active!==actor) return fail('ยังไม่ถึงเทิร์น');
     const p=a.target as Cell|undefined, from=w.players[actor];
@@ -439,6 +455,32 @@ export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unk
   }
   if(a.type==='breakRestraint' || a.type==='caseObjective') {
     if(b.active!==actor) return fail('ยังไม่ถึงเทิร์น');
+    if(a.type==='caseObjective' && b.final55) {
+      const final=b.final55;
+      if(!final.actionWindow || a.step!==final.step) return fail('ขั้นตอนเปลี่ยนแล้ว โปรดเลือกใหม่');
+      if(!b.focusCell || distance(b.focusCell,w.players[actor])>1)return fail('เข้าใกล้กำไลก่อน');
+      const turn=spendAP(w.turns[actor],2) ?? fail('AP ไม่พอ');
+      const result=resolveCheck({dc:12,attribute:characterAttribute(w.characters![actor],'knowledge')},roll);
+      w.turns[actor]=turn;w.lastCheck={playerId:actor,...result};
+      final.ritualActor=actor;
+      if(result.outcome!=='success')return;
+      if(final.step<3) {
+        final.step=(final.step+1) as 1|2|3;
+        if(final.step===2) {
+          b.phase='flood_memory';
+          w.case001!.v51!.finalPhaseTwo55=true;
+        }
+        if(final.step===3)final.shield='down';
+        w.case001!.notice=['','ยึดจุดรับแรงสะท้อนได้แล้ว','แยกสายคำสั่งได้ ภาพความทรงจำปรากฏ','ปมเกราะคลายแล้ว ยังต้องลงมือปลดกำไล'][final.step];
+      } else {
+        w.case001!.seals[2]=true;
+        w.case001!.v51!.RITUAL_STATUS='stopped';
+        delete w.case001!.v51!.backlash;
+        for(const name of Object.keys(w.case001!.v51!.RITUAL_TETHER_INTACT) as ('ดล'|'นิด'|'เพิ่ม')[])w.case001!.v51!.RITUAL_TETHER_INTACT[name]=false;
+        finishCaseBattle(w);
+      }
+      return;
+    }
     const index=b.projections.findIndex(p=>distance(p,w.players[actor])<=1);
     const restrained=b.enemies[0].tactics.restrained;
     if(a.type==='breakRestraint' && (restrained[actor] ?? 0)<b.round) return fail();
@@ -461,6 +503,7 @@ export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unk
     return;
   }
   const e=(a.enemyId===undefined?activeEnemies(b)[0]:activeEnemies(b).find(enemy=>enemy.id===a.enemyId)) ?? fail();
+  if(b.final55)b.final55.damageBlocked=false;
   const local=localWorld(w,b,e);
   const otherCells=activeEnemies(b).filter(other=>other!==e).map(other=>other.state.ghost);
   const arena={...grid,blocked:[...grid.blocked,...otherCells]};
@@ -485,8 +528,13 @@ export function caseBattleAction(w:World,actor:string,a:{type:string;target?:unk
   }
   Object.assign(w.players,local.players);
   w.lastCheck=local.lastCheck;
+  if(b.final55 && e.state.ghostHealth===0) {
+    w.case001!.v51!.finalBody55='dispersed';
+    w.case001!.v51!.KAEW_TEMP_DISPERSED=true;
+    w.case001!.v51!.kaewVoice53=true;
+  }
   if(b.active===actor) w.turns[actor]=e.state.turn;
-  if(!activeEnemies(b).length) finishCaseBattle(w);
+  if(!activeEnemies(b).length && !b.final55) finishCaseBattle(w);
 }
 
 export function battleView(map:CaseMap,site:Site,w?:World,isDm=false) {
@@ -495,6 +543,7 @@ export function battleView(map:CaseMap,site:Site,w?:World,isDm=false) {
   const visible=activeEnemies(b).filter(e=>!e.tactics.dispersed && (!e.tactics.concealed || (e.tactics.scanned ?? 0)>=b.round));
   const turn=b.turnEncounter;
   return {id:b.id,title:b.title ?? definitions[b.id].title,phase:b.phase,round:b.round,active:b.active,
+    final55:b.final55 && {step:b.final55.step,shield:b.final55.shield,damageBlocked:b.final55.damageBlocked},
     turnEncounter:turn && w ? {
       party:Object.keys(localPlayers(w,b.site)).filter(id=>!!w.characters?.[id]),
       acted:turn.acted,history:turn.history,maxHp:turn.maxHp,

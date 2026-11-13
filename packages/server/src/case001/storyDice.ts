@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
+import {presentation55} from './presentation55.js';
 import type { LiteStats } from '@baan/shared';
 import { emitCaseBeat } from './case001.js';
 import { addFact, advanceStory, hasFact } from './caseStory.js';
 import type { World } from '../world.js';
 import { alive51, historySources52, hostageReachable52, kaewVoice53, recordCheck51, wichaiHere51 } from './storyV51.js';
-import { checks52, checks53, noTimer, scenes51, type StoryCheck as Check } from './v51Content.js';
+import { checks52, checks53, checks55, noTimer, scenes51, type StoryCheck as Check } from './v51Content.js';
 
 type Outcome = 'full'|'partial'|'failure';
 type Stat = keyof LiteStats;
@@ -25,7 +26,11 @@ if(pack.checks.length!==16 || mapped.size!==16 || new Set(pack.checks.map(check=
 
 const diceRules=(checks:Check[])=>checks.map(({id,scene_id,stat,dc,partial_margin})=>[id,scene_id,stat,dc,partial_margin]);
 if([checks52,checks53].some(checks=>JSON.stringify(diceRules(checks))!==JSON.stringify(diceRules(guidedPack.checks))))throw Error('กติกาจุดทอย v5.2 ไม่ตรงกับต้นฉบับ');
-const checksFor=(s:import('./case001.js').CaseState)=>s.guided?.version==='5.3'?checks53:noTimer(s)?checks52:s.guided?guidedPack.checks:pack.checks;
+if(checks55.length!==17 || checks55.some(check=>check.id!=='E2_DOOR_BREAK' &&
+ !guidedPack.checks.some(old=>JSON.stringify(diceRules([old]))===JSON.stringify(diceRules([check])))) ||
+ !checks55.some(check=>check.id==='E2_DOOR_BREAK' && check.stat==='BODY' && check.dc===14 && check.partial_margin===3))
+ throw Error('กติกาจุดทอย v5.5 ไม่ตรงกับต้นฉบับ');
+const checksFor=(s:import('./case001.js').CaseState)=>s.guided?.version==='5.5'?checks55:['5.3','5.5'].includes(s.guided?.version ?? '')?checks53:noTimer(s)?checks52:s.guided?guidedPack.checks:pack.checks;
 
 export const storyCheckHelp=pack.checks.map(({id,scene_id,title,stat,dc,trigger,baseline,bypass,fallback})=>({id,scene_id,title,stat,dc,trigger,baseline,bypass,fallback}));
 
@@ -66,14 +71,19 @@ function availableChecks(w:World,player:string) {
   H1_FLOOD_TIMELINE:gateCorroborated && !fact('gate-truth') && !fact('confessed'),
   F5_KAEW_RECONCILE:s.seals[2] && (s.ghost==='hostile' || s.ghost==='cautious') && !(supportKaew && s.trust>=2),
  };
+ if(s.guided?.version==='5.5') {
+  eligible.E3_HOSTAGES_ORDER=eligible.E3_HOSTAGES_ORDER && s.v51?.dolUngagged55===true && alive51(s,'ดล');
+  eligible.E2_DOOR_BREAK=!s.opened && s.guided.scene==='E2' && s.v51?.doorAccess55===true && !s.v51.doorOpened55;
+ }
  if(s.v51) {
   // Both C5 Editorial Props explicitly await Canon approval.
-  eligible.C5_EVACUATION_RECORDS=s.guided?.version==='5.3' && historySources52(s);
-  if(s.guided?.version==='5.3')eligible.B3_TON_DISCLOSURE=eligible.B3_TON_DISCLOSURE && fact('v43-ton-protected');
+  eligible.C5_EVACUATION_RECORDS=['5.3','5.5'].includes(s.guided?.version ?? '') && historySources52(s);
+  if(['5.3','5.5'].includes(s.guided?.version ?? ''))eligible.B3_TON_DISCLOSURE=eligible.B3_TON_DISCLOSURE && fact('v43-ton-protected');
   eligible.H1_FLOOD_TIMELINE=(noTimer(s)?historySources52(s):s.evidence.includes('E07') && fact('gate-testimony')) && !fact('gate-truth');
   eligible.F5_KAEW_RECONCILE=s.v51.RITUAL_STATUS==='stopped' && (!s.v51.KAEW_TEMP_DISPERSED || kaewVoice53(s)) && s.v51.KAEW_FINAL!=='calm';
   eligible.B4_FLOOD_PHOTO=s.guided?.presented.includes('B4');
   if(noTimer(s))eligible.E3_HOSTAGES_ORDER=hostageReachable52(s,'ดล') || hostageReachable52(s,'นิด');
+  if(s.guided?.version==='5.5')eligible.E3_HOSTAGES_ORDER=hostageReachable52(s,'ดล') && s.v51.dolUngagged55===true;
  }
  return checksFor(s).flatMap(check=>{
   if(s.guided && (!s.guided.observed.includes(check.scene_id) || s.guided.scene!==check.scene_id ||
@@ -128,7 +138,8 @@ export function runStoryCheck(w:World,player:string,actionId:string,boost:unknow
  if(check.id==='C4_DROWNED_ECHO_VISION') w.turns[player].ap-=2;
  w.lastCheck={playerId:player,die,total,outcome:outcome==='full'?'success':outcome};
  if(outcome==='full') {
-  if(s.guided?.version==='5.3' && s.v51 && ['C5_EVACUATION_RECORDS','H1_FLOOD_TIMELINE'].includes(check.id))
+  if(check.id==='E2_DOOR_BREAK')s.v51!.doorOpened55=true;
+  if(['5.3','5.5'].includes(s.guided?.version ?? '') && s.v51 && ['C5_EVACUATION_RECORDS','H1_FLOOD_TIMELINE'].includes(check.id))
    (s.v51.floodSources53 ??= {}).compared=true;
   if(['B2_WICHAI_TELL','B3_TON_DISCLOSURE','C2_LAND_PATTERN'].includes(check.id)) addFact(s,'v41-wichai-suspected');
   if(['B4_FLOOD_PHOTO','C5_EVACUATION_RECORDS'].includes(check.id)) addFact(s,'v41-flood-partial');
@@ -171,6 +182,8 @@ export function storyCheckResponse(w:World,actionId:string,rollId:string) {
 }
 
 function checkNarration(w:World,id:string,outcome:Outcome,text:string) {
+ const override=presentation55(w.case001!,id,outcome);
+ if(override)return override.narration;
  const s=w.case001!;
  if(!s.v51)return text;
  if(id==='F5_KAEW_RECONCILE' && outcome==='full' && s.v51.KAEW_FINAL!=='calm')return 'ผลทอยถึง Full แต่ยังต้องมีเหตุผลหลักฐานและการรับผิดที่เกิดขึ้นจริง';
@@ -181,6 +194,8 @@ function checkNarration(w:World,id:string,outcome:Outcome,text:string) {
 }
 
 export function availableDialogue(w:World,id:string,outcome:Outcome,dialogue:string) {
+ const override=presentation55(w.case001!,id,outcome);
+ if(override)return override.dialogue;
  const s=w.case001!;
  if(noTimer(s)) {
   const speaker=dialogue.split(':')[0].split(' (')[0].trim();
@@ -223,6 +238,9 @@ export function learnedStoryInformation(state:import('./case001.js').CaseState) 
  return checksFor(state).flatMap(check=>{
   const best=state.storyChecks?.[check.id]?.reduce((a,b)=>rank[b.outcome]>rank[a.outcome]?b:a);
   if(!best) return [];
+  // The immutable cards contain legacy claims which the v5.5 presentation overlay suppresses.
+  // Keep those claims out of the player's notebook as well as the roll result display.
+  if(state.guided?.version==='5.5' && presentation55(state,check.id,best.outcome))return [];
   const information=noTimer(state) && check.id==='H1_FLOOD_TIMELINE' && best.outcome==='full' && !hasFact(state,'confessed') ? ['หลักฐานยืนยันลำดับการผันน้ำและอพยพ'] :
    noTimer(state) && check.id==='E3_HOSTAGES_ORDER' && !['ดล','นิด','เพิ่ม'].every(name=>hostageReachable52(state,name as 'ดล'|'นิด'|'เพิ่ม')) ? ['คำให้การที่ได้จริงยืนยันวิชัยเป็นคนจับตัว ลำดับเวลาอ้างอิงเฉพาะข้อมูลที่ทีมได้รับ'] :
    noTimer(state) && check.id==='F5_KAEW_RECONCILE' && best.outcome==='full' && state.v51!.KAEW_FINAL!=='calm' ? ['ยังต้องมีหลักฐานและการรับผิดชอบที่เกิดขึ้นจริง'] : state.v51 && !noTimer(state) && check.id==='B3_TON_DISCLOSURE' ? ['ต้นให้คำบอกเล่าตามสิ่งที่สังเกตภายหลัง ต้องเทียบรอยล้อและพยานตรง'] : check[best.outcome].information;

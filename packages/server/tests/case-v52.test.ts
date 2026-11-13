@@ -8,7 +8,7 @@ import {newState51, resolveEnding51, validateSave51} from '../src/case001/storyV
 import {storyContent} from '../src/case001/v51Content.js';
 import {addFact, hasFact} from '../src/case001/caseStory.js';
 
-function room(die=20,lethal=false,version:'5.2'|'5.3'='5.2') {
+function room(die=20,lethal=false,version:'5.2'|'5.3'|'5.5'='5.2') {
  let serial=0;
  const store=new WorldStore(()=>die,true,true,true,false,version,lethal),code='V52';
  store.create(code,2);
@@ -710,6 +710,79 @@ for(const ending of ['A','B','C','D'] as const)test('v5.3 playable route deliver
   assert.ok(r.view(player).case001!.report);
   assert.ok(r.view(player).narrative!.history.some(beat=>beat.eventId==='ending:'+ending));
  }
+});
+test('v5.5 opens the shield encounter through the actual player action',()=>{
+ const r=room(20,false,'5.5');
+ r.toE();r.scene('E4');r.act('approach-ritual-core');r.scene('E6');
+ assert.ok(!allowedGuidedScenes(r.saved().world).some(scene=>scene.id==='F1'));
+ assert.throws(()=>r.act('seal3'));
+ r.act('begin-final55');
+ assert.equal(r.view().caseMap!.battle!.id,'EN04');
+ assert.equal(r.state().guided!.scene,'F1');
+ assert.equal(r.state().v51!.finalBody55,'embodied');
+ const actorBefore=r.saved().world.caseMap!.battle!.active!;
+ assert.throws(()=>r.send(actorBefore,'caseObjective',{step:0}));
+ assert.equal(r.view().caseMap!.battle!.final55?.step,0);
+ r.publish('guided-cue:F1');
+ r.scene('F3');
+ assert.equal(r.view().caseMap!.battle!.final55?.step,0);
+ const checkpoint=r.saved();
+ r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ assert.equal(r.view().caseMap!.battle!.final55?.shield,'up');
+ assert.throws(()=>r.act('begin-final55'));
+ const prepared=r.saved(),battle=prepared.world.caseMap!.battle!,actor=battle.active!;
+ prepared.world.players[actor]={x:battle.focusCell!.x,y:battle.focusCell!.y-1};
+ r.store.delete(r.code);r.store.restore(r.code,prepared);
+ const command={id:'v55-step-zero',type:'caseObjective',step:0} as const;
+ r.store.apply(r.code,actor,command);
+ assert.equal(r.view().caseMap!.battle!.final55?.step,1);
+ const ap=r.saved().world.turns[actor].ap;
+ assert.equal(r.store.apply(r.code,actor,command).duplicate,true);
+ assert.equal(r.saved().world.turns[actor].ap,ap);
+ const progressed=r.saved();r.store.delete(r.code);r.store.restore(r.code,progressed);
+ assert.equal(r.view().caseMap!.battle!.final55?.step,1);
+ assert.throws(()=>r.send(actor,'caseObjective',{step:0}));
+ assert.equal(r.saved().world.turns[actor].ap,ap);
+ // A declared native enemy attack is required; neither preview nor a player can consume trust.
+ const declared=r.saved(),enemy=declared.world.caseMap!.battle!.enemies[0];
+ declared.world.case001!.v51!.KAEW_TRUST='high';
+ enemy.tactics.telegraph={kind:'lash',cells:[declared.world.players[actor]],attack:enemy.tactics.profile!.combat!.attacks[0]};
+ r.store.delete(r.code);r.store.restore(r.code,declared);
+ assert.throws(()=>r.send(actor,'guided',{command:'v51:forbear55'}));
+ assert.ok(r.panel().storyEvents!.some(action=>action.id==='forbear55'));
+ r.event('forbear55');
+ assert.equal(r.saved().world.caseMap!.battle!.enemies[0].tactics.telegraph,undefined);
+ assert.equal(r.saved().world.caseMap!.battle!.final55!.trustUsed,true);
+ assert.equal(r.saved().world.turns[actor].ap,ap);
+ assert.throws(()=>r.event('forbear55'));
+});
+test('v5.5 door card opens the door without marking hostages found or safe',()=>{
+ const r=room(20,false,'5.5');
+ r.toE();
+ assert.throws(()=>r.scene('E2'));
+ r.event('door-access55');r.scene('E2');
+ assert.equal(r.state().opened,false);
+ r.act('dice:E2_DOOR_BREAK:BODY');
+ assert.equal(r.state().v51!.doorOpened55,true);
+ assert.equal(r.state().v51!.HOSTAGES_FOUND,0);
+ assert.equal(r.view().case001!.rescued,0);
+ r.event('enter-room55');
+ assert.equal(r.state().v51!.HOSTAGES_FOUND,3);
+ assert.equal(r.view().case001!.rescued,0);
+});
+test('v5.5 presentation replaces legacy E3/E5/H1 speech without changing the cards',()=>{
+ const data=storyContent({guided:{version:'5.5'}});
+ assert.equal(data.checks.length,17);
+ assert.equal(Object.keys(data.scenes).length,31);
+ const r=room(20,false,'5.5');
+ r.toE();r.act('open');r.scene('E2');r.scene('E3');
+ assert.ok(!r.view().case001!.actions.some(action=>action.id.startsWith('dice:E3')));
+ r.event('ungag-dol');
+ r.act('dice:E3_HOSTAGES_ORDER:SOC');
+ const pending=r.panel().narration.find(card=>card.answer?.checkId==='E3_HOSTAGES_ORDER')!;
+ assert.match(pending.answer!.dialogue!,/^ดล/);
+ assert.ok(!pending.answer!.dialogue!.includes('นิด'));
+ assert.equal(r.state().storyChecks!.E3_HOSTAGES_ORDER.at(-1)!.outcome,'full');
 });
 test('shared continuity follows only delivered story and keeps the previous chapter separate',()=>{
  const r=room();

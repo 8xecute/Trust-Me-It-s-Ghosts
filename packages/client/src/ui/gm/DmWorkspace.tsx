@@ -281,7 +281,7 @@ export function DmWorkspace({
           <div className="dm-flow-followup"><h4>ให้ทีมรับมือก่อนเดินเรื่องต่อ</h4>
             <DmStoryEvents events={reactionEvents} connected={available} action={action} expanded/>
           </div>}
-          {guided && ['5.2','5.3'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel.sharedStory ?? []} isDm onHistory={()=>setDmTab('history')}/>}
+          {guided && ['5.2','5.3','5.5'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel.sharedStory ?? []} isDm onHistory={()=>setDmTab('history')}/>}
             {!nextCard && (sceneEvents.length>0 || guided?.scene==='H1' || guided?.scene==='B3') && <section className="dm-quick-card">
               <h4>บันทึกสิ่งที่ทีมทำในฉากนี้</h4>
               {guided?.scene==='H1' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐหลังวิเคราะห์หลักฐานครบ</button>}
@@ -342,11 +342,11 @@ export function DmWorkspace({
               entry.check ?
               <form key={entry.check.id} onSubmit={event=>{
                 event.preventDefault();const data=new FormData(event.currentTarget);
-                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:['5.1','5.2','5.3'].includes(world.guided?.version ?? '') && entry.check!.dice ? entry.check!.dice.dc : Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
+                action('dmRequestRoll',{targetId:entry.id,checkId:entry.check!.id,difficulty:['5.1','5.2','5.3','5.5'].includes(world.guided?.version ?? '') && entry.check!.dice ? entry.check!.dice.dc : Number(data.get('difficulty')),...(!entry.check!.dice ? {stat:data.get('stat')} : {})});
               }}>
                 {entry.check.dice ? <p className="note">ใช้ {entry.check.dice.stat} ตามจุดทอยในบท · DC แนะนำ {entry.check.dice.dc}</p> :
                   <label>ค่าสถานะ <select name="stat" defaultValue={entry.check.stat ?? 'PER'}><option value="BODY">ร่างกาย BODY</option><option value="PER">การสังเกต PER</option><option value="INT">เชาวน์ปัญญา INT</option><option value="SOC">การเข้าสังคม SOC</option><option value="SPI">จิตวิญญาณ SPI</option><option value="RES">ความต้านทาน RES</option></select></label>}
-                <label>ความยากก่อนส่งการ์ด <select name="difficulty" disabled={['5.1','5.2','5.3'].includes(world.guided?.version ?? '') && !!entry.check.dice} defaultValue={entry.check.dice?.dc ?? 14}>
+                <label>ความยากก่อนส่งการ์ด <select name="difficulty" disabled={['5.1','5.2','5.3','5.5'].includes(world.guided?.version ?? '') && !!entry.check.dice} defaultValue={entry.check.dice?.dc ?? 14}>
                   <option value="11">ง่าย · DC 11</option><option value="14">ปกติ · DC 14</option><option value="17">ยาก · DC 17</option><option value="20">ยากมาก · DC 20</option><option value="22">พิเศษ · DC 22</option>
                 </select></label>
                 <button type="submit" className="primary" disabled={!connected || !!world.case001?.report}>ส่งการ์ดตามคำขอ</button>
@@ -376,7 +376,7 @@ export function DmWorkspace({
       </section>
       <div hidden={dmTab!=='history'} className="gm-pane">
       {world.manualDm && <DmHistory entries={world.dmLog ?? []} playerName={playerName} roomCode={room?.code}/>}
-      {guided && ['5.2','5.3'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel?.sharedStory ?? []} isDm showHistory/>}
+      {guided && ['5.2','5.3','5.5'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel?.sharedStory ?? []} isDm showHistory/>}
       {!!recentlySent.length && <details><summary>บทที่ส่งแล้วในพื้นที่นี้ · {recentlySent.length}</summary>
         <ul>{recentlySent.map(([id,entry])=><li key={id}>{entry.text}</li>)}</ul>
       </details>}

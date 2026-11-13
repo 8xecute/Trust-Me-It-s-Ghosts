@@ -208,6 +208,9 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
   if(!s.key) add('key',isV4 ? 'ตรวจห้องพิธีและค้นกุญแจห้องขัง' : 'ค้นหากุญแจห้องเก็บผลผลิตในห้องพิธี');
   if(!s.opened && (s.key || eventDriven && s.guided?.scene==='E1' || s.guided?.scene==='E2' && s.guided.presented.includes('E2')) && !s.guided?.cellarPending) add('open',s.guided ? 'เปิดกลอนห้องเก็บผลผลิต' : 'ใช้กุญแจเปิดห้องเก็บผลผลิต');
   if(eventDriven && s.guided!.scene==='E4' && !s.v51!.bagSearched)add('search-ritual-bag','ค้นใต้ฐานกล่องและเปิดกระเป๋าที่ซ่อนอยู่');
+  if(s.guided?.version==='5.5' && s.key && s.v51?.coreApproached &&
+    ['E6','F1'].includes(s.guided.scene) && !s.v51.finalDefense55 && s.v51.RITUAL_STATUS!=='stopped')
+   add('begin-final55','เริ่มลงมือปลดกำไลและรับมือวงป้องกัน');
   if(eventDriven && s.key && !s.seals[2] && !s.v51!.coreApproached && ['E4','E6'].includes(s.guided!.scene))add('approach-ritual-core','เข้าใกล้กำไลเพื่อเตรียมปลดแกนพิธี');
   if(s.opened && (!eventDriven || s.guided!.presented.includes('E2'))) for(const name of names) {
    if(alive51(s,name) && !s.escorts.includes(name)&&!s.evacuated.includes(name) && !(s.v51?.pending?.kind==='crossfire' && s.v51.pending.target===name)) add('escort:'+name,'พา '+name+' ออกจากห้องเก็บผลผลิต');
@@ -375,6 +378,7 @@ export function caseOptions(s:CaseState, upgraded=false):Option[] {
   if(['return','ritual','suppress','record-truth'].includes(id) || id==='finish' && !!(s.v51.pending || s.v51.backlash) ||
    id==='pacify' && s.v51.KAEW_TEMP_DISPERSED)options.splice(i,1);
  }
+ if(s.guided?.version==='5.5')for(let i=options.length-1;i>=0;i--)if(options[i].id==='seal3')options.splice(i,1);
  if(s.basicMode) for(let i=options.length-1;i>=0;i--) if(['hint','sense'].includes(options[i].id)) options.splice(i,1);
  if(!upgraded) return options;
  return options.map(option => {

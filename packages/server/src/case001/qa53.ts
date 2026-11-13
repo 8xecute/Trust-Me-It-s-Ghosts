@@ -15,28 +15,31 @@ const bank=JSON.parse(readFileSync(new URL('case-001.v5.3.qa.json',directory),'u
 const contract=JSON.parse(readFileSync(new URL('case-001.v5.3.contract.json',directory),'utf8')) as {
  guardDefinitions:Record<string,{all:{field:string;op:'eq'|'in';value:unknown}[]}>;
 };
+const bank55=JSON.parse(readFileSync(new URL('case-001.v5.5.qa.json',directory),'utf8')) as typeof bank;
+const contract55=JSON.parse(readFileSync(new URL('case-001.v5.5.contract.json',directory),'utf8')) as typeof contract;
 const questions=bank.scenes.flatMap(scene=>scene.questions);
 if(bank.scenes.length!==31 || questions.length!==bank.qaCount || new Set(questions.map(q=>q.id)).size!==questions.length ||
  bank.scenes.some(scene=>scene.questions.some(q=>q.scene!==scene.scene || q.guard_ids.some(id=>!Object.hasOwn(contract.guardDefinitions,id))))) {
  throw Error('ข้อมูลถามตอบ CASE 001 v5.3 ไม่ครบหรือมีรหัสซ้ำ');
 }
 
-export function qaForScene53(scene:string) {
- return bank.scenes.find(entry=>entry.scene===scene)?.questions ?? [];
+export function qaForScene53(scene:string,version='5.3') {
+ return (version==='5.5'?bank55:bank).scenes.find(entry=>entry.scene===scene)?.questions ?? [];
 }
 
 const normalize=(value:string)=>value.normalize('NFC').replace(/[\p{White_Space}\p{Punctuation}]/gu,'').toLowerCase();
 
 export function availableQa53(state:CaseState) {
- return qaForScene53(state.guided?.scene ?? '').filter(question=>
+ return qaForScene53(state.guided?.scene ?? '',state.guided?.version).filter(question=>
   matchQa53(state,question.question).some(answer=>answer.id===question.id));
 }
 
 export function matchQa53(state:CaseState,query:string) {
  const scene=state.guided?.scene;
- if(state.guided?.version!=='5.3' || !scene || !state.v51 || !state.guided.presented.includes(scene)) return [];
+ if(!state.guided || !['5.3','5.5'].includes(state.guided.version) || !scene || !state.v51 || !state.guided.presented.includes(scene)) return [];
  const key=normalize(query);
  if(!key)return [];
+ if(state.guided.version==='5.5' && ['E3','E5','H1'].includes(scene))return [];
  const speakers=new Set(dialogue51(state,true).map(line=>line.speaker));
  const v=state.v51,arrived=v.wichaiArrival53;
  const execution=v.pending?.kind==='execution' && v.pending.announced && wichaiHere51(state,true) && !v.KAEW_TEMP_DISPERSED;
@@ -64,12 +67,12 @@ export function matchQa53(state:CaseState,query:string) {
   KAEW_PHYSICAL_REACH:execution,
   F5_EXECUTION_ATTEMPT_CONFIRMED:execution,
  };
- const matches=qaForScene53(scene).filter(q=>[q.question,...q.aliases].some(label=>normalize(label)===key));
+ const matches=qaForScene53(scene,state.guided.version).filter(q=>[q.question,...q.aliases].some(label=>normalize(label)===key));
  // Ambiguous aliases and requirements without a confirmed runtime mapping go to the DM.
  if(matches.length!==1)return [];
  return matches.filter(q=>{
   if(q.delivery==='dm_action_guidance') return false;
-  if(!q.guard_ids.every(id=>contract.guardDefinitions[id].all.every(rule=>
+  if(!q.guard_ids.every(id=>(state.guided!.version==='5.5'?contract55:contract).guardDefinitions[id]?.all.every(rule=>
    Object.hasOwn(fields,rule.field) && (rule.op==='eq'?fields[rule.field]===rule.value:
     rule.op==='in' && Array.isArray(rule.value) && rule.value.includes(fields[rule.field])))))return false;
   if(q.delivery==='npc_dialogue' && !speakers.has(q.speaker))return false;

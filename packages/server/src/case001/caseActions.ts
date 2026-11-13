@@ -18,6 +18,19 @@ export function completeCaseRound(w:World) {
 }
 
 export function executeCaseAction(w:World,player:string,a:{actionId:string;boost?:unknown;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats},roll:()=>number,coordinated=false) {
+ if(w.case001?.guided?.version==='5.5' && a.actionId==='begin-final55') {
+  const s=w.case001,v=s.v51!;
+  if(player===w.humanDmId || !w.characters?.[player]?.hp || w.caseMap?.sites[player]!=='E' ||
+    !s.guided!.presented.includes(s.guided!.scene) || !['E6','F1'].includes(s.guided!.scene) ||
+    !s.key || !v.coreApproached || v.RITUAL_STATUS==='stopped' || w.caseMap.battle || v.finalDefense55)
+   throw Error('ยังเริ่มปลดกำไลที่นี่ไม่ได้');
+  v.finalReleaseCommitted55=true;
+  startCaseBattle(w,player,caseGrid('E'),roll);
+  s.guided!.phase='FINAL';
+  observeGuidedScene(w,'F1');
+  return;
+ }
+ if(w.case001?.guided?.version==='5.5' && a.actionId==='seal3')throw Error('ปลดเกราะสามขั้นก่อน แล้วใช้การกระทำที่กำไลในสนาม');
  if(w.caseMap?.battle?.turnEncounter && !isStoryCheck(a.actionId)) throw Error('เลือกการกระทำจากหน้าเผชิญหน้า');
  if(a.actionId.startsWith('guided-talk:')) {speakGuided(w.case001!,a.actionId);return;}
  if(isStoryCheck(a.actionId)) {

@@ -13,7 +13,7 @@ type Phase='A'|'B'|'C'|'D'|'E'|'FINAL'|'ENDING';
 type Scene={id:string;phase:Phase;entry_cue:string;entry_read?:string;suggested_questions:string[];optional_check_id:string|null;forward_bridge:string};
 type PhaseInfo={title:string;hints:string[];lead:string;missed:string[];exit:string};
 export type GuidedState={
- version:'4.3'|'5.1'|'5.2'|'5.3';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
+ version:'4.3'|'5.1'|'5.2'|'5.3'|'5.5';prasertContact?:boolean;cellarPending?:boolean;phase:Phase;scene:string;observed:string[];presented:string[];
  hints:Partial<Record<Phase,number>>;questions:string[];
  journals:{phase:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string}[];
  transition?:{id:string;from:Phase;to:Phase;known_facts:string[];open_questions:string[];next_destination_rationale:string};
@@ -35,7 +35,7 @@ function authoredRead(section:string, label:string) {
 }
 export const guidedCellarRead=authoredRead(guidedScripts.E2,'DM อ่านเมื่อเปิด');
 if(!guidedCellarRead) throw Error('ไม่พบบทเปิดห้อง E2');
-export const newGuided=(version:'4.3'|'5.1'|'5.2'|'5.3'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
+export const newGuided=(version:'4.3'|'5.1'|'5.2'|'5.3'|'5.5'='4.3'):GuidedState=>({version,phase:'A',scene:'A1',observed:[],presented:[],hints:{},questions:[],journals:[]});
 export function guidedScript(s:import('./case001.js').CaseState,id:string) {
  return s.v51 ? id.startsWith('ENDING ') ? storyContent(s).endings[id.slice(-1)]?.script : storyContent(s).scenes[id]?.sourceMarkdown : guidedScripts[id];
 }
@@ -66,16 +66,17 @@ export function allowedGuidedScenes(w:World) {
    if(noTimer(s) && scene.id==='E6')return s.opened || s.key;
    if(scene.id==='B2') return g.presented.includes('B1') && wichaiHere51(s);
    if(scene.id==='E5') return wichaiHere51(s) && s.site==='E';
-   if(noTimer(s) && scene.id==='E2')return s.opened;
+   if(noTimer(s) && scene.id==='E2')return s.opened || g.version==='5.5' && !!v.doorAccess55;
    if(scene.id==='E3') return noTimer(s)
     ?g.presented.includes('E2') && hostageNames.some(n=>alive51(s,n) && !s.evacuated.includes(n) && !s.escorts.includes(n))
     :s.opened && s.evacuated.length<3;
    if(scene.id==='C4') return g.observed.includes('C4') || w.caseMap?.battle?.id==='EN01' || !!w.caseMap && caseOpportunity(s,w.caseMap)==='EN01';
    if(scene.id==='D3') return ['cautious','hostile','pacified'].includes(s.ghost) && !v.KAEW_TEMP_DISPERSED;
    if(scene.id==='D4') return w.caseMap?.battle?.id==='EN02';
-   if(scene.id==='F1'||scene.id==='F2') return v.RITUAL_STATUS!=='stopped' && (!noTimer(s) || !!v.coreApproached && (scene.id==='F1' || g.presented.includes('F1')));
+   if(scene.id==='F1'||scene.id==='F2') return (g.version!=='5.5' || !!v.finalDefense55) &&
+    v.RITUAL_STATUS!=='stopped' && (!noTimer(s) || !!v.coreApproached && (scene.id==='F1' || g.presented.includes('F1')));
    if(scene.id==='F3') return w.caseMap?.battle?.id==='EN04';
-   if(scene.id==='F4') return g.version==='5.3'?!!v.memory53:w.caseMap?.battle?.id==='EN04' && w.caseMap.battle.phase==='flood_memory';
+   if(scene.id==='F4') return g.version==='5.5'?!!v.finalPhaseTwo55:['5.3','5.5'].includes(g.version ?? '')?!!v.memory53:w.caseMap?.battle?.id==='EN04' && w.caseMap.battle.phase==='flood_memory';
    if(scene.id==='F5') return v.RITUAL_STATUS==='stopped';
    if(scene.id==='F6') return s.minute>=240 && v.RITUAL_STATUS!=='stopped';
    return true;
@@ -95,6 +96,7 @@ export function allowedGuidedScenes(w:World) {
  });
 }
 function canObserveDuringBattle(w:World,id:string) {
+ if(w.caseMap?.battle?.final55 && ['F1','F2','F3','F4'].includes(id))return true;
  return !w.caseMap?.battle || ['C4','D4','F3','F4'].includes(id) || noTimer(w.case001!) && id==='F6';
 }
 
@@ -129,7 +131,7 @@ export function observeGuidedScene(w:World,id:string) {
 }
 function disclosureOptions53(s:CaseState) {
  const g=s.guided,v=s.v51;
- if(g?.version!=='5.3' || g.scene!=='F5' || !g.presented.includes('F5') || s.report ||
+ if(!g || !['5.3','5.5'].includes(g.version) || g.scene!=='F5' || !g.presented.includes('F5') || s.report ||
     v?.RITUAL_STATUS!=='stopped' || v.pastDisclosed || !hasFact(s,'gate-truth') ||
     !v.FLOOD_EVIDENCE_COLLECTED || !s.evidence.includes('E07'))return [];
  return [{id:'E07',label:'บันทึกประตูน้ำและหลักฐานปี 2534'},
@@ -145,7 +147,7 @@ export function guidedView(w:World) {
   title:seen && noTimer(s)?storyContent(s).scenes[g.scene]?.title:undefined,
   previousLead:noTimer(s)?g.journals.at(-1)?.next_destination_rationale:undefined,
   cue:seen?noTimer(s) && w.dmSession ? w.dmSession.sent?.['guided-cue:'+g.scene]?.text : scene.entry_cue:undefined,
-  prompts:seen && !w.caseMap?.battle ? g.version==='5.3'?availableQa53(s).map(question=>question.question):scene.suggested_questions:[],
+  prompts:seen && !w.caseMap?.battle ? ['5.3','5.5'].includes(g.version ?? '')?availableQa53(s).map(question=>question.question):scene.suggested_questions:[],
   questionOptions:!noTimer(s) && seen && !w.caseMap?.battle && !s.report ? guidedDialogue(s).filter(line=>line.label.startsWith('ถาม') || s.v51 && 'field' in line && line.field==='responses' && line.label.endsWith('?')).map(line=>({label:line.label,speaker:line.speaker})) : [],
   disclosureOptions:disclosureOptions53(s),canAnalyzeHistory:!noTimer(s) && g.scene==='H1' && seen && !hasFact(s,'gate-truth'),escorting:s.escorts.length,journals:g.journals,transition:g.transition};
 }
@@ -177,7 +179,8 @@ function chapterExit(w:World) {
  const blocked=g.cellarPending ? 'ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก' :
   s.v51?.pending || s.v51?.backlash ? 'ให้ทีมรับมือเหตุคุกคามก่อนปิดบท' :
   w.caseMap?.battle ? 'จบการเผชิญหน้าก่อนเปลี่ยนบท' : undefined;
- const reason=blocked ?? (g.phase==='FINAL' ? 'ช่วงสุดท้าย ให้ผู้สืบสวนสรุปผลและปิดคดีเมื่อพร้อม' :
+ const reason=blocked ?? (g.version==='5.5' && g.phase==='E' && s.v51?.RITUAL_STATUS!=='stopped' && !s.v51?.finalDefense55 ? 'ให้ทีมเริ่มลงมือปลดกำไลในฉาก E6 เพื่อเข้าสู่ช่วงสุดท้าย' :
+  g.phase==='FINAL' ? 'ช่วงสุดท้าย ให้ผู้สืบสวนสรุปผลและปิดคดีเมื่อพร้อม' :
   !leadSent ? 'เล่าเบาะแสจุดหมายก่อนจากฉาก '+required.join(' หรือ ') : undefined);
  return {to,leadScenes:!leadSent && !blocked ? required : [],canPropose:!reason && !g.transition,reason};
 }
@@ -186,7 +189,8 @@ export function guidedBackup(w:World) {
  const s=w.case001,g=s?.guided;
  if(!s || !g || g.phase==='ENDING' || s.report) return undefined;
  const phase=data.phases[g.phase];
- const brief=noTimer(s)?sceneBrief52(g.scene):undefined;
+ const currentScene=g.version==='5.5'?storyContent(s).scenes[g.scene]:undefined;
+ const brief=currentScene?[currentScene.purpose,currentScene.nextSceneHandoff]:noTimer(s)?sceneBrief52(g.scene):undefined;
  const players=Object.keys(w.players).filter(id=>id!==w.humanDmId && !!w.characters?.[id]);
  const delivered=(w.narrative?.records ?? []).filter(beat=>players.length>0 && players.every(id=>beat.recipients.includes(id))).slice(-5).map(beat=>({sequence:beat.sequence,text:beat.text}));
  const progression=chapterExit(w);

@@ -1,0 +1,1236 @@
+{
+  "caseId": "CASE001",
+  "storyVersion": "v5.5-actf-3step-shield-playtest",
+  "rulesMode": "No Timer / Event-Driven",
+  "status": "ACT F v5.5 creator-B approved for DM Playtest; repository/EnemyStats/CombatRuntime not integrated",
+  "sourceFiles": [
+    "CASE001_v5.5_ACTF_3Step_Shield_StoryScript_Playtest.md",
+    "CASE001_v5.5_ACTF_3Step_Shield_QA_Playtest.json"
+  ],
+  "approvedChoices": {
+    "1": "C",
+    "2": "A",
+    "3": "C",
+    "4": "A",
+    "5": "C",
+    "6": "C",
+    "7": "C",
+    "8": "C",
+    "9": "C",
+    "10": "C"
+  },
+  "guardDefinitions": {
+    "B4_FILE_OPENED": {
+      "all": [
+        {
+          "field": "B4_FILE_OPENED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ผู้เล่นขอเปิดแฟ้มเก่าและได้ตรวจเอกสารจริง"
+    },
+    "D3_KAEW_PRESENT": {
+      "all": [
+        {
+          "field": "SCENE_ACTIVE",
+          "op": "eq",
+          "value": "D3"
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "D3 เกิดจริงและสื่อสารได้"
+    },
+    "E4_BOOK_READ": {
+      "all": [
+        {
+          "field": "E4_BOOK_READ",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ทีมเปิดอ่านตำราแล้วจริง; ไม่เท่ากับ prepared/stopped"
+    },
+    "E5_WICHAI_PRESENT": {
+      "all": [
+        {
+          "field": "WICHAI_STATUS",
+          "op": "eq",
+          "value": "free"
+        },
+        {
+          "field": "WICHAI_LOCATION",
+          "op": "eq",
+          "value": "abandoned_house"
+        },
+        {
+          "field": "WICHAI_ARRIVAL_EVENT",
+          "op": "in",
+          "value": [
+            "called_and_arrived",
+            "followed_and_arrived",
+            "returned_to_reclaim_evidence_and_arrived"
+          ]
+        },
+        {
+          "field": "E5_TRIGGERED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "วิชัยมาถึงจากการเรียก/ตามจริง หรือกลับมาเก็บของเพื่อหนีหลังเดินทางจริง ไม่ใช่ teleport เมื่อพบเอกสาร"
+    },
+    "F1_KAEW_CAN_SPEAK": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "เสียงผ่านพิธีได้ ไม่ต้องมีร่าง"
+    },
+    "F4_OCCURRED": {
+      "all": [
+        {
+          "field": "F4_TRIGGERED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "F4_TRIGGER_REASON",
+          "op": "in",
+          "value": [
+            "investigate_memory",
+            "ritual_memory_reaction"
+          ]
+        }
+      ],
+      "explanation": "ภาพความทรงจำเกิดจากการลงมือที่มีจริง ไม่เกิดเพราะเวลา"
+    },
+    "F5_EXECUTION_REACHABLE": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "eq",
+          "value": "stopped"
+        },
+        {
+          "field": "WICHAI_ALIVE",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "WICHAI_IN_REACH",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "KAEW_PHYSICAL_REACH",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "F5_EXECUTION_ATTEMPT_CONFIRMED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ต้องมีทางเข้าถึงจริงและเหตุ Execution Attempt; ไม่มีการฆ่าจากเสียงลอย"
+    },
+    "F5_KAEW_CAN_SPEAK": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "eq",
+          "value": "stopped"
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "บท F5 ใช้ทั้งร่างกับเสียง/เงาได้"
+    },
+    "F6_OCCURRED": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "WRONG_MANIPULATION_EXECUTED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_WARNING_GIVEN",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "F6_TRIGGERED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ผิดวิธีกับกำไล/ด้ายจริง หลังเตือนและเปิดโอกาสหยุด"
+    },
+    "FLOOD_PAIR_AVAILABLE": {
+      "all": [
+        {
+          "field": "FLOOD_GATE_OPERATION_RECORD_READ",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "FLOOD_SHELTER_ARRIVAL_LOG_READ",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "สองชนิดไม่ใช่เอกสารอพยพสองฉบับ"
+    },
+    "KAEW_D_MET_AND_COMMUNICATES": {
+      "all": [
+        {
+          "field": "KAEW_D_RESULT",
+          "op": "in",
+          "value": [
+            "talked",
+            "won",
+            "fled",
+            "lost"
+          ]
+        },
+        {
+          "field": "KAEW_COMMUNICATION_AVAILABLE",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "เคยพบจริง และขณะนี้พูดได้"
+    },
+    "KAEW_WON_D4": {
+      "all": [
+        {
+          "field": "KAEW_D_RESULT",
+          "op": "eq",
+          "value": "won"
+        },
+        {
+          "field": "KAEW_TEMP_DISPERSED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "ชนะในสวนทำให้ร่างสลาย ไม่ลบพิธี"
+    },
+    "RITUAL_STOPPED": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "eq",
+          "value": "stopped"
+        }
+      ],
+      "explanation": "พิธีชุดเดียวหยุดแล้ว"
+    },
+    "RITUAL_DEFENSE_CAN_TRIGGER": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "RITUAL_RELEASE_ACTION_COMMITTED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "BRACELET_ACCESS_CONFIRMED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_DEFENSE_ENCOUNTERED",
+          "op": "eq",
+          "value": false
+        }
+      ],
+      "explanation": "เริ่มปลดแกนจริง ไม่ใช่เห็นของ/อ่าน E4; trigger ครั้งเดียวขณะยัง active|weakened"
+    },
+    "KAEW_FORCED_RETURN_FROM_BRACELET": {
+      "all": [
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "RITUAL_DEFENSE_ENCOUNTERED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_RELEASE_ACTION_COMMITTED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "KAEW_MANIFESTATION",
+          "op": "in",
+          "value": [
+            "dispersed",
+            "unseen",
+            "voice_shadow"
+          ]
+        }
+      ],
+      "explanation": "2B: คำสั่งกำไลดึงแม่แก้วกลับ embodied เมื่อเริ่มปลด active|weakened; already embodied ไม่ต้องคืนซ้ำ; stopped ห้าม"
+    },
+    "FINAL_COMBAT_CAN_OPEN": {
+      "all": [
+        {
+          "field": "RITUAL_DEFENSE_ENCOUNTERED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "KAEW_MANIFESTATION",
+          "op": "eq",
+          "value": "embodied"
+        }
+      ],
+      "explanation": "3A: ใช้ CombatLite v1.1/Enemy Stats เดิม และ offer meaningful player Action before resolving harm"
+    },
+    "RITUAL_STOP_AFTER_FINAL_COMBAT": {
+      "all": [
+        {
+          "field": "FINAL_COMBAT_STARTED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "FINAL_COMBAT_ACTION_WINDOW_OPENED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_RELEASE_SUCCEEDED_WITH_EXISTING_RULES",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "eq",
+          "value": 3
+        },
+        {
+          "field": "RITUAL_SHIELD_STATE",
+          "op": "eq",
+          "value": "down"
+        }
+      ],
+      "explanation": "3A: ระหว่างบอสไฟต์ได้ ไม่ต้องลด HP0/จำนวนรอบ; exception stopped existed legitimately before E6 trigger"
+    },
+    "POST_DEFEAT_WICHAI_HOSTAGE_EXECUTION_ELIGIBLE": {
+      "all": [
+        {
+          "field": "PARTY_DEFEAT_CONFIRMED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "WICHAI_STATUS",
+          "op": "eq",
+          "value": "free"
+        },
+        {
+          "field": "WICHAI_ALIVE",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "RITUAL_STATUS",
+          "op": "in",
+          "value": [
+            "active",
+            "weakened"
+          ]
+        },
+        {
+          "field": "WICHAI_IN_REACH_OF_BRACELET",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "HOSTAGE_TARGET_IN_ACTUAL_RITUAL_REACH",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "4A: ต้อง Resolve villain Action/Lethal ต่อพยานทีละคน ไม่อัตโนมัติหลัง Party Defeat"
+    },
+    "FINAL_SHIELD_ACTIVE": {
+      "all": [
+        {
+          "field": "RITUAL_SHIELD_STATE",
+          "op": "eq",
+          "value": "up"
+        },
+        {
+          "field": "FINAL_COMBAT_STARTED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "All incoming Kaew attack damage (HP and Sanity) is shield-blocked; no native hit/defense changes."
+    },
+    "FINAL_PUZZLE_STEP1_AVAILABLE": {
+      "all": [
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "field": "FINAL_COMBAT_ACTION_WINDOW_OPENED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "Need actual achievable physical action to brace backlash; no new DC."
+    },
+    "FINAL_PUZZLE_STEP2_AVAILABLE": {
+      "all": [
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "field": "RITUAL_SHIELD_STATE",
+          "op": "eq",
+          "value": "up"
+        }
+      ],
+      "explanation": "Need actual reachable command threads/ability."
+    },
+    "FINAL_PUZZLE_STEP3_AVAILABLE": {
+      "all": [
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "field": "RITUAL_SHIELD_STATE",
+          "op": "eq",
+          "value": "up"
+        }
+      ],
+      "explanation": "Need actual reachable outer shield knot/ability."
+    },
+    "FINAL_KAEW_DAMAGE_ALLOWED": {
+      "all": [
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "eq",
+          "value": 3
+        },
+        {
+          "field": "RITUAL_SHIELD_STATE",
+          "op": "eq",
+          "value": "down"
+        }
+      ],
+      "explanation": "Only after stage3; normal Combat Lite/Final Enemy Stats resolve damage."
+    },
+    "FINAL_CONTROLLED_RELEASE_ALLOWED": {
+      "all": [
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "eq",
+          "value": 3
+        },
+        {
+          "field": "RITUAL_SHIELD_STATE",
+          "op": "eq",
+          "value": "down"
+        },
+        {
+          "field": "FINAL_COMBAT_STARTED",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "FINAL_COMBAT_ACTION_WINDOW_OPENED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "One actual controlled release Action resolved by existing Core/Combat, independent of Kaew HP0."
+    },
+    "FINAL_TRUST_INTERVENTION_AVAILABLE": {
+      "all": [
+        {
+          "field": "KAEW_TRUST",
+          "op": "eq",
+          "value": "high"
+        },
+        {
+          "field": "KAEW_TRUST_INTERVENTION_USED",
+          "op": "eq",
+          "value": false
+        },
+        {
+          "field": "FINAL_COMBAT_STARTED",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "explanation": "Kaew chooses not to perform a truly available threatening attack once; no player AP/Reaction bonus."
+    },
+    "FINAL_PHASE2_ACTIVE": {
+      "all": [
+        {
+          "field": "RITUAL_PUZZLE_STEP",
+          "op": "in",
+          "value": [
+            2,
+            3
+          ]
+        },
+        {
+          "field": "KAEW_BOSS_PHASE",
+          "op": "eq",
+          "value": 2
+        }
+      ],
+      "explanation": "Phase2 begins upon actual stage2 completion; later step3 continues phase2 while shield down."
+    }
+  },
+  "initialExtensions": {
+    "WICHAI_LOCATION": "at_headman_house",
+    "WICHAI_ARRIVAL_EVENT": null,
+    "E5_TRIGGERED": false,
+    "KAEW_MANIFESTATION": "unseen",
+    "KAEW_RETURN_EVENT": null,
+    "RITUAL_ACTION_STAGE": "not_started",
+    "RITUAL_WARNING_GIVEN": false,
+    "F6_TRIGGERED": false,
+    "F4_TRIGGERED": false,
+    "F4_TRIGGER_REASON": null,
+    "FLOOD_FACT_LEVEL": "not_compared",
+    "FLOOD_PEOPLE_REMAINED_PROVEN": false,
+    "FLOOD_DISCLOSURE_STATUS": "not_done",
+    "FLOOD_TRUTH_DISCLOSED": false,
+    "HOSTAGE_POSITION": {
+      "ดล": "underfloor_room",
+      "นิด": "underfloor_room",
+      "เพิ่ม": "underfloor_room"
+    },
+    "HOSTAGE_PROTECTED": {
+      "ดล": false,
+      "นิด": false,
+      "เพิ่ม": false
+    },
+    "RITUAL_DEFENSE_ENCOUNTERED": false,
+    "FINAL_COMBAT_STARTED": false,
+    "FINAL_COMBAT_ACTION_WINDOW_OPENED": false,
+    "RITUAL_DEFENSE_PHASE": "idle",
+    "PARTY_DEFEAT_CONFIRMED": false,
+    "HOSTAGE_EXECUTION_ATTEMPTED": false,
+    "RITUAL_RELEASE_ACTION_COMMITTED": false,
+    "RITUAL_SHIELD_STATE": "uninitialized",
+    "RITUAL_PUZZLE_STEP": 0,
+    "KAEW_BOSS_PHASE": 0,
+    "KAEW_TRUST_INTERVENTION_USED": false,
+    "F4_MEMORY_PREVIEW_SEEN": false
+  },
+  "derivedFieldsNotFreeState": {
+    "HOSTAGES_SAFE": "count of living hostages protected from actual attacker/hazard at their location; inside or outside house possible; independent of tether",
+    "KAEW_COMMUNICATION_AVAILABLE": "true only when actual live voice/shadow/embodied manifestation or reachable communication is established",
+    "KAEW_PHYSICAL_REACH": "requires embodiment or actual reachable physical force per existing Core/Combat; voice/shadow alone is insufficient",
+    "WICHAI_ALIVE": "WICHAI_STATUS != dead AND death was not otherwise established",
+    "WICHAI_IN_REACH": "based on live NPC positions and existing action ranges",
+    "FLOOD_GATE_OPERATION_RECORD_READ": "player actually read/obtained gate operation document in B4 or E4",
+    "FLOOD_SHELTER_ARRIVAL_LOG_READ": "player actually read grandma personal prayer-book arrival log",
+    "WRONG_MANIPULATION_EXECUTED": "actual incorrect physical cut/yank/tamper of bracelet/binding threads after a telegraph; threats and harmless inspection are false",
+    "F5_EXECUTION_ATTEMPT_CONFIRMED": "existing F5 conditions plus explicitly DM/engine-resolved attempt; not automatically true on stop ritual",
+    "PARTY_DEFEAT_CONFIRMED": "all PCs unable to protect or continue and no active feasible intervention; one PC DOWNED or one PC death alone is insufficient",
+    "WICHAI_CAN_EXECUTE_POST_DEFEAT": "WICHAI_STATUS=free, alive, actual reachable hostage(s) and actual reach/control of active|weakened bracelet; requires action and existing Lethal resolution",
+    "RITUAL_RELEASE_COMMIT_ALLOWED": "if release from active|weakened started in E6, Final Combat Lite started with a meaningful player action window; no mandatory HP0 or round count",
+    "BRACELET_ACCESS_CONFIRMED": "true only when acting PC actually has physical/ritual access to bracelet; evaluate live position; not set by E4 narration",
+    "RITUAL_RELEASE_SUCCEEDED_WITH_EXISTING_RULES": "computed only after actual approved Combat/Core release action succeeded, not from Dice Card result or scene entry",
+    "WICHAI_IN_REACH_OF_BRACELET": "Wichai free and able to reach and control working bracelet per real positions/action/Combat, not merely visible in the room",
+    "HOSTAGE_TARGET_IN_ACTUAL_RITUAL_REACH": "specific alive hostage inside a supported effect/range of active binding; never inferred from generic case membership",
+    "RITUAL_SHIELD_DAMAGE_BLOCK": "only if actual Final Kaew attack damage after Combat roll and RITUAL_SHIELD_STATE=up; zero damage to Kaew; native attack costs/hit handling unchanged",
+    "RITUAL_PUZZLE_ACTION_VALID": "one concrete player Action with required access and Core/Combat resolution; no step advancement from reading E4/Q&A or scene entry",
+    "FINAL_PHASE2_ACTUAL": "stage2 has been completed; boss uses only existing actions, selects actual reachable ritual actor/bracelet defense when feasible",
+    "FINAL_CONTROLLED_RELEASE_SUCCESS": "final Action after puzzle step3 and shield down; actual successful native resolution, not Kaew HP0 or a Dice Card tier"
+  },
+  "events": [
+    {
+      "id": "wic_arrived_called",
+      "scene": "E5",
+      "requires": [
+        "WICHAI_STATUS=free",
+        "actual contact or appointment occurred",
+        "confirmed travel and arrival at abandoned_house"
+      ],
+      "writes": {
+        "WICHAI_ARRIVAL_EVENT": "called_and_arrived",
+        "WICHAI_LOCATION": "abandoned_house",
+        "E5_TRIGGERED": true
+      },
+      "never": [
+        "teleport because called",
+        "clock trigger"
+      ]
+    },
+    {
+      "id": "wic_arrived_following",
+      "scene": "E5",
+      "requires": [
+        "WICHAI_STATUS=free",
+        "following was visibly seeded in actual play",
+        "confirmed arrival"
+      ],
+      "writes": {
+        "WICHAI_ARRIVAL_EVENT": "followed_and_arrived",
+        "WICHAI_LOCATION": "abandoned_house",
+        "E5_TRIGGERED": true
+      },
+      "never": [
+        "surprise spawn without trace"
+      ]
+    },
+    {
+      "id": "wic_arrived_return_to_reclaim",
+      "scene": "E5",
+      "requires": [
+        "WICHAI_STATUS=free",
+        "independent intention to return and reclaim papers/bracelet for escape",
+        "physical route and arrival at abandoned_house verified",
+        "not already captured/escaped/dead"
+      ],
+      "writes": {
+        "WICHAI_ARRIVAL_EVENT": "returned_to_reclaim_evidence_and_arrived",
+        "WICHAI_LOCATION": "abandoned_house",
+        "E5_TRIGGERED": true
+      },
+      "never": [
+        "teleport on E4 reading",
+        "recreate if captured or dead",
+        "assume Wichai knew private conversation"
+      ]
+    },
+    {
+      "id": "ritual_defense_telegraph",
+      "scene": "E6/F1",
+      "requires": [
+        "RITUAL_STATUS=active|weakened",
+        "player actually COMMITTED controlled release action at physically accessible bracelet/core",
+        "RITUAL_DEFENSE_ENCOUNTERED=false (idempotent)",
+        "not merely reading E4, holding bracelet, or entering E6",
+        "confirmed existing Enemy Stats/Combat Lite available for actual threat resolution"
+      ],
+      "writes": {
+        "RITUAL_DEFENSE_ENCOUNTERED": true,
+        "RITUAL_DEFENSE_PHASE": "telegraphed"
+      },
+      "never": [
+        "auto-hit or kill",
+        "spawn if ritual already stopped",
+        "trigger because time passed or on scene entry",
+        "alter Core stats/cards"
+      ]
+    },
+    {
+      "id": "e5_skipped",
+      "scene": "E6",
+      "requires": [
+        "no confirmed arrival or WICHAI_STATUS != free"
+      ],
+      "writes": {
+        "E5_TRIGGERED": false
+      },
+      "never": [
+        "free alone implies presence"
+      ]
+    },
+    {
+      "id": "kaew_disperse",
+      "scene": "D4",
+      "requires": [
+        "Combat resolved win against manifestation"
+      ],
+      "writes": {
+        "KAEW_D_RESULT": "won",
+        "KAEW_TEMP_DISPERSED": true,
+        "KAEW_MANIFESTATION": "dispersed"
+      },
+      "never": [
+        "ritual stopped from D4"
+      ]
+    },
+    {
+      "id": "bracelet_reacted",
+      "scene": "E4/E6 (pre-trigger only)",
+      "requires": [
+        "D4 won",
+        "ritual active|weakened",
+        "actual harmless touch/inspection or signal that may produce voice/echo",
+        "NOT intentional release action already committed; that uses forced Return Event 2B"
+      ],
+      "writes": {
+        "KAEW_MANIFESTATION": "voice_shadow",
+        "KAEW_RETURN_EVENT": "bracelet_reacted"
+      },
+      "never": [
+        "full body from mere touch",
+        "skip forced return/Combat after player starts release",
+        "new HP"
+      ]
+    },
+    {
+      "id": "ritual_stopped",
+      "scene": "E4/F1/F3/F5",
+      "requires": [
+        "actual controlled release of bracelet binding resolved with existing Core/Combat or DM-authorized rules",
+        "if any release action began while ritual active|weakened then FINAL_COMBAT_STARTED=true AND FINAL_COMBAT_ACTION_WINDOW_OPENED=true",
+        "existing ritual release success criteria satisfied; no invented DC/HP",
+        "For any NEW release begun from active|weakened: RITUAL_PUZZLE_STEP=3 AND RITUAL_SHIELD_STATE=down (v5.5 creator B)",
+        "One final controlled core release Action is actually resolved successfully after stage 3; Kaew HP0 not enough"
+      ],
+      "writes": {
+        "RITUAL_STATUS": "stopped",
+        "RITUAL_TETHER_INTACT": {
+          "ดล": false,
+          "นิด": false,
+          "เพิ่ม": false
+        },
+        "RITUAL_SHIELD_STATE": "down"
+      },
+      "never": [
+        "E4 Full itself means stopped",
+        "release success before 3A CombatLite when release began active|weakened",
+        "need Kaew HP0",
+        "require fixed number of rounds",
+        "direct ritual stop from active|weakened while shield up or step<3",
+        "reset party combat resources when ending ritual"
+      ]
+    },
+    {
+      "id": "f4_memory",
+      "scene": "F4",
+      "requires": [
+        "RITUAL_PUZZLE_STEP newly advanced 1→2 from real resolved Action",
+        "RITUAL_STATUS=active|weakened",
+        "F4_TRIGGERED=false; one-time phase transition"
+      ],
+      "writes": {
+        "F4_TRIGGERED": true,
+        "KAEW_BOSS_PHASE": 2,
+        "F4_TRIGGER_REASON": "ritual_shield_phase_shift"
+      },
+      "never": [
+        "phase2 merely by entering scene",
+        "phase2 from reading historical records or a timer",
+        "new boss attacks/HP or claim gate opener from a vision"
+      ]
+    },
+    {
+      "id": "f6_wrong_manipulation",
+      "scene": "F6",
+      "requires": [
+        "active/weakened",
+        "actor physically reaches bracelet/threads",
+        "incorrect manip action",
+        "explicit warning and chance to stop/Guard/Help",
+        "action continues despite warning"
+      ],
+      "writes": {
+        "F6_TRIGGERED": true
+      },
+      "never": [
+        "threat only",
+        "harmless inspect",
+        "automatic damage/death"
+      ]
+    },
+    {
+      "id": "hostage_secure",
+      "scene": "E2/E6",
+      "requires": [
+        "hostage alive",
+        "actual safe position",
+        "attacker cannot reach or protective guard successfully prevents access"
+      ],
+      "writes": {
+        "HOSTAGE_PROTECTED": "update by hostage",
+        "HOSTAGES_SAFE": "recompute"
+      },
+      "never": [
+        "opening cell door means safe",
+        "moving to exposed stair foot means safe"
+      ]
+    },
+    {
+      "id": "flood_compare",
+      "scene": "C5/H1",
+      "requires": [
+        "actual gate operation record",
+        "actual shelter arrival/prayer-book log",
+        "check/result as original Dice Card"
+      ],
+      "writes": {
+        "FLOOD_FACT_LEVEL": "opened_before_evacuation_confirmed"
+      },
+      "never": [
+        "absence from shelter log proves currently in garden"
+      ]
+    },
+    {
+      "id": "flood_people_proven",
+      "scene": "H1",
+      "requires": [
+        "additional direct eyewitness or positional records genuinely found and checked"
+      ],
+      "writes": {
+        "FLOOD_PEOPLE_REMAINED_PROVEN": true
+      },
+      "never": [
+        "use the missing names alone"
+      ]
+    },
+    {
+      "id": "public_disclosure",
+      "scene": "EPILOGUE",
+      "requires": [
+        "team chooses specific evidence",
+        "specific recipients",
+        "handoff or disclosure actually resolves"
+      ],
+      "writes": {
+        "FLOOD_DISCLOSURE_STATUS": "completed",
+        "FLOOD_TRUTH_DISCLOSED": true
+      },
+      "never": [
+        "promise or plan alone",
+        "evidence collected alone"
+      ]
+    },
+    {
+      "id": "kaew_forced_return_by_bracelet_defense",
+      "scene": "E6/F1/F2",
+      "requires": [
+        "RITUAL_DEFENSE_ENCOUNTERED=true",
+        "RITUAL_STATUS=active|weakened",
+        "actual committed release action at core",
+        "KAEW_MANIFESTATION=dispersed|voice_shadow|unseen (if already embodied, do not re-summon)"
+      ],
+      "writes": {
+        "KAEW_RETURN_EVENT": "bracelet_defense_forced_reembodiment",
+        "KAEW_MANIFESTATION": "embodied",
+        "KAEW_TEMP_DISPERSED": false,
+        "RITUAL_DEFENSE_PHASE": "embodied"
+      },
+      "never": [
+        "return when stopped",
+        "reroll enemy HP or reset Combat stats/resources",
+        "clear historical KAEW_D_RESULT=won",
+        "repeat after already embodied",
+        "event from scene entry or passive inspection"
+      ]
+    },
+    {
+      "id": "kaew_existing_body_confirmed",
+      "scene": "E6/F2",
+      "requires": [
+        "RITUAL_DEFENSE_ENCOUNTERED=true",
+        "KAEW_MANIFESTATION=embodied",
+        "RITUAL_STATUS=active|weakened"
+      ],
+      "writes": {
+        "RITUAL_DEFENSE_PHASE": "embodied"
+      },
+      "never": [
+        "duplicate body",
+        "reset HP",
+        "force extra damage"
+      ]
+    },
+    {
+      "id": "final_combat_lite_started",
+      "scene": "F2/F3",
+      "requires": [
+        "RITUAL_DEFENSE_ENCOUNTERED=true",
+        "RITUAL_STATUS=active|weakened",
+        "KAEW_MANIFESTATION=embodied",
+        "Combat Lite 1.1 and Enemy Stats bound to actual current encounter"
+      ],
+      "writes": {
+        "FINAL_COMBAT_STARTED": true,
+        "RITUAL_DEFENSE_PHASE": "combat_active",
+        "RITUAL_SHIELD_STATE": "up",
+        "RITUAL_PUZZLE_STEP": 0,
+        "KAEW_BOSS_PHASE": 1
+      },
+      "never": [
+        "auto hit",
+        "invent enemy attack/HP or fixed round count",
+        "auto kill hostages from encounter start",
+        "give Kaew damage vulnerability before stage3",
+        "reset player status/HP",
+        "automatically apply damage"
+      ]
+    },
+    {
+      "id": "final_player_action_window_offered",
+      "scene": "F3",
+      "requires": [
+        "FINAL_COMBAT_STARTED=true",
+        "participants and initiative/positions established per CombatLite",
+        "real opportunity to declare meaningful Action and threat appropriately telegraphed"
+      ],
+      "writes": {
+        "FINAL_COMBAT_ACTION_WINDOW_OPENED": true
+      },
+      "never": [
+        "mark true from merely reading dialogue",
+        "apply damage before chance to respond",
+        "require a player to kill Kaew"
+      ]
+    },
+    {
+      "id": "party_defeat_confirmed",
+      "scene": "F3/ENDING",
+      "requires": [
+        "all player characters genuinely unable to continue/protect according to Core/Combat",
+        "no remaining feasible intervention by active teammates",
+        "not from one character DOWNED or a failed Dice Card"
+      ],
+      "writes": {
+        "PARTY_DEFEAT_CONFIRMED": true
+      },
+      "never": [
+        "imply all hostages dead",
+        "imply every player dead",
+        "set fate or ending class without actual outcomes"
+      ]
+    },
+    {
+      "id": "wic_attempts_witness_execution_post_defeat",
+      "scene": "AFTER_PARTY_DEFEAT",
+      "requires": [
+        "PARTY_DEFEAT_CONFIRMED=true",
+        "WICHAI_STATUS=free and alive",
+        "RITUAL_STATUS=active|weakened",
+        "Wichai physically in reach of controllable bracelet with Action available",
+        "each target hostage alive and in actual lethal ritual reach",
+        "no active feasible protector remains"
+      ],
+      "writes": {
+        "HOSTAGE_EXECUTION_ATTEMPTED": true
+      },
+      "never": [
+        "kill from a mere threat or failed negotiation",
+        "cause deaths when Wichai captured/dead/out of reach",
+        "cause deaths if ritual stopped",
+        "hurt hostage outside actual ritual reach"
+      ]
+    },
+    {
+      "id": "wic_witness_execution_outcome_resolved",
+      "scene": "AFTER_PARTY_DEFEAT",
+      "requires": [
+        "HOSTAGE_EXECUTION_ATTEMPTED=true",
+        "specific hostage selected and still within actual reach",
+        "actual Wichai ritual attack resolves using existing enemy/Combat/Lethal criteria",
+        "actual fatal outcome independently confirmed for that hostage"
+      ],
+      "writes": {
+        "HOSTAGE_FATE": "update individual target only if Lethal criteria actually met",
+        "HOSTAGES_SAFE": "recompute from actual living/protected"
+      },
+      "never": [
+        "set all three dead by batch",
+        "invent damage rolls or instant deaths",
+        "write death cause as ritual_toll",
+        "change Ending Resolver priorities"
+      ]
+    },
+    {
+      "id": "final_step1_brace_backlash",
+      "scene": "F3",
+      "requires": [
+        "RITUAL_STATUS=active|weakened",
+        "FINAL_COMBAT_STARTED=true and action window opened",
+        "RITUAL_PUZZLE_STEP=0",
+        "actual action at reachable anchor successfully stabilizes backlash under existing Core/Combat"
+      ],
+      "writes": {
+        "RITUAL_PUZZLE_STEP": 1
+      },
+      "never": [
+        "success just from E4 Full",
+        "new AP/DC",
+        "auto skip from reading scene"
+      ]
+    },
+    {
+      "id": "final_step2_separate_command_threads",
+      "scene": "F3/F4",
+      "requires": [
+        "RITUAL_PUZZLE_STEP=1",
+        "actual player action separates command threads without severing hostage tethers incorrectly",
+        "existing Core/Combat resolution confirms success"
+      ],
+      "writes": {
+        "RITUAL_PUZZLE_STEP": 2
+      },
+      "then": [
+        "f4_memory one-time phase2 transition"
+      ],
+      "never": [
+        "RITUAL_TETHER_INTACT false without stop",
+        "RITUAL_STATUS stopped",
+        "phase2 from time"
+      ]
+    },
+    {
+      "id": "final_step3_open_shield_knot",
+      "scene": "F3/F4",
+      "requires": [
+        "RITUAL_PUZZLE_STEP=2",
+        "actual player action opens outer shield knot at reachable bracelet",
+        "existing Core/Combat confirms success"
+      ],
+      "writes": {
+        "RITUAL_PUZZLE_STEP": 3,
+        "RITUAL_SHIELD_STATE": "down",
+        "RITUAL_DEFENSE_PHASE": "shield_open"
+      },
+      "never": [
+        "RITUAL_STATUS stopped immediately",
+        "require boss HP0",
+        "create new damage/attack/roll"
+      ]
+    },
+    {
+      "id": "final_controlled_release_after_shield_open",
+      "scene": "F3/F4",
+      "requires": [
+        "RITUAL_PUZZLE_STEP=3",
+        "RITUAL_SHIELD_STATE=down",
+        "FINAL_COMBAT_STARTED=true",
+        "FINAL_COMBAT_ACTION_WINDOW_OPENED=true",
+        "real reachable bracelet and one deliberate controlled release Action succeeded with existing Core/Combat"
+      ],
+      "writes": {
+        "RITUAL_RELEASE_SUCCEEDED_WITH_EXISTING_RULES": true
+      },
+      "then": [
+        "ritual_stopped event writes ritual=stopped and all three tether=false; F5"
+      ],
+      "never": [
+        "auto-complete just because step3 done",
+        "require Kaew HP0",
+        "new mandatory DC/AP/Timer"
+      ]
+    },
+    {
+      "id": "final_trust_kaew_forbears_attack",
+      "scene": "F2/F3/F4",
+      "requires": [
+        "KAEW_TRUST=high from real D actions",
+        "KAEW_TRUST_INTERVENTION_USED=false",
+        "an actually available enemy attack was declared/telegraphed",
+        "Kaew chooses to resist and forgo THAT attack"
+      ],
+      "writes": {
+        "KAEW_TRUST_INTERVENTION_USED": true
+      },
+      "never": [
+        "free player AP",
+        "unconditional damage immunity",
+        "use multiple times",
+        "cancel combat initiation"
+      ]
+    },
+    {
+      "id": "f4_memory_preview_before_phase2",
+      "scene": "F4",
+      "requires": [
+        "player actively investigates a valid memory source before puzzle stage2 completes",
+        "actual accessible memory / Core interaction"
+      ],
+      "writes": {
+        "F4_MEMORY_PREVIEW_SEEN": true
+      },
+      "never": [
+        "set KAEW_BOSS_PHASE=2 from memory alone",
+        "set F4_TRIGGERED=true merely by seeing old documents",
+        "reveal gate orderer without documentary proof"
+      ]
+    }
+  ],
+  "ritualReleaseContract": {
+    "policy": "Three required shield-opening stages in encounter (creator B), plus one final controlled release Action. Existing prior one-action 2B is interpreted as the *finishing* action, not bypass of shield puzzle.",
+    "stages": [
+      {
+        "stage": 1,
+        "id": "brace_backlash",
+        "effect": "stabilize backlash anchor",
+        "success": "RITUAL_PUZZLE_STEP=1"
+      },
+      {
+        "stage": 2,
+        "id": "separate_command_threads",
+        "effect": "separate control threads but hostage tethers persist",
+        "success": "RITUAL_PUZZLE_STEP=2, F4 phase2"
+      },
+      {
+        "stage": 3,
+        "id": "open_shield_knot",
+        "effect": "outer binding shield opens; attack damage now permitted",
+        "success": "RITUAL_PUZZLE_STEP=3, shield down"
+      }
+    ],
+    "finalAction": "A single player-controlled actual Action at reachable bracelet, after stage3, that resolves successful controlled release by existing Core/Combat. ritual stopped and all tether=false; Kaew HP0 neither needed nor sufficient.",
+    "combatRequirement": "Final Combat Lite session and meaningful player Action window must open before success from an active|weakened binding; no auto-hit/harm.",
+    "stepResolution": "Existing Core/Combat Action validity; no new DC/AP rolls. No access/class hard gate, no fixed rounds, no resetting successful progress on a failed action.",
+    "attackPolicy": "Boss shield up means zero damage to Kaew HP/Sanity from all damage-type attacks; native attack hit/costs still resolved. Non-damage effects resolved per native rules. After step3 normal attacks apply.",
+    "noTimer": true,
+    "noNewDiceCard": true,
+    "noNewNumericStats": true,
+    "preExistingStopped": "if valid ritual stopped before E6, skip forced return/combat/shield; go F5",
+    "failForward": "Unknown E4 plan still learns visible anchor/thread/knot cues in Final, can use legitimate actions and old D2 clues; never a dead end due to missed rolls."
+  },
+  "endingAAdditionalGuards": [
+    "RITUAL_STATUS=stopped",
+    "HOSTAGES_SAFE=3",
+    "HOSTAGES_DEAD=0",
+    "PLAYER_DEATHS=0",
+    "WICHAI_STATUS != dead",
+    "human case evidence adequate",
+    "KAEW_FINAL in calm/departed",
+    "FLOOD_TRUTH_DISCLOSED=true after epilogue actual disclosure"
+  ],
+  "noTimer": {
+    "noClock": true,
+    "bannedActiveMechanics": [
+      "TIME_MINUTES",
+      "RITUAL_0300_PRESTATE",
+      "RITUAL_0300_FULL_POWER",
+      "ritual_toll",
+      "entrenched_from_time"
+    ],
+    "historicalTimestampProofStillValid": true
+  },
+  "forbiddenActions": [
+    "auto-send QA",
+    "expose DM secrets",
+    "spawn Wichai to force E5",
+    "auto restore Kaew physical body",
+    "kill ritual hostages via timer or F6",
+    "invent new Dice Check DC/AP/HP",
+    "send action guidance as NPC dialogue",
+    "directly render legacy E3/E5/H1 card dialogue without overlay",
+    "apply narrative side effects of legacy E5 Failure",
+    "stop active ritual before 3A CombatLite action window",
+    "restore Kaew when ritual stopped or on entering F2",
+    "declare all three hostages dead from a Party Defeat flag",
+    "assume Wichai can reach hostage through walls/outside supported ritual range"
+  ],
+  "actEFinalDirection": {
+    "1": "C",
+    "2": "A",
+    "3": "B",
+    "4": "A",
+    "comment": "Escort all three upstairs is default narrative plan only; never overrides player action/positions. Hostage death requires actual causal threat after full party defeat.",
+    "lastApprovedAnswers": "1A 2B 3A 4A",
+    "bossReturn": "bracelet defense forces Kaew embodied when starting release from active|weakened",
+    "combat": "Combat Lite mandatory on triggered release, meaningful player Action opportunity, release during Combat possible, no HP0 gate",
+    "hostageDeath": "only after full party defeat from Wichai free, in actual reach, active ritual and actual lethal resolution"
+  },
+  "partyDefeatHostageRuleDraft": {
+    "selected": "4A confirmed",
+    "trigger": "PARTY_DEFEAT_CONFIRMED after all PCs unable to protect/continue and no active intervention",
+    "villainMethod": "Wichai free/alive after defeat attempts to use the reachable active|weakened bracelet to silence witnesses; he does not wield a knife or grab hostages as a shield",
+    "requires": [
+      "WICHAI_STATUS=free",
+      "WICHAI_ALIVE=true",
+      "RITUAL_STATUS=active|weakened",
+      "WICHAI_IN_REACH_OF_BRACELET=true",
+      "hostage still alive and reachable by actual supported ritual effect",
+      "existing CombatLite/Lethal resolves an actual fatal attempt per target"
+    ],
+    "forbidden": [
+      "NPC hostage death during ordinary F combat under selected 4A",
+      "party defeat implies all three auto dead",
+      "kill if Wichai captured/dead or bracelet stopped or unreachable",
+      "invent ritual range/damage without rules",
+      "single failed social roll or single fallen PC causes witnesses to die",
+      "death from passage of time"
+    ],
+    "result": "each HOSTAGE_FATE updated only on resolved actual fatality; if unavailable keep alive/unsafe/unknown by actual scene facts; Ending A–D untouched"
+  },
+  "creatorChoicesConfirmed_20261113": {
+    "1": "A",
+    "2": "B",
+    "3": "A",
+    "4": "A"
+  },
+  "presentationOverrideFile": "CASE001_v5.5_ACTF_3Step_Shield_DM_Presentation_Overrides.json",
+  "immutableDiceCardCount": 17,
+  "runtimeImplementationStatus": "Documents/spec only; Final EnemyStats and actual Core/Combat actions must be verified in repository prior to digital Playtest",
+  "actFApprovedMechanics": {
+    "shieldInitial": "up when FINAL_COMBAT_STARTED on active|weakened release",
+    "shieldDamagePolicy": "while up, attack-induced damage to Kaew HP/Sanity blocked after native Combat hit evaluation; do not alter hit/DEF; non-damage actions evaluated by native rules",
+    "progression": "sequential step1 brace, step2 separate command threads, step3 open shield knot; no step auto-success from E4/Check",
+    "phase2Trigger": "step2 succeeds once, KAEW_BOSS_PHASE=2 + F4_TRIGGERED; AI targeting uses existing reach and attacks",
+    "release": "after step3 and shield down, one final controlled release Action can set ritual stopped; boss HP0 not mandatory nor sufficient",
+    "finalEnemy": "existing Final enemy preset only; D4 temporary dispersion historic; no numeric overrides",
+    "trust": "if KAEW_TRUST=high, Kaew may voluntarily forgo one actually declared hostile attack; flag consumed once",
+    "v541Compatibility": "2B earlier one-action release retained as final finishing Action, but now preceded by required 3-stage shield puzzle per creator latest choice",
+    "noNewDiceCards": true,
+    "noNewAPDCOrDamage": true,
+    "noTimer": true
+  }
+}

@@ -74,6 +74,11 @@ function soothe(w:World) {
 }
 
 function dispel(w: World, amount: number) {
+  const final=w.caseMap?.battle?.final55;
+  if(final?.shield==='up') {
+    final.damageBlocked=true;
+    return;
+  }
   const e = w.encounter!;
   const before=e.ghostHealth;
   e.ghostHealth=Math.max(0,before-amount);
@@ -274,6 +279,16 @@ export function advanceTactics(w: World, grid: GhostGrid, roll: () => number, re
   const targets=Object.entries(w.players).filter(([id])=>id!==w.humanDmId && (w.characters?.[id]?.hp ?? 0)>0);
   if (!targets.length) return;
   targets.sort((a,b)=>distance(a[1],e.ghost)-distance(b[1],e.ghost));
+  const final=w.caseMap?.battle;
+  if(final?.final55 && final.phase==='flood_memory') {
+    const ritualActor=final.final55.ritualActor;
+    const reachable=targets.find(([id,cell])=>id===ritualActor && hasLineOfEffect(e.ghost,cell,grid) &&
+      t.profile?.combat?.attacks.some(attack=>!attack.requires && attack.range>=distance(cell,e.ghost)));
+    if(reachable) {
+      targets.splice(targets.indexOf(reachable),1);
+      targets.unshift(reachable);
+    }
+  }
   const [,nearest]=targets[0];
   const pending=t.telegraph;
   delete t.telegraph;
