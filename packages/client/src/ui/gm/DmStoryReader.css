@@ -76,6 +76,13 @@
 .dm-reader-aloud blockquote { margin: .65rem 0; padding: .8rem; border-inline-start: 3px solid #d9b979; background: #1c2940; }
 .dm-reader-secret { padding: .85rem; background: #2c2032; border: 1px solid #63465f; border-radius: .45rem; }
 .dm-reader-menu { display: none; }
+.dm-qa-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; margin-block: 1rem; }
+.dm-qa-card { min-width: 0; padding: 1rem; border: 1px solid var(--reader-line); border-radius: .75rem; background: #151d29; }
+.dm-qa-card header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; }
+.dm-qa-card header strong { color: #bac5d6; font-size: .85rem; }
+.dm-qa-card[data-sent="true"] { border-color: #4d9179; }
+.dm-qa-card[data-sent="true"] header strong { color: #9ddfc2; }
+.dm-qa-card p { overflow-wrap: anywhere; }
 @media (max-width: 780px) {
   .dm-reader-menu { display: block; }
   .dm-reader-toolbar-actions button { padding: .4rem .55rem; min-height: 44px; }

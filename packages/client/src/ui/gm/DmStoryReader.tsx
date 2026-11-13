@@ -14,6 +14,11 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
  const [query,setQuery]=useState('');
  const [drawer,setDrawer]=useState(false);
  const [copyStatus,setCopyStatus]=useState('');
+ const [qaQuery,setQaQuery]=useState('');
+ const [allQuestions,setAllQuestions]=useState(false);
+ const answers=reader.answers ?? [];
+ const questions=(reader.qa ?? []).filter(q=>(allQuestions || q.scene===id) &&
+  [q.question,q.answer,q.speaker,...q.aliases].join(' ').toLocaleLowerCase().includes(qaQuery.trim().toLocaleLowerCase()));
  const scenes=reader.scenes;
  const endings=Object.entries(reader.endings).map(([key,ending])=>({id:'ENDING '+key,title:ending.title,phase:'ENDING',brief:[ending.brief],dialogue:[]}));
  const items=[...scenes,...endings];
@@ -90,14 +95,28 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
      </details>}
      {scene.clues && <details><summary>เบาะแสและจุดตรวจ</summary><p className="story-text">{scene.clues}</p></details>}
      {scene.secret && <details><summary>ข้อมูลลับสำหรับ DM</summary><p className="story-text">{scene.secret}</p></details>}
-     {current && !!reader.qa?.length && <details>
-      <summary>คลังคำถามและคำตอบสำหรับ DM</summary>
-      <p>ค้นจากช่องค้นหาด้านข้าง รายการนี้ใช้ตรวจบริบทก่อนเลือกคำตอบ</p>
-      {reader.qa.filter(q=>[q.question,...q.aliases].some(label=>label.includes(query.trim()))).map(q=><details key={q.id}>
-       <summary>{q.question}</summary><p>{q.answer}</p><p>{q.dm_note}</p>
-       {!!q.requirements.length && <p>{q.requirements.join(' · ')}</p>}
-      </details>)}
-     </details>}
+     {!!reader.qa?.length && <section aria-label="คลังคำถามและคำตอบสำหรับ DM">
+      <h3>คำถาม–คำตอบ <small>{questions.length} รายการ</small></h3>
+      <p className="note">อ่านทุกคำตอบได้ทันที การเปิดอ่านไม่ส่งข้อความและไม่เปลี่ยนสถานะเกม</p>
+      <label>ค้นหาคำถาม คำตอบ หรือตัวละคร <input type="search" value={qaQuery} onChange={event=>setQaQuery(event.target.value)}/></label>
+      <label><input type="checkbox" checked={allQuestions} onChange={event=>setAllQuestions(event.target.checked)}/> ดูทุกฉาก</label>
+      <div className="dm-qa-grid">{questions.map(q=>{
+       const sent=answers.filter(answer=>answer.qaId===q.id);
+       return <section className="dm-qa-card" key={q.id} data-sent={!!sent.length}>
+        <header><small>{q.scene} · {q.speaker} · {q.kind==='action'?'คำแนะนำ DM':'ตรวจบริบทก่อนใช้'}</small>
+         <strong>{sent.length?'ส่งแล้ว '+sent.length+' ครั้ง':'ยังไม่ส่ง'}</strong></header>
+        <h4>{q.question}</h4><p className="story-text">{q.answer}</p>
+        {!!q.requirements.length && <p className="note">ใช้เมื่อ: {q.requirements.join(' · ')}</p>}
+        {q.dm_note && <details><summary>ข้อควรระวังสำหรับ DM</summary><p>{q.dm_note}</p></details>}
+        {!!sent.length && <p className="note">ส่งล่าสุด: {sent.at(-1)!.text}</p>}
+       </section>;
+      })}</div>
+      {!questions.length && <p>ไม่พบคำถามที่ตรงกับตัวกรอง</p>}
+      <h4>ประวัติคำตอบที่ส่งจริง</h4>
+      {answers.filter(answer=>allQuestions || answer.scene===id).slice().reverse().map(answer=><section className="dm-qa-card" key={answer.sequence}>
+       <small>{answer.scene} · ส่งแล้ว · ลำดับ {answer.sequence}</small><h4>{answer.question}</h4><p>{answer.text}</p>
+      </section>)}
+     </section>}
      {check && <details className="dm-reader-check">
       <summary>การทอยในฉาก · {check.title}</summary>
       {check.decision ? <p className="note">{check.decision}</p> : <>

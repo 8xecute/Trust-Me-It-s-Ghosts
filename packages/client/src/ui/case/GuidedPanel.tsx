@@ -12,10 +12,8 @@ export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isD
    {showStory && <><h3>{view.phase==='FINAL'?'ช่วงท้าย':view.phase==='ENDING'?'บทสรุป':'บท '+view.phase} · {view.scene}</h3>
    {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}</>}
    {!isDm && <div aria-label="คำถามที่มีบทตอบในฉาก">
-     <p className="note">เลือกคำถามที่มีบทตอบในฉากนี้ · ส่งให้ DM ตอบ</p>
-     {view.questionOptions?.length ? <div className="question-options">{view.questionOptions.map((q,i)=><button key={q.speaker+q.label+i} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:q.speaker+' · '+q.label})}>{q.speaker} · {q.label.replace(/^ถาม/,'')}</button>)}</div> : !view.prompts.length && <p>รอเปิดบทสนทนาหรือคุยกับ DM ถึงสิ่งที่สังเกตพบ</p>}
+     <p className="note">ถามหรือบอกสิ่งที่อยากทำกับ DM ได้อย่างอิสระ</p>
      {pendingQuestions>0 && <p role="status">ส่งแล้ว · รอ DM ตอบ {pendingQuestions} คำถาม</p>}
-     {view.version!=='4.3' && view.prompts.length>0 && <section><h4>ชวนคุยในฉาก {view.scene}</h4><div className="question-options">{view.prompts.map(prompt=><button type="button" key={prompt} disabled={!connected || !site || pendingQuestions>=5} onClick={()=>action('askGm',{site,text:prompt})}>{prompt}</button>)}</div></section>}
      {['5.3','5.5'].includes(view.version ?? '') && view.cue && <form onSubmit={event=>{
       event.preventDefault();
       const form=event.currentTarget;

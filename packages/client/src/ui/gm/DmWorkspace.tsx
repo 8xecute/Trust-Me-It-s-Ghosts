@@ -31,9 +31,9 @@ function DmQuestions({panel,available,action,playerName,speakers}:{
  return <div className="dm-question-layout">
   <section className="dm-quick-card">
    <h3>คำถามจากทีม <small>{cards.length}</small></h3>
-   {cards.length>1 && <label>เลือกคำถาม <select value={card.id} onChange={event=>setSelected(event.target.value)}>
-    {cards.map(item=><option key={item.id} value={item.id}>{playerName(item.playerId)} · {item.label}{item.open?'':' · คนละฉาก'}</option>)}
-   </select></label>}
+   <div className="dm-question-list">{cards.map(item=><button type="button" key={item.id} aria-pressed={item.id===card.id} onClick={()=>setSelected(item.id)}>
+    <small>{playerName(item.playerId)}{item.open?' · รอตอบ':' · คนละฉาก'}</small><span>{item.label}</span>
+   </button>)}</div>
    <p className="note">{playerName(card.playerId)} ถาม</p>
    <blockquote>{card.label}</blockquote>
    {!card.open && <p>คำถามนี้อยู่คนละฉาก หรือทีมยังไม่พร้อมคุย</p>}

@@ -25,6 +25,7 @@ type QueuedNarration = Omit<NarrativeBeat,'sequence'> & {answer?:import('@baan/s
 type DmQuestion = {guidedScene?:string;id:string;playerId:string;site:Site;label:string};
 type DmCheck = {stat?:keyof import('@baan/shared').LiteStats;dice?:ReturnType<typeof storyCheckOptions>[number]['dice'];id:string;actionId:string;site:Site;label:string;boost?:unknown};
 type DmSession = {
+ answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[];
  sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
  checks:Record<string,DmCheck>;
  narration:QueuedNarration[];
@@ -211,10 +212,11 @@ export class WorldStore {
    sent:structuredClone(w.dmSession?.sent ?? Object.fromEntries((w.narrative?.records ?? []).map(beat=>[beat.eventId,{text:beat.text,site:beat.site,sequence:beat.sequence,count:1}]))),
    guide:w.case001.v51 ? undefined : w.case001.diceVersion ? gmGuideV41 : w.case001.storyVersion===4 ? gmGuide : undefined,
    guidedScenes:w.case001.guided ? allowedGuidedScenes(w).map(scene=>({id:scene.id,canOpen:canOpenGuidedScene(w,scene.id),cue:scene.entry_cue,script:noTimer(w.case001!)?'':guidedScript(w.case001!,scene.id),sent:!!w.case001!.guided!.presented.includes(scene.id)})) : undefined,
-   storyProgress:noTimer(w.case001) ? {observed:w.case001.guided!.observed,presented:w.case001.guided!.presented} : undefined,
+   storyProgress:noTimer(w.case001) ? {observed:w.case001.guided!.observed,presented:w.case001.guided!.presented,answers:structuredClone(w.dmSession?.answers ?? [])} : undefined,
    storyReader:noTimer(w.case001) && includeReader ? {
     ...(w.case001.guided!.version==='5.5'?reader55:w.case001.guided!.version==='5.3'?reader53:reader52),
-    qa:['5.3','5.5'].includes(w.case001.guided!.version ?? '')?qaForScene53(w.case001.guided!.scene,w.case001.guided!.version):undefined,
+    qa:['5.3','5.5'].includes(w.case001.guided!.version ?? '')?Object.keys(storyContent(w.case001).scenes).flatMap(id=>qaForScene53(id,w.case001!.guided!.version)):undefined,
+    answers:structuredClone(w.dmSession?.answers ?? []),
     observed:w.case001.guided!.observed,presented:w.case001.guided!.presented,
    } : undefined,
    sharedStory:noTimer(w.case001)?sharedCaseStory(w).slice(-12):undefined,
@@ -603,6 +605,7 @@ export class WorldStore {
     if(w.case001.guided) w.case001.guided.questions=w.case001.guided.questions.filter(text=>text!==question.label);
     const recipients=Object.keys(w.players).filter(id=>id!==player);
     deliverDmNarration(w,{id:question.id,eventId:'gm-answer:'+question.id,text:answer,site:question.site,scope:'party',actor:player,recipients},player,'answer');
+    (session.answers ??= []).push({question:question.label,text:answer,qaId:qa?.id,scene:question.guidedScene,sequence:w.narrative!.sequence});
     session.questions=session.questions.filter(entry=>entry.id!==question.id);
     break;
    }

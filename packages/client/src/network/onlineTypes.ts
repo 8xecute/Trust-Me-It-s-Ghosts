@@ -50,8 +50,8 @@ type ReaderCheck = {
 };
 
 export type CaseDmPanel = {
-  storyProgress?:{observed:string[];presented:string[]};
-  storyReader?:{qa?:{id:string;question:string;aliases:string[];answer:string;speaker:string;kind:string;dm_note:string;requirements:string[];guard_ids:string[]}[];scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
+  storyProgress?:{observed:string[];presented:string[];answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[]};
+  storyReader?:{answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[];qa?:{id:string;scene:string;question:string;aliases:string[];answer:string;speaker:string;kind:string;dm_note:string;requirements:string[];guard_ids:string[]}[];scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
   caseMode:true;
   sent?:Record<string,{text:string;site:string;sequence:number;count:number}>;
   guide?:GmChapter[];

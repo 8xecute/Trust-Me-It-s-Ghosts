@@ -104,3 +104,6 @@
 }
 .dm-beat-picker { display: grid; gap: .35rem; margin-block: .7rem; }
 .dm-beat-picker select { width: 100%; min-width: 0; }
+.dm-question-list { display: grid; gap: .5rem; max-height: 28rem; overflow: auto; }
+.dm-question-list button { display: grid; gap: .35rem; text-align: left; padding: .85rem; }
+.dm-question-list button[aria-pressed="true"] { border-color: #9ddfc2; background: #203b3b; }
