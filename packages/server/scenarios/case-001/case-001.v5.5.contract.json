@@ -1232,5 +1232,17 @@
     "noNewDiceCards": true,
     "noNewAPDCOrDamage": true,
     "noTimer": true
+  },
+  "creatorDirection_20261114": {
+    "scope": "Latest creator direction; applies to v5.5, superseding older narrative gates where stated here.",
+    "scripts": "Scene scripts and Q&A are guidelines. DM can narrate or answer outside templates; narration alone does not mutate evidence or resolution state.",
+    "ton": "DM permits or withholds deep B3 disclosure based on player action. SOC14 is optional, never a mandatory prerequisite for dialogue.",
+    "kaewExecution": "After ritual stopped, embodied hostile Kaew may attempt to kill an actually present Wichai if the party never talked/negotiated with her OR the DM judges evidence insufficient. No mandatory F5 question before the attempt. Publish threat, allow intervention, then resolve the actual outcome; never automatic death.",
+    "humanEvidence": "DM judges sufficiency from actual play without requiring one fixed evidence ID.",
+    "hostages": "Find Dol, Nid and Phoem in the room under the house; default plan brings all three upstairs with the party. DM records the actual move. Upstairs does not mean SAFE or ritual tethers removed.",
+    "playerText": "Only explicit playerAnswer may prefill a player message; answer remains private guidance.",
+    "noNewDiceCards": true,
+    "noNewAPDCOrDamage": true,
+    "audit6Resolved": "v5.5 E4 land documents are selected by actual LAND_EVIDENCE_COLLECTED, using a separate disclosure identifier from B3 E08. Revalidate collection before recording disclosure."
   }
 }

@@ -265,13 +265,14 @@ function moveGhost(w: World, cell: Cell, roll: () => number) {
   return !t.profile?.boss;
 }
 
-export function resolveNpcAttack(target: NonNullable<World['characters']>[string], attack:CaseAttack, bonus:number, die:number, guard:boolean) {
+export function resolveNpcAttack(target: NonNullable<World['characters']>[string], attack:CaseAttack, bonus:number, die:number, guard:boolean,reduction=0) {
   const defense=target.coreStats ? liteDefense(target.coreStats,attack.targetDefense,guard) :
     10+characterAttribute(target,attack.targetDefense==='PDEF'?'body':'spirit')+(guard?2:0);
   const hit=liteAttack({roll:die,bonus,defense,damage:attack.damage,physical:false,manifestation:'HUMAN'});
-  if(attack.damageResource==='Sanity') target.sanity=Math.max(0,target.sanity-hit.damage);
-  else target.hp=Math.max(0,target.hp-hit.damage);
-  return {die,total:die+bonus,damage:hit.damage,outcome:hit.hit?'success' as const:'failure' as const};
+  const damage=Math.max(0,hit.damage-reduction);
+  if(attack.damageResource==='Sanity') target.sanity=Math.max(0,target.sanity-damage);
+  else target.hp=Math.max(0,target.hp-damage);
+  return {die,total:die+bonus,damage,outcome:hit.hit?'success' as const:'failure' as const};
 }
 
 export function advanceTactics(w: World, grid: GhostGrid, roll: () => number, resetTurns = true) {

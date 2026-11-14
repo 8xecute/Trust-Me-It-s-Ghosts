@@ -4,7 +4,7 @@ import type { LiteStats } from '@baan/shared';
 import { emitCaseBeat } from './case001.js';
 import { addFact, advanceStory, hasFact } from './caseStory.js';
 import type { World } from '../world.js';
-import { alive51, historySources52, hostageReachable52, kaewVoice53, recordCheck51, wichaiHere51 } from './storyV51.js';
+import { alive51, historySources52, hostageReachable52, kaewVoice53, recordCheck51, wichaiHere51, tonCanTalk55 } from './storyV51.js';
 import { checks52, checks53, checks55, noTimer, scenes51, type StoryCheck as Check } from './v51Content.js';
 
 type Outcome = 'full'|'partial'|'failure';
@@ -79,6 +79,7 @@ function availableChecks(w:World,player:string) {
   // Both C5 Editorial Props explicitly await Canon approval.
   eligible.C5_EVACUATION_RECORDS=['5.3','5.5'].includes(s.guided?.version ?? '') && historySources52(s);
   if(['5.3','5.5'].includes(s.guided?.version ?? ''))eligible.B3_TON_DISCLOSURE=eligible.B3_TON_DISCLOSURE && fact('v43-ton-protected');
+  if(s.guided?.version==='5.5')eligible.B3_TON_DISCLOSURE=s.guided.scene==='B3' && tonCanTalk55(s) && !has('E08');
   eligible.H1_FLOOD_TIMELINE=(noTimer(s)?historySources52(s):s.evidence.includes('E07') && fact('gate-testimony')) && !fact('gate-truth');
   eligible.F5_KAEW_RECONCILE=s.v51.RITUAL_STATUS==='stopped' && (!s.v51.KAEW_TEMP_DISPERSED || kaewVoice53(s)) && s.v51.KAEW_FINAL!=='calm';
   eligible.B4_FLOOD_PHOTO=s.guided?.presented.includes('B4');

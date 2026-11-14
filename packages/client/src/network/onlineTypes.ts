@@ -40,6 +40,7 @@ export type GmChapter = {
 };
 
 type ReaderScene = {
+ beginner?:{see:string;ask:string;outcomes:string};
  secret?:string;clues?:string;
  id:string;title:string;phase:string;brief:[string,string];
  dialogue:{id:string;speaker:string;label:string;text:string}[];

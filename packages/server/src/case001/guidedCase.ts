@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import {brief55} from './dmPresentation55.js';
+import {landDocumentDisclosureId} from './disclosureEvidence.js';
 import {availableQa53} from './qa53.js';
 import { randomUUID } from 'node:crypto';
 import type { World } from '../world.js';
@@ -138,7 +139,7 @@ function disclosureOptions53(s:CaseState) {
     v?.RITUAL_STATUS!=='stopped' || v.pastDisclosed || !hasFact(s,'gate-truth') ||
     !v.FLOOD_EVIDENCE_COLLECTED || !s.evidence.includes('E07'))return [];
  return [{id:'E07',label:'บันทึกประตูน้ำและหลักฐานปี 2534'},
-  ...(v.LAND_EVIDENCE_COLLECTED && s.evidence.includes('E08')?[{id:'E08',label:'หลักฐานหนี้และซื้อขายที่ดิน'}]:[])];
+  ...(v.LAND_EVIDENCE_COLLECTED && (g.version==='5.5' || s.evidence.includes('E08'))?[{id:g.version==='5.5'?landDocumentDisclosureId:'E08',label:'หลักฐานหนี้และซื้อขายที่ดิน'}]:[])];
 }
 
 export function guidedView(w:World) {
@@ -293,8 +294,12 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
  }
  if(command==='protect') {
   if(g.scene!=='B3') throw Error('จัดความปลอดภัยได้ในฉากต้นเท่านั้น');
-  if(s.v51)s.v51.TON_TRUST='high';
+  if(s.v51){s.v51.TON_TRUST='high';if(g.version==='5.5')s.v51.tonAllowed55=true;}
   addFact(s,'v43-ton-protected');return;
+ }
+ if(command==='ton-withhold' && g.version==='5.5') {
+  if(g.scene!=='B3')throw Error('ตัดสินการสนทนากับต้นได้ในฉากต้นเท่านั้น');
+  s.v51!.tonAllowed55=false;return;
  }
  if(command==='scene') {observeGuidedScene(w,target ?? '');return;}
  if(command==='propose') {

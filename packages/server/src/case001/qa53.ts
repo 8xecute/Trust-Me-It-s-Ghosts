@@ -1,10 +1,10 @@
 import {readFileSync} from 'node:fs';
 import type {CaseState} from './case001.js';
 import {hasFact} from './caseStory.js';
-import {alive51, dialogue51, hostageNames, kaewVoice53, wichaiHere51} from './storyV51.js';
+import {alive51, dialogue51, hostageNames, kaewVoice53, wichaiHere51, tonCanTalk55} from './storyV51.js';
 
 type Question53 = {
- id:string;scene:string;question:string;aliases:string[];answer:string;speaker:string;
+ id:string;scene:string;question:string;aliases:string[];answer:string;playerAnswer?:string;speaker:string;
  kind:'npc'|'environment'|'document'|'action';requirements:string[];guard_ids:string[];dm_note:string;
  delivery:'npc_dialogue'|'scene_narration'|'evidence_readout'|'dm_action_guidance';
 };
@@ -71,7 +71,7 @@ export function matchQa53(state:CaseState,query:string) {
  if(matches.length!==1)return [];
  return matches.filter(q=>{
   if(q.delivery==='dm_action_guidance') return false;
-  if(!q.guard_ids.every(id=>state.guided!.version==='5.5' && id==='F4_OCCURRED'?v.finalPhaseTwo55===true:(state.guided!.version==='5.5'?contract55:contract).guardDefinitions[id]?.all.every(rule=>
+  if(!q.guard_ids.every(id=>state.guided!.version==='5.5' && ['B3_SOC14_FULL','WICHAI_OUT_OF_EARSHOT_FOR_NAME'].includes(id)?tonCanTalk55(state):state.guided!.version==='5.5' && id==='F4_OCCURRED'?v.finalPhaseTwo55===true:(state.guided!.version==='5.5'?contract55:contract).guardDefinitions[id]?.all.every(rule=>
    Object.hasOwn(fields,rule.field) && (rule.op==='eq'?fields[rule.field]===rule.value:
     rule.op==='in' && Array.isArray(rule.value) && rule.value.includes(fields[rule.field])))))return false;
   if(q.delivery==='npc_dialogue' && !speakers.has(q.speaker))return false;
@@ -79,10 +79,14 @@ export function matchQa53(state:CaseState,query:string) {
    !state.evacuated.includes(name) && !state.escorts.includes(name);
   if(state.guided!.version==='5.5') {
    if(scene==='E3') {
-    if(!hostageNames.every(hostagePresent))return false;
-    if(q.id==='E3_Q007')return state.evidence.includes('E02');
+    if(!hostageNames.some(hostagePresent))return false;
+    if(q.id==='E3_Q007')return hostagePresent('ดล') && state.evidence.includes('E02');
     // Showing a book and opening an additional document need explicit observations.
     if(['E3_Q002','E3_Q003'].includes(q.id))return false;
+    if(q.id==='E3_Q001' || q.id==='E3_Q004')return hostagePresent('นิด');
+    if(q.id==='E3_Q005')return hostagePresent('เพิ่ม');
+    if(q.id==='E3_Q006')return hostagePresent('ดล') && hasFact(state,'current-testimony');
+    if(q.id==='E3_Q008')return hostageNames.every(hostagePresent);
     return q.kind==='environment' && q.requirements.length===0;
    }
    if(scene==='E5') {
@@ -109,7 +113,7 @@ export function matchQa53(state:CaseState,query:string) {
   if(hostageNames.some(name=>name===q.speaker) && scene!=='E1' && !hostagePresent(q.speaker))return false;
   if(['E2_Q004','E2_Q005','E2_Q006','E3_Q008'].includes(q.id))return hostageNames.every(hostagePresent);
   if(q.id==='E2_Q007')return hostagePresent('เพิ่ม') && v.RITUAL_TETHER_INTACT.เพิ่ม;
-  if(q.id==='B3_Q002' || q.id==='B3_Q003')return v.TON_TRUST==='high' && hasFact(state,'v43-ton-protected');
+  if(q.id==='B3_Q002' || q.id==='B3_Q003')return state.guided!.version==='5.5'?tonCanTalk55(state):v.TON_TRUST==='high' && hasFact(state,'v43-ton-protected');
   if(['B3_Q001','B3_Q005','B4_Q006'].includes(q.id))return true;
   if(['D3_Q004','D3_Q005','D3_Q006','D3_Q007'].includes(q.id))return fields.KAEW_COMMUNICATION_AVAILABLE===true;
   if(q.id==='D3_Q008')return fields.KAEW_COMMUNICATION_AVAILABLE===true && v.RITUAL_STATUS!=='stopped';

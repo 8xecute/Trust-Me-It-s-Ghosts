@@ -1,4 +1,5 @@
 import {readFileSync} from 'node:fs';
+export const beginner55=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.v5.5.beginner.json',import.meta.url),'utf8')) as Record<string,{see:string;ask:string;outcomes:string}>;
 
 const bank=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.v5.5.qa.json',import.meta.url),'utf8')) as {
  scenes:{scene:string;actionGuidance?:{cueWhenVisible:string;possiblePlayerActions:string}}[];
@@ -14,14 +15,8 @@ export function brief55(id:string,source:string):[string,string] {
  const bridge=source.match(/\*\*(?:ไปต่อ|เชื่อม|ไม่สืบ\/ทอยพลาดก็ไปต่อ):\*\*\s*([^\n]+)/)?.[1];
  return [plainDm55(guidance?.cueWhenVisible ?? ''),plainDm55(bridge ?? '')];
 }
-export function playerAnswer55(question:{kind:string;answer:string}) {
- if(question.kind==='action')return '';
- let answer=question.answer.replace(/ F5 ต้องเข้าหลัง[\s\S]*$/,'').trim();
- if(question.kind==='npc') {
-  const quotes=[...answer.matchAll(/“([^”]+)”/g)].map(match=>match[1]);
-  if(quotes.length)answer=quotes.join(' ');
- }
- // Guidance remains available to the DM, but never pre-fills a player message.
- if(/\bDM\b|\bACT\b|\bAction\b|\bFull\b|\bFailure\b|\bOverlay\b|\bHP0\b|\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b|ให้ทีม|หากทีม|ไม่ให้|อย่าเฉลย/.test(answer))return '';
- return answer.replace(/\*\*|\x60/g,'').trim();
+export function playerAnswer55(question:{kind:string;answer:string;playerAnswer?:string}) {
+ // Only explicitly authored player text can pre-fill a message. The source
+ // answer remains private DM guidance, even when it contains quoted dialogue.
+ return question.kind==='action'?'':question.playerAnswer?.trim() ?? '';
 }

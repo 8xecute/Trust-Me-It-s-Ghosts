@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import {brief55,plainDm55} from './dmPresentation55.js';
+import {brief55,plainDm55,beginner55} from './dmPresentation55.js';
 
 export type V51Line={id:string;scene:string;speaker:string;label:string;text:string;context:string;field:string};
 export type V51Scene={id:string;title:string;phase:string;purpose:string;presence:string;dmReadAloud:string;npcLines:string;responses:string;clues:string;fallback:string;nextSceneHandoff:string;dmSecret:string;sourceMarkdown:string;cue:string;questions:string[];checkId:string|null;dialogue:V51Line[]};
@@ -51,6 +51,7 @@ const endingBriefs:Record<string,string>={
 
 function makeReader(content:typeof current) {return {
  scenes:Object.values(content.scenes).map(({id,title,phase,dialogue})=>({
+  beginner:content===playtest55?beginner55[id]:undefined,
   id,title,phase,brief:content===playtest55?brief55(id,content.scenes[id].sourceMarkdown):content!==current?[content.scenes[id].purpose,content.scenes[id].nextSceneHandoff]:briefs52[id], secret:content!==current?plainDm55(content.scenes[id].dmSecret):undefined, clues:content!==current?plainDm55(content.scenes[id].clues):undefined,
   dialogue:dialogue.map(({id,speaker,label,text})=>({id,speaker,label:readerLabel(label),text})),
  })),

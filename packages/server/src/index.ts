@@ -35,10 +35,14 @@ const worlds = new WorldStore(undefined,true,true,process.env.CASE_STORY_VERSION
  process.env.CASE_STORY_VERSION==='4.3'?'4.3':process.env.CASE_STORY_VERSION==='5.1'?'5.1':process.env.CASE_STORY_VERSION==='5.2'?'5.2':process.env.CASE_STORY_VERSION==='5.3'?'5.3':'5.5',process.env.CASE001_LETHAL==='true');
 const saveDirectory=process.env.CASE_SAVE_DIR===undefined ? fileURLToPath(new URL('../saves/',import.meta.url)) : process.env.CASE_SAVE_DIR.trim();
 const saveRoom=saveDirectory ? openRoomSaves(saveDirectory,rooms,worlds) : undefined;
+const saveErrors=new Map<string,string>();
 function saveStartedRoom(code:string) {
  if(!saveRoom || !worlds.hasStarted(code)) return;
- try {saveRoom(code);}
- catch (error) {console.error('Unable to save room '+code,error);}
+ try {saveRoom(code);saveErrors.delete(code);}
+ catch (error) {
+  saveErrors.set(code,'สำรองอัตโนมัติไม่สำเร็จ กรุณาพักคดีและดาวน์โหลดเซฟเก็บไว้');
+  console.error('Unable to save room '+code,error);
+ }
 }
 const expirations = new Map<string, ReturnType<typeof setTimeout>>();
 const publicRooms=()=>rooms.publicRooms(code=>!worlds.hasStarted(code) && !!io.sockets.adapter.rooms.get(code)?.size);
@@ -46,7 +50,11 @@ const broadcastRooms=()=>io.emit('lobby:rooms',publicRooms());
 function broadcastSnapshot(code:string) {
   for(const socketId of io.sockets.adapter.rooms.get(code) ?? []) {
     const player=rooms.playerId(socketId);
-    if(player) io.to(socketId).emit('game:snapshot',worlds.snapshot(code,player),!!saveRoom && worlds.hasStarted(code));
+    if(player) {
+     const snapshot=worlds.snapshot(code,player);
+     io.to(socketId).emit('game:snapshot',snapshot,!!saveRoom && worlds.hasStarted(code) && !saveErrors.has(code));
+     if(snapshot.humanDmId===player)io.to(socketId).emit('session:save-status',{error:saveErrors.get(code) ?? null});
+    }
   }
 }
 io.on('connection', (socket) => {
@@ -79,7 +87,7 @@ io.on('connection', (socket) => {
     const result=worlds.apply(code,player,action);
     if(!result.duplicate) saveStartedRoom(code);
     if(!started && worlds.hasStarted(code)) broadcastRooms();
-    (ack as Ack)({ok:true,...result,persistent:!!saveRoom && worlds.hasStarted(code)});
+    (ack as Ack)({ok:true,...result,persistent:!!saveRoom && worlds.hasStarted(code) && !saveErrors.has(code)});
     if (!result.duplicate) broadcastSnapshot(code);
   }));
   socket.on('character:biography', (ack: unknown) => handle(ack, () => {
@@ -119,7 +127,9 @@ io.on('connection', (socket) => {
    if(rooms.roomCode(socket.id))throw Error('นำเข้าได้จากหน้าเข้าห้องเท่านั้น');
    const {code,token}=importSession(rooms,worlds,input);
    const {room,id}=rooms.resume(socket.id,token);socket.join(code);saveStartedRoom(code);
-   (ack as Ack)({ok:true,room,playerId:id,token,persistent:!!saveRoom,snapshot:worlds.snapshot(code,id)});
+   const snapshot=worlds.snapshot(code,id);
+   (ack as Ack)({ok:true,room,playerId:id,token,persistent:!!saveRoom && !saveErrors.has(code),snapshot});
+   if(snapshot.humanDmId===id)socket.emit('session:save-status',{error:saveErrors.get(code) ?? null});
   }));
   socket.on('room:resume', (token: unknown, ack: unknown) => handle(ack, () => {
     const {room,id}=rooms.resume(socket.id,token);
@@ -127,7 +137,9 @@ io.on('connection', (socket) => {
     expirations.delete(id);
     socket.join(room.code);
     broadcastRooms();
-    (ack as Ack)({ok:true,room,playerId:id,snapshot:worlds.snapshot(room.code,rooms.playerId(socket.id)!)});
+    const snapshot=worlds.snapshot(room.code,id);
+    (ack as Ack)({ok:true,room,playerId:id,snapshot});
+    if(snapshot.humanDmId===id)socket.emit('session:save-status',{error:saveErrors.get(room.code) ?? null});
     io.to(room.code).emit('room:update',{...room,canStart:canStart(room)});
   }));
   socket.on('room:detach',(ack:unknown)=>handle(ack,()=>{

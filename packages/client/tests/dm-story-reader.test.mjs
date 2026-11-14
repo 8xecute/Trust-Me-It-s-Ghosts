@@ -12,7 +12,7 @@ test('DM reader renders immediately after case start with questions present',()=
  const module={exports:{}};
  new Function('require','module','exports',bundled.outputFiles[0].text)(createRequire(import.meta.url),module,module.exports);
  const {DmStoryReader}=module.exports;
- const reader={scenes:[{id:'A1',title:'ทางเข้าหมู่บ้าน',phase:'A',brief:['เปิดคดี','ไปบ้านผู้ใหญ่'],dialogue:[
+ const reader={scenes:[{id:'A1',title:'ทางเข้าหมู่บ้าน',phase:'A',brief:['เปิดคดี','ไปบ้านผู้ใหญ่'],beginner:{see:'ประเสริฐถือแฟ้ม',ask:'คุณอยากถามอะไร?',outcomes:'เลือกคุยหรือดูแฟ้มได้'},dialogue:[
   {id:'opening',speaker:'ประเสริฐ',label:'บทหลัก',text:'ขอบคุณที่เดินทางมาครับ'},
   {id:'duplicate',speaker:'ประเสริฐ',label:'คนหาย',text:'“ดล นิด เพิ่ม”'},
  ]}],
@@ -20,6 +20,7 @@ test('DM reader renders immediately after case start with questions present',()=
   sendableQaIds:['A1_Q001'],qa:[{id:'A1_Q001',scene:'A1',question:'คนหายมีใครบ้าง?',answer:'ดล นิด เพิ่ม',speaker:'ประเสริฐ',kind:'npc',aliases:[],requirements:[],dm_note:''}]};
  const html=renderToStaticMarkup(createElement(DmStoryReader,{reader,view:{scene:'A1'},connected:true,action:()=>{}}));
  assert.match(html,/คนหายมีใครบ้าง/);
+ for(const label of ['เห็นอะไร','ชวนถามอะไร','เลือกผลแบบไหนได้','ประเสริฐถือแฟ้ม','คุณอยากถามอะไร','เลือกคุยหรือดูแฟ้มได้'])assert.ok(html.includes(label));
  assert.match(html,/ดล นิด เพิ่ม/);
  assert.match(html,/คำถามสำคัญ/);
  assert.match(html,/data-important="true"/);
@@ -89,4 +90,20 @@ test('DM reader distinguishes NPC dialogue, narration and private guidance',()=>
  assert.doesNotMatch(privateCard,/<form|<textarea|ยืนยันส่งคำตอบให้ผู้เล่น/);
  assert.equal((html.match(/<textarea/g) ?? []).length,2);
  assert.equal((html.match(/disabled=""[^>]*>ยืนยันส่งคำตอบให้ผู้เล่น/g) ?? []).length,2);
+});
+
+test('missing authored player text never presents private guidance as NPC dialogue or a draft',()=>{
+ const bundled=buildSync({entryPoints:[fileURLToPath(new URL('../src/ui/gm/DmStoryReader.tsx',import.meta.url))],
+  bundle:true,write:false,format:'cjs',platform:'node',packages:'external',loader:{'.css':'empty'}});
+ const module={exports:{}};
+ new Function('require','module','exports',bundled.outputFiles[0].text)(createRequire(import.meta.url),module,module.exports);
+ const guidance='ข้อมูลลับสำหรับผู้ดำเนินเกมเท่านั้น C3/F4';
+ const reader={scenes:[{id:'A1',title:'ศาลา',phase:'A',brief:['',''],dialogue:[]}],endings:{},checks:[],observed:[],presented:[],sendableQaIds:[],qa:[
+  {id:'private-draft',scene:'A1',question:'ได้ยินเสียงใคร?',answer:'',guidance,speaker:'ประเสริฐ',kind:'npc',aliases:[],requirements:[],dm_note:''},
+ ]};
+ const html=renderToStaticMarkup(createElement(module.exports.DmStoryReader,{reader,view:{scene:'A1'},connected:true,action:()=>{}}));
+ assert.match(html,/ยังไม่มีบทพร้อมอ่าน/);
+ assert.ok(html.includes(guidance),'private guidance remains accessible to the DM');
+ assert.doesNotMatch(html,/<blockquote class="dm-qa-answer">/);
+ assert.match(html,/<textarea[^>]*><\/textarea>/);
 });

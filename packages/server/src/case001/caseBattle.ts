@@ -351,15 +351,11 @@ export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice
         const cover=attack.damageResource==='HP' ? b.turnEncounter.conditions?.cover[target] : undefined;
         const victim=cover && readyPlayers(w,b.site).includes(cover) ? cover : target;
         if(cover)delete b.turnEncounter.conditions!.cover[target];
+        const wardAvailable=!!b.turnEncounter.conditions?.ward[victim];
         const result=resolveNpcAttack(w.characters![victim],attack,enemy.tactics.profile!.combat!.ATK,roll(),
-          b.enemies[0].tactics.defense[victim]===b.round);
-        let warded=false;
-        if(result.damage>0 && b.turnEncounter.conditions?.ward[victim]) {
-          const character=w.characters![victim];
-          if(attack.damageResource==='HP')character.hp=Math.min(characterMaxHp(character),character.hp+1);
-          else character.sanity=Math.min(10,character.sanity+1);
-          result.damage--;delete b.turnEncounter.conditions.ward[victim];warded=true;
-        }
+          b.enemies[0].tactics.defense[victim]===b.round,wardAvailable?1:0);
+        const warded=wardAvailable && result.outcome==='success' && attack.damage>0;
+        if(warded)delete b.turnEncounter.conditions!.ward[victim];
         if(result.outcome==='success' && attack.condition==='ROOTED')for(const member of b.enemies)member.tactics.restrained[victim]=b.round+1;
         if(result.outcome==='success' && attack.condition==='SHAKEN')(b.turnEncounter.shaken ??= {})[victim]=b.round+1;
         if(result.outcome==='success' && attack.condition==='GUARD_BREAK'){

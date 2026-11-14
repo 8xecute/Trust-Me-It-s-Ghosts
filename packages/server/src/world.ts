@@ -34,7 +34,7 @@ type DmSession = {
  log:DmLogEntry[];
 };
 
-export type WorldAction = {id:string;type:'dmStartEncounter'} | {id:string;type:'dmSendQa';qaId:unknown;text:unknown} | {id:string;type:'turnEncounter';round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown;enemyId?:unknown;boost?:unknown;step?:unknown}
+export type WorldAction = {id:string;type:'dmStartEncounter'} | {id:string;type:'dmNarrate';text:unknown;speaker?:unknown} | {id:string;type:'dmSendQa';qaId:unknown;text:unknown} | {id:string;type:'turnEncounter';round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown;enemyId?:unknown;boost?:unknown;step?:unknown}
  | {id:string;type:'releaseCharacter'} | {id:string;type:'setPlayerNames';playerName?:unknown;characterName?:unknown} | {id:string;type:'updateCharacter';profession:unknown;bonus?:unknown;talent?:unknown;playerName?:unknown;characterName?:unknown} | {id:string;type:'dmSessionControl';command:'pause'|'resume'|'withdraw'|'rewind'|'attendance'|'clearPending';targetId?:string;absent?:boolean} | {id:string;type:'dmPlaceNpc';site:string;npcId:string;position:CaseNpcPosition|null} | {id:string;type:'guided';command:string;target?:string} | {id:string;type:'dmPublish'|'dmDismiss';cardId:string;part?:'narration'|'dialogue'|'all'} | {id:string;type:'dmCancelCheck';targetId:string;checkId:string} | {id:string;type:'dmRequestRoll';targetId:string;checkId?:string;difficulty?:unknown;stat?:unknown} | {id:string;type:'dmTravel';actionId:string;site:Site} | {id:string;type:'dmNarrativeNext';targetId:string;sequence:number} | {id:string;type:'narrativeNext';sequence:number} | {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective';step?:number} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown;playerName?:unknown;characterName?:unknown} | {id:string;type:'caseStart';mode?:'story'} | {id:string;type:'caseAction';actionId:string;boost?:unknown;site?:Site} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
 export interface World { inactivePlayers?:string[];preparingSession?:boolean; playerNames?:Record<string,{playerName?:string;characterName?:string}>; paused?:boolean; basicMode?:true; dmSession?:DmSession; sceneMode?:true;  narrative?:NarrativeState; caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:DmRollCard|null; }
 type Snapshot = Omit<World,'dmSession'|'narrative'|'case001'|'caseMap'|'backgroundUses'|'biographies'> & {manualDm?:true;awaitingReport?:boolean;dmLog?:DmLogEntry[];pendingCheck?:string;narrative?:ReturnType<typeof narrativeView>} & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;npcs?:CaseNpcPlacement[];opportunity?:string;withdrawalBlocked?:boolean;battle?:ReturnType<typeof battleView>;turnConclusion?:CaseMap['turnConclusion']}};
@@ -384,7 +384,7 @@ export class WorldStore {
    if(a.type==='start' && w.case001?.guided && w.caseMap?.battle?.id==='EN02') observeGuidedScene(w,'D4');
    if(a.type==='caseObjective' && w.case001?.guided?.version==='5.5' && w.case001.v51?.RITUAL_STATUS==='stopped')observeGuidedScene(w,'F5');
   } else {
-  if(w.case001 && !['guided','dmSessionControl','dmPlaceNpc','dmPublish','dmDismiss','dmCancelCheck','dmSendQa'].includes(a.type) && a.type!=='dmNarrativeNext' && a.type!=='narrativeNext' && a.type!=='caseAction' && a.type!=='caseStart' && a.type!=='createCharacter' && !(a.type==='claimDm' && w.dmSession && !w.humanDmId) && !(w.case001.story && (a.type==='dmRequestRoll' || a.type==='dmRoll'))) throw Error('ใช้คำสั่งจากหน้าคดี');
+  if(w.case001 && !['guided','dmSessionControl','dmPlaceNpc','dmPublish','dmDismiss','dmCancelCheck','dmSendQa','dmNarrate'].includes(a.type) && a.type!=='dmNarrativeNext' && a.type!=='narrativeNext' && a.type!=='caseAction' && a.type!=='caseStart' && a.type!=='createCharacter' && !(a.type==='claimDm' && w.dmSession && !w.humanDmId) && !(w.case001.story && (a.type==='dmRequestRoll' || a.type==='dmRoll'))) throw Error('ใช้คำสั่งจากหน้าคดี');
   switch(a.type){
    case 'dmSessionControl': {
     if(player!==w.humanDmId || !w.dmSession || !w.case001 || w.case001.report) throw Error('เฉพาะ DM ในคดีที่ยังไม่ปิด');
@@ -545,14 +545,17 @@ export class WorldStore {
     recordDm(session,'check-canceled',player,[a.targetId],check.label);
     break;
    }
-   case 'dmSendQa': {
+   case 'dmNarrate': case 'dmSendQa': {
     if(player!==w.humanDmId || !w.dmSession || !w.case001 || w.case001.report)throw Error('เฉพาะ DM ในคดีที่ยังดำเนินอยู่');
-    const qa=availableQa53(w.case001).find(q=>q.id===a.qaId);
-    if(!qa)throw Error('คำตอบนี้ยังใช้ไม่ได้ในฉากหรือสถานะปัจจุบัน');
-    const text=gmText(a.text),answer=qa.kind==='npc'?qa.speaker+' · '+text:text;
+    const qa=a.type==='dmSendQa'?availableQa53(w.case001).find(q=>q.id===a.qaId):undefined;
+    if(a.type==='dmSendQa' && !qa)throw Error('คำตอบนี้ยังใช้ไม่ได้ในฉากหรือสถานะปัจจุบัน');
+    if(a.type==='dmNarrate' && a.speaker!==undefined && (typeof a.speaker!=='string' || !a.speaker.trim() || a.speaker.length>64))throw Error('ชื่อผู้พูดไม่ถูกต้อง');
+    const speaker=qa?.kind==='npc'?qa.speaker:a.type==='dmNarrate' && typeof a.speaker==='string'?a.speaker.trim():undefined;
+    const text=gmText(a.text),answer=speaker?speaker+' · '+text:text;
     const id=randomUUID(),site=w.case001.site;
     deliverDmNarration(w,{id,eventId:'gm-qa:'+id,text:answer,site,scope:'party',actor:player,recipients:Object.keys(w.players).filter(id=>id!==player)},player,'answer');
-    (w.dmSession.answers ??= []).push({question:qa.question,text:answer,qaId:qa.id,scene:qa.scene,sequence:w.narrative!.sequence});
+    (w.dmSession.answers ??= []).push({question:qa?.question ?? 'บทนอกสคริปต์',text:answer,qaId:qa?.id,scene:w.case001.guided?.scene,sequence:w.narrative!.sequence});
+    if(qa?.speaker==='แม่แก้ว' && w.case001.guided?.scene==='D3' && w.case001.v51)w.case001.v51.kaewTalked55=true;
     break;
    }
    case 'dmPublish': case 'dmDismiss': {

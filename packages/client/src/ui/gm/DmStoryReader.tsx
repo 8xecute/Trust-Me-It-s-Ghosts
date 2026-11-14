@@ -87,6 +87,15 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
       {!current && <button type="button" disabled={!connected || !canStart} onClick={()=>action('guided',{command:'scene',target:id})}>เริ่มฉากนี้</button>}
       {!current && !canStart && <small>รอเงื่อนไขในเกม</small>}
      </div>
+     {scene.beginner && <section className="dm-beginner" aria-label="สรุปสำหรับ DM มือใหม่">
+      <h3>สรุปสำหรับ DM มือใหม่</h3>
+      <p className="note">ใช้เป็นแนวทาง เลือกเล่าตามสิ่งที่ผู้เล่นทำ การอ่านส่วนนี้ไม่เปลี่ยนผลเกม</p>
+      <div className="dm-beginner-grid">
+       <div><h4>เห็นอะไร</h4><p>{scene.beginner.see}</p></div>
+       <div><h4>ชวนถามอะไร</h4><p>{scene.beginner.ask}</p></div>
+       <div><h4>เลือกผลแบบไหนได้</h4><p>{scene.beginner.outcomes}</p></div>
+      </div>
+     </section>}
      <section aria-label="สรุปฉาก">
       <h3>เล่าอะไรในฉากนี้</h3><p>{scene.brief[0]}</p>
       <h4>ทางไปต่อ</h4><p>{scene.brief[1]}</p>
@@ -129,7 +138,8 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
         </summary>
         <div className="dm-qa-body">
         <p className="dm-qa-answer-label">{answerRole(q.kind,q.speaker)}</p>
-        <blockquote className="dm-qa-answer">{q.answer || q.guidance || 'ดูแนวทางสำหรับ DM ด้านล่าง'}</blockquote>
+        {q.kind==='action'?<blockquote className="dm-qa-answer">{q.guidance || q.answer || 'ดูแนวทางสำหรับ DM ด้านล่าง'}</blockquote>:
+         q.answer?<blockquote className="dm-qa-answer">{q.answer}</blockquote>:<p className="note">ยังไม่มีบทพร้อมอ่าน ใช้แนวทางเฉพาะ DM ด้านล่าง แล้วเขียนคำตอบให้เหมาะกับสถานการณ์ก่อนส่ง</p>}
         {q.kind==='action'?<p className="note">ใช้ประกอบการตัดสินของ DM เท่านั้น ไม่มีปุ่มส่งให้ผู้เล่น</p>:<details className="dm-qa-send"><summary>แก้ข้อความและส่งให้ผู้เล่น</summary><form key={q.id+':'+view.scene} onSubmit={event=>{
          event.preventDefault();const form=event.currentTarget;
          action('dmSendQa',{qaId:q.id,text:new FormData(form).get('answer')});

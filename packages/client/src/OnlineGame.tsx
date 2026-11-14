@@ -52,6 +52,7 @@ export function OnlineGame() {
   const [dmPanel,setDmPanel] = useState<CaseDmPanel|null>(null);
   const dmReader=useRef<CaseDmPanel['storyReader']>(undefined);
   const [status,setStatus] = useState('');
+  const [saveWarning,setSaveWarning]=useState<string>();
   const [entryBusy,setEntryBusy]=useState(false);
   const entryLock=useRef(false);
   const [characterBusy,setCharacterBusy]=useState(false);
@@ -121,6 +122,7 @@ export function OnlineGame() {
     connection.on('disconnect',()=>{setConnected(false);setStatus('การเชื่อมต่อขาด กำลังลองใหม่');});
     connection.on('connect_error',()=>{setConnected(false);setStatus('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้');});
     connection.on('game:snapshot',receive);
+    connection.on('session:save-status',(result:{error:string|null})=>setSaveWarning(result.error ?? undefined));
     connection.on('room:update',setRoom);
     connection.on('lobby:rooms',setPublicRooms);
     connection.connect();
@@ -215,7 +217,7 @@ export function OnlineGame() {
 
   if(isHumanDm && room) return <DmWorkspace socket={socket.current} room={room} world={world} investigators={investigators}
     leaveRoom={leaveRoom} leaving={leaving} preview={preview} previewPlayer={previewPlayer} setPreviewPlayer={setPreviewPlayer} dmPanel={dmPanel}
-    action={action} playerName={id=>playerName(id)+(world?.characters?.[id]?' · '+professions[world.characters[id].profession].name:'')} canStart={canStart} status={status} connected={connected} limit={limit}/>;
+    action={action} playerName={id=>playerName(id)+(world?.characters?.[id]?' · '+professions[world.characters[id].profession].name:'')} canStart={canStart} status={status} saveWarning={saveWarning} connected={connected} limit={limit}/>;
 
   const savedToken=room ? null : localStorage.getItem(savedSessionKey);
   return <main className={`game-shell online-shell player-shell case-ui${room ? '' : ' lobby-shell'}${world?.case001?' case-ui-active':''}`}>

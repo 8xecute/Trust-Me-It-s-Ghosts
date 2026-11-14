@@ -41,7 +41,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ดลหายก่อนครับ แล้วก็นิด ตามด้วยเพิ่ม หายกันคนละคืน"
         },
         {
           "scene": "A1",
@@ -64,7 +65,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เท่าที่มีคนเล่ากันก็แถวทางสวนกล้วยครับ แต่จุดที่เห็นแต่ละคนเป็นครั้งสุดท้ายต้องดูในแฟ้มที่บ้านผมอีกที"
         },
         {
           "scene": "A1",
@@ -87,7 +89,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ตำรวจเขาก็ตามเรื่องอยู่ครับ แต่ยังหาคนไม่เจอ ชาวบ้านเริ่มกลัวกันหนัก ผมเลยอยากให้พวกคุณช่วยตรวจเรื่องแปลก ๆ แถวสวนอีกทาง"
         },
         {
           "scene": "A1",
@@ -112,7 +115,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "มีคนเล่าให้ผมฟังอยู่ครับ... พอพูดถึงผู้หญิงชุดเขียว ผมก็นึกถึงแก้ว แต่เธอตายไปนานแล้ว ผมยังบอกไม่ได้ว่าเรื่องนี้เกี่ยวกับเธอไหม"
         },
         {
           "scene": "A1",
@@ -134,7 +138,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ผมรู้ว่าที่นี่มีเรื่องให้สงสัยเยอะ... แต่ตอนนี้ผมอยากให้ช่วยตามคนทั้งสามก่อนครับ"
         },
         {
           "scene": "A1",
@@ -157,7 +162,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เขารับแจ้งแล้วครับ เข้าไปตรวจทางสวนมาบ้าง แต่ที่มันกว้างยังตรวจไม่ทั่ว และยังไม่เจอเบาะแสพอจะชี้ว่าต้องไปทางไหน ตำรวจก็ตามเรื่องต่ออยู่"
         },
         {
           "scene": "A1",
@@ -178,7 +184,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "inactive"
+          "status": "inactive",
+          "playerAnswer": ""
         },
         {
           "scene": "A1",
@@ -201,7 +208,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เรื่องค่าใช้จ่าย ผมตกลงกับทางบริษัทไว้ก่อนพวกคุณเดินทางมาแล้วครับ"
         },
         {
           "scene": "A1",
@@ -223,7 +231,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ใช่ครับ ทางผมกับบริษัทตกลงกันเรียบร้อยแล้ว ถึงได้นัดให้พวกคุณมาที่นี่"
         },
         {
           "scene": "A1",
@@ -244,7 +253,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -288,7 +298,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ได้ยินเสียงน้ำไหลเชี่ยว แล้วเสียงผู้หญิงพูดขาดห้วงว่า “น้ำ... น้ำมาแล้ว... ข้าจะช่วยเอ็ง... ดึงมือข้าไว้...!” ตามด้วยเสียงสำลัก และมีเสียงเบามากว่า “...ยังมีคนอยู่...”"
         },
         {
           "scene": "A2",
@@ -311,7 +322,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เสียงดังลอดออกมาจากวิทยุสื่อสารในรถตู้ที่จอดเปิดประตูไว้ และอุปกรณ์บางชิ้นก็กระตุกตาม แต่ยังไม่รู้ว่าต้นทางของสัญญาณคืออะไร"
         },
         {
           "scene": "A2",
@@ -334,7 +346,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "A2",
@@ -357,7 +370,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "จากเสียงเพียงเท่านี้ ยังระบุไม่ได้ว่าผู้พูดเป็นใคร หรือเกี่ยวข้องกับคนหายคนใด"
         },
         {
           "scene": "A2",
@@ -380,7 +394,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -427,7 +442,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ที่บ้านผมมีแฟ้มคนหายกับแผนที่ครับ ไปดูตรงนั้นก่อน จะได้รู้ว่าควรเริ่มตามจากตรงไหน"
         },
         {
           "scene": "A3",
@@ -449,7 +465,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ประเสริฐชี้ไปยังบ้านที่ยังเปิดไฟอยู่ตามแนวถนนจากศาลา เขาพาทีมไปได้โดยไม่มีทางแยกซับซ้อน"
         },
         {
           "scene": "A3",
@@ -472,7 +489,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "มีวิชัย ผู้ช่วยผม เขาช่วยเตรียมแผนที่อยู่ ส่วนต้นเป็นอาสาที่เคยเห็นคนเข้าออกแถวทางสวน ผมเรียกเขามาคุยกับพวกคุณครับ"
         },
         {
           "scene": "A3",
@@ -494,7 +512,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "A3",
@@ -516,7 +535,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "A3",
@@ -538,7 +558,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "A3",
@@ -560,7 +581,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ผมแจ้งให้วิชัยช่วยเตรียมแฟ้มกับแผนที่ไว้ครับ เขาเป็นผู้ช่วยผม ก็เลยรู้ว่าพวกคุณจะมา"
         }
       ],
       "actionGuidance": {
@@ -603,7 +625,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "จากแฟ้มคนหายบนโต๊ะ คุณเห็นชื่อดล นิด เพิ่ม และจุดที่มีผู้พบเห็นล่าสุดบนแผนที่ บ้านดลถูกวงไว้เป็นสถานที่ตรวจต่อได้ทันที"
         },
         {
           "scene": "B1",
@@ -626,7 +649,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผู้ใหญ่ให้ผมช่วยเตรียมแผนที่ไว้ครับ ผมเลยมารอ เผื่อพวกคุณมีอะไรอยากถาม"
         },
         {
           "scene": "B1",
@@ -647,7 +671,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "หมุดสีแดงคือจุดที่มีผู้รายงานว่าเห็นคนหายแต่ละคนเป็นครั้งสุดท้าย ส่วนวงน้ำเงินเป็นข้อมูลแปลงที่ดินซึ่งปรากฏบนแผนที่เดียวกัน; ความเกี่ยวข้องของสองชุดข้อมูลยังไม่ได้พิสูจน์"
         },
         {
           "scene": "B1",
@@ -669,7 +694,8 @@
           "delivery": "evidence_readout",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ชื่อวิชัยระบุเป็นผู้รับผิดชอบวงแปลงสีน้ำเงินในเอกสาร ส่วนหมุดแดงเป็นข้อมูลจากแฟ้มคนหายที่ประเสริฐรวบรวมไว้"
         },
         {
           "scene": "B1",
@@ -687,7 +713,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เป็นภาพชาวบ้านข้างประตูน้ำ มีปี 2534 กำกับ และมีชายหนุ่มหน้าคล้ายประเสริฐอยู่ในภาพ"
         },
         {
           "scene": "B1",
@@ -705,7 +732,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ต้นมองวิชัยแล้วหลบตา มือกำกุญแจรถจักรยานยนต์แน่นขึ้น เห็นได้ว่าเขาไม่สบายใจ แต่ยังไม่รู้ว่าเพราะอะไรแน่"
         },
         {
           "scene": "B1",
@@ -723,7 +751,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ประเสริฐพาทีมเข้าบ้านแล้วขอตัวออกไปประสานความคืบหน้าการค้นหากับตำรวจ เขาไม่ได้ร่วมสนทนาในห้องตอนนี้"
         },
         {
           "scene": "B1",
@@ -741,7 +770,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -785,7 +815,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "B2",
@@ -806,7 +837,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เราใช้แผนที่หมู่บ้านชุดเดียวกันครับ ผมรับผิดชอบส่วนแปลงที่ดิน ผู้ใหญ่รวบรวมส่วนคนหาย"
         },
         {
           "scene": "B2",
@@ -827,7 +859,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เคยครับ มีคนแจ้งว่ามีอะไรแปลก ๆ ผมเลยเข้าไปตรวจอยู่หลายหน"
         },
         {
           "scene": "B2",
@@ -848,7 +881,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "บางบ้านสนใจขายครับ บางบ้านก็ยังไม่ตัดสินใจ ถ้าถามว่าผมบังคับใครไหม ผมไม่เคยบังคับครับ"
         },
         {
           "scene": "B2",
@@ -871,7 +905,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมรอดจากน้ำท่วมจริงครับ จะเกี่ยวอะไรกับคนหาย?"
         },
         {
           "scene": "B2",
@@ -891,7 +926,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมไปหลายครั้งครับ แต่จะให้จำคืนเป๊ะ ๆ คงไม่ได้"
         },
         {
           "scene": "B2",
@@ -909,7 +945,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมเป็นคนทำเครื่องหมายแปลงที่ดินเองครับ ส่วนหมุดแดงเป็นข้อมูลคนหายของผู้ใหญ่"
         },
         {
           "scene": "B2",
@@ -927,7 +964,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมไม่รู้หรอกครับ เขามักไปตรวจเรื่องของเขาเอง"
         },
         {
           "scene": "B2",
@@ -945,7 +983,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ไปหลายคืน จำคืนเป๊ะ ๆ ไม่ได้"
         },
         {
           "scene": "B2",
@@ -963,7 +1002,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมแค่ประสานให้ครับ เจ้าของที่เป็นคนตัดสินใจ"
         },
         {
           "scene": "B2",
@@ -981,7 +1021,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมชี้จากแผนที่ได้ครับ แต่ผู้ใหญ่บอกให้เริ่มตามแฟ้มคนหายก่อน"
         },
         {
           "scene": "B2",
@@ -999,7 +1040,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -1047,7 +1089,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ตอนนั้นมืดครับ ผมเห็นคนแถวทางเข้าสวน แต่ผมบอกไม่ได้ว่าใคร"
         },
         {
           "scene": "B3",
@@ -1061,21 +1104,18 @@
           "kind": "npc",
           "speaker": "ต้น",
           "requirements": [
-            "CHECK_RESULTS.B3_TON_DISCLOSURE=full",
-            "คำตอบที่เอ่ยชื่อวิชัยต้องส่งในระยะที่วิชัยไม่ได้ยิน"
+            "DM อนุญาตให้ต้นเปิดข้อมูลลึกตามการกระทำของผู้เล่น"
           ],
-          "dm_note": "Full ไม่ใช่พยานเห็นหน้าชัด ไม่แจกเมื่อจัดที่ปลอดภัยอย่างเดียว",
+          "dm_note": "DM เป็นผู้ตัดสินว่าให้ต้นเล่าได้หรือไม่ ไม่บังคับทอยก่อนอ่านคำตอบ ถ้าเลือกทอยให้ใช้การ์ด SOC14 เดิม ไม่ตีความว่าการพบต้นทำให้ได้ข้อมูลลึกเอง",
           "origin": "ACT B — user approved 8 decisions / Rescue-First polish",
           "runbook_id": "B3_QA_02",
           "id": "B3_Q002",
-          "guard_ids": [
-            "B3_SOC14_FULL",
-            "WICHAI_OUT_OF_EARSHOT_FOR_NAME"
-          ],
+          "guard_ids": [],
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมเห็นคนใส่เสื้อเชิ้ตเข็นรถ มีห่อผ้าดำอยู่บนรถครับ แต่ตอนนั้นมืด ผมเห็นหน้าไม่ชัด พอเห็นเสื้อกับรอยที่มือพี่วิชัยวันนี้ ผมก็เลยสงสัยว่าเป็นแก"
         },
         {
           "scene": "B3",
@@ -1088,19 +1128,18 @@
           "kind": "npc",
           "speaker": "ต้น",
           "requirements": [
-            "CHECK_RESULTS.B3_TON_DISCLOSURE=full"
+            "DM อนุญาตให้ต้นเปิดข้อมูลลึกตามการกระทำของผู้เล่น"
           ],
-          "dm_note": "ไม่รู้ข้างในเป็นตัวประกันหรือไม่",
+          "dm_note": "DM เป็นผู้ตัดสินว่าให้ต้นเล่าได้หรือไม่ ไม่บังคับทอยก่อนอ่านคำตอบ ถ้าเลือกทอยให้ใช้การ์ด SOC14 เดิม ไม่ตีความว่าการพบต้นทำให้ได้ข้อมูลลึกเอง",
           "origin": "ACT B — user approved 8 decisions / Rescue-First polish",
           "runbook_id": "B3_QA_03",
           "id": "B3_Q003",
-          "guard_ids": [
-            "B3_SOC14_FULL"
-          ],
+          "guard_ids": [],
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมไม่รู้ครับ มันถูกผ้าดำคลุมไว้ ผมไม่เห็นข้างใน"
         },
         {
           "scene": "B3",
@@ -1120,7 +1159,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผู้ใหญ่เรียกผมมาครับ ผมบอกเขาว่าเห็นคนแถวสวน ไม่รู้ว่าพี่วิชัยจะมารออยู่ด้วย"
         },
         {
           "scene": "B3",
@@ -1141,7 +1181,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เคยเห็นเงาคนเปียก แต่ไม่ได้เห็นมันแตะใคร"
         },
         {
           "scene": "B3",
@@ -1161,7 +1202,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ผมไม่อยากมีเรื่องครับ ผมไม่พูดแล้ว"
         },
         {
           "scene": "B3",
@@ -1179,7 +1221,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "B3",
@@ -1197,7 +1240,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "B3",
@@ -1215,7 +1259,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ไม่ครับ มันมืด ผมเห็นหน้าไม่ชัด"
         }
       ],
       "actionGuidance": {
@@ -1262,7 +1307,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "รูปเก่าบนผนังเป็นภาพชาวบ้านใกล้ประตูน้ำ ใต้ภาพระบุปี 2534 มีชายคนหนึ่งหน้าคล้ายประเสริฐมาก แต่ภาพไม่บอกว่าเขาทำอะไรในวันนั้น"
         },
         {
           "scene": "B4",
@@ -1284,7 +1330,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ชายหนุ่มคนหนึ่งในภาพหน้าคล้ายประเสริฐ แต่ภาพใบนี้อย่างเดียวยืนยันตัวบุคคลหรือบทบาทในวันนั้นไม่ได้"
         },
         {
           "scene": "B4",
@@ -1306,7 +1353,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เป็นภาพชาวบ้านใกล้ประตูน้ำในหมู่บ้าน มีปี 2534 ระบุใต้กรอบ"
         },
         {
           "scene": "B4",
@@ -1326,7 +1374,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "รูปถ่ายไม่ได้บอกว่าเปิดประตูน้ำก่อนหรือหลังอพยพครบ ต้องตรวจบันทึกเวลาเวรประตูน้ำจริงแล้วเทียบกับข้อมูลศูนย์อพยพภายหลัง การไม่มีชื่อในบัญชีอย่างเดียวไม่พิสูจน์ว่าคนยังติดอยู่"
         },
         {
           "scene": "B4",
@@ -1348,7 +1397,8 @@
           "delivery": "evidence_readout",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "B4",
@@ -1370,7 +1420,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "จากเอกสารเห็นเพียงว่าแฟ้มถูกเก็บรวมกับงานเก่าของบ้านผู้ใหญ่ ยังบอกเหตุผลส่วนตัวของประเสริฐไม่ได้"
         },
         {
           "scene": "B4",
@@ -1392,7 +1443,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เมื่อยกหรือตรวจกรอบใกล้ ๆ คุณเห็นหยดน้ำไหลด้านในกระจก ทั้งที่ด้านหลังกรอบแห้ง ยังระบุไม่ได้ว่าเกิดจากอะไร"
         },
         {
           "scene": "B4",
@@ -1410,7 +1462,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -1457,7 +1510,8 @@
           "delivery": "evidence_readout",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "แฟ้มระบุบ้านดลเป็นจุดตรวจต่อ เพราะเป็นคนที่หายก่อน และมีหมายเหตุว่าเขาชอบจดสิ่งที่สงสัยไว้ที่บ้าน แต่ยังไม่รู้ว่าเขาเขียนเรื่องอะไร"
         },
         {
           "scene": "B5",
@@ -1475,7 +1529,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ที่อยู่และตำแหน่งบ้านดลถูกวงไว้ในแฟ้มและแผนที่หมู่บ้าน ทีมเดินทางไปตรวจได้"
         },
         {
           "scene": "B5",
@@ -1495,7 +1550,8 @@
           "delivery": "evidence_readout",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "แฟ้มบอกเพียงว่าดลชอบจดข้อมูลที่บ้าน ไม่ระบุตำแหน่งสมุดจริง ต้องไปตรวจภายในบ้านดล"
         },
         {
           "scene": "B5",
@@ -1513,7 +1569,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "B5",
@@ -1531,7 +1588,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -1575,7 +1633,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "จากทางเข้ามองเห็นโต๊ะทำงานที่มีกองกระดาษค้างอยู่ แต่ต้องเลือกค้นโต๊ะก่อนจึงจะพบสมุดปกดำ"
         },
         {
           "scene": "C1",
@@ -1596,7 +1655,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "บ้านเงียบ เสื้อยังแขวน อาหารเริ่มแห้งและเสีย แต่สภาพทั่วไปยังไม่บอกว่าใครเข้ามาหรือมีการงัดบ้าน"
         },
         {
           "scene": "C1",
@@ -1617,7 +1677,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "โต๊ะมีเอกสารและกระดาษหลายแผ่น หากเลือกลงมือค้นกองแฟ้มจะพบสมุดปกดำของดล"
         },
         {
           "scene": "C1",
@@ -1638,7 +1699,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "หลังลงมือเปิดตรวจใต้พื้นจริง ไม่พบห้องขังหรือคนหายที่บ้านดล"
         },
         {
           "scene": "C1",
@@ -1659,7 +1721,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "อาหารแห้งและเริ่มเสีย ฝุ่นจับขอบถ้วย ดูเหมือนไม่มีคนเก็บกวาดมาหลายวัน แต่ระบุคืนที่ดลหายจากสิ่งนี้อย่างเดียวไม่ได้"
         },
         {
           "scene": "C1",
@@ -1680,7 +1743,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C1",
@@ -1699,7 +1763,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -1746,7 +1811,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C2",
@@ -1770,7 +1836,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เห็นเศษด้ายดำติดอยู่ที่สันสมุด แต่ยังไม่มีข้อความยืนยันว่าใครนำด้ายมา หรือด้ายนั้นเป็นส่วนของพิธีใด"
         },
         {
           "scene": "C2",
@@ -1793,7 +1860,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ในสมุดดลเขียนว่า “เรื่องผีเริ่มก่อนหรือหลังคนมาขอซื้อ? ต้องกลับไปดูศาล” และระบุชื่อยายบุญมีผู้ดูแลศาล ยังไม่มีคำอธิบายว่าดลรู้ที่มาของด้ายดำ"
         },
         {
           "scene": "C2",
@@ -1814,7 +1882,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "มีเพียงข่าวว่ามีคนทวงหนี้วิชัย พร้อมข้อความจากดลว่า “ต้องตรวจสอบ” จึงเป็นข้อมูลไม่ยืนยัน"
         },
         {
           "scene": "C2",
@@ -1835,7 +1904,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C2",
@@ -1854,7 +1924,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C2",
@@ -1875,7 +1946,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C2",
@@ -1896,7 +1968,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ริมหน้ากระดาษมีข้อความว่า “ยายบุญมีดูแลศาล อยู่บ้านก่อนทางแยกเข้าสวน” และโน้ต “ต้องกลับไปดูศาล”"
         },
         {
           "scene": "C2",
@@ -1915,7 +1988,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -1962,7 +2036,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เสียงเคาะสามครั้งย้ายจากใต้พื้นไปยังผนัง และมีคราบน้ำผิดปกติขยายอยู่ แต่ยังไม่อาจบอกว่ามาจากใครหรือมีใครซ่อนอยู่ใต้พื้นโดยไม่ตรวจ"
         },
         {
           "scene": "C3",
@@ -1983,7 +2058,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C3",
@@ -2002,7 +2078,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C3",
@@ -2023,7 +2100,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "หลังเปิดตรวจจริง พบเพียงพื้นที่ใต้พื้นกับสัตว์เล็กที่ตกใจหนี ไม่พบห้องขังหรือคนหายตรงนั้น"
         },
         {
           "scene": "C3",
@@ -2042,7 +2120,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -2088,7 +2167,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C4",
@@ -2111,7 +2191,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ร่างเปียกน้ำกำลังเหยียดแขนเข้าหาคนใกล้ที่สุด น้ำขุ่นผุดขึ้นใต้เท้า เป็นสัญญาณเตรียมเข้าจับ ยังไม่ใช่ผลโจมตีสำเร็จหรือ HP ลด"
         },
         {
           "scene": "C4",
@@ -2130,7 +2211,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "จากสิ่งที่เห็นในตอนนี้ยังไม่มีหลักฐานว่าผีเป็นผู้จับตัวดล นิด เพิ่ม การจะระบุว่ามันเป็นร่องความทรงจำหรือเกี่ยวกับใคร ต้องตรวจพลังตามผลที่ได้จริง"
         },
         {
           "scene": "C4",
@@ -2151,7 +2233,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C4",
@@ -2172,7 +2255,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C4",
@@ -2193,7 +2277,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C4",
@@ -2212,7 +2297,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -2258,7 +2344,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ปีที่น้ำท่วมหนัก แก้วลงไปช่วยเด็กคนหนึ่งขึ้นจากน้ำ แต่ตัวแก้วกลับไม่รอด"
         },
         {
           "scene": "C5",
@@ -2282,7 +2369,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "วิชัยนั่นแหละ ตอนนั้นยังเล็กอยู่ แก้วช่วยเขาคนเดียว"
         },
         {
           "scene": "C5",
@@ -2305,7 +2393,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ข้าอยู่ที่ศูนย์อพยพ คอยจดว่าใครมาถึง ข้าไม่ได้ยืนดูประตูน้ำ ข้ารู้ทีหลังว่ามีการเปิด แต่ไม่ได้เห็นว่าใครเป็นคนเปิด"
         },
         {
           "scene": "C5",
@@ -2327,7 +2416,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ข้าเห็นด้ายดำเพิ่งมาผูกอยู่แถวศาล มันไม่ใช่ของเดิม ข้าไม่รู้ว่าใครทำหรือจะแก้ยังไง อย่าเพิ่งไปดึงมันส่งเดช"
         },
         {
           "scene": "C5",
@@ -2349,7 +2439,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "มีสิ สมุดสวดมนต์เล่มนี้แหละ ข้าจดชื่อคนที่มาถึงศูนย์อพยพไว้ ถ้าอยากดูก็ข้าหยิบให้"
         },
         {
           "scene": "C5",
@@ -2370,7 +2461,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ข้ารู้จักแก้วตั้งแต่เป็นคนบ้านนี้ ข้ายังไปไหว้ที่ศาลอยู่เลย หลังปีน้ำท่วมแก้วก็ไม่ได้กลับมาอีก"
         },
         {
           "scene": "C5",
@@ -2391,7 +2483,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ข้าเห็นมีด้ายดำมาอยู่ตรงเสาศาลตอนหลัง แต่ไม่ได้เดินอ้อมไปหลังศาลอีก ไม่เห็นป้ายชื่อสามคนนั้นกับตา"
         },
         {
           "scene": "C5",
@@ -2410,7 +2503,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เท่าที่ข้ารู้ แก้วลงไปช่วยเด็กคนเดียว"
         },
         {
           "scene": "C5",
@@ -2431,7 +2525,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เป็นสมุดสวดมนต์ส่วนตัวที่ยายใช้จดชื่อและเวลาคนมาถึงศูนย์อพยพ ไม่ใช่รายงานราชการเรื่องเปิดประตูน้ำ"
         },
         {
           "scene": "C5",
@@ -2450,7 +2545,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ขาไม่ไหวแล้ว เอ็งไปกันเถอะ ขอแค่ระวังตรงศาล"
         },
         {
           "scene": "C5",
@@ -2469,7 +2565,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C5",
@@ -2488,7 +2585,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ไปเถอะ ข้าไม่รั้งไว้หรอก แต่อย่าไปดึงด้ายดำที่ศาลสุ่มสี่สุ่มห้าล่ะ"
         },
         {
           "scene": "C5",
@@ -2507,7 +2605,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "C5",
@@ -2526,7 +2625,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ข้าไม่รู้วิธีแก้ของพวกนั้นหรอก รู้แค่ว่าด้ายดำเพิ่งมาปรากฏ ข้าถึงเตือนว่าอย่ารีบไปดึง"
         },
         {
           "scene": "C5",
@@ -2545,7 +2645,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ข้าไม่รู้ว่าใครยังอยู่ตรงไหนตอนนั้น ข้าจดได้แค่ว่าใครมาถึงศูนย์แล้ว ใครยังไม่มีชื่อในสมุด"
         }
       ],
       "actionGuidance": {
@@ -2591,7 +2692,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "พื้นดินมีรอยกดเป็นเส้นคู่ทอดไปตามทางในสวน"
         },
         {
           "scene": "D1",
@@ -2611,7 +2713,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เห็นแนวต้นกล้วย ทางดินชื้น และเส้นทางนำไปยังศาล; ใบกล้วยและเงาเปียกยังไม่ยืนยันว่าเป็นร่างผี"
         },
         {
           "scene": "D1",
@@ -2629,7 +2732,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ทางดินนำไปถึงศาลได้โดยไม่ต้องทอยตรวจเส้นทางหลัก"
         },
         {
           "scene": "D1",
@@ -2647,7 +2751,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -2692,7 +2797,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "บนป้ายผ้าสามชิ้นที่ศาลเขียนชื่อ “ดล”, “นิด” และ “เพิ่ม” ด้ายสีดำพันขึ้นไปบนยอดกล้วยจนมองตามต่อไม่เห็น"
         },
         {
           "scene": "D2",
@@ -2714,7 +2820,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D2",
@@ -2734,7 +2841,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ด้ายเลื้อยสูงขึ้นพันยอดกล้วยและเถาวัลย์จนมองตามไม่เห็นจากศาล จึงยังระบุตำแหน่งแกนพิธีไม่ได้"
         },
         {
           "scene": "D2",
@@ -2752,7 +2860,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ไม่ใช่หลักฐานว่าคนหายเสียชีวิต ป้ายแสดงการผูกชื่อเข้ากับพิธีและใช้ทำให้ชาวบ้านเข้าใจว่าผีเอาคนไป"
         },
         {
           "scene": "D2",
@@ -2772,7 +2881,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D2",
@@ -2793,7 +2903,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -2840,7 +2951,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ข้าเคยทำให้พวกเขากลัว แต่ข้าไม่ได้เอาคนไปขัง"
         },
         {
           "scene": "D3",
@@ -2863,7 +2975,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ตอนแรกข้าหวังให้คนเป็นหันมาถามเรื่องน้ำท่วม... แต่พอเห็นเขาหอบของหนีบ้าน ข้าก็รู้ว่าข้าถูกหลอกใช้"
         },
         {
           "scene": "D3",
@@ -2891,7 +3004,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "คนที่อยู่ข้างผู้ใหญ่... คนที่ข้าเคยช่ว— อึก!"
         },
         {
           "scene": "D3",
@@ -2917,7 +3031,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "อย่าเพิ่ง! ที่นี่เป็นปลายสาย รากอยู่ที่อื่น... อย่าตัดด้ายมั่ว ๆ แรงมันจะตีกลับ! ตามรอยคนเป็นไปหาของข้าให้เจอ"
         },
         {
           "scene": "D3",
@@ -2943,7 +3058,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ข้าได้ยินเสียงพวกเขา... แต่ชื่อที่ผูกอยู่ไม่ปล่อยง่าย ๆ"
         },
         {
           "scene": "D3",
@@ -2969,7 +3085,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ข้าจำเด็กที่เคยดึงขึ้นจากน้ำได้"
         },
         {
           "scene": "D3",
@@ -2991,7 +3108,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ข้าเคยหลอกหลอนให้พวกนั้นกลัว... แต่ข้าไม่เคยจับใครไปขังไว้ที่ไหน"
         },
         {
           "scene": "D3",
@@ -3013,7 +3131,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "รากของมันอยู่ที่อื่น... ข้ามองไม่เห็นว่าเขาเอาของข้าไปซ่อนไว้ตรงไหน ด้ายมันบดบังตาข้า"
         }
       ],
       "actionGuidance": {
@@ -3061,7 +3180,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เมื่อร่างเธอสลาย เสียงจากด้ายดำที่ศาลยังดังอยู่"
         },
         {
           "scene": "D4",
@@ -3081,7 +3201,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D4",
@@ -3099,7 +3220,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D4",
@@ -3119,7 +3241,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D4",
@@ -3139,7 +3262,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D4",
@@ -3160,7 +3284,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -3203,7 +3328,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "รอยล้อทอดจากหลังศาลลึกไปทางเรือนไม้ท้ายสวน ไม่ต้องถามแม่แก้วเพื่อรู้ทาง"
         },
         {
           "scene": "D5",
@@ -3223,7 +3349,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D5",
@@ -3245,7 +3372,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D5",
@@ -3263,7 +3391,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "D5",
@@ -3281,7 +3410,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -3331,7 +3461,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ขณะยังถูกผ้าปิดปาก ดลเคาะประตูและส่งเสียงอู้อี้จากห้องใต้ถุน; หลังทีมเปิดห้องและแก้ผ้าให้จริงจึงพูดขอความช่วยเหลือได้ ไม่เปล่งคำชัดจากหลังประตูทั้งที่ยังถูกปิดปาก"
         },
         {
           "scene": "E1",
@@ -3352,7 +3483,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เสียงเคาะและเสียงคนอู้อี้ดังจากหลังประตูใต้ถุน มีแสงเทียนจากชั้นบน แต่ยังไม่ยืนยันจำนวนคนจนเปิดตรวจจริง"
         },
         {
           "scene": "E1",
@@ -3373,7 +3505,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เห็นประตูใต้ถุนที่มีกระสอบกั้น กับบันไดขึ้นห้องชั้นบน ผู้เล่นเลือกไปทางใดก่อนก็ได้"
         },
         {
           "scene": "E1",
@@ -3392,7 +3525,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E1",
@@ -3411,7 +3545,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E1",
@@ -3430,7 +3565,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E1",
@@ -3451,7 +3587,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -3498,7 +3635,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "วิชัย... มันเป็นคนขังพวกเรา... ช่วยพาเราออกไปก่อน"
         },
         {
           "scene": "E2",
@@ -3522,7 +3660,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "นิดมีมือบาดเจ็บและหวาดกลัว; หลังแก้มัดแล้วเธอจับแขนคนช่วยหรือชี้ทางออกโดยไม่พูด ส่วนเพิ่มอ่อนแรงต้องมีคนพยุง/แบก. ด้ายดำเป็นพันธนาการต่างจากเชือกธรรมดา ผู้เล่นเลือกจะดูแล/คุ้มกันต่ออย่างไรได้"
         },
         {
           "scene": "E2",
@@ -3546,7 +3685,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เพิ่มหอบและยกมือสั่นชี้ไปทางบันไดชั้นบน ก่อนลดแขนลงอย่างหมดแรง เขายังไม่สามารถอธิบายสิ่งที่อยู่ข้างบน"
         },
         {
           "scene": "E2",
@@ -3567,7 +3707,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3588,7 +3729,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ดลพูดเป็นช่วงสั้น ๆ ได้เมื่อมีสติ นิดหวาดกลัวไม่พร้อมพูด เพิ่มอ่อนแรงมากจนใช้เพียงท่าทาง"
         },
         {
           "scene": "E2",
@@ -3609,7 +3751,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เพิ่มแทบพยุงตัวไม่ไหว แขนทั้งสองข้างตกอยู่ข้างลำตัว ดลมีรอยแผลที่ศีรษะ ส่วนนิดกุมมือที่บาดเจ็บไว้แน่นและสะดุ้งทุกครั้งที่ได้ยินเสียงจากชั้นบน"
         },
         {
           "scene": "E2",
@@ -3630,7 +3773,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3649,7 +3793,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3668,7 +3813,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3687,7 +3833,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3706,7 +3853,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3728,7 +3876,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3749,7 +3898,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3770,7 +3920,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E2",
@@ -3791,7 +3942,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -3837,7 +3989,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -3862,7 +4015,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -3887,7 +4041,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -3909,7 +4064,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -3932,7 +4088,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "เพิ่มพยายามยกมือชี้ไปทางชั้นบน แต่เขาอ่อนแรงจนพูดอธิบายไม่ได้"
         },
         {
           "scene": "E3",
@@ -3951,7 +4108,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -3972,7 +4130,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -3993,7 +4152,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -4014,7 +4174,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ดลพอพูดเป็นช่วงสั้น ๆ ได้ นิดยังไม่พร้อมเล่า ส่วนเพิ่มอ่อนแรงมาก ทั้งสามยังต้องได้รับการดูแล"
         },
         {
           "scene": "E3",
@@ -4033,7 +4194,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E3",
@@ -4052,7 +4214,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -4101,7 +4264,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4126,7 +4290,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4151,7 +4316,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4174,7 +4340,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4197,7 +4364,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4220,7 +4388,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4239,7 +4408,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4260,7 +4430,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4279,7 +4450,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4298,7 +4470,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E4",
@@ -4317,7 +4490,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -4369,7 +4543,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "หนี้มันไล่หลังผม... ผมคิดว่าทำให้คนกลัวแล้วรีบขายที่ได้ก็จบ"
         },
         {
           "scene": "E5",
@@ -4396,7 +4571,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ดลมันขุดเรื่องที่ดิน นิดมาตามดล แล้วเพิ่มก็ไล่ตามรอยขนของ... ผมไม่อยากให้พวกมันเปิดปาก"
         },
         {
           "scene": "E5",
@@ -4423,7 +4599,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ผมบอกว่าจะเปิดเรื่องน้ำท่วม... พอแก้วไม่ยอม ผมใช้กำไล"
         },
         {
           "scene": "E5",
@@ -4450,7 +4627,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ตำรานั่นผมได้มาอีกที... ไม่รู้ใครขาย!"
         },
         {
           "scene": "E5",
@@ -4477,7 +4655,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4503,7 +4682,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4522,7 +4702,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4546,7 +4727,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ผมคิดว่าพอได้เงินแล้วจะมีคนมาเจอพวกมันเอง..."
         },
         {
           "scene": "E5",
@@ -4570,7 +4752,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "ผมบอกเธอว่าจะเปิดแฟ้มปีสามสี่... แล้วมันก็เลยเถิด"
         },
         {
           "scene": "E5",
@@ -4591,7 +4774,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4610,7 +4794,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4629,7 +4814,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4650,7 +4836,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4669,7 +4856,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4688,7 +4876,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4707,7 +4896,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4726,7 +4916,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4745,7 +4936,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4764,7 +4956,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E5",
@@ -4785,7 +4978,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -4831,7 +5025,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4853,7 +5048,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4877,7 +5073,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4900,7 +5097,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4919,7 +5117,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4938,7 +5137,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4957,7 +5157,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -4980,7 +5181,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": "สมุดยายบันทึกผู้มาถึงศูนย์อพยพ ส่วนเอกสารเวรบันทึกการเปิดประตูน้ำ สองแหล่งต้องเทียบกันจริง และไม่มีแหล่งใดพิสูจน์ตำแหน่งผู้ที่ไม่มีชื่อในสมุดเอง"
         },
         {
           "scene": "H1",
@@ -5001,7 +5203,8 @@
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -5020,7 +5223,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "H1",
@@ -5039,7 +5243,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -5086,7 +5291,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5107,7 +5313,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5126,7 +5333,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5145,7 +5353,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5164,7 +5373,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5183,7 +5393,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5202,7 +5413,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         },
         {
           "scene": "E6",
@@ -5221,7 +5433,8 @@
           "audience": "dm_only",
           "stateMutationOnView": false,
           "requiresDmApprovalBeforeSend": true,
-          "status": "active"
+          "status": "active",
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -5266,7 +5479,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ด้าย... ยังรั้งข้าอยู่... ระวัง!"
         },
         {
           "scene": "F1",
@@ -5286,7 +5500,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F1",
@@ -5304,7 +5519,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F1",
@@ -5322,7 +5538,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F1",
@@ -5342,7 +5559,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "อย่าดึงมั่ว... มันยังรั้งข้าอยู่!"
         }
       ],
       "actionGuidance": {
@@ -5391,7 +5609,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F2",
@@ -5411,7 +5630,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F2",
@@ -5431,7 +5651,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F2",
@@ -5453,7 +5674,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F2",
@@ -5471,7 +5693,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F2",
@@ -5493,7 +5716,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F2",
@@ -5513,7 +5737,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -5560,7 +5785,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F3",
@@ -5580,7 +5806,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F3",
@@ -5600,7 +5827,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F3",
@@ -5618,7 +5846,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -5662,7 +5891,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F4",
@@ -5684,7 +5914,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F4",
@@ -5706,7 +5937,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F4",
@@ -5724,7 +5956,8 @@
           "delivery": "scene_narration",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F4",
@@ -5742,7 +5975,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F4",
@@ -5760,7 +5994,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -5808,7 +6043,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "หากพวกเอ็งกล้าเอาความจริงไปให้คนเป็นเห็น... ข้าก็จะยอมหยุด แต่ถ้าตระบัดสัตย์ ข้าจะกลับมาทวง"
         },
         {
           "scene": "F5",
@@ -5833,7 +6069,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ข้าต้องการทั้งหลักฐานและคนที่ยอมยืนรับผิด ไม่ใช่แค่คำว่าขอสัญญาอีกหน"
         },
         {
           "scene": "F5",
@@ -5858,7 +6095,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ช่วยด้วย! พวกคุณเป็นบริษัทรับจ้างไม่ใช่เหรอ! จะยืนดูมันฆ่าผมหรือไง! ช่วยผม!!"
         },
         {
           "scene": "F5",
@@ -5881,7 +6119,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ข้าเคยทำให้คนกลัว แล้วคิดว่าพวกเขาจะฟัง ข้าผิด... แต่ข้าไม่ได้เอาคนไปขัง"
         },
         {
           "scene": "F5",
@@ -5903,7 +6142,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "เอาความจริงไปให้คนเป็นเห็น และให้ผู้มีส่วนผิดยืนรับผิด ไม่ใช่แค่สัญญาว่าจะไม่ลืม"
         },
         {
           "scene": "F5",
@@ -5925,7 +6165,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "คำสัญญาข้าเคยฟังมาแล้ว เอาหลักฐานไปให้คนเป็นเห็น"
         },
         {
           "scene": "F5",
@@ -5943,7 +6184,8 @@
           "delivery": "evidence_readout",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": "ต้องแยกบันทึกที่ดิน สมุดดล คำให้การตัวประกัน และเอกสารที่ทีมเก็บจริง การมีหลักฐานไม่เท่ากับส่งต่อเจ้าหน้าที่หรือเปิดเผยแล้ว"
         },
         {
           "scene": "F5",
@@ -5965,7 +6207,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F5",
@@ -5985,7 +6228,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F5",
@@ -6003,7 +6247,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F5",
@@ -6023,7 +6268,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F5",
@@ -6043,7 +6289,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F5",
@@ -6061,7 +6308,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {
@@ -6108,7 +6356,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6131,7 +6380,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6153,7 +6403,8 @@
           "delivery": "npc_dialogue",
           "audience": "dm_review_before_player",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6171,7 +6422,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6195,7 +6447,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6213,7 +6466,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6235,7 +6489,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         },
         {
           "scene": "F6",
@@ -6253,7 +6508,8 @@
           "delivery": "dm_action_guidance",
           "audience": "dm_only",
           "stateMutationOnView": false,
-          "requiresDmApprovalBeforeSend": true
+          "requiresDmApprovalBeforeSend": true,
+          "playerAnswer": ""
         }
       ],
       "actionGuidance": {

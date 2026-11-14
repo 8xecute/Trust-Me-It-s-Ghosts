@@ -120,6 +120,10 @@
 .dm-reader .dm-qa-card[data-important="true"]>summary {background:linear-gradient(100deg,#342d20,#151d29 80%);}
 .dm-qa-priority {color:#e4cca0;line-height:1.7;}
 .dm-reader .dm-reader-important {padding:.85rem 1rem;border:1px solid #a98b52;border-inline-start:4px solid #d9b979;border-radius:9px;background:#25281f;}
+.dm-beginner-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:.75rem;}
+.dm-beginner-grid>div {padding:.8rem;border:1px solid var(--reader-line);border-radius:8px;background:#172b30;}
+.dm-beginner-grid h4 {margin:0 0 .5rem;color:#f0d398;}
+.dm-beginner-grid p {margin:0;line-height:1.85;}
 @media (max-width: 780px) {
   .dm-reader-menu { display: block; }
   .dm-reader-toolbar-actions button { padding: .4rem .55rem; min-height: 44px; }

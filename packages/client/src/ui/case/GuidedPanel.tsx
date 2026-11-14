@@ -14,7 +14,7 @@ export function GuidedPanel({view,scenes,events,npcDossiers,connected,action,isD
    {view.cue ? <p className="story-text">{view.cue}</p> : <p>รอผู้ดำเนินเรื่องเปิดบทให้ทีมสังเกต</p>}</>}
    {isDm && <>
      {events && <DmStoryEvents events={events} connected={connected} action={action}/>}
-     {dmNavigation && view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
+     {dmNavigation && view.scene==='B3' && <button disabled={!connected} onClick={()=>send('protect')}>{view.version==='5.5'?'DM อนุญาตให้ต้นเล่า':'ยืนยันจัดที่คุยส่วนตัวและคุ้มครองต้นแล้ว'}</button>}
      {scenes?.filter(scene=>scene.id===view.scene).map(scene=><section className="gm-current-scene" key={scene.id}>
        <h4>บทฉากปัจจุบัน · {scene.id}</h4>
        <p className="note">{scene.sent ? 'ส่งเปิดฉากแล้ว' : 'บทนี้ยังรอส่งให้ผู้เล่น'} · อ่านตามสถานการณ์และส่งจากหน้าดำเนินเกม</p>

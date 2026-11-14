@@ -15,6 +15,19 @@ import { CaseScene } from '../case/CaseScene';
 import { TurnConclusion, TurnEncounter } from '../combat/TurnEncounter';
 import {dmEventGroup,isSceneInteraction} from './dmEventGroups';
 
+function DmFreeNarration({enabled,action}:{enabled:boolean;action:(type:string,payload?:object,onSuccess?:()=>void)=>void}) {
+ const [role,setRole]=useState('dm');
+ return <details className="dm-quick-card"><summary>เล่า / ตอบนอกสคริปต์</summary>
+  <p className="note">บทในคู่มือเป็นแนวทาง DM ตัดสินและเล่าจากสิ่งที่ผู้เล่นทำได้ ข้อความนี้ไม่บันทึกหลักฐานหรือเปลี่ยนผลเกมอัตโนมัติ</p>
+  <form onSubmit={event=>{event.preventDefault();const form=event.currentTarget,data=new FormData(form);action('dmNarrate',{text:data.get('text'),...(role==='npc'?{speaker:data.get('speaker')}:{})},()=>form.reset());}}>
+   <label>ผู้เล่า<select value={role} onChange={event=>setRole(event.target.value)}><option value="dm">DM บรรยาย</option><option value="npc">NPC พูด</option></select></label>
+   {role==='npc' && <label>ชื่อ NPC<input name="speaker" required maxLength={64}/></label>}
+   <label>ข้อความให้ผู้เล่น<textarea name="text" required maxLength={1000} rows={5} placeholder="บรรยายผล หรือตอบคำถามที่ไม่มีในคลัง"/></label>
+   <button type="submit" disabled={!enabled}>ส่งบทให้ทีม</button>
+  </form>
+ </details>;
+}
+
 function DmSceneInteractions({panel,enabled,action,playerName}:{panel:CaseDmPanel;enabled:boolean;playerName:(id:string)=>string;action:(type:string,payload?:object)=>void}) {
  const [actor,setActor]=useState('');
  const investigators=panel.investigators.filter(entry=>entry.actions?.some(isSceneInteraction));
@@ -90,7 +103,7 @@ function GmGuide({chapters,current}:{chapters:GmChapter[];current:string}) {
 
 export function DmWorkspace({
   socket, room, world, investigators, preview, previewPlayer, setPreviewPlayer, dmPanel,
-  action, playerName, canStart, status, connected, limit, leaveRoom, leaving,
+  action, playerName, canStart, status, connected, limit, leaveRoom, leaving,saveWarning,
 }: {
   socket:Socket|null;
   room:Room;
@@ -104,6 +117,7 @@ export function DmWorkspace({
   playerName:(id:string)=>string;
   canStart:boolean;
   status:string;
+  saveWarning?:string;
   connected:boolean;
   limit:number;
   leaveRoom:()=>void;
@@ -201,6 +215,7 @@ export function DmWorkspace({
         <button type="submit" disabled={!available || !!battle}>เปลี่ยนฉากทั้งทีม</button>
         {!!battle && <p className="note">จบการเผชิญหน้าก่อนเปลี่ยนฉาก</p>}
       </form>}
+      {saveWarning && <p className="gm-alert" role="alert">{saveWarning}</p>}
       {world.paused && <p className="gm-alert" role="status">คดีพักอยู่ <button type="button" onClick={()=>setDmTab('team')}>ไปเปิดเล่นต่อ</button></p>}
       {dmTab==='dice' && world.latestRoll && <D20Card key={world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
       {!dmPanel && dmTab==='queue' && <p role="status">กำลังโหลดคิวและสถานะฉาก</p>}
@@ -287,13 +302,17 @@ export function DmWorkspace({
             {!nextCard && (sceneEvents.length>0 || guided?.scene==='B3') && <section className="dm-quick-card">
               <h4>ผลเหตุการณ์ในฉากนี้</h4>
               <p className="note">บันทึกเฉพาะเหตุที่เกิดขึ้นจริง ไม่ต้องกดยืนยันการสนทนาหรือการสำรวจทั่วไป</p>
-              {guided?.scene==='B3' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'protect'})}>ยืนยันว่าคุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
+              {guided?.scene==='B3' && <div className="button-row">
+               <button type="button" disabled={!available} onClick={()=>action('guided',{command:'protect'})}>{guided.version==='5.5'?'DM อนุญาตให้ต้นเล่าตามการกระทำของผู้เล่น':'ยืนยันว่าคุยส่วนตัวและคุ้มครองต้นแล้ว'}</button>
+               {guided.version==='5.5' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'ton-withhold'})}>DM ให้ต้นยังไม่เปิดเผยข้อมูลลึก</button>}
+              </div>}
               <DmStoryEvents events={sceneEvents} connected={available} action={action} expanded/>
             </section>}
             {!nextCard && <DmSceneInteractions panel={dmPanel} enabled={available} action={action} playerName={playerName}/>}
             {!nextCard && evidenceEvents.length>0 && <section className="dm-quick-card"><h4>เอกสารและหลักฐาน</h4><p className="note">อ่าน เก็บ และส่งมอบเป็นคนละเหตุ บันทึกตามสิ่งที่ทีมทำจริง</p><DmStoryEvents events={evidenceEvents} connected={available} action={action} expanded/></section>}
         </div>
         <aside className="dm-live-side" aria-label="เครื่องมือประจำฉาก">
+          <DmFreeNarration enabled={available && !world.case001.report} action={action}/>
           <DmAdjudication panel={dmPanel} enabled={available} action={action} playerName={playerName} onPrepared={()=>setDmTab('dice')}/>
           {!!guided?.escorting && <button type="button" disabled={!available || !!battle} onClick={()=>action('guided',{command:'evacuate'})}>บันทึกว่าพาผู้สูญหายถึงจุดปลอดภัยแล้ว · {guided.escorting} คน</button>}
           {!!guided?.disclosureOptions?.length && <form className="dm-quick-card" onSubmit={event=>{
