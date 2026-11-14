@@ -33,7 +33,7 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
  const items=[...scenes,...endings];
  const scene=scenes.find(item=>item.id===id);
  const sceneAnswers=(reader.qa ?? []).filter(q=>q.scene===id && q.kind==='npc');
- const openingDialogue=scene?.dialogue.filter(line=>!sceneAnswers.some(q=>
+ const openingDialogue=scene?.dialogue.filter(line=>line.label!=='คำตอบตามเงื่อนไข' && !sceneAnswers.some(q=>
   q.speaker===line.speaker && dialogueKey(q.answer)===dialogueKey(line.text))) ?? [];
  const ending=id.startsWith('ENDING ') ? reader.endings[id.slice(-1)] : undefined;
  const check=scene && reader.checks.find(item=>item.scene_id===scene.id);

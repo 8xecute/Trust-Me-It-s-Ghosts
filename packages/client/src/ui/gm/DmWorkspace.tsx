@@ -1,4 +1,5 @@
 import './DmWorkspace.css';
+import {DmStuckHelp} from './DmStuckHelp';
 import { CaseNavIcon } from '../case/CaseNavIcon';
 import { CaseStoryThread } from '../case/CaseStoryThread';
 import { DmStoryReader } from './DmStoryReader';
@@ -123,7 +124,7 @@ export function DmWorkspace({
   leaveRoom:()=>void;
   leaving:boolean;
 }) {
-  const [selectedTab,setDmTab]=useState<'guide'|'queue'|'dice'|'team'|'npcs'|'backup'|'history'|'scene'>();
+  const [selectedTab,setDmTab]=useState<'guide'|'queue'|'dice'|'team'|'npcs'|'history'|'scene'>();
   const dmTab=selectedTab ?? 'queue';
   useEffect(()=>{if(world?.paused)setDmTab('team');},[world?.paused]);
   const nextStep=useRef<HTMLElement>(null);
@@ -195,7 +196,7 @@ export function DmWorkspace({
       </div>
       <nav className="dm-case-tabs case-main-navigation" aria-label="หน้าหลัก DM">
         <button type="button" aria-pressed={dmTab==='queue' || handlingRoll} onClick={()=>setDmTab('queue')}><CaseNavIcon name="play"/><span>{turnEncounter?'เผชิญหน้า':'ดำเนินเกม'}</span>{queue.length ? ' · '+queue.length : ''}</button>
-        <button type="button" aria-pressed={['guide','npcs','backup','history'].includes(dmTab)} onClick={()=>setDmTab('guide')}><CaseNavIcon name="journal"/><span>คู่มือฉาก</span></button>
+        <button type="button" aria-pressed={['guide','npcs','history'].includes(dmTab)} onClick={()=>setDmTab('guide')}><CaseNavIcon name="journal"/><span>คู่มือฉาก</span></button>
         <button type="button" aria-pressed={dmTab==='team'} onClick={()=>setDmTab('team')}><CaseNavIcon name="room"/><span>จัดการห้อง</span></button>
         <button type="button" aria-pressed={dmTab==='scene'} onClick={()=>setDmTab('scene')}><CaseNavIcon name="play"/><span>จัดฉาก</span></button>
       </nav>
@@ -204,8 +205,8 @@ export function DmWorkspace({
         <button type="button" onClick={()=>setDmTab('guide')}><CaseNavIcon name="questions"/>คลังคำตอบ</button>
         <button type="button" aria-pressed={dmTab==='dice'} onClick={()=>setDmTab('dice')}><CaseNavIcon name="dice"/>D20{pendingDice.length>0?' · '+pendingDice.length:''}</button>
       </div>}
-      {['guide','npcs','backup','history'].includes(dmTab) && <div className="dm-case-secondary" aria-label="เอกสารอ้างอิง DM">
-        {(['guide','npcs','backup','history'] as const).map((tab,index)=><button key={tab} type="button" aria-pressed={dmTab===tab} onClick={()=>setDmTab(tab)}>{['สารบัญฉาก','แฟ้ม NPC','ทางสำรอง','บันทึก'][index]}</button>)}
+      {['guide','npcs','history'].includes(dmTab) && <div className="dm-case-secondary" aria-label="เอกสารอ้างอิง DM">
+        {(['guide','npcs','history'] as const).map((tab,index)=><button key={tab} type="button" aria-pressed={dmTab===tab} onClick={()=>setDmTab(tab)}>{['สารบัญฉาก','แฟ้ม NPC','บันทึก'][index]}</button>)}
       </div>}
       {guided?.version==='5.5' && <form onSubmit={event=>{event.preventDefault();const id=new FormData(event.currentTarget).get('scene');if(typeof id==='string' && id)openScene(id);}}>
         <label>DM เลือกเปลี่ยนฉาก <select name="scene" defaultValue="" disabled={!available || !!battle} required>
@@ -236,19 +237,6 @@ export function DmWorkspace({
         {!dmPanel.storyReader && dmPanel.investigators[0]?.secret && <details className="dm-private">
           <summary>ข้อมูลลับของฉากปัจจุบัน</summary><p>{dmPanel.investigators[0].secret}</p>
         </details>}
-      </section>
-      <section hidden={dmTab!=='backup'} className="gm-pane gm-backup" aria-label="แผนสำรองสำหรับ DM">
-       {dmPanel.backup ? <>
-        <h3>ทีมติดขัด · บท {dmPanel.backup.phase} / ฉาก {dmPanel.backup.scene}</h3>
-        <p className="note">เฉพาะ DM · ใช้ตามสิ่งที่เกิดขึ้นจริง ตรวจเงื่อนไขและผู้ที่อยู่ในฉากก่อนเล่า คำแนะนำไม่ส่งให้ผู้เล่นอัตโนมัติ</p>
-        {!dmPanel.backup.opened && <p className="gm-alert">บทเปิดฉากยังไม่ได้ส่ง ให้เปิดคิวและส่งก่อนใช้คำใบ้</p>}
-        {dmPanel.backup.battle && <section><h4>ระหว่างเผชิญหน้า</h4><p>ให้ทีมตรวจพื้นที่อันตราย จุดอาคม และตัวเลือกเจรจาหรือถอยตามสถานการณ์ การถอยใช้คำสั่งในเทิร์นของผู้เล่น</p><p>การเปลี่ยนบทยังทำไม่ได้จนกว่าการเผชิญหน้าจะจบ</p></section>}
-        <section><h4>สิ่งที่ส่งให้ทั้งทีมล่าสุด</h4>{dmPanel.backup.delivered.length ? <ol>{dmPanel.backup.delivered.map(item=><li key={item.sequence}>{item.text}</li>)}</ol> : <p>ยังไม่มีบทที่ส่งให้ทั้งทีม</p>}<p className="note">เป็นประวัติล่าสุด ไม่ใช่รายการความรู้ทั้งหมดของทีม</p></section>
-        <section><h4>คำใบ้แบบค่อยเป็นค่อยไป</h4><p className="note">เลือกให้เหมาะกับฉากและสิ่งที่ทีมพบแล้ว อย่าเล่าข้อมูลที่ยังไม่ควรรู้</p><ol>{dmPanel.backup.hints.map((hint,i)=><li key={i}>{hint}</li>)}</ol></section>
-        <details><summary>พลาดเบาะแสหรือทอยไม่ผ่าน</summary><p className="note">ข้อมูลเตรียมบทเฉพาะ DM: ใช้แหล่งสำรองเมื่อทีมไปถึงและเข้าเงื่อนไขจริง</p><ul>{dmPanel.backup.alternatives.map((item,i)=><li key={i}>{item}</li>)}</ul></details>
-        <section><h4>ทางไปต่อ</h4><p>{dmPanel.backup.exit}</p>{dmPanel.backup.blockers.length ? <ul>{dmPanel.backup.blockers.map(item=><li key={item}>{item}</li>)}</ul> : <p>ส่งสรุปและขอยืนยันจากหน้าดำเนินเกม</p>}<button type="button" onClick={()=>setDmTab('queue')}>กลับไปดำเนินเกม</button>{!dmPanel.backup.opened && <button type="button" onClick={()=>setDmTab('queue')}>ไปคิวบท</button>}</section>
-        <details><summary>เมื่อทีมอยากพักหรือปิดคดี</summary><p>ใช้ปุ่มพักคดีหรือถอนทีมในหน้าจัดการห้อง ปุ่มพักจะหยุดการกระทำของทุกคนและเปิดเล่นต่อได้ ตกลงพักกับทีมได้ และให้สมาชิกกลับเข้าห้องเดิมเมื่อพร้อมตามการตั้งค่าบันทึกของเซิร์ฟเวอร์ ออกชั่วคราวแล้วกลับด้วยปุ่มเล่นต่อหรือรหัสส่วนตัวได้</p><p>DM ถอนทีมได้ทุกบท และระบบใช้ผลที่เกิดขึ้นจริง การปิดคดีแล้วกลับมาสืบต่อไม่ได้</p></details>
-       </> : <p>แผนสำรองนี้ใช้กับคดีแบบนำทางที่กำลังเล่น</p>}
       </section>
 
       {dmPanel?.encounterStart && <section className="game-panel" aria-label="เริ่มการเผชิญหน้าโดย DM"><h3>พร้อมเปิดฉากต่อสู้</h3><p>เริ่มเมื่อทีมพร้อม แล้วส่งบทเปิดให้ผู้เล่นก่อนรอบแรก</p><button type="button" disabled={!connected || !!world?.paused} onClick={()=>action('dmStartEncounter')}>{dmPanel.encounterStart.label}</button></section>}
@@ -283,6 +271,7 @@ export function DmWorkspace({
             <p>{progression?.reason ?? 'รอการกระทำหรือคำถามจากทีม'}</p>
            </>}
         </section>
+        {!world.case001.report && <DmStuckHelp backup={dmPanel.backup} onReadGuide={()=>setDmTab('guide')}/>}
         {canChooseBeat && <label className="dm-beat-picker">เลือกบทที่จะส่ง <select value={visibleBeat?.id} onChange={event=>setSelectedBeat(event.target.value)}>
           {queue.map(card=><option key={card.id} value={card.id}>{card.answer?.label ?? card.text.slice(0,75)}</option>)}
         </select></label>}

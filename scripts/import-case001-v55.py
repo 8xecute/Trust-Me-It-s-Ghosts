@@ -97,3 +97,24 @@ write('overrides.json',json.loads(next(SOURCE.glob('*Presentation_Overrides.json
 (DEST/'case-001.v5.5.script.md').write_bytes(script_path.read_bytes())
 write('manifest.json',dict(version='5.5',sceneCount=31,checkCount=17,qaCount=sum(len(s['questions']) for s in qa['scenes']),
                           sha256=hashlib.sha256(script_path.read_bytes()).hexdigest()))
+
+# Apply user-approved spoiler corrections after importing the unchanged source.
+# Keep original card blocks, IDs, guards and DCs intact.
+fixes = json.loads((DEST / 'case-001.v5.5.spoiler-fixes.json').read_text(encoding='utf8'))
+for act in 'ABCDEF':
+    path = DEST / ('case-001.v5.5.' + act + '.json')
+    imported = json.loads(path.read_text(encoding='utf8'))
+    for sid, scene in imported.items():
+        scene.update(fixes['scenes'].get(sid, {}))
+        scene['questions'] = [fixes['questionLabels'].get(label, label) for label in scene['questions']]
+        for line in scene['dialogue']:
+            if line['id'] in fixes['dialogueLabels']:
+                line['label'] = fixes['dialogueLabels'][line['id']]
+    write(act + '.json', imported)
+for scene in qa['scenes']:
+    for question in scene['questions']:
+        correction = fixes['questions'].get(question['id'], {})
+        if 'question' in correction and correction['question'] != question['question'] and question['question'] not in question['aliases']:
+            question['aliases'].append(question['question'])
+        question.update(correction)
+write('qa.json', qa)

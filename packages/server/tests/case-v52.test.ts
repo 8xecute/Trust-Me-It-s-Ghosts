@@ -891,3 +891,21 @@ test('v5.5 DM starts D4 and is blocked by a pending roll',()=>{
  assert.equal(r.view().caseMap!.battle!.turnEncounter!.ready,false);
  r.publish('guided-cue:D4');assert.equal(r.view().caseMap!.battle!.turnEncounter!.ready,true);
 });
+
+
+test('v5.5 early questions and B4 public opening do not reveal later identities or unexamined documents',()=>{
+ const r=room(20,false,'5.5'),reader=r.panel().storyReader!;
+ const questions=reader.qa!;
+ for(const id of ['A2_Q004','B2_Q005'])assert.doesNotMatch(questions.find(q=>q.id===id)!.question,/แม่แก้ว/);
+ for(const id of ['C5_Q014','D2_Q005'])assert.doesNotMatch(questions.find(q=>q.id===id)!.question,/กำไล/);
+ assert.doesNotMatch(questions.find(q=>q.id==='D2_Q004')!.answer,/ทำให้ชาวบ้าน|หลอก/);
+ assert.doesNotMatch(questions.find(q=>q.id==='D5_Q001')!.answer,/แม่แก้ว|ไม่ต้องถาม/);
+ r.scene('B4');
+ assert.doesNotMatch(r.view().guided!.cue!,/หยดน้ำ|บันทึกเวร|สำเนา/);
+ assert.ok(!r.state().v51!.floodSources53?.archive);
+ const b4=r.panel().storyReader!.scenes.find(scene=>scene.id==='B4')!;
+ assert.match(b4.clues!,/เมื่อผู้เล่นยกหรือตรวจกรอบจริงเท่านั้น/);
+ assert.match(b4.clues!,/บันทึกเวร/);
+ r.event('read-gate:B4');assert.equal(r.state().v51!.floodSources53?.archive,true);
+ assert.equal(questions.length,262);assert.equal(reader.checks.length,17);
+});

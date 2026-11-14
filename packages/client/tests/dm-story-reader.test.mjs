@@ -107,3 +107,12 @@ test('missing authored player text never presents private guidance as NPC dialog
  assert.doesNotMatch(html,/<blockquote class="dm-qa-answer">/);
  assert.match(html,/<textarea[^>]*><\/textarea>/);
 });
+
+
+test('conditional responses are not shown as opening dialogue',()=>{
+ const bundle=buildSync({entryPoints:[fileURLToPath(new URL('../src/ui/gm/DmStoryReader.tsx',import.meta.url))],bundle:true,write:false,format:'cjs',platform:'node',packages:'external',loader:{'.css':'empty'}});
+ const module={exports:{}};new Function('require','module','exports',bundle.outputFiles[0].text)(createRequire(import.meta.url),module,module.exports);
+ const reader={scenes:[{id:'B2',title:'วิชัย',phase:'B',brief:['สอบถาม','ไปต่อ'],dialogue:[{id:'conditional',speaker:'วิชัย',label:'คำตอบตามเงื่อนไข',text:'เรื่องรอดน้ำท่วมที่ห้ามเกริ่นเอง'}]}],endings:{},checks:[],observed:[],presented:[],qa:[]};
+ const html=renderToStaticMarkup(createElement(module.exports.DmStoryReader,{reader,view:{scene:'B2'},connected:true,action:()=>{}}));
+ assert.doesNotMatch(html,/เรื่องรอดน้ำท่วมที่ห้ามเกริ่นเอง|บทพูดเปิดและปฏิกิริยา/);
+});
