@@ -341,7 +341,7 @@ export function dmOptions51(s:CaseState) {
  if(g.version==='5.5' && ['E2','E3'].includes(g.scene) && s.opened && alive51(s,'ดล') && !v.dolUngagged55)
   add('ungag-dol','ยืนยันทีมแก้ผ้าปากและดลมีสติพอให้คำตอบแล้ว');
 
- if(g.phase==='A' && !v.lethal) add('enable-lethal','ตั้งค่าคดี: อนุญาตเหตุถึงตายตามบทและเตรียมแจ้งทีม',lethalAnnouncement51(s));
+ if(g.version!=='5.5' && g.phase==='A' && !v.lethal) add('enable-lethal','ตั้งค่าคดี: อนุญาตเหตุถึงตายตามบทและเตรียมแจ้งทีม',lethalAnnouncement51(s));
  if(g.scene==='D4' && v.KAEW_TRUST!=='low')add('unnecessary-attack','ยืนยันทีมโจมตีแม่แก้วโดยไม่จำเป็นจริงแล้ว');
  if(g.presented.includes(g.scene)) for(const line of dialogue51(s,true)) if(!v.contextConfirmed.includes(line.id) && !automaticLine51(line)) add('context:'+line.id,line.speaker+' · '+(readerLabel(line.label).replace(/^บทหลัก$/,'บทพูดตามสถานการณ์') || 'บทพูดตามสถานการณ์'),line.text);
  if(g.scene==='E4' && g.presented.includes('E4') && (!noTimer(s) || v.bagSearched)) {
@@ -416,17 +416,17 @@ export function dmOptions51(s:CaseState) {
  }
  if(v.RITUAL_STATUS==='stopped' && (!v.KAEW_TEMP_DISPERSED || kaewVoice53(s)) && v.humanCaseSupported===true && v.disclosurePlan===true && hasFact(s,'gate-truth') && v.KAEW_FINAL!=='calm')add('voluntary-calm','ยืนยันแม่แก้วเลือกยุติภัยเองจากการกระทำจริงแล้ว ไม่ต้องทอย');
  if(g.scene==='F5' && v.RITUAL_STATUS==='stopped' && !v.KAEW_TEMP_DISPERSED && v.KAEW_FINAL!=='hostile')add('kaew-hostile','ยืนยันแม่แก้วเลือกใช้ความรุนแรงและยังเป็นภัยจริงหลังเป็นอิสระ');
- if(noTimer(s) && v.lethal && g.scene==='E5' && g.presented.includes('E5') && wichaiHere51(s) && !v.e5Threat) {
+ if(noTimer(s) && (g.version==='5.5' || v.lethal) && g.scene==='E5' && g.presented.includes('E5') && wichaiHere51(s) && !v.e5Threat) {
   add('e5-threat','ยืนยันทีมโจมตีทันทีและวิชัยพยายามคว้าคนในระยะจริง');
  }
- if(noTimer(s) && v.lethal && g.scene==='F5' && g.presented.includes('F5') && !v.KAEW_TEMP_DISPERSED && v.KAEW_FINAL!=='calm' && wichaiHere51(s,true) && !v.f5Question) {
+ if(noTimer(s) && (g.version==='5.5' || v.lethal) && g.scene==='F5' && g.presented.includes('F5') && !v.KAEW_TEMP_DISPERSED && v.KAEW_FINAL!=='calm' && wichaiHere51(s,true) && !v.f5Question) {
   add('f5-question','ให้แม่แก้วถามทีมว่าจะเปิดหลักฐานและให้ใครรับผิด');
  }
- if(v.lethal && !v.pending && g.scene==='E5' && wichaiHere51(s) && g.presented.includes('E5')) {
+ if((g.version==='5.5' || v.lethal) && !v.pending && g.scene==='E5' && wichaiHere51(s) && g.presented.includes('E5')) {
   for(const n of hostageNames)if((noTimer(s)?hostageReachable52(s,n) && (v.e5Threat || (s.storyChecks?.E5_WICHAI_NEGOTIATE?.at(-1)?.total ?? Infinity)<=10):s.opened && alive51(s,n) && !s.evacuated.includes(n)))add('shield:'+n,'วิชัยใช้มีดและคว้า'+n+'ไว้ได้หลังทีมมีโอกาสขัดขวาง');
  }
  if(!v.pending && g.scene==='E5' && wichaiHere51(s))add('wichai-escaped','ยืนยันวิชัยหนีสำเร็จตามเส้นทางและโอกาสไล่ตามจริงแล้ว');
- if(v.lethal && !v.pending && g.scene==='F5' && v.RITUAL_STATUS==='stopped' && !v.KAEW_TEMP_DISPERSED && v.KAEW_FINAL!=='calm' && wichaiHere51(s,true) && (v.humanCaseSupported===false || v.disclosurePlan===false) && (!noTimer(s) || v.f5Question==='delivered'))add('attempt','แม่แก้วเข้าถึงวิชัยแล้ว ให้ทีมรับมือก่อนเธอลงมือ');
+ if((g.version==='5.5' || v.lethal) && !v.pending && g.scene==='F5' && v.RITUAL_STATUS==='stopped' && !v.KAEW_TEMP_DISPERSED && v.KAEW_FINAL!=='calm' && wichaiHere51(s,true) && (v.humanCaseSupported===false || v.disclosurePlan===false) && (!noTimer(s) || v.f5Question==='delivered'))add('attempt','แม่แก้วเข้าถึงวิชัยแล้ว ให้ทีมรับมือก่อนเธอลงมือ');
  if(v.pending) {
   if(v.pending.announced) {
    add('prevented','ยืนยันทีมขัดขวาง/ช่วยออกสำเร็จตามกติกาจริง ยุติเหตุคุกคาม');

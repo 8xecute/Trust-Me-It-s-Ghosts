@@ -14,32 +14,32 @@ import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
 import { CaseScene } from '../case/CaseScene';
 import { TurnConclusion, TurnEncounter } from '../combat/TurnEncounter';
 
-function DmAdjudication({panel,enabled,action,playerName,onPrepared,checksOnly=false}:{
- panel:CaseDmPanel;enabled:boolean;playerName:(id:string)=>string;checksOnly?:boolean;onPrepared?:()=>void;
+function DmAdjudication({panel,enabled,action,playerName,onPrepared}:{
+ panel:CaseDmPanel;enabled:boolean;playerName:(id:string)=>string;onPrepared?:()=>void;
  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
 }) {
  const [actor,setActor]=useState('');
  const [selected,setSelected]=useState('');
- const investigators=panel.investigators.filter(entry=>entry.actions?.some(option=>!checksOnly || option.check));
+ const investigators=panel.investigators.filter(entry=>entry.actions?.some(option=>option.check));
  const investigator=investigators.find(entry=>entry.id===actor) ?? investigators[0];
- const options=investigator?.actions?.filter(option=>!checksOnly || option.check) ?? [];
+ const options=investigator?.actions?.filter(option=>option.check) ?? [];
  const choice=options.find(option=>option.id===selected);
- return <section className="dm-quick-card" aria-label="DM ตัดสินการกระทำ">
-  <h4>{checksOnly?'เลือกการทอยที่ฉากรองรับ':'ผู้เล่นบอกว่าอยากทำอะไร?'}</h4>
-  <p className="note">ฟังคำถามหรือวิธีลงมือก่อน ถ้าได้ข้อมูลแน่นอน ให้ตอบได้เลย ไม่ต้องทอย</p>
+ return <section className="dm-quick-card" aria-label="ส่งการ์ดทอยให้ผู้เล่น">
+  <h4>ส่งการ์ดทอยให้ผู้เล่น</h4>
+  <p className="note">เลือกผู้ทอยและการ์ดให้ตรงกับสิ่งที่ผู้เล่นลงมือ ส่วนการสำรวจทั่วไป DM บรรยายได้เลย ไม่ต้องกดยืนยัน</p>
   {investigator ? <form onSubmit={event=>{
-   event.preventDefault();if(!choice)return;
+   event.preventDefault();if(!enabled || !choice?.check || investigator.check || investigator.diceRequest?.die===null)return;
    action('caseDm',{targetId:investigator.id,actionId:choice.id},()=>{setSelected('');if(choice.check)onPrepared?.();});
   }}>
-   <label>ผู้ลงมือ <select value={investigator.id} onChange={event=>{setActor(event.target.value);setSelected('');}}>
+   <label>ผู้ทอย <select value={investigator.id} onChange={event=>{setActor(event.target.value);setSelected('');}}>
     {investigators.map(entry=><option key={entry.id} value={entry.id}>{playerName(entry.id)}</option>)}
    </select></label>
-   <label>ผลหรือการทอยที่ใช้ได้ในฉากนี้ <select value={choice?.id ?? ''} onChange={event=>setSelected(event.target.value)}>
-    <option value="">เลือกให้ตรงกับสิ่งที่ผู้เล่นประกาศ</option>
-    {options.map(option=><option key={option.id} value={option.id}>{option.label}{option.check?' · ต้องทอย':''}</option>)}
+   <label>การ์ดทอย <select value={choice?.id ?? ''} onChange={event=>setSelected(event.target.value)}>
+    <option value="">เลือกการ์ดทอยที่ฉากรองรับ</option>
+    {options.map(option=><option key={option.id} value={option.id}>{option.label}</option>)}
    </select></label>
-   <button type="submit" disabled={!enabled || !choice || !!investigator.check || investigator.diceRequest?.die===null}>{choice?.check?'เตรียมการ์ดทอยให้ผู้เล่น':'ยืนยันทำการกระทำนี้'}</button>
-  </form> : <p>ตอนนี้ไม่มี{checksOnly?'จุดทอย':'การกระทำที่ต้องบันทึก'}ที่ผ่านเงื่อนไขของฉาก คุยและเล่าผลได้ตามสถานการณ์</p>}
+   <button type="submit" disabled={!enabled || !choice || !!investigator.check || investigator.diceRequest?.die===null}>ส่งการ์ดให้ผู้เล่น</button>
+  </form> : <p>ตอนนี้ไม่มีการ์ดทอยที่ผ่านเงื่อนไขของฉาก DM สนทนาและบรรยายต่อได้ตามสถานการณ์</p>}
  </section>;
 }
 
@@ -312,7 +312,7 @@ export function DmWorkspace({
         {queue.filter(card=>card.answer).map(card=><DmOutcomeCard key={card.id} id={card.id} answer={card.answer!} current={!!card.current} connected={connected} action={action} playerName={playerName}/>)}
         {!queue.some(card=>card.answer) && <p className="note">เมื่อจุดทอยตามสคริปต์จบ บทตอบตามคะแนนจะปรากฏที่นี่ การทอยที่ DM กำหนดเองให้เลือกบทตอบจากคู่มือฉาก</p>}
         <h3>การ์ดทอย D20 รายคน</h3>
-        {dmPanel && ['5.2','5.3','5.5'].includes(guided?.version ?? '') && <DmAdjudication panel={dmPanel} enabled={available} action={action} playerName={playerName} checksOnly/>}
+        {dmPanel && ['5.2','5.3','5.5'].includes(guided?.version ?? '') && <DmAdjudication panel={dmPanel} enabled={available} action={action} playerName={playerName}/>}
         <p className="note">ส่งให้ผู้เล่นที่เลือก ผู้เล่นกดทอยเองและระบบบันทึกผลให้</p>
         {!!dmPanel?.diceGuide?.length && <details><summary>เงื่อนไขจุดทอย CASE 001</summary>
           {dmPanel.diceGuide.map(check=><details key={check.id}><summary>{check.scene_id} · {check.title} · {check.stat} DC {check.dc}</summary>
@@ -389,7 +389,7 @@ export function DmWorkspace({
         </div>
         <details><summary>รายชื่อทีม · {investigators.length} คน</summary><ul>{investigators.map(player=><li key={player.id}>{playerName(player.id)} · {player.connected===false?'ยังไม่กลับเข้าห้อง':'อยู่ในห้อง'}</li>)}</ul></details>
     {dmTab==='team' && world?.case001 && !world.case001.report && <section className="session-tools" aria-label="จัดการคดี">
-     {lethalSetting && <section className="dm-quick-card">
+     {guided?.version!=='5.5' && lethalSetting && <section className="dm-quick-card">
       <h4>ตั้งค่าความเสี่ยงของคดี · ไม่ใช่ผลการกระทำ</h4>
       <p>เปิดใช้เหตุถึงตายตามบท และเตรียมข้อความแจ้งทีม ไม่ทำให้ตัวละครเสียชีวิตทันที ไม่มีการตายจากเวลาที่ผ่านไป</p>
       <button type="button" disabled={!available} onClick={()=>action('guided',{command:'v51:enable-lethal'})}>เปิดใช้เหตุถึงตายตามบทและเตรียมแจ้งทีม</button>
