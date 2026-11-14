@@ -18,3 +18,9 @@ export * from './combatLite.js';
 export const BASIC_RULES_MODE = true;
 
 export * from './caseNpcs.js';
+
+export {turnSkills} from './turnSkills.js';
+
+export {powerAttacks} from './powerAttacks.js';
+
+export {characterMaxHp,STARTING_CHARACTER_HP} from './character.js';

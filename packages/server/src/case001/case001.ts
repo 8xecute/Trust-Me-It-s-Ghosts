@@ -454,7 +454,7 @@ export function applyCaseAction(current:CaseState, id:unknown, rollD20:()=>numbe
   case 'bribe': addFact(s,'bribe-accepted');break;
   case 'record-truth': addFact(s,'truth-recorded');break;
   case 'hint': {
-   if(actor?.character.profession!=='paranormal_investigator' || actor.backgroundUsed) throw Error('เฉพาะนักสืบเหนือธรรมชาติ');
+   if(actor?.character.profession!=='paranormal_investigator' || actor.backgroundUsed) throw Error('เฉพาะนักสืบ');
    const hint=caseOptions(s).find(entry=>entry.id.startsWith('clue:') && entry.id!=='clue:E08');
    if(!hint) throw Error('ยังไม่มีร่องรอยที่สังเกตได้');
    s.notice=hint.label; actor.onBoost(); break;

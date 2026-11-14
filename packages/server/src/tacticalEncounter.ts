@@ -1,4 +1,4 @@
-import { characterAttribute, liteAttack, liteDefense } from '@baan/shared';
+import { characterMaxHp, characterAttribute, liteAttack, liteDefense, type LiteDefense, type LiteStats } from '@baan/shared';
 import {
   ghostDecision, ghostMovementBudget, manifestationDamage, professionTechniques, resolveCheck, spendAction, startTurn,
   type Attribute, type GhostGrid,
@@ -47,8 +47,8 @@ const distance = (a: Cell, b: Cell) => Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 const same = (a: Cell, b: Cell) => distance(a,b)===0;
 const reject = (message='เป้าหมายหรือจังหวะไม่ถูกต้อง'): never => { throw Error(message); };
 
-function check(w: World, actor: string, stat: Attribute, roll: () => number, boost?: 'focus', dc=12) {
-  const result = resolveCheck({dc, attribute:characterAttribute(w.characters![actor],stat), boost},roll);
+function check(w: World, actor: string, stat: Attribute, roll: () => number, boost?: 'focus', dc=12, bonus=0) {
+  const result = resolveCheck({dc, attribute:characterAttribute(w.characters![actor],stat), boost,equipment:bonus},roll);
   w.lastCheck = {playerId:actor, ...result};
   return result.outcome==='success';
 }
@@ -201,8 +201,8 @@ export function applyTechnique(
       break;
     case 'field_first_aid': {
       const target=nearby(1,true);
-      if(target.hp===0 || target.hp===10) return reject();
-      once('heal:'+targetId); target.hp=Math.min(10,target.hp+3); break;
+      if(target.hp===0 || target.hp>=characterMaxHp(target)) return reject();
+      once('heal:'+targetId); target.hp=Math.min(characterMaxHp(target),target.hp+3); break;
     }
     case 'composure_kit': {
       const target=nearby(1);
@@ -348,32 +348,32 @@ export function advanceTactics(w: World, grid: GhostGrid, roll: () => number, re
   if(resetTurns) for(const id of Object.keys(w.turns)) w.turns[id]=(w.characters?.[id]?.hp ?? 0)>0 ? startTurn() : {ap:0,focused:false};
 }
 
-export function stabilize(w: World, actor: string, input: unknown, roll: () => number, checkDistance=true) {
+export function stabilize(w: World, actor: string, input: unknown, roll: () => number, checkDistance=true, bonus=0) {
   const t=w.tactics, e=w.encounter, character=w.characters?.[actor];
   if(!t || e?.phase!=='player' || !character?.hp || typeof input!=='string' || input===actor ||
     !w.players[input] || w.characters?.[input]?.hp!==0 || (checkDistance && distance(w.players[actor],w.players[input])!==1) ||
     t.used.includes('stabilized:'+input)) return reject();
   const paid=spendAction(w.turns[actor],character.focus,{ap:2,focus:0}) ?? reject('AP ไม่พอ');
-  if((!w.basicMode && character.profession==='field_medic') || check(w,actor,'knowledge',roll,undefined,8)) {
+  if((!w.basicMode && character.profession==='field_medic') || check(w,actor,'knowledge',roll,undefined,8,bonus)) {
     w.characters![input].hp=1;
     t.used.push('stabilized:'+input);
   }
   e.turn=paid.turn;
 }
 
-export function negotiateV2(w: World, actor: string, roll: () => number, checkDistance=true, response:'resolve'|'hesitate'|'respond'='resolve') {
+export function negotiateV2(w: World, actor: string, roll: () => number, checkDistance=true, response:'resolve'|'hesitate'|'respond'='resolve', bonus=0) {
   const e=w.encounter, character=w.characters?.[actor], t=w.tactics;
   if(!e || !t || e.phase!=='player' || !character?.hp || !character.sanity ||
     (checkDistance && distance(w.players[actor],e.ghost)!==1) || t.dispersed || (t.concealed && (t.scanned ?? 0)<t.round)) return reject();
   const paid=spendAction(w.turns[actor],character.focus,{ap:2,focus:0}) ?? reject('AP ไม่พอ');
-  if(check(w,actor,'spirit',roll,undefined,t.profile?.combat?.MDEF ?? 12)) {
+  if(check(w,actor,'spirit',roll,undefined,t.profile?.combat?.MDEF ?? 12,bonus)) {
     if(response==='resolve')soothe(w);
     else if(response==='hesitate') {t.calmUntil=t.round;delete t.telegraph;}
   }
   e.turn=paid.turn;
 }
 
-export function strikeV2(w: World, actor: string, roll: () => number, checkDistance=true) {
+export function strikeV2(w: World, actor: string, roll: () => number, checkDistance=true, bonus=0, attack?:{legacy:Attribute;stat:keyof LiteStats;defense:LiteDefense;damage:number;physical:boolean}) {
   const e=w.encounter!, t=w.tactics!, character=w.characters?.[actor];
   if (!character || character.hp===0 || e.phase!=='player' || t.dispersed || (checkDistance && distance(w.players[actor],e.ghost)!==1) ||
     (t.concealed && (t.scanned ?? 0)<t.round)) return reject();
@@ -381,15 +381,15 @@ export function strikeV2(w: World, actor: string, roll: () => number, checkDista
   const exposed=!!t.exposed && t.exposed.actor!==actor && t.exposed.until>=t.round;
   const combat=t.profile?.combat;
   if(combat) {
-    const die=roll(), bonus=characterAttribute(character,'body')+(exposed?2:0);
-    const result=liteAttack({roll:die,bonus,defense:combat.PDEF,damage:w.basicMode?2:1,physical:true,manifestation:combat.manifestation});
+    const die=roll(), attackBonus=(attack?characterAttribute(character,attack.legacy,attack.stat):characterAttribute(character,'body'))+(exposed?2:0)+bonus;
+    const result=liteAttack({roll:die,bonus:attackBonus,defense:combat[attack?.defense ?? 'PDEF'],damage:attack?.damage ?? (w.basicMode?2:1),physical:attack?.physical ?? true,manifestation:combat.manifestation});
     if(exposed) delete t.exposed;
-    w.lastCheck={playerId:actor,die,total:die+bonus,outcome:result.hit?'success':'failure'};
+    w.lastCheck={playerId:actor,die,total:die+attackBonus,outcome:result.hit?'success':'failure'};
     e.turn=paid.turn;
     if(result.damage) dispel(w,result.damage);
     return;
   }
-  const result=resolveCheck({dc:12,attribute:characterAttribute(character,'body'),equipment:exposed?2:0,partial:true},roll);
+  const result=resolveCheck({dc:12,attribute:characterAttribute(character,'body'),equipment:(exposed?2:0)+bonus,partial:true},roll);
   if(exposed) delete t.exposed;
   w.lastCheck={playerId:actor,...result};
   e.turn=paid.turn;

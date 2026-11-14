@@ -272,7 +272,9 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
  if(player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่อง');
  if(g.cellarPending && (command==='propose' || command==='scene' && target!=='E2')) throw Error('ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก');
  if(command==='contactPrasert') {
-  if(g.scene!=='H1' || !g.presented.includes('H1') || !hasFact(s,'gate-truth') || w.caseMap?.battle) throw Error('วิเคราะห์หลักฐานใน H1 ก่อนติดต่อประเสริฐ');
+  const contactScene=g.version==='5.5'?'F5':'H1';
+  if(g.scene!==contactScene || !g.presented.includes(contactScene) || !hasFact(s,'gate-truth') || w.caseMap?.battle ||
+    g.version==='5.5' && s.v51?.RITUAL_STATUS!=='stopped') throw Error(g.version==='5.5'?'หยุดพิธีและวิเคราะห์หลักฐานให้ครบก่อนติดต่อประเสริฐ':'วิเคราะห์หลักฐานใน H1 ก่อนติดต่อประเสริฐ');
   if(g.prasertContact || w.dmSession?.narration.some(beat=>beat.eventId==='guided-contact-prasert')) throw Error('ติดต่อประเสริฐแล้วหรือมีบทติดต่อรอส่ง');
   emitCaseBeat(s,'guided-contact-prasert','ทีมโทรหาประเสริฐและนำข้อสงสัยจากเอกสารน้ำท่วมไปถาม เขารับสายและเงียบไปครู่หนึ่ง','party',s.site);
   if(!w.dmSession) g.prasertContact=true;

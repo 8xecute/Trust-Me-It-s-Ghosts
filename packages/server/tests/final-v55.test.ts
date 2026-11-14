@@ -200,3 +200,33 @@ test('v5.5 legacy result claims stay out of both DM summaries and player noteboo
   assert.doesNotMatch(shown.failure,/คว้ามีด|จ่อมีด|คว้า.*ตัวประกัน|ประเสริฐ.*สารภาพ/);
  }
 });
+
+test('Final rejects retired Focus boosts and preserves ritual state',()=>{
+ const {w,b}=finalRoom(2,true),actor=b.active!;
+ assert.throws(()=>turnEncounterAction(w,actor,{round:b.round,choice:'objective',step:0,boost:'focus'},()=>8,()=>{}),/ยกเลิก/);
+ assert.equal(b.final55!.step,0);assert.equal(w.characters![actor].focus,4);
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'active');
+});
+
+test('silencing Final prevents a mental declaration without stopping the ritual or bypassing delayed attacks',()=>{
+ const {w,b}=finalRoom(2,true),target=b.enemies[0].id;
+ const turn=(actor:string,choice:string,extra:object={})=>turnEncounterAction(w,actor,{round:b.round,choice,...extra},()=>20,()=>{});
+ b.phase='flood_memory';
+ turn('p0','classSkill',{targetId:target});while(b.active)turn(b.active,'pass');
+ assert.throws(()=>turn('dm','declareAttack',{attackId:'FLOOD_MEMORY',targetId:'p0'}),/สะกดเสียง/);
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'active');assert.equal(b.final55!.step,0);
+ turn('dm','pass');while(b.active)turn(b.active,'pass');
+ assert.equal(b.turnEncounter!.conditions,undefined);
+ assert.throws(()=>turn('dm','attack',{attackId:'FLOOD_MEMORY',targetId:'p0'}),/ประกาศล่วงหน้า/);
+ turn('dm','declareAttack',{attackId:'FLOOD_MEMORY',targetId:'p0'});
+ while(b.active)turn(b.active,'pass');turn('dm','attack',{attackId:'FLOOD_MEMORY',targetId:'p0'});
+ assert.equal(w.case001!.v51!.RITUAL_STATUS,'active');
+});
+
+test('heavy attacks cannot bypass Final shield and still spend their attempt',()=>{
+ const {w,b}=finalRoom(2,true),actor=b.active!,enemy=b.enemies[0],hp=enemy.state.ghostHealth;
+ turnEncounterAction(w,actor,{round:b.round,choice:'powerStrike',targetId:enemy.id},()=>20,()=>{});
+ assert.equal(enemy.state.ghostHealth,hp);assert.equal(b.final55!.damageBlocked,true);
+ assert.deepEqual(b.turnEncounter!.powerUsed,[actor]);assert.equal(w.case001!.v51!.RITUAL_STATUS,'active');
+ assert.match(b.turnEncounter!.history.at(-1)!.flavour!.text,/เกราะ/);
+});

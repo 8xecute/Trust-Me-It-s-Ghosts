@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { characterAttribute, professions, type Character, type CaseSite } from '@baan/shared';
+import { characterAttribute, professions, turnSkills, powerAttacks, type Character, type CaseSite } from '@baan/shared';
 import { portraitUrl } from '../characters/CastPortraits';
 import { illustrations } from '../case/CaseScene';
 import drowned from '../../assets/case-001/combat/drowned.png';
@@ -8,18 +8,24 @@ import kaewFinal from '../../assets/case-001/combat/kaewFinal.png';
 import type { BattleView } from './EncounterBoard';
 import { encounterBrief, encounterState, shieldSteps, threatMessage } from './turnEncounterPresentation';
 import { useEncounterCue } from './useEncounterCue';
+import { combatStatuses, describeBeat, describeChanges, type CombatBeat } from './combatLogPresentation';
 import './TurnEncounter.css';
 
 type StoryOption = {id:string; dice?:{dc:number}};
 type Choice = {id:string;label:string;detail:string;mark:string;disabled?:boolean};
 const outcomes={success:'สำเร็จ',partial:'สำเร็จบางส่วน',failure:'พลาด'};
 const conclusions={won:'ผ่านการเผชิญหน้าแล้ว',pacified:'ผีสงบลง',escaped:'ทีมถอยออกมาได้',lost:'ทีมหมดสภาพต่อสู้'};
-export type TurnConclusionView={outcome:keyof typeof conclusions;check?:{die:number;total:number;outcome:keyof typeof outcomes}};
+export type TurnConclusionView={outcome:keyof typeof conclusions;check?:{die:number;total:number;outcome:keyof typeof outcomes};history?:CombatBeat[]};
+
+function CombatFlavourLine({beat}:{beat:CombatBeat}) {
+  return beat.flavour ? <div className="c4-flavour"><p>{beat.flavour.text}</p>{beat.flavour.dialogue && <blockquote><strong>{beat.flavour.dialogue.speaker}</strong> “{beat.flavour.dialogue.text}”</blockquote>}</div> : null;
+}
 
 export function TurnConclusion({result}:{result:TurnConclusionView}) {
-  return <p className="c4-conclusion" role="status"><strong>จบการเผชิญหน้า · {conclusions[result.outcome]}</strong>
+  return <div className="c4-conclusion" role="status"><strong>จบการเผชิญหน้า · {conclusions[result.outcome]}</strong>
     {result.check && <span>ผลทอยสุดท้าย · D20 {result.check.die} · รวม {result.check.total} · {outcomes[result.check.outcome]}</span>}
-  </p>;
+    {!!result.history?.length && <details><summary>บันทึกการต่อสู้ก่อนจบฉาก</summary><ol>{result.history.map((beat,index)=><li key={index}>{describeBeat(beat,()=> 'ผู้ร่วมฉาก')} · {beat.effect ?? (beat.check?outcomes[beat.check.outcome]:'บันทึกการกระทำแล้ว')}{beat.check && <small>D20 {beat.check.die} · รวม {beat.check.total} · {outcomes[beat.check.outcome]}</small>}{describeChanges(beat).map(text=><small key={text}>{text}</small>)}<CombatFlavourLine beat={beat}/></li>)}</ol></details>}
+  </div>;
 }
 
 export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,paused,action,waitingForStoryRoll,onManageRoll}:{
@@ -28,6 +34,7 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
   waitingForStoryRoll?:boolean; onManageRoll?:()=>void;
 }) {
   const turn=battle.turnEncounter!;
+  const [fullLog,setFullLog]=useState(false);
   const enemy=battle.enemies.find(enemy=>enemy.id===turn.npcActive) ?? battle.enemies.find(enemy=>!enemy.resolved) ?? battle.enemies[0];
   const brief=encounterBrief(battle);
   const state=encounterState(battle);
@@ -59,7 +66,7 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
       {battle.enemies.map(member=><article key={member.id} data-resolved={!!member.resolved} aria-current={npcTurn && turn.npcActive===member.id?'step':undefined}>
         <img src={drowned} alt=""/><div><strong>{member.name}</strong>
           <p>{member.resolved?(member.outcome==='pacified'?'สงบแล้ว':'ร่างสลายแล้ว'):member.hesitating?'ชะงัก · งดโจมตีตานี้':npcTurn && turn.npcActive===member.id?'กำลังลงมือ':turn.acted.includes(member.id)?'เล่นแล้ว':'ยังคุกคามทีม'}</p>
-          <progress max={member.maxHp ?? turn.maxHp} value={member.hp} aria-label={'พลังชีวิต '+member.name}/><small> {member.hp}/{member.maxHp ?? turn.maxHp}</small>
+          <progress max={member.maxHp ?? turn.maxHp} value={member.hp} aria-label={'พลังชีวิต '+member.name}/><small> {member.hp}/{member.maxHp ?? turn.maxHp}</small>{turn.conditions?.silenced[member.id] && <p>ถูกสะกดเสียง · ใช้ท่าโจมตีทางจิตไม่ได้ในตานี้</p>}{member.opening && <p>มีช่องเปิด · เพื่อนของ {name(member.opening.actor)} โจมตี +2 ครั้งเดียวถึงรอบ {member.opening.until}</p>}
         </div>
       </article>)}
     </section>}
@@ -67,6 +74,8 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
     {turn.ready && <section className="c4-plan" aria-label="วางแผนร่วมกัน">
       <strong>{brief.title}</strong><p>{brief.goal}</p><small>{brief.plan}</small>
     </section>}
+    {battle.enemies.length===1 && turn.conditions?.silenced[enemy.id] && <p className="c4-plan">ถูกสะกดเสียง · ผีใช้ท่าโจมตีทางจิตไม่ได้ในตานี้ แต่ยังโจมตีทางกายได้</p>}
+    {battle.enemies.length===1 && enemy.opening && <p className="c4-plan">มีช่องเปิด · เพื่อนของ {name(enemy.opening.actor)} โจมตี +2 ครั้งเดียวถึงรอบ {enemy.opening.until}</p>}
     {threat && <section className="c4-threat" role="status"><strong>{threat.title}</strong><p>{threat.detail}</p></section>}
     {battle.final55 && <section className="c4-objective" aria-label="ความคืบหน้าพิธี">
       <ol>{shieldSteps.map((label,step)=><li key={label} data-progress={step<battle.final55!.step?'done':step===battle.final55!.step?'current':'waiting'}>
@@ -76,9 +85,11 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
     </section>}
     {latest && <section className="c4-spotlight" role="status" key={battle.round+':'+turn.history.length+':'+latest.actor+':'+latest.label}>
       <small>เหตุการณ์ล่าสุด · รอบ {latest.round}</small>
-      <strong>{name(latest.actor)} · {latest.label}{latest.target?' → '+name(latest.target):''}</strong>
+      <strong>{describeBeat(latest,name)}</strong>
+      <CombatFlavourLine beat={latest}/>
       {latest.check && <span className="c4-roll" data-result={latest.check.outcome}>D20 {latest.check.die} · รวม {latest.check.total} · {outcomes[latest.check.outcome]}</span>}
-      {latest.effect && <p>{latest.effect}</p>}
+      <p>{latest.effect ?? (latest.check?outcomes[latest.check.outcome]:'บันทึกการกระทำแล้ว')}</p>
+      {describeChanges(latest).map(text=><small key={text}>{text}</small>)}
     </section>}
     {battle.final55 && <p className="c4-hint" role="status">เกราะ{battle.final55.shield==='up'?'ยังป้องกันอยู่':'เปิดแล้ว'} · สำเร็จ {battle.final55.step}/3 ขั้น · {battle.final55.step===3?'ลงมือปลดกำไลอีกครั้งเพื่อหยุดพิธี':'จัดการจุดอาคมตามลำดับ'}{battle.final55.damageBlocked?' · เกราะรับความเสียหายไว้':''}</p>}
     <ol className="c4-order" aria-label="ลำดับการเล่น">
@@ -88,18 +99,29 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         const status=down?'ล้ม':battle.active===id?'กำลังเล่น':turn.acted.includes(id)?'เล่นแล้ว':npcTurn?'รอรอบหน้า':'รอคิว';
         return <li key={id} data-state={status} aria-current={battle.active===id?'step':undefined}>
           {c && <img src={portraitUrl(c.profession)} alt=""/>}
-          <span><strong>{name(id)}{id===self?' · คุณ':''}</strong><small>{status}{c ? ' · ชีวิต '+c.hp+' · สติ '+c.sanity : ''}</small>
-            {c && <small>BODY {characterAttribute(c,'body')} · INT {characterAttribute(c,'knowledge')} · SPI {characterAttribute(c,'spirit')}</small>}</span>
+          <span><strong>{name(id)}{id===self?' · คุณ':''}</strong><small>{status}{c ? ' · ชีวิต '+c.hp+'/'+(c.maxHp ?? 10)+' · สติ '+c.sanity+' · สมาธิ '+c.focus : ''}</small>
+            {c && <small>{combatStatuses(battle,id,characters,name).map(status=>status.label).join(' · ') || 'ไม่มีสถานะพิเศษ'}</small>}
+            {c && <small>BODY {characterAttribute(c,'body')} · PER {characterAttribute(c,'mind','PER')} · INT {characterAttribute(c,'knowledge')} · SOC {characterAttribute(c,'spirit','SOC')} · SPI {characterAttribute(c,'spirit')} · RES {characterAttribute(c,'spirit','RES')}</small>}</span>
         </li>;
       })}
       <li data-state={npcTurn?'กำลังเล่น':'รอคิว'} aria-current={npcTurn?'step':undefined}>
         <span className="c4-npc-badge">DM</span><span><strong>{enemy.name}</strong><small>{npcTurn?'DM กำลังเลือก':'เล่นหลังทีม'}</small></span>
       </li>
     </ol>
+    <details className="c4-status-panel" open>
+      <summary>สถานะปัจจุบัน · รอบ {battle.round}</summary>
+      <div className="c4-status-grid">{[...turn.party,...battle.enemies.map(member=>member.id)].map(id=>{
+        const statuses=combatStatuses(battle,id,characters,name);
+        return <article key={id}><strong>{name(id)}{id===self?' · คุณ':''}</strong>
+          {statuses.length ? <ul>{statuses.map(status=><li key={status.label}><b>{status.label}</b><p>{status.effect}</p><small>{status.expiry}</small></li>)}</ul> : <p>ไม่มีสถานะพิเศษ</p>}
+        </article>;
+      })}</div>
+    </details>
     <div className="c4-body">
       <div className="c4-controls">
         <p className="c4-kicker">{isDm?'หน้าคุมฉาก':'ผู้สืบสวน'}</p>
         <h3 aria-live="polite">{heading}</h3>
+        {!isDm && turn.expandedActions && <p className="c4-hint">{myTurn?'เหลือ 1 การกระทำ':turn.acted.includes(self ?? '')?'ใช้การกระทำแล้ว':'รอถึงตา'} · สมาธิ {self && characters[self]?.focus}</p>}
         {paused ? <p className="c4-hint">พักคดีอยู่ รอ DM เปิดเล่นต่อ</p> : !turn.ready ?
           <p className="c4-hint">{isDm?'ส่งบทเปิด '+turn.scene+' จากคิวด้านล่างก่อนเริ่มรอบแรก':'รอ DM ส่งบทเปิดให้ทีมก่อนลงมือ'}</p> :
           waitingForStoryRoll ? <p className="c4-hint">รอการ์ด D20 สำหรับติดต่อผี</p> :
@@ -113,11 +135,12 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         <p className="c4-kicker">บันทึกที่ทีมเห็นร่วมกัน</p>
         <h3>ผลการเล่น</h3>
         {turn.history.length===0 ? <p className="c4-hint">การกระทำและผลทอยจะปรากฏที่นี่</p> :
-          <ol>{turn.history.slice(-6).reverse().map((beat,i)=><li key={turn.history.length-i}>
-            <div><small>รอบ {beat.round} · {name(beat.actor)}</small><strong>{beat.label}{beat.target?' → '+name(beat.target):''}</strong>
-              {beat.effect && <small>{beat.effect}</small>}</div>
+          <ol>{(fullLog?turn.history:turn.history.slice(-6)).slice().reverse().map((beat,i)=><li key={turn.history.length-i}>
+            <div><small>รอบ {beat.round}</small><strong>{describeBeat(beat,name)}</strong><CombatFlavourLine beat={beat}/>
+              <small>{beat.effect ?? (beat.check?outcomes[beat.check.outcome]:'บันทึกการกระทำแล้ว')}</small>{describeChanges(beat).map(text=><small key={text}>{text}</small>)}</div>
             {beat.check && <span className="c4-roll" data-result={beat.check.outcome}>D20 {beat.check.die}<br/>รวม {beat.check.total} · {outcomes[beat.check.outcome]}</span>}
           </li>)}</ol>}
+        {turn.history.length>6 && <button type="button" className="c4-roll-link" aria-expanded={fullLog} onClick={()=>setFullLog(!fullLog)}>{fullLog?'แสดง 6 เหตุการณ์ล่าสุด':'ดูย้อนหลังทั้งหมดที่เก็บไว้ ('+turn.history.length+' เหตุการณ์)'}</button>}
       </aside>
     </div>
   </section>;
@@ -130,22 +153,33 @@ function TurnChoices({battle,isDm,allowed,characters,name,action}:{
   const [choice,setChoice]=useState('');
   const [target,setTarget]=useState('');
   const turn=battle.turnEncounter!;
+  const active=characters[battle.active ?? ''];
+  const skill=active && turnSkills[active.profession];
+  const power=active && powerAttacks[active.profession];
+  const restrained=!!turn.expandedActions && !!battle.active && (battle.restrained[battle.active] ?? 0)>=battle.round;
+  const unsteady=!!battle.active && (turn.unsteady?.[battle.active] ?? 0)>=battle.round;
+  const frightened=!!battle.active && (turn.shaken?.[battle.active] ?? 0)>=battle.round;
   const down=turn.party.filter(id=>characters[id]?.hp===0);
   const choices:Choice[]=isDm ? [
-    ...(turn.attacks ?? []).map(attack=>({id:attack.id,label:attack.name,detail:'ทอย D20 · ลด'+(attack.resource==='HP'?'ชีวิต':'สติ')+' '+attack.damage,mark:'D20'})),
+    ...(turn.attacks ?? []).map(attack=>({id:attack.id,label:attack.name,detail:'ทอย D20 · ลด'+(attack.resource==='HP'?'ชีวิต':'สติ')+' '+attack.damage+(attack.detail?' · '+attack.detail:''),mark:'D20'})),
     {id:'pass',label:battle.enemies.find(enemy=>enemy.id===turn.npcActive)?.hesitating?'ผีชะงัก · ส่งตาต่อ':'รอดูท่าที',detail:'จบตาของผีตัวนี้',mark:'—'},
     ...(turn.scene!=='F1'?[{id:'withdraw',label:'ให้ผีถอย',detail:'ผีสลายและจบฉาก',mark:'↩'}]:[]),
   ] : [
-    {id:'strike',label:'ขับไล่ผี',detail:'BODY · '+(battle.final55?.shield==='up'?'เกราะยังรับความเสียหายไว้':battle.final55?'ลดพลังชีวิตร่างผี แต่ไม่หยุดพิธี':'โจมตีเพื่อลดพลังชีวิตผี'),mark:'D20'},
-    ...(turn.canPacify?[{id:'pacify',label:'กล่อมให้สงบ',detail:turn.pacifyDescription ?? 'SPI · ใช้พลังจิตเพื่อจบฉาก',mark:'D20',disabled:!characters[battle.active!]?.sanity}]:[]),
-    ...(battle.objective && turn.scene!=='C4'?[{id:'objective',label:battle.final55?shieldSteps[battle.final55.step]:'คลายจุดอาคม',detail:'2 AP · INT DC12 · สำเร็จแล้วบันทึกผลตามลำดับ',mark:'D20'}]:[]),
-    {id:'guard',label:'ตั้งรับ',detail:'ป้องกัน +2 ในตาผีรอบนี้',mark:'+2'},
+    ...(turn.expandedActions && power ? [{id:'powerStrike',label:power.name+(turn.powerUsed?.includes(battle.active!)?' (ใช้แล้ว)':''),detail:power.stat+' เทียบ '+power.defense+' · โดนแล้ว '+power.damage+' ดาเมจ · หนึ่งครั้งต่อฉาก แม้พลาด · ไม่เสียสมาธิ',mark:'D20',disabled:!!turn.powerUsed?.includes(battle.active!) || active.sanity===0 || frightened || restrained && power.physical}]:[]),
+    ...(turn.expandedActions && skill ? [{id:'classSkill',label:skill.name,detail:skill.detail,mark:active.profession==='medium'?'D20':'ท่า',disabled:unsteady && active.profession==='containment_specialist' || frightened || active.focus<skill.focus || active.sanity===0 || restrained && ['field_medic','containment_specialist'].includes(active.profession)}]:[]),
+    ...(frightened || unsteady?[{id:'compose',label:'ตั้งหลัก',detail:'RES DC12 · ลบหวาดกลัวและเสียหลัก ไม่ฟื้นแต้มสติ',mark:'D20'}]:[]),
+    ...(restrained?[{id:'breakFree',label:'ดิ้นหลุดพันธนาการ',detail:'BODY DC12 · ใช้หนึ่งการกระทำ',mark:'D20'}]:[]),
+    {id:'strike',disabled:restrained,label:'ขับไล่ผี',detail:'BODY · '+(battle.final55?.shield==='up'?'เกราะยังรับความเสียหายไว้':battle.final55?'ลดพลังชีวิตร่างผี แต่ไม่หยุดพิธี':'โจมตีเพื่อลดพลังชีวิตผี'),mark:'D20'},
+    ...(turn.canPacify?[{id:'pacify',label:turn.pacifyDescription?'เรียกสติผี':'กล่อมให้สงบ',detail:turn.pacifyDescription ?? 'SPI · ใช้พลังจิตเพื่อจบฉาก',mark:'D20',disabled:frightened || !characters[battle.active!]?.sanity}]:[]),
+    ...(battle.objective && turn.scene!=='C4'?[{id:'objective',label:battle.final55?shieldSteps[battle.final55.step]:'คลายจุดอาคม',detail:turn.expandedActions?'INT DC12 · สำเร็จแล้วบันทึกผลตามลำดับ':'2 AP · INT DC12 · สำเร็จแล้วบันทึกผลตามลำดับ',mark:'D20'}]:[]),
+    ...(turn.expandedActions?[{id:'observe',label:'อ่านจังหวะผี',detail:'PER DC12 · เปิดช่องให้เพื่อนโจมตี +2 ครั้งเดียวถึงรอบหน้า',mark:'D20'}, {id:'encourage',label:'ดึงสติเพื่อน',detail:'SOC DC12 · ฟื้นสติ 1 และลบหวาดกลัว · ลองได้ครั้งเดียวต่อเพื่อนแต่ละคนในฉาก',mark:'D20',disabled:!turn.party.some(id=>id!==battle.active && characters[id]?.hp>0 && (characters[id]?.sanity<10 || (turn.shaken?.[id] ?? 0)>=battle.round) && !turn.supportUsed?.includes(id))}]:[]),
+    {id:'guard',disabled:unsteady,label:'ตั้งรับ',detail:'ป้องกัน +2 ในตาผีรอบนี้',mark:'+2'},
     ...(down.length ? [{id:'stabilize',label:'พยุงเพื่อน',detail:'ช่วยผู้สืบสวนที่ล้ม',mark:'D20'}] : []),
     {id:'pass',label:'ผ่านตา',detail:'ส่งต่อให้คนถัดไป',mark:'—'},
-    {id:'withdraw',label:'พาทีมถอย',detail:'จบการเผชิญหน้าของทั้งทีม',mark:'↩'},
+    {id:'withdraw',disabled:restrained,label:'พาทีมถอย',detail:'จบการเผชิญหน้าของทั้งทีม',mark:'↩'},
   ];
   const attack=turn.attacks?.find(option=>option.id===choice);
-  const targets= !isDm && (choice==='strike' || choice==='pacify') ? battle.enemies.filter(enemy=>!enemy.resolved && enemy.hp>0).map(enemy=>enemy.id) : attack ? turn.party.filter(id=>!!characters[id]?.hp) : choice==='stabilize' ? down : [];
+  const targets= !isDm && (choice==='strike' || choice==='powerStrike' || choice==='pacify' || choice==='observe' || choice==='classSkill' && skill?.target==='enemy') ? battle.enemies.filter(enemy=>!enemy.resolved && enemy.hp>0).map(enemy=>enemy.id) : choice==='classSkill' && skill?.target==='ally' ? turn.party.filter(id=>characters[id]?.hp>0 && (active.profession==='ritual_specialist' || id!==battle.active)) : choice==='encourage' ? turn.party.filter(id=>id!==battle.active && characters[id]?.hp>0 && (characters[id]?.sanity<10 || (turn.shaken?.[id] ?? 0)>=battle.round) && !turn.supportUsed?.includes(id)) : attack ? turn.party.filter(id=>!!characters[id]?.hp) : choice==='stabilize' ? down : [];
   const pickedTarget=targets.includes(target) ? target : targets.length===1 ? targets[0] : '';
   const selected=choices.find(item=>item.id===choice && !item.disabled);
   const commit=()=>{

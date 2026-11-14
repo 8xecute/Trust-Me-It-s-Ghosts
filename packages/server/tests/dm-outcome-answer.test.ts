@@ -20,10 +20,10 @@ function setup(count:number,die:number) {
  return {store,send,panel,view,rollId,rolls:()=>rolls};
 }
 for(const count of [2,3,4]) test('DM chooses authored outcome response after shared roll for '+count+' players',()=>{
- for(const [die,outcome] of [[11,'success'],[8,'partial'],[7,'failure']] as const) {
+ for(const [die,outcome] of [[10,'success'],[7,'partial'],[6,'failure']] as const) {
   const r=setup(count,die),card=r.panel().narration.find(c=>c.answer)!;
-  assert.ok(card);assert.equal(card.answer!.outcome,outcome);assert.equal(card.answer!.total,die+3);
-  assert.equal(card.answer!.statValue,3);assert.equal(card.answer!.dc,14);
+  assert.ok(card);assert.equal(card.answer!.outcome,outcome);assert.equal(card.answer!.total,die+4);
+  assert.equal(card.answer!.statValue,4);assert.equal(card.answer!.dc,14);
   assert.ok(!JSON.stringify(r.view()).includes(card.answer!.narration));
   assert.throws(()=>r.send('p1','dmPublish',{cardId:card.id}));
   assert.throws(()=>r.send('dm','dmPublish',{cardId:card.id,part:'full'}));

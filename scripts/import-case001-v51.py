@@ -6,7 +6,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = Path(sys.argv[1]) if len(sys.argv)>1 else next((ROOT / '5.1').glob('CASE001_StoryScript_v5.1*'))
+SOURCE = Path(sys.argv[1]) if len(sys.argv)>1 else next((ROOT / 'docs/reference/case001/v5.1').glob('CASE001_StoryScript_v5.1*'))
 VERSION = '5.3' if 'v5.3' in SOURCE.name else '5.2' if 'v5.2' in SOURCE.name else '5.1'
 DEST = ROOT / 'packages/server/scenarios/case-001'
 source = SOURCE.read_text(encoding='utf-8')

@@ -270,7 +270,7 @@ export function OnlineGame() {
           </div>
           <div className="case-character-stats">
             <h4>สถานะปัจจุบัน</h4>
-            <GameHud exploring={!battle || turnEncounter} haunt={world.case001.haunt} hp={character.hp} sanity={character.sanity} focus={character.focus} ap={battle && !turnEncounter ? world.turns[self.current]?.ap : undefined}/>
+            <GameHud turnMode={world.guided?.version==='5.5' && (!battle || !!turnEncounter)} actionStatus={turnEncounter ? battle?.active===self.current?'เหลือ 1 การกระทำ':battle?.turnEncounter?.acted.includes(self.current)?'ใช้การกระทำแล้ว':'รอถึงตา' : undefined} exploring={!battle || turnEncounter} haunt={world.case001.haunt} hp={character.hp} maxHp={character.maxHp ?? 10} sanity={character.sanity} focus={character.focus} ap={battle && !turnEncounter ? world.turns[self.current]?.ap : undefined}/>
             {character.coreStats && <>
               <h4>ค่าสเตตัสพื้นฐาน</h4>
               <CoreStats stats={character.coreStats}/>
@@ -293,7 +293,7 @@ export function OnlineGame() {
         </section>}
         <div className={'case-workspace'+(battle?' case-workspace-encounter':'')+(turnEncounter?' case-workspace-c4':'')} data-view={caseTab}><div className="case-world-pane" hidden={caseTab!=='scene'}>
         {world.caseMap && <>
-          {world.caseMap.turnConclusion && !battle && world.guided?.scene==='C4' && <TurnConclusion result={world.caseMap.turnConclusion}/>}
+          {world.caseMap.turnConclusion && !battle && <TurnConclusion result={world.caseMap.turnConclusion}/>}
           {battle?.turnEncounter ? <TurnEncounter site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
             self={self.current} enabled={connected && !world.paused} paused={world.paused} action={action}
             waitingForStoryRoll={waitingForRoll}/> :
@@ -338,7 +338,7 @@ export function OnlineGame() {
         {!dmLed && !caseActions.length && !battle && !world.case001.report && <p className="note">รอบทเปิดหรือการตอบจาก DM ก่อนเลือกการกระทำ</p>}
         {world.manualDm && !world.humanDmId && <button disabled={!connected || !!battle}
           onClick={()=>action('claimDm')}>รับช่วงเป็นผู้ดำเนินเรื่อง</button>}
-        {world.caseMap?.opportunity && <button disabled={!connected || !character?.hp || world.paused} onClick={()=>action('start')}>เริ่มเผชิญหน้า</button>}
+        {world.caseMap?.opportunity && !(world.guided?.version==='5.5' && world.humanDmId) && <button disabled={!connected || !character?.hp || world.paused} onClick={()=>action('start')}>เริ่มเผชิญหน้า</button>}
         {world.caseMap && !world.awaitingReport && !world.case001.report && <dialog ref={withdrawalDialog} className="case-withdrawal-dialog"
           aria-labelledby="case-withdrawal-title" aria-describedby="case-withdrawal-impact">
           <h3 id="case-withdrawal-title">ถอนทีมและปิดคดีหรือไม่</h3>

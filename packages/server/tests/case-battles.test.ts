@@ -179,7 +179,7 @@ test('Combat Lite attacks use Defense thresholds and listed damage',()=>{
   assert.equal(enemy.tactics.telegraph?.attack?.id,'WET_CLAW');
   caseBattleAction(w,'p0',{type:'endTurn'},grid,()=>20,()=>{});
   caseBattleAction(w,'p1',{type:'endTurn'},grid,()=>11,()=>{});
-  assert.equal(w.characters!.p0.hp,10); // 11 + 3 < PDEF 15
+  assert.equal(w.characters!.p0.hp,15); // 11 + 3 < PDEF 15
   assert.equal(enemy.tactics.profile?.combat?.MDEF,13);
 });
 

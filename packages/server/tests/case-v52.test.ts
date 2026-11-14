@@ -44,6 +44,7 @@ function room(die=20,lethal=false,version:'5.2'|'5.3'|'5.5'='5.2') {
   if(cue)publish(cue.eventId);
  };
  const act=(actionId:string)=>{
+  if(version==='5.5' && actionId==='begin-final55'){send('dm','dmStartEncounter');return;}
   if(version==='5.5' || panel().investigators.find(entry=>entry.id==='a')?.actions.some(option=>option.id===actionId && option.check))
    send('dm','caseDm',{targetId:'a',actionId});
   else send('a','caseAction',{actionId,site:view().caseMap!.site});
@@ -745,11 +746,15 @@ for(const ending of ['A','B','C','D'] as const)test('v5.3 playable route deliver
   assert.ok(r.view(player).narrative!.history.some(beat=>beat.eventId==='ending:'+ending));
  }
 });
-test('v5.5 opens the shield encounter through the actual player action',()=>{
+test('v5.5 DM opens the shield encounter while player start requests are rejected',()=>{
  const r=room(20,false,'5.5');
  r.toE();r.scene('E4');r.act('approach-ritual-core');r.scene('E6');
  assert.ok(!allowedGuidedScenes(r.saved().world).some(scene=>scene.id==='F1'));
  assert.throws(()=>r.act('seal3'));
+ assert.ok(r.panel().encounterStart);
+ assert.ok(!r.view().case001!.actions.some(option=>option.id==='begin-final55'));
+ assert.throws(()=>r.send('a','caseAction',{actionId:'begin-final55',site:'E'}));
+ assert.throws(()=>r.send('a','dmStartEncounter'),/เฉพาะ DM/);
  r.act('begin-final55');
  assert.equal(r.view().caseMap!.battle!.id,'EN04');
  assert.equal(r.state().guided!.scene,'F1');
@@ -843,4 +848,46 @@ test('shared continuity follows only delivered story and keeps the previous chap
  assert.match(r.view().guided!.previousLead!,/แฟ้มที่บ้านผู้ใหญ่/);
  assert.equal(r.view().narrative!.current!.scene,'B1');
  assert.deepEqual(r.panel().sharedStory!.at(-1),r.view().narrative!.current);
+});
+
+test('v5.5 DM alone starts C4, preserves opening delivery and cannot start twice',()=>{
+ const r=room(20,false,'5.5');
+ r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.scene('C3');
+ assert.ok(r.panel().encounterStart);assert.equal(r.view().caseMap!.opportunity,undefined);
+ assert.throws(()=>r.send('a','start'),/เฉพาะ DM/);
+ assert.throws(()=>r.send('a','dmStartEncounter'),/เฉพาะ DM/);
+ r.send('dm','dmSessionControl',{command:'pause'});
+ assert.throws(()=>r.send('dm','dmStartEncounter'),/พัก/);
+ r.send('dm','dmSessionControl',{command:'resume'});
+ r.send('dm','dmStartEncounter');
+ assert.equal(r.view().caseMap!.battle!.id,'EN01');assert.equal(r.view().caseMap!.battle!.enemies.length,2);
+ assert.equal(r.view().caseMap!.battle!.turnEncounter!.ready,false);
+ assert.equal(r.panel().encounterStart,undefined);
+ assert.throws(()=>r.send('dm','dmStartEncounter'));
+ assert.throws(()=>r.send('a','turnEncounter',{round:1,choice:'pass'}),/บทเปิด/);
+ r.publish('guided-cue:C4');r.send('a','turnEncounter',{round:1,choice:'pass'});
+ assert.equal(r.view().caseMap!.battle!.active,'b');
+});
+test('v5.5 DM cannot start before story eligibility or without an active living investigator',()=>{
+ const r=room(20,false,'5.5');
+ assert.equal(r.panel().encounterStart,undefined);assert.throws(()=>r.send('dm','dmStartEncounter'));
+ r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.scene('C3');
+ const checkpoint=r.saved();for(const id of r.players)checkpoint.world.characters![id].hp=0;
+ r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ assert.equal(r.panel().encounterStart,undefined);assert.throws(()=>r.send('dm','dmStartEncounter'));
+});
+
+test('v5.5 DM starts D4 and is blocked by a pending roll',()=>{
+ const r=room(20,false,'5.5');
+ r.scene('A3');r.next();r.scene('B5');r.next();r.scene('C2');r.next();
+ r.scene('D2');r.scene('D3');r.act('engage-kaew');
+ assert.ok(r.panel().encounterStart);assert.throws(()=>r.send('a','start'),/เฉพาะ DM/);
+ const checkpoint=r.saved();checkpoint.world.diceRequest={id:'pending-start',playerId:'a',die:null};
+ r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ assert.throws(()=>r.send('dm','dmStartEncounter'),/คำขอทอย/);
+ checkpoint.world.diceRequest=null;r.store.delete(r.code);r.store.restore(r.code,checkpoint);
+ r.send('dm','dmStartEncounter');
+ assert.equal(r.view().caseMap!.battle!.id,'EN02');assert.equal(r.state().guided!.scene,'D4');
+ assert.equal(r.view().caseMap!.battle!.turnEncounter!.ready,false);
+ r.publish('guided-cue:D4');assert.equal(r.view().caseMap!.battle!.turnEncounter!.ready,true);
 });

@@ -2,6 +2,7 @@ import {useState} from 'react';
 import type {PublicRoom} from '../../network/onlineTypes';
 import {CaseScene} from '../case/CaseScene';
 import {savePreview,type SavePreview} from './savePreview';
+import {CaseCatalog} from './CaseCatalog';
 
 export function Lobby({connected,publicRooms,createRoom,joinRoom,resumeRoom,importSave,recoverRoom,busy=false,status=''}:{
  connected:boolean;publicRooms:PublicRoom[];createRoom:()=>void;joinRoom:(code:string)=>void;
@@ -34,5 +35,6 @@ export function Lobby({connected,publicRooms,createRoom,joinRoom,resumeRoom,impo
     </details>
    </div>}
   </div>
+  <CaseCatalog/>
  </section>;
 }

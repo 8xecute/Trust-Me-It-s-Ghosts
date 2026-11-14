@@ -440,7 +440,7 @@ export function dmOptions51(s:CaseState) {
   }
  }
  const filtered=g.version==='5.5'?out.filter(option=>
-  !['e5-threat','ritual-release','fatal'].includes(option.id) &&
+  !['e5-threat','ritual-release','fatal','collect-flood','flood-people-proven'].includes(option.id) &&
   !option.id.startsWith('shield:') && !option.id.startsWith('context:') &&
   !(option.id==='contact-boonmee') &&
   !(option.id==='flood-memory:ritual_memory_reaction') &&

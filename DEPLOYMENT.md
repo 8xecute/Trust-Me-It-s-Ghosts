@@ -27,7 +27,7 @@ Before releasing, build the client with its production URL, run `npm run typeche
 
 ```sh
 npx tsx --test packages/server/tests/*.test.ts packages/client/tests/*.test.ts
-node --test production-smoke.test.mjs
+node --test tests/smoke/production-smoke.test.mjs
 ```
 
 After deployment, open the server's `/healthz` and check for `{"ok":true}`. Open the game in two browser sessions on different networks, create and join a room, ready up, perform an action and reload one client to resume. This verifies the real TLS and proxy path in addition to the local smoke test.

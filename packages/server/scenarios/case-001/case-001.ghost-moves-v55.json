@@ -1,0 +1,68 @@
+{
+  "EN01": [
+    {
+      "id": "UNDERFLOOR_HAND",
+      "name_th": "มือจากใต้พื้น",
+      "range": 2,
+      "damage": 1,
+      "targetDefense": "PDEF",
+      "damageResource": "HP",
+      "condition": "ROOTED",
+      "detail": "มือเงาดึงข้อเท้า · โดนแล้วพันธนาการถึงรอบหน้า"
+    },
+    {
+      "id": "DROWNED_WHISPER",
+      "name_th": "เสียงเรียกจากคราบน้ำ",
+      "range": 3,
+      "damage": 1,
+      "targetDefense": "MDEF",
+      "damageResource": "Sanity",
+      "condition": "SHAKEN",
+      "detail": "เสียงหลอนทำให้หวาดกลัวถึงรอบหน้า · เรียกสติผีและใช้ท่าอาชีพไม่ได้"
+    }
+  ],
+  "EN02": [
+    {
+      "id": "THREAD_SNAP",
+      "name_th": "ด้ายดำกระชากแนวตั้งรับ",
+      "range": 2,
+      "damage": 1,
+      "targetDefense": "PDEF",
+      "damageResource": "HP",
+      "condition": "GUARD_BREAK",
+      "detail": "ด้ายกระแทกแนวป้องกัน · โดนแล้วล้างการตั้งรับและทำให้เสียหลักถึงรอบหน้า"
+    },
+    {
+      "id": "COERCED_VOICE",
+      "name_th": "เสียงคำสั่งผ่านร่าง",
+      "range": 3,
+      "damage": 1,
+      "targetDefense": "MDEF",
+      "damageResource": "Sanity",
+      "condition": "SHAKEN",
+      "detail": "เสียงจากแรงบังคับทำให้หวาดกลัวถึงรอบหน้า"
+    }
+  ],
+  "EN04": [
+    {
+      "id": "BRACELET_LASH",
+      "name_th": "ด้ายกำไลตวัด",
+      "range": 2,
+      "damage": 1,
+      "targetDefense": "PDEF",
+      "damageResource": "HP",
+      "condition": "GUARD_BREAK",
+      "detail": "ด้ายจากกำไลตัดแนวป้องกัน · โดนแล้วล้างการตั้งรับและทำให้เสียหลักถึงรอบหน้า"
+    },
+    {
+      "id": "RITUAL_COMMAND",
+      "name_th": "คำสั่งสะท้อนในวงพิธี",
+      "range": 3,
+      "damage": 1,
+      "targetDefense": "MDEF",
+      "damageResource": "Sanity",
+      "condition": "SHAKEN",
+      "detail": "คำสั่งในวงพิธีกดจิตเป้าหมายให้หวาดกลัวถึงรอบหน้า"
+    }
+  ]
+}

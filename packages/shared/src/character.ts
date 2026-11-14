@@ -6,11 +6,11 @@ type Stats = Record<Attribute, number>;
 
 export const professions = {
   ritual_specialist: { name: 'หมอพิธี', stats: { body: 1, mind: 2, spirit: 3, knowledge: 3 } },
-  paranormal_investigator: { name: 'นักสืบเหนือธรรมชาติ', stats: { body: 1, mind: 4, spirit: 2, knowledge: 2 } },
-  containment_specialist: { name: 'เจ้าหน้าที่ควบคุม', stats: { body: 4, mind: 2, spirit: 2, knowledge: 1 } },
+  paranormal_investigator: { name: 'นักสืบ', stats: { body: 1, mind: 4, spirit: 2, knowledge: 2 } },
+  containment_specialist: { name: 'บอดี้การ์ด', stats: { body: 4, mind: 2, spirit: 2, knowledge: 1 } },
   medium: { name: 'ร่างทรง', stats: { body: 1, mind: 2, spirit: 4, knowledge: 2 } },
-  occult_engineer: { name: 'ช่างอาคม', stats: { body: 2, mind: 3, spirit: 1, knowledge: 3 } },
-  field_medic: { name: 'เจ้าหน้าที่เวชสนาม', stats: { body: 3, mind: 2, spirit: 2, knowledge: 2 } },
+  occult_engineer: { name: 'นักศึกษาฝึกงาน', stats: { body: 2, mind: 3, spirit: 1, knowledge: 3 } },
+  field_medic: { name: 'คนขับรถ (อดีตนายพราน)', stats: { body: 3, mind: 2, spirit: 2, knowledge: 2 } },
 } satisfies Record<string, { name: string; stats: Stats }>;
 
 export type Profession = keyof typeof professions;
@@ -64,7 +64,7 @@ export type Biography = Partial<Record<typeof biographyFields[number], string>>;
 
 export const castProfiles: Record<Profession,{name:string;biography:Biography}> = {
   ritual_specialist:{name:'หมอพิธี',biography:{background_story:'รับหน้าที่อ่านร่องรอยพิธีและหาวิธีคลายอาคมให้ทีม'}},
-  paranormal_investigator:{name:'นักสืบเหนือธรรมชาติ',biography:{background_story:'ตามรอยหลักฐานและเทียบคำให้การ เพื่อแยกข้อเท็จจริงออกจากข่าวลือ'}},
+  paranormal_investigator:{name:'นักสืบ',biography:{background_story:'ตามรอยหลักฐานและเทียบคำให้การ เพื่อแยกข้อเท็จจริงออกจากข่าวลือ'}},
   containment_specialist:{name:'บอดี้การ์ด',biography:{background_story:'คอยคุ้มกันเพื่อนร่วมทีมเมื่อต้องเข้าไปในพื้นที่เสี่ยง'}},
   medium:{name:'ร่างทรง',biography:{background_story:'รับฟังวิญญาณและช่วยทีมทำความเข้าใจสิ่งที่ผู้ตายยังติดค้าง'}},
   occult_engineer:{name:'นักศึกษาฝึกงาน',biography:{background_story:'นักศึกษาที่ติดตามทีมภาคสนามและช่วยดูแลอุปกรณ์ตรวจสอบ'}},
@@ -91,12 +91,12 @@ export const coreStatLabels = {
 } satisfies Record<keyof LiteStats, string>;
 
 export const characterPresets = {
-  paranormal_investigator: {BODY:2, PER:4, INT:5, SOC:4, SPI:1, RES:2},
-  ritual_specialist: {BODY:2, PER:2, INT:4, SOC:2, SPI:3, RES:5},
-  medium: {BODY:2, PER:3, INT:2, SOC:4, SPI:5, RES:2},
-  containment_specialist: {BODY:5, PER:2, INT:1, SOC:3, SPI:2, RES:5},
+  paranormal_investigator: {BODY:1, PER:5, INT:5, SOC:4, SPI:1, RES:2},
+  ritual_specialist: {BODY:1, PER:1, INT:5, SOC:2, SPI:4, RES:5},
+  medium: {BODY:1, PER:2, INT:2, SOC:5, SPI:5, RES:3},
+  containment_specialist: {BODY:5, PER:3, INT:1, SOC:3, SPI:1, RES:5},
   occult_engineer: {BODY:3, PER:3, INT:3, SOC:3, SPI:3, RES:3},
-  field_medic: {BODY:4, PER:5, INT:2, SOC:2, SPI:1, RES:4},
+  field_medic: {BODY:5, PER:5, INT:1, SOC:3, SPI:1, RES:3},
 } satisfies Record<Profession, LiteStats>;
 
 const legacyCoreStat = {body:'BODY', mind:'PER', spirit:'SPI', knowledge:'INT'} as const;
@@ -104,6 +104,9 @@ const legacyCoreStat = {body:'BODY', mind:'PER', spirit:'SPI', knowledge:'INT'} 
 export function characterAttribute(character: Character, legacy: Attribute, core: keyof LiteStats = legacyCoreStat[legacy]) {
   return character.coreStats?.[core] ?? character.stats[legacy];
 }
+
+export const STARTING_CHARACTER_HP = 15;
+export const characterMaxHp=(character:Character)=>character.maxHp ?? 10;
 
 export const maxPlayerNameLength = 32;
 
@@ -126,6 +129,7 @@ export interface Character {
   profession: Profession;
   bonus?: Attribute;
   stats: Stats;
+  maxHp?: number;
   hp: number;
   sanity: number;
   focus: number;
@@ -143,7 +147,8 @@ export function createCharacter(profession: unknown, bonus: unknown, selection?:
     stats[stat]++;
   }
   const base = {
-    profession: role, stats, hp: 10, sanity: 10, focus: 4,
+    profession: role, stats, hp: usePreset ? STARTING_CHARACTER_HP : 10, sanity: 10, focus: 4,
+    ...(usePreset ? {maxHp:STARTING_CHARACTER_HP} : {}),
     ...(usePreset ? {coreStats:{...characterPresets[role]}} : {bonus:stat}),
   };
   if (!selection) return base;

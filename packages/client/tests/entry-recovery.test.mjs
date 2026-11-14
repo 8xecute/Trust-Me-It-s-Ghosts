@@ -8,7 +8,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import * as shared from '@baan/shared';
 const {createCharacter}=shared;
 async function load(file){
- const bundle=await build({entryPoints:[fileURLToPath(new URL('../src/'+file,import.meta.url))],bundle:true,write:false,format:'cjs',platform:'node',packages:'external',plugins:[{name:'image-only-stubs',setup(b){
+ const bundle=await build({entryPoints:[fileURLToPath(new URL('../src/'+file,import.meta.url))],bundle:true,write:false,format:'cjs',platform:'node',packages:'external',loader:{'.css':'empty'},plugins:[{name:'image-only-stubs',setup(b){
   b.onLoad({filter:/CastPortraits\.tsx$/},()=>({contents:'export const portraitUrl=(key)=>key+".jpg";',loader:'js'}));
   b.onLoad({filter:/CaseScene\.tsx$/},()=>({contents:'export const CaseScene=()=>null;',loader:'js'}));
  }}]});const module={exports:{}};new Function('require','module','exports',bundle.outputFiles[0].text)(name=>name==='@baan/shared'?shared:createRequire(import.meta.url)(name),module,module.exports);return module.exports;

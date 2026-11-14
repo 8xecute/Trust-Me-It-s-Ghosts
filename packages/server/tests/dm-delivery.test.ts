@@ -84,10 +84,10 @@ test('a scripted exploration check waits for the assigned card and commits exact
  assert.throws(()=>send('b','dmRoll',{requestId:card.id}));
  const resolved=send('a','dmRoll',{requestId:card.id});
  assert.equal(resolved.lastCheck?.die,11);
- assert.equal(resolved.characters?.a.coreStats?.PER,3);
- assert.equal(resolved.lastCheck?.total,14);
+ assert.equal(resolved.characters?.a.coreStats?.PER,2);
+ assert.equal(resolved.lastCheck?.total,13);
  assert.equal(resolved.diceRequest?.die,11);
- assert.deepEqual(resolved.diceRequest?.result,{total:14,outcome:resolved.lastCheck?.outcome});
+ assert.deepEqual(resolved.diceRequest?.result,{total:13,outcome:resolved.lastCheck?.outcome});
  assert.deepEqual(panel().investigators.find(entry=>entry.id==='a')?.diceRequest?.result,resolved.diceRequest?.result);
  assert.equal(view('b').diceRequest,null);
  assert.equal(resolved.pendingCheck,undefined);
@@ -139,6 +139,6 @@ test('DM selected stat and DC govern a pending legacy scene action',()=>{
  const card=view('a').diceRequest!;
  assert.deepEqual(card.dice,{stat:'BODY',dc:17,ap:0});
  send('a','dmRoll',{requestId:card.id});
- assert.deepEqual(view('b').latestRoll!.result,{total:13,outcome:'failure'});
+ assert.deepEqual(view('b').latestRoll!.result,{total:12,outcome:'failure'});
  assert.equal(view('a').case001!.evidence,0);
 });

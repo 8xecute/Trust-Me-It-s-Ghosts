@@ -5,7 +5,7 @@ import {travelCaseMap,resumeSessionBattle,turnEncounterAction} from './case001/c
 import { sharedCaseStory, newGuided, observeGuidedScene, allowedGuidedScenes, canOpenGuidedScene, guidedView, guidedCommand, guidedScript, guidedBackup } from './case001/guidedCase.js';
 import { newState51, presentScene51, dmOptions51, storySummary51, dialogue51, command51, delivered51, validateSave51, lethalAnnouncement51 } from './case001/storyV51.js';
 import { availableDialogue, storyCheckResponse, isStoryCheck, storyCheckHelp, storyCheckOptions } from './case001/storyDice.js';
-import { completeCaseRound, executeCaseAction } from './case001/caseActions.js';
+import { completeCaseRound, executeCaseAction, dmEncounterOption, startDmEncounter } from './case001/caseActions.js';
 import { caseCombatStats } from './case001/caseCombatStats.js';
 import { characterAttribute, caseNpcs, type CaseNpcPlacement, type CaseNpcPosition } from '@baan/shared';
 import { addFact, dmEventPreviews, advanceStory, previewDialogue, sceneSpeakers, gmGuide, gmGuideV41 } from './case001/caseStory.js';
@@ -34,7 +34,7 @@ type DmSession = {
  log:DmLogEntry[];
 };
 
-export type WorldAction = {id:string;type:'dmSendQa';qaId:unknown;text:unknown} | {id:string;type:'turnEncounter';round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown;enemyId?:unknown;step?:unknown}
+export type WorldAction = {id:string;type:'dmStartEncounter'} | {id:string;type:'dmSendQa';qaId:unknown;text:unknown} | {id:string;type:'turnEncounter';round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown;enemyId?:unknown;boost?:unknown;step?:unknown}
  | {id:string;type:'releaseCharacter'} | {id:string;type:'setPlayerNames';playerName?:unknown;characterName?:unknown} | {id:string;type:'updateCharacter';profession:unknown;bonus?:unknown;talent?:unknown;playerName?:unknown;characterName?:unknown} | {id:string;type:'dmSessionControl';command:'pause'|'resume'|'withdraw'|'rewind'|'attendance'|'clearPending';targetId?:string;absent?:boolean} | {id:string;type:'dmPlaceNpc';site:string;npcId:string;position:CaseNpcPosition|null} | {id:string;type:'guided';command:string;target?:string} | {id:string;type:'dmPublish'|'dmDismiss';cardId:string;part?:'narration'|'dialogue'|'all'} | {id:string;type:'dmCancelCheck';targetId:string;checkId:string} | {id:string;type:'dmRequestRoll';targetId:string;checkId?:string;difficulty?:unknown;stat?:unknown} | {id:string;type:'dmTravel';actionId:string;site:Site} | {id:string;type:'dmNarrativeNext';targetId:string;sequence:number} | {id:string;type:'narrativeNext';sequence:number} | {id:string;type:'caseDm';targetId:string;actionId:string} | {id:string;type:'caseObjective';step?:number} | {id:string;type:'createCharacter';profession:unknown;bonus:unknown;talent?:unknown;background?:unknown;biography?:unknown;playerName?:unknown;characterName?:unknown} | {id:string;type:'caseStart';mode?:'story'} | {id:string;type:'caseAction';actionId:string;boost?:unknown;site?:Site} | {id:string; type:'claimDm'|'releaseDm'} | {id:string; type:'dmEvent'|'dmDialogue'|'dmScene'; targetId:string} | {id:string; type:'dmRoll'; requestId:string} | {id:string; type:'chooseDialogue'; dialogueId:string; choiceId:string} | {id:string; type:'move'; target:Cell} | {id:string;type:'open'|'close'|'collect';objectId:string} | {id:string;type:'useTalent'|'usePassive'|'stabilize'|'tacticalCheck';boost?:unknown;targetId?:unknown;target?:unknown;allyTarget?:unknown} | {id:string;type:'start'|'breakRestraint'|'endTurn'|'pacify'|'strike'|'escape'|'focus'|'check'};
 export interface World { inactivePlayers?:string[];preparingSession?:boolean; playerNames?:Record<string,{playerName?:string;characterName?:string}>; paused?:boolean; basicMode?:true; dmSession?:DmSession; sceneMode?:true;  narrative?:NarrativeState; caseMap?:CaseMap; tactics?:Tactics; characters?:Record<string,Character>; backgroundUses?:Set<string>; biographies?:Record<string,Biography>; revision:number; players:Record<string,Cell>; objects:Record<string,{x:number;y:number;state:'closed'|'open'|'locked'|'static';evidenceId?:string;collected?:boolean}>; evidence:string[]; inventory:Record<string,string[]>; encounter:GhostEncounter|null; activePlayer:string|null; roundStart:string|null; turns:Record<string,TurnState>; lastCheck:{playerId:string;die:number;total:number;outcome:CheckOutcome}|null; case001?:CaseState; scenario:ScenarioProgress; humanDmId:string|null; diceRequest:DmRollCard|null; }
 type Snapshot = Omit<World,'dmSession'|'narrative'|'case001'|'caseMap'|'backgroundUses'|'biographies'> & {manualDm?:true;awaitingReport?:boolean;dmLog?:DmLogEntry[];pendingCheck?:string;narrative?:ReturnType<typeof narrativeView>} & {dm:ScriptedDmView;case001?:ReturnType<typeof caseView>;caseMap?:{site:string;npcs?:CaseNpcPlacement[];opportunity?:string;withdrawalBlocked?:boolean;battle?:ReturnType<typeof battleView>;turnConclusion?:CaseMap['turnConclusion']}};
@@ -203,6 +203,7 @@ export class WorldStore {
   if(!w.case001 && this.storyRoomsOnly) return {caseMode:true,guide:this.storyDiceV41 ? gmGuideV41 : gmGuide,narration:[],travel:[],investigators:[]};
   if(w.case001?.story) return {
    caseMode:true,
+   encounterStart:dmEncounterOption(w),
    npcDossiers:structuredClone(w.case001.guided?.version==='5.5'?npcDossiers55:noTimer(w.case001)?npcDossiers52:npcDossiers),
    backup:guidedBackup(w),
    sent:structuredClone(w.dmSession?.sent ?? Object.fromEntries((w.narrative?.records ?? []).map(beat=>[beat.eventId,{text:beat.text,site:beat.site,sequence:beat.sequence,count:1}]))),
@@ -236,7 +237,7 @@ export class WorldStore {
    const check=w.dmSession?.checks[id];
    const actionOptions=noTimer(w.case001!) && !!w.characters?.[id]?.hp && !w.inactivePlayers?.includes(id) ?
     [...(!w.caseMap?.battle?caseOptions({...w.case001!,site},true):[]),...storyCheckOptions(w,id)]
-     .filter(option=>!isDmQuestion(option.id) && !option.id.startsWith('travel:') && option.id!=='finish') : [];
+     .filter(option=>option.id!=='begin-final55' && !isDmQuestion(option.id) && !option.id.startsWith('travel:') && option.id!=='finish') : [];
    const special=w.dmSession ? caseOptions({...w.case001!,site},true).filter(option=>option.id==='sense' || option.id==='lore')
     .filter(option=>questionPreview(w,id,option.id)) : [];
    return {id,site,actions:actionOptions.map(option=>({id:option.id,label:readerLabel(option.label),check:!!option.check})),script:noTimer(w.case001!)?'':script,secret:noTimer(w.case001!)?'':secret,check:check && {id:check.id,label:check.label,dice:check.dice,stat:check.stat},diceRequest:w.dmSession?.rolls[id],narrative:narrativeView(w.narrative,id),events:noTimer(w.case001!) ? [] : dmEventPreviews({...w.case001!,site}),choices:w.caseMap?.battle?.site===site || !w.characters?.[id]?.hp ? [] : [...choices,...special].map(choice=>({
@@ -279,7 +280,7 @@ export class WorldStore {
   const awaitingReport=!!(dmSession && !isDm && story?.report && !delivered?.history.some(beat=>beat.eventId.startsWith('ending:')));
   if(dmSession && !isDm && story) {
    story.intro='';
-   story.actions=story.actions.filter(option=>!isDmQuestion(option.id) && !option.id.startsWith('travel:'));
+   story.actions=story.actions.filter(option=>option.id!=='begin-final55' && !isDmQuestion(option.id) && !option.id.startsWith('travel:'));
    story.notice=delivered?.history.at(-1)?.text ?? 'รอผู้ดำเนินเรื่องจ่ายบทเล่า';
    if(awaitingReport) story.report=null;
    world.diceRequest=viewer ? dmSession.rolls[viewer] ?? null : null;
@@ -292,9 +293,10 @@ export class WorldStore {
    dmLog:dmSession.log.filter(entry=>isDm || (!!viewer && entry.recipients.includes(viewer))),
    pendingCheck:viewer ? dmSession.checks[viewer]?.actionId : undefined,
   } : {};
+  if(story && case001?.guided?.version==='5.5' && world.humanDmId && !isDm)story.actions=story.actions.filter(option=>option.id!=='begin-final55');
   return {...world,...manual,...(case001?.guided ? {guided:guidedView({...world,case001,caseMap,dmSession,narrative})} : {}),...(viewer && narrative?{narrative:narrativeView(narrative,viewer)}:{}),case001:story,
-   ...(caseMap && site && localCase ? {caseMap:{site,npcs:(caseMap.npcPlacements?.[site] ?? []).filter(npc=>isDm || !npc.hidden),opportunity:caseOpportunity(localCase,caseMap),withdrawalBlocked:!!caseMap.battle,battle:battleView(caseMap,site,{...world,caseMap,case001},isDm),
-    ...(site==='C' && caseMap.turnConclusion ? {turnConclusion:caseMap.turnConclusion} : {})}} : {}),dm:getScriptedDmView(scenario,world.scenario)};
+   ...(caseMap && site && localCase ? {caseMap:{site,npcs:(caseMap.npcPlacements?.[site] ?? []).filter(npc=>isDm || !npc.hidden),opportunity:case001?.guided?.version==='5.5' && world.humanDmId && !isDm ? undefined : caseOpportunity(localCase,caseMap),withdrawalBlocked:!!caseMap.battle,battle:battleView(caseMap,site,{...world,caseMap,case001},isDm),
+    ...(caseMap.turnConclusion && site===(caseMap.turnConclusion.site ?? 'C') ? {turnConclusion:caseMap.turnConclusion} : {})}} : {}),dm:getScriptedDmView(scenario,world.scenario)};
  }
  delete(code:string){this.worlds.delete(code);this.seen.delete(code);this.rewinds.delete(code);}
  apply(code:string,player:string,input:unknown):{snapshot:Snapshot;duplicate:boolean} {
@@ -355,6 +357,7 @@ export class WorldStore {
    narrativeActors=[targetId];
    a={id:a.id,type:'caseAction',actionId};
   }
+  if(a.type==='start' && w.case001?.guided?.version==='5.5' && w.humanDmId)throw Error('เฉพาะ DM เท่านั้นที่เริ่มฉากต่อสู้ได้');
   const storyStart=a.type==='caseStart' && (a.mode==='story' || (this.storyRoomsOnly && !!w.characters));
   if(w.inactivePlayers?.includes(player))throw Error('ตัวละครพักใน session นี้');
   if(w.characters && w.humanDmId===player && !storyStart && ['move','open','close','collect','chooseDialogue','start','endTurn','strike','escape','pacify','tacticalCheck','stabilize','breakRestraint','caseStart'].includes(a.type)) throw Error('คำสั่งนี้สำหรับผู้สืบสวน');
@@ -370,7 +373,9 @@ export class WorldStore {
   }
   const caseTactical=w.caseMap && (!w.sceneMode || a.type==='start' || !!w.caseMap.battle) &&
     ['move','start','endTurn','strike','pacify','escape','useTalent','usePassive','stabilize','breakRestraint','caseObjective'].includes(a.type);
-  if(a.type==='turnEncounter') {
+  if(a.type==='dmStartEncounter') {
+   startDmEncounter(w,requester,this.rollD20);
+  } else if(a.type==='turnEncounter') {
    turnEncounterAction(w,player,a,this.rollD20,()=>completeCaseRound(w));
    if(w.case001?.guided?.version==='5.5' && w.case001.v51?.RITUAL_STATUS==='stopped' && w.case001.guided.scene!=='F5')observeGuidedScene(w,'F5');
   } else if(caseTactical) {

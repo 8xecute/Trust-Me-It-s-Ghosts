@@ -13,6 +13,20 @@ import { DmHistory } from '../case/DmHistory';
 import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
 import { CaseScene } from '../case/CaseScene';
 import { TurnConclusion, TurnEncounter } from '../combat/TurnEncounter';
+import {dmEventGroup,isSceneInteraction} from './dmEventGroups';
+
+function DmSceneInteractions({panel,enabled,action,playerName}:{panel:CaseDmPanel;enabled:boolean;playerName:(id:string)=>string;action:(type:string,payload?:object)=>void}) {
+ const [actor,setActor]=useState('');
+ const investigators=panel.investigators.filter(entry=>entry.actions?.some(isSceneInteraction));
+ const investigator=investigators.find(entry=>entry.id===actor) ?? investigators[0];
+ if(!investigator)return null;
+ return <section className="dm-quick-card" aria-label="สิ่งของและผู้สูญหายในฉาก">
+  <h4>สิ่งของและผู้สูญหายในฉาก</h4>
+  <p className="note">ใช้เมื่อผู้เล่นลงมือจริง เพื่อบันทึกสิ่งที่พบหรือการช่วยเหลือ การสำรวจทั่วไปเล่าได้เลย</p>
+  <label>ผู้ลงมือ<select value={investigator.id} onChange={event=>setActor(event.target.value)}>{investigators.map(entry=><option key={entry.id} value={entry.id}>{playerName(entry.id)}</option>)}</select></label>
+  <div className="button-row">{investigator.actions?.filter(isSceneInteraction).map(option=><button key={option.id} type="button" disabled={!enabled || !!investigator.check || investigator.diceRequest?.die===null} onClick={()=>action('caseDm',{targetId:investigator.id,actionId:option.id})}>{option.label}</button>)}</div>
+ </section>;
+}
 
 function DmAdjudication({panel,enabled,action,playerName,onPrepared}:{
  panel:CaseDmPanel;enabled:boolean;playerName:(id:string)=>string;onPrepared?:()=>void;
@@ -119,7 +133,10 @@ export function DmWorkspace({
   const canChooseBeat=queue.length>1 && !nextCard?.eventId.startsWith('guided-cue:');
   const visibleBeat=(canChooseBeat && queue.find(card=>card.id===selectedBeat)) || nextCard;
   const reactionEvents=(dmPanel?.storyEvents ?? []).filter(event=>['prevented','fatal','backlash-prevented','backlash-resolved'].includes(event.id));
-  const sceneEvents=(dmPanel?.storyEvents ?? []).filter(event=>event.id!=='enable-lethal' && !event.id.startsWith('context:') && !reactionEvents.includes(event));
+  const recordEvents=(dmPanel?.storyEvents ?? []).filter(event=>event.id!=='enable-lethal' && !event.id.startsWith('context:') && !reactionEvents.includes(event));
+  const sceneEvents=recordEvents.filter(event=>dmEventGroup(event.id)==='scene');
+  const evidenceEvents=recordEvents.filter(event=>dmEventGroup(event.id)==='evidence');
+  const npcEvents=recordEvents.filter(event=>dmEventGroup(event.id)==='npc');
   const lethalSetting=dmPanel?.storyEvents?.find(event=>event.id==='enable-lethal');
   const lines=[
     ...answers.map(choice=>({id:choice.id,label:[choice.speaker,choice.label==='บทหลัก'?null:choice.label].filter(Boolean).join(' · ') || 'บทบรรยาย',text:choice.answer,prepare:false})),
@@ -210,6 +227,8 @@ export function DmWorkspace({
         <details><summary>เมื่อทีมอยากพักหรือปิดคดี</summary><p>ใช้ปุ่มพักคดีหรือถอนทีมในหน้าจัดการห้อง ปุ่มพักจะหยุดการกระทำของทุกคนและเปิดเล่นต่อได้ ตกลงพักกับทีมได้ และให้สมาชิกกลับเข้าห้องเดิมเมื่อพร้อมตามการตั้งค่าบันทึกของเซิร์ฟเวอร์ ออกชั่วคราวแล้วกลับด้วยปุ่มเล่นต่อหรือรหัสส่วนตัวได้</p><p>DM ถอนทีมได้ทุกบท และระบบใช้ผลที่เกิดขึ้นจริง การปิดคดีแล้วกลับมาสืบต่อไม่ได้</p></details>
        </> : <p>แผนสำรองนี้ใช้กับคดีแบบนำทางที่กำลังเล่น</p>}
       </section>
+
+      {dmPanel?.encounterStart && <section className="game-panel" aria-label="เริ่มการเผชิญหน้าโดย DM"><h3>พร้อมเปิดฉากต่อสู้</h3><p>เริ่มเมื่อทีมพร้อม แล้วส่งบทเปิดให้ผู้เล่นก่อนรอบแรก</p><button type="button" disabled={!connected || !!world?.paused} onClick={()=>action('dmStartEncounter')}>{dmPanel.encounterStart.label}</button></section>}
       {dmTab==='queue' && battle?.turnEncounter && world.caseMap &&
         <TurnEncounter site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
           isDm enabled={available} paused={world.paused} action={action}
@@ -257,13 +276,14 @@ export function DmWorkspace({
             <DmStoryEvents events={reactionEvents} connected={available} action={action} expanded/>
           </div>}
           {guided && ['5.2','5.3','5.5'].includes(guided.version) && <CaseStoryThread view={guided} beats={dmPanel.sharedStory ?? []} isDm onHistory={()=>setDmTab('history')}/>}
-            {!nextCard && (sceneEvents.length>0 || guided?.scene==='H1' || guided?.scene==='B3') && <section className="dm-quick-card">
-              <h4>บันทึกข้อเท็จจริงที่เกิดขึ้นแล้ว</h4>
-              <p className="note">ใช้หลังทีมลงมือจริง เพื่อให้บทพูดและฉากถัดไปสอดคล้องกับผลที่เกิดขึ้น การเปิดอ่านยังไม่บันทึกผล</p>
-              {guided?.scene==='H1' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐหลังวิเคราะห์หลักฐานครบ</button>}
+            {!nextCard && (sceneEvents.length>0 || guided?.scene==='B3') && <section className="dm-quick-card">
+              <h4>ผลเหตุการณ์ในฉากนี้</h4>
+              <p className="note">บันทึกเฉพาะเหตุที่เกิดขึ้นจริง ไม่ต้องกดยืนยันการสนทนาหรือการสำรวจทั่วไป</p>
               {guided?.scene==='B3' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'protect'})}>ยืนยันว่าคุยส่วนตัวและคุ้มครองต้นแล้ว</button>}
               <DmStoryEvents events={sceneEvents} connected={available} action={action} expanded/>
             </section>}
+            {!nextCard && <DmSceneInteractions panel={dmPanel} enabled={available} action={action} playerName={playerName}/>}
+            {!nextCard && evidenceEvents.length>0 && <section className="dm-quick-card"><h4>เอกสารและหลักฐาน</h4><p className="note">อ่าน เก็บ และส่งมอบเป็นคนละเหตุ บันทึกตามสิ่งที่ทีมทำจริง</p><DmStoryEvents events={evidenceEvents} connected={available} action={action} expanded/></section>}
         </div>
         <aside className="dm-live-side" aria-label="เครื่องมือประจำฉาก">
           <DmAdjudication panel={dmPanel} enabled={available} action={action} playerName={playerName} onPrepared={()=>setDmTab('dice')}/>
@@ -377,6 +397,9 @@ export function DmWorkspace({
       </div>
       <section hidden={dmTab!=='npcs'} className="gm-pane" aria-label="แฟ้ม NPC เฉพาะ DM">
         <h3>แฟ้ม NPC · เฉพาะ DM</h3><p className="note">ใช้เตรียมสวมบท ข้อมูลในแฟ้มไม่ได้ส่งให้ผู้เล่น</p>
+        {npcEvents.length>0 && <section className="dm-quick-card"><h4>การเดินทางและตำแหน่งวิชัย</h4><p className="note">บันทึกเมื่อมีการติดต่อ เห็นการตามมา หรือมาถึงจริง การเลือกดูไม่ทำให้วิชัยเดินทางมาเอง</p><DmStoryEvents events={npcEvents} connected={available && !nextCard} action={action} expanded/></section>}
+        {guided?.scene==='F5' && guided.version==='5.5' && <section className="dm-quick-card"><h4>ติดต่อประเสริฐหลังยุติพิธี</h4><p className="note">ใช้หลังวิเคราะห์หลักฐานครบและหยุดพิธีแล้ว การรับสายไม่ได้แปลว่าสารภาพ</p><button type="button" disabled={!available || !!nextCard} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐเพื่อถามข้อเท็จจริง</button></section>}
+        {guided?.scene==='H1' && guided.version!=='5.5' && <button type="button" disabled={!available} onClick={()=>action('guided',{command:'contactPrasert'})}>โทรหาประเสริฐหลังวิเคราะห์หลักฐานครบ</button>}
         {dmPanel?.npcDossiers?.map(npc=><details className="dm-private npc-dossier" key={npc.id}>
           <summary>{npc.name}</summary>
           <dl><dt>อารมณ์และวิธีสวมบท</dt><dd>{npc.roleplay}</dd><dt>ประวัติ</dt><dd>{npc.background}</dd><dt>แรงจูงใจ</dt><dd>{npc.motivation}</dd><dt>สิ่งที่รู้</dt><dd>{npc.knowledge}</dd><dt>ข้อมูลลับ / เงื่อนไข</dt><dd>{npc.secret}</dd></dl>

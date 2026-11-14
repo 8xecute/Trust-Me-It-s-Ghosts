@@ -155,3 +155,17 @@
 .c4-enemies img { width: 70px; height: 90px; object-fit: contain; }
 .c4-enemies p { font-size: .8rem; color: var(--c4-muted); }
 .c4-enemies progress { max-width: 120px; height: 8px; accent-color: var(--c4-mint); }
+
+.c4-status-panel { background: var(--c4-bg); padding: 14px; }
+.c4-status-panel summary { cursor: pointer; color: var(--c4-mint); font-weight: 700; }
+.c4-status-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 10px; margin-top: 12px; }
+.c4-status-grid article { padding: 12px; border: 1px solid var(--c4-edge); border-radius: 10px; background: var(--c4-panel); overflow-wrap: anywhere; }
+.c4-status-grid ul { padding: 0; list-style: none; display: grid; gap: 10px; margin-bottom: 0; }
+.c4-status-grid b { color: var(--c4-gold); font-size: .85rem; }
+.c4-status-grid p { color: var(--c4-muted); font-size: .8rem; }
+.c4-conclusion small { display: block; }
+
+.c4-flavour { display: grid; gap: 6px; padding: 10px 12px; margin: 6px 0; border-inline-start: 2px solid var(--c4-gold,#d7bb83); background: #101a1880; border-radius: 0 8px 8px 0; }
+.c4-flavour p { color: #d4e3da; font-size: .86rem; line-height: 1.65; }
+.c4-flavour blockquote { margin: 0; color: var(--c4-gold,#d7bb83); font-size: .87rem; line-height: 1.6; }
+.c4-flavour blockquote strong { display: inline; }

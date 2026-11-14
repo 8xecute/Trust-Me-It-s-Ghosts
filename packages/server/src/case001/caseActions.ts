@@ -3,7 +3,7 @@ import type { World } from '../world.js';
 import { observeGuidedScene, speakGuided } from './guidedCase.js';
 import { noTimer } from './v51Content.js';
 import { isStoryCheck, runStoryCheck } from './storyDice.js';
-import { applyCaseAction, failCase, tick } from './case001.js';
+import { applyCaseAction, caseOptions, failCase, tick } from './case001.js';
 import { caseOpportunity, completeTurnPlayer, startCaseBattle, syncCaseBattle, travelCaseMap } from './caseBattle.js';
 
 export function completeCaseRound(w:World) {
@@ -20,6 +20,7 @@ export function completeCaseRound(w:World) {
 export function executeCaseAction(w:World,player:string,a:{actionId:string;boost?:unknown;dcOverride?:number;statOverride?:keyof import('@baan/shared').LiteStats},roll:()=>number,coordinated=false) {
  if(w.case001?.guided?.version==='5.5' && a.actionId==='begin-final55') {
   const s=w.case001,v=s.v51!;
+  if(w.humanDmId && !coordinated)throw Error('เฉพาะ DM เท่านั้นที่เริ่มฉากต่อสู้ได้');
   if(player===w.humanDmId || !w.characters?.[player]?.hp || w.caseMap?.sites[player]!=='E' ||
     !s.guided!.presented.includes(s.guided!.scene) || !['E6','F1'].includes(s.guided!.scene) ||
     !s.key || !v.coreApproached || v.RITUAL_STATUS==='stopped' || w.caseMap.battle || v.finalDefense55)
@@ -78,4 +79,30 @@ export function executeCaseAction(w:World,player:string,a:{actionId:string;boost
     if(usedBoost && boost!=='focus') w.backgroundUses?.add(backgroundKey);
 
  for(const beat of w.case001?.narrativeEvents?.slice(first) ?? []) beat.actor=player;
+}
+
+export function dmEncounterOption(w:World) {
+ const s=w.case001,map=w.caseMap;
+ if(!s || !map || !w.humanDmId || s.guided?.version!=='5.5' || s.report || map.battle)return undefined;
+ if(!s.guided.presented.includes(s.guided.scene))return undefined;
+ const site=s.site;
+ const lead=Object.keys(w.players).find(id=>id!==w.humanDmId && !w.inactivePlayers?.includes(id) && !!w.characters?.[id]?.hp && map.sites[id]===site);
+ if(!lead)return undefined;
+ const final=caseOptions({...s,site},true).some(option=>option.id==='begin-final55');
+ const opportunity=caseOpportunity({...s,site},map);
+ if(!final && !opportunity)return undefined;
+ return {site,lead,final,label:final?'เริ่มเผชิญหน้าวงป้องกันกำไล':opportunity==='EN01'?'เริ่มเผชิญหน้าผีเงาจมน้ำ':opportunity==='EN02'?'เริ่มเผชิญหน้าแม่แก้วในสวน':'เริ่มการเผชิญหน้า'};
+}
+export function startDmEncounter(w:World,requester:string,roll:()=>number) {
+ if(requester!==w.humanDmId)throw Error('เฉพาะ DM เท่านั้นที่เริ่มฉากต่อสู้ได้');
+ if(w.paused)throw Error('คดียังพักอยู่');
+ const option=dmEncounterOption(w);
+ if(!option)throw Error('ยังเริ่มการเผชิญหน้าในฉากนี้ไม่ได้');
+ if(Object.keys(w.dmSession?.checks ?? {}).length || Object.values(w.dmSession?.rolls ?? {}).some(card=>card.die===null) || w.diceRequest?.die===null)throw Error('จัดการคำขอทอยที่ค้างก่อนเริ่มต่อสู้');
+ if(option.final)executeCaseAction(w,option.lead,{actionId:'begin-final55'},roll,true);
+ else {
+  startCaseBattle(w,option.lead,caseGrid(option.site),roll);
+  if(w.caseMap?.battle?.id==='EN01')observeGuidedScene(w,'C4');
+  if(w.caseMap?.battle?.id==='EN02')observeGuidedScene(w,'D4');
+ }
 }

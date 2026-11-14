@@ -10,6 +10,7 @@ const briefs:Record<string,{title:string;goal:string;plan:string}> = {
 export const shieldSteps=['ยึดจุดรับแรงสะท้อน','แยกสายคำสั่ง','คลายปมเกราะ','ปลดกำไลอย่างควบคุม'];
 
 export function encounterBrief(battle:BattleView) {
+  if(battle.turnEncounter?.pacifyDescription && battle.turnEncounter.scene==='C4')return {title:'อ่านท่าทีในคราบน้ำ',goal:'เลือกขับไล่ เรียกสติให้ผีชะงัก หรือพาทีมถอย',plan:'การเรียกสติช่วยหยุดการโจมตีชั่วคราว แต่ไม่จบการเผชิญหน้า'};
   return briefs[battle.turnEncounter?.scene ?? ''] ?? {title:'ร่วมกันรับมือ',goal:'รับมือการเผชิญหน้า',plan:'ดูสถานะเพื่อนก่อนเลือกการกระทำ'};
 }
 

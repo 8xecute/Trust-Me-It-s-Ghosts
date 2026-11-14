@@ -1,5 +1,7 @@
 # บริษัท เรื่องผีไว้ใจผม จำกัด
 
+ตำแหน่งโค้ด เนื้อเรื่อง ภาพต้นฉบับ เซฟ และไฟล์อ้างอิง: [คู่มือโครงสร้างโปรเจกต์](docs/PROJECT_LAYOUT.md)
+
 **Trust Me, It’s Ghosts Co., Ltd.**
 
 A Thai cooperative ghost-hunting browser game for 2–6 online investigators, with one human GM. The GM leads the team between illustrated scenes and answers player questions. The team resolves scripted D20 checks, and uses a grid during encounters.
@@ -49,7 +51,7 @@ Lethal Variant ปิดเป็นค่าเริ่มต้น เปิ�
 
 ห้องที่เลือก v4.3 เดินบท A → B → C → D → E → Final → Ending ผู้ดำเนินเรื่องเลือกฉากย่อยและส่ง cue ก่อนเสนอหัวข้อถาม ผู้เล่นถามอิสระได้ โดย DM เลือกคำตอบตามความรู้ของ NPC ก่อนออกบท DM เตรียมสมุดคดีให้ผู้สืบสวนยืนยันแทนทีม เมื่อยืนยันแล้วไม่ย้อนบทเก่า แต่ยังสำรวจฉากย่อยในบทเดียวกันได้
 
-คงจุดทอยเสริม 16 รายการ คำใบ้สามระดับ หลักฐานสำรองในบทถัดไป และทางจบโดยไม่ต่อสู้ ดูการเชื่อมข้อมูล ข้อแตกต่าง และวิธีทดสอบใน [CASE001_V43_INTEGRATION.md](docs/CASE001_V43_INTEGRATION.md)
+คงจุดทอยเสริม 16 รายการ คำใบ้สามระดับ หลักฐานสำรองในบทถัดไป และทางจบโดยไม่ต่อสู้ ดูการเชื่อมข้อมูล ข้อแตกต่าง และวิธีทดสอบใน [CASE001_V43_INTEGRATION.md](docs/case001/history/CASE001_V43_INTEGRATION.md)
 
 ห้องที่บันทึกก่อนอัปเดตใช้เวอร์ชันเดิมต่อ ไม่มีการแปลงไฟล์เซฟอัตโนมัติ ตั้ง `CASE_STORY_VERSION=4.1` ฝั่งเซิร์ฟเวอร์เพื่อให้ห้องใหม่ใช้ระบบก่อนหน้าได้
 
@@ -65,7 +67,7 @@ Final ใช้ฉากเรือนไม้ร้างเดิม หล�
 
 - ข้อมูลคดีและสเตตัสที่เซิร์ฟเวอร์โหลดอยู่ใน `packages/server/scenarios/case-001`
 - ภาพฉาก ภาพตัวละคร และสไปรต์ที่เกมโหลดอยู่ใน `packages/client/src/assets/case-001`
-- งานภาพต้นฉบับอยู่ใน `Art` และเอกสารออกแบบอยู่ใน `docs/reference`
+- งานภาพต้นฉบับอยู่ใน `assets/source/Art` และเอกสารออกแบบอยู่ใน `docs/reference`
 
 ### CASE 001 v4.1 และการบันทึกห้อง
 

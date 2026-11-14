@@ -50,6 +50,7 @@ type ReaderCheck = {
 };
 
 export type CaseDmPanel = {
+  encounterStart?:{label:string;site:string};
   storyProgress?:{observed:string[];presented:string[];sendableQaIds?:string[];answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[]};
   storyReader?:{sendableQaIds?:string[];answers?:{question:string;text:string;qaId?:string;scene?:string;sequence:number}[];qa?:{guidance?:string;id:string;scene:string;question:string;aliases:string[];answer:string;speaker:string;kind:string;dm_note:string;requirements:string[];guard_ids:string[]}[];scenes:ReaderScene[];endings:Record<string,{title:string;brief:string;paragraphs:string[]}>;checks:ReaderCheck[];observed:string[];presented:string[]};
   caseMode:true;

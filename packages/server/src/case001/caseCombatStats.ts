@@ -9,7 +9,8 @@ export interface CaseAttack {
  damage:number;
  targetDefense:LiteDefense;
  damageResource:'HP'|'Sanity';
- condition?:'ROOTED';
+ condition?:'ROOTED'|'SHAKEN'|'GUARD_BREAK';
+ detail?:string;
  telegraphOneBossTurnBeforeUse?:boolean;
  requires?:string;
 }

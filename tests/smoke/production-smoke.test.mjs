@@ -137,14 +137,13 @@ test('production room lifecycle over polling and WebSocket', {timeout:20000}, as
   assert.equal((await req(v2a,'game:action',{id:'publish',type:'dmPublish',cardId:briefing.id})).ok,false);
   assert.equal((await req(v2dm,'game:action',{id:'publish',type:'dmPublish',cardId:briefing.id})).ok,true);
   const asked=await req(v2a,'game:action',{id:'arrival',type:'askGm',text:'เกิดอะไรขึ้นที่หมู่บ้าน',site:'A'});
-  assert.equal(asked.ok,true);
-  assert.equal(asked.snapshot.case001.time,before.case001.time);
+  assert.equal(asked.ok,false);
+  assert.equal((await req(v2a,'game:snapshot')).snapshot.case001.time,before.case001.time);
   const panel=(await req(v2dm,'dm:panel')).panel;
-  const question=panel.questions[0];
   const answer=panel.investigators.find(player=>player.id===v2.playerId).choices.find(choice=>choice.id==='talk:arrival').answer;
   assert.match(answer,/ประเสริฐ/);
   assert.equal(JSON.stringify((await req(v2c,'game:snapshot')).snapshot).includes(answer),false);
-  assert.equal((await req(v2dm,'game:action',{id:'answer',type:'dmAnswer',cardId:question.id,actionId:'talk:arrival'})).ok,true);
+  assert.equal((await req(v2dm,'game:action',{id:'answer',type:'caseDm',targetId:v2.playerId,actionId:'talk:arrival'})).ok,true);
   assert.equal((await req(v2c,'game:snapshot')).snapshot.narrative.current.text,answer);
   assert.equal(JSON.stringify((await req(v2a,'game:snapshot')).snapshot).includes(casePanel.panel.investigators[0].secret),false);
   assert.equal((await req(v2dm,'game:action',{id:'roll-card',type:'dmRequestRoll',targetId:v2.playerId})).ok,true);
@@ -155,7 +154,7 @@ test('production room lifecycle over polling and WebSocket', {timeout:20000}, as
   const rolled=await req(v2a,'game:action',{id:'roll',type:'dmRoll',requestId:card.id});
   assert.ok(rolled.snapshot.diceRequest.die>=1 && rolled.snapshot.diceRequest.die<=20);
   assert.deepEqual((await req(v2dm,'game:snapshot')).snapshot.dmLog.map(entry=>entry.kind),
-    ['narration','question','answer','roll-requested','roll-result']);
+    ['narration','answer','roll-requested','roll-result']);
   const watched=new Promise(resolve=>{
     v2c.on('game:snapshot',function observe(snapshot){
       if(snapshot.caseMap?.site==='B'){v2c.off('game:snapshot',observe);resolve(snapshot);}
