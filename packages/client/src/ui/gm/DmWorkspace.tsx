@@ -193,6 +193,14 @@ export function DmWorkspace({
       {['guide','npcs','backup','history'].includes(dmTab) && <div className="dm-case-secondary" aria-label="เอกสารอ้างอิง DM">
         {(['guide','npcs','backup','history'] as const).map((tab,index)=><button key={tab} type="button" aria-pressed={dmTab===tab} onClick={()=>setDmTab(tab)}>{['สารบัญฉาก','แฟ้ม NPC','ทางสำรอง','บันทึก'][index]}</button>)}
       </div>}
+      {guided?.version==='5.5' && <form onSubmit={event=>{event.preventDefault();const id=new FormData(event.currentTarget).get('scene');if(typeof id==='string' && id)openScene(id);}}>
+        <label>DM เลือกเปลี่ยนฉาก <select name="scene" defaultValue="" disabled={!available || !!battle} required>
+          <option value="">เลือกฉากที่จะย้ายทั้งทีมไป</option>
+          {readyScenes.map(scene=><option key={scene.id} value={scene.id}>{sceneName(scene.id)}</option>)}
+        </select></label>
+        <button type="submit" disabled={!available || !!battle}>เปลี่ยนฉากทั้งทีม</button>
+        {!!battle && <p className="note">จบการเผชิญหน้าก่อนเปลี่ยนฉาก</p>}
+      </form>}
       {world.paused && <p className="gm-alert" role="status">คดีพักอยู่ <button type="button" onClick={()=>setDmTab('team')}>ไปเปิดเล่นต่อ</button></p>}
       {dmTab==='dice' && world.latestRoll && <D20Card key={world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
       {!dmPanel && dmTab==='queue' && <p role="status">กำลังโหลดคิวและสถานะฉาก</p>}

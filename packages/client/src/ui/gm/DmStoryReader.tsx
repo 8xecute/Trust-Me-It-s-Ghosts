@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { CaseDmPanel, GuidedView } from '../../network/onlineTypes';
 import './DmStoryReader.css';
+import {groupQuestions,importantQuestions} from './qaPresentation';
 
 const groups=[['A','บท A'],['B','บท B'],['C','บท C'],['D','บท D'],['E','บท E'],['FINAL','ช่วงท้าย'],['ENDING','ตอนจบ']];
 const branches=[['full','สำเร็จเต็มที่'],['partial','สำเร็จบางส่วน'],['failure','ไม่สำเร็จ']] as const;
@@ -20,9 +21,11 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
  const [allQuestions,setAllQuestions]=useState(false);
  const [roleFilter,setRoleFilter]=useState('all');
  const [openQuestion,setOpenQuestion]=useState<string>();
+ const [importantOnly,setImportantOnly]=useState(false);
  const answers=reader.answers ?? [];
  const id=selected ?? view.scene;
  const questions=(reader.qa ?? []).filter(q=>(allQuestions || q.scene===id) &&
+  (!importantOnly || !!importantQuestions[q.id]) &&
   (roleFilter==='all' || (roleFilter==='dm'?q.kind!=='npc' && q.kind!=='action':q.kind===roleFilter)) &&
   [q.question,q.answer,q.speaker,...q.aliases].join(' ').toLocaleLowerCase().includes(qaQuery.trim().toLocaleLowerCase()));
  const scenes=reader.scenes;
@@ -88,8 +91,9 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
       <h3>เล่าอะไรในฉากนี้</h3><p>{scene.brief[0]}</p>
       <h4>ทางไปต่อ</h4><p>{scene.brief[1]}</p>
      </section>
-     {currentCue && <details className="dm-reader-aloud">
-      <summary>DM บรรยาย · บทเปิดอ่านให้ทีมฟัง</summary>
+     {currentCue && <details className="dm-reader-aloud dm-reader-important" open>
+      <summary><span className="dm-important-badge">บทบรรยายสำคัญ</span> DM บรรยาย · บทเปิดอ่านให้ทีมฟัง</summary>
+      <p className="note">อ่านเมื่อเปิดฉากจริง ไม่ต้องอ่านสรุปและข้อมูลลับของ DM ให้ผู้เล่นฟัง</p>
       <blockquote>{plain(currentCue)}</blockquote>
       <button type="button" onClick={()=>void copy(currentCue)}>คัดลอกบทเปิด</button> <span role="status">{copyStatus}</span>
      </details>}
@@ -101,21 +105,26 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
        <p>{plain(line.text)}</p>
       </div>)}
      </details>}
-     {scene.clues && <details><summary>เบาะแสและจุดตรวจ</summary><p className="story-text">{scene.clues}</p></details>}
+     {scene.clues && <details className="dm-reader-important"><summary>จุดสำคัญสำหรับ DM · เบาะแสและจุดตรวจ</summary><p className="note">บรรยายเฉพาะสิ่งที่ทีมพบหรือตรวจจริง ไม่อ่านเบาะแสที่ยังไม่เปิดเผย</p><p className="story-text">{scene.clues}</p></details>}
      {scene.secret && <details><summary>ข้อมูลลับสำหรับ DM</summary><p className="story-text">{scene.secret}</p></details>}
      {!!reader.qa?.length && <section aria-label="คลังคำถามและคำตอบสำหรับ DM">
       <h3>คำถาม–คำตอบ <small>{questions.length} รายการ</small></h3>
       <p className="note">เลือกคำถามเพื่ออ่านคำตอบ ป้ายระบุว่าใครเป็นผู้พูด การเปิดอ่านไม่ส่งข้อความและไม่เปลี่ยนสถานะเกม</p>
+      <p className="note">เรียง NPC ตามผู้พูด ตามด้วย DM บรรยาย และเฉพาะ DM ข้อสำคัญอยู่บนสุดของแต่ละกลุ่ม ใช้เมื่อเงื่อนไขครบเท่านั้น</p>
       <div className="dm-qa-tools">
        <label className="dm-qa-search">ค้นหาคำถามหรือคำตอบ<input type="search" value={qaQuery} onChange={event=>setQaQuery(event.target.value)} placeholder="เช่น คนหาย ตำรวจ ประเสริฐ"/></label>
        <label>ประเภทคำตอบ<select value={roleFilter} onChange={event=>setRoleFilter(event.target.value)}><option value="all">ทั้งหมด</option><option value="npc">NPC พูด</option><option value="dm">DM บรรยาย / อ่านเอกสาร</option><option value="action">คำแนะนำเฉพาะ DM</option></select></label>
        <label className="dm-qa-scope"><input type="checkbox" checked={allQuestions} onChange={event=>setAllQuestions(event.target.checked)}/> ค้นทุกฉาก</label>
+       <label className="dm-qa-scope"><input type="checkbox" checked={importantOnly} onChange={event=>setImportantOnly(event.target.checked)}/> เฉพาะข้อสำคัญ</label>
       </div>
-      <div className="dm-qa-grid">{questions.map(q=>{
+      {groupQuestions(questions).map(group=><section key={group.id} className="dm-qa-group" data-role={group.kind} aria-label={group.title}>
+       <h4 className="dm-qa-group-title">{group.title} <small>{group.items.length} รายการ</small></h4>
+       <div className="dm-qa-grid">{group.items.map(q=>{
        const sent=answers.filter(answer=>answer.qaId===q.id);
-       return <details className="dm-qa-card" key={q.id} data-kind={q.kind} data-sent={!!sent.length} open={openQuestion===q.id}>
+       return <details className="dm-qa-card" key={q.id} data-kind={q.kind} data-important={!!importantQuestions[q.id]} data-sent={!!sent.length} open={openQuestion===q.id}>
         <summary onClick={event=>{event.preventDefault();setOpenQuestion(openQuestion===q.id?undefined:q.id);}}>
-         <span className="dm-qa-question">{q.question}</span>
+         <span className="dm-qa-question">{importantQuestions[q.id] && <span className="dm-important-badge">คำถามสำคัญ</span>}{q.question}</span>
+         {importantQuestions[q.id] && <small className="dm-qa-priority">{importantQuestions[q.id]}</small>}
          <span className="dm-qa-meta"><span className="dm-role-badge">{answerRole(q.kind,q.speaker)}</span><small>{q.scene} · {sent.length?'ส่งแล้ว '+sent.length+' ครั้ง':'ยังไม่ส่ง'}</small></span>
         </summary>
         <div className="dm-qa-body">
@@ -136,7 +145,7 @@ export function DmStoryReader({reader,allowed,view,connected,action}:{reader:Non
         {!!sent.length && <p className="note">ส่งล่าสุด: {sent.at(-1)!.text}</p>}
         </div>
        </details>;
-      })}</div>
+      })}</div></section>)}
       {!questions.length && <p>ไม่พบคำถามที่ตรงกับตัวกรอง</p>}
       <details><summary>ประวัติคำตอบที่ส่งจริง · {answers.filter(answer=>allQuestions || answer.scene===id).length} รายการ</summary>
       {answers.filter(answer=>allQuestions || answer.scene===id).slice().reverse().map(answer=><section className="dm-qa-card" key={answer.sequence}>

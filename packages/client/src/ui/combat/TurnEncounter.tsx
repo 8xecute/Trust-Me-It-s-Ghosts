@@ -46,9 +46,22 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
   const allowed=!!(enabled && action && turn.ready && myTurn && !waitingForStoryRoll);
   const name=(id:string)=>battle.enemies.find(candidate=>candidate.id===id)?.name || characters[id]?.playerName || characters[id]?.characterName ||
     (characters[id] ? professions[characters[id].profession].name : 'ผู้สืบสวน');
+  const TeamPanel=isDm?'div':'details';
+  const ExtraPanel=isDm?'div':'details';
+  const Journal=isDm?'aside':'details';
+  const selfCharacter=self?characters[self]:undefined;
+  const selfStatuses=self?combatStatuses(battle,self,characters,name):[];
   const heading=!turn.ready?(isDm?'รอเปิดฉาก '+turn.scene:'รอ DM เปิดการเผชิญหน้า') : npcTurn ? 'ตาของ'+enemy.name :
     battle.active===self?'ถึงตาคุณแล้ว':'ตาของ'+name(battle.active!);
-  return <section className="c4-encounter" data-manifestation={state} data-wounded={enemy.hp>0 && enemy.hp<(enemy.maxHp ?? turn.maxHp)/2} aria-label="ฉากเผชิญหน้า">
+  const latestBeat=latest && <section className="c4-spotlight" role="status" key={battle.round+':'+turn.history.length+':'+latest.actor+':'+latest.label}>
+      <small>เหตุการณ์ล่าสุด · รอบ {latest.round}</small>
+      <strong>{describeBeat(latest,name)}</strong>
+      <CombatFlavourLine beat={latest}/>
+      {latest.check && <span className="c4-roll" data-result={latest.check.outcome}>D20 {latest.check.die} · รวม {latest.check.total} · {outcomes[latest.check.outcome]}</span>}
+      <p>{latest.effect ?? (latest.check?outcomes[latest.check.outcome]:'บันทึกการกระทำแล้ว')}</p>
+      {describeChanges(latest).map(text=><small key={text}>{text}</small>)}
+    </section>;
+  return <section className="c4-encounter" data-player={!isDm} data-manifestation={state} data-wounded={enemy.hp>0 && enemy.hp<(enemy.maxHp ?? turn.maxHp)/2} aria-label="ฉากเผชิญหน้า">
     <header className="c4-stage" style={{backgroundImage:'linear-gradient(90deg, #081513 10%, #081513dc 45%, #08151338), url('+illustrations[site]+')'}}>
       {battle.final55 && <div className="c4-wards" aria-hidden="true">{[0,1,2].map(step=><i key={step} data-broken={battle.final55!.step>step}/> )}</div>}
       <img className="c4-ghost" src={turn.scene==='C4'?drowned:turn.scene==='D4'?kaew:kaewFinal} alt=""/>
@@ -70,10 +83,16 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         </div>
       </article>)}
     </section>}
+
+{isDm && <>
+    <ExtraPanel className="c4-extra-panel">
+      {!isDm && <summary>เป้าหมาย แผน และเสียงเตือน</summary>}
     <button type="button" className="c4-sound" aria-pressed={cue.enabled} onClick={()=>void cue.toggle()}>เสียงเตือนท่าผี: {cue.enabled?'เปิด':'ปิด'}</button>
     {turn.ready && <section className="c4-plan" aria-label="วางแผนร่วมกัน">
       <strong>{brief.title}</strong><p>{brief.goal}</p><small>{brief.plan}</small>
     </section>}
+    </ExtraPanel>
+</>}
     {battle.enemies.length===1 && turn.conditions?.silenced[enemy.id] && <p className="c4-plan">ถูกสะกดเสียง · ผีใช้ท่าโจมตีทางจิตไม่ได้ในตานี้ แต่ยังโจมตีทางกายได้</p>}
     {battle.enemies.length===1 && enemy.opening && <p className="c4-plan">มีช่องเปิด · เพื่อนของ {name(enemy.opening.actor)} โจมตี +2 ครั้งเดียวถึงรอบ {enemy.opening.until}</p>}
     {threat && <section className="c4-threat" role="status"><strong>{threat.title}</strong><p>{threat.detail}</p></section>}
@@ -83,15 +102,20 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
       </li>)}</ol>
       <p>{state==='dispersed'?'ร่างผีสลายแล้ว แต่พิธียังทำงาน — ลงมือจัดการอาคมต่อ':battle.final55.shield==='up'?'เกราะยังรับความเสียหาย — จัดการจุดอาคมตามลำดับ':'เกราะเปิดแล้ว — ปลดกำไลให้สำเร็จเพื่อหยุดพิธี'}</p>
     </section>}
-    {latest && <section className="c4-spotlight" role="status" key={battle.round+':'+turn.history.length+':'+latest.actor+':'+latest.label}>
-      <small>เหตุการณ์ล่าสุด · รอบ {latest.round}</small>
-      <strong>{describeBeat(latest,name)}</strong>
-      <CombatFlavourLine beat={latest}/>
-      {latest.check && <span className="c4-roll" data-result={latest.check.outcome}>D20 {latest.check.die} · รวม {latest.check.total} · {outcomes[latest.check.outcome]}</span>}
-      <p>{latest.effect ?? (latest.check?outcomes[latest.check.outcome]:'บันทึกการกระทำแล้ว')}</p>
-      {describeChanges(latest).map(text=><small key={text}>{text}</small>)}
+
+
+
+    {isDm && latestBeat}
+    {isDm && battle.final55 && <p className="c4-hint" role="status">เกราะ{battle.final55.shield==='up'?'ยังป้องกันอยู่':'เปิดแล้ว'} · สำเร็จ {battle.final55.step}/3 ขั้น · {battle.final55.step===3?'ลงมือปลดกำไลอีกครั้งเพื่อหยุดพิธี':'จัดการจุดอาคมตามลำดับ'}{battle.final55.damageBlocked?' · เกราะรับความเสียหายไว้':''}</p>}
+    {!isDm && selfCharacter && <section className="c4-self" aria-label="สถานะของคุณ">
+      <div><strong>{name(self!)} · คุณ</strong><span>ชีวิต {selfCharacter.hp}/{selfCharacter.maxHp ?? 10} · สติ {selfCharacter.sanity} · สมาธิ {selfCharacter.focus}</span></div>
+      <div className="c4-self-status">{selfStatuses.length?selfStatuses.map(status=><span key={status.label} title={status.effect+' · '+status.expiry}>{status.label}<small>{status.expiry}</small></span>):<small>ไม่มีสถานะพิเศษ</small>}</div>
     </section>}
-    {battle.final55 && <p className="c4-hint" role="status">เกราะ{battle.final55.shield==='up'?'ยังป้องกันอยู่':'เปิดแล้ว'} · สำเร็จ {battle.final55.step}/3 ขั้น · {battle.final55.step===3?'ลงมือปลดกำไลอีกครั้งเพื่อหยุดพิธี':'จัดการจุดอาคมตามลำดับ'}{battle.final55.damageBlocked?' · เกราะรับความเสียหายไว้':''}</p>}
+
+
+{isDm && <>
+    <TeamPanel className="c4-team-panel">
+      {!isDm && <summary>ทีมและลำดับการเล่น · {turn.party.length} คน</summary>}
     <ol className="c4-order" aria-label="ลำดับการเล่น">
       {turn.party.map(id=>{
         const c=characters[id];
@@ -108,7 +132,10 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         <span className="c4-npc-badge">DM</span><span><strong>{enemy.name}</strong><small>{npcTurn?'DM กำลังเลือก':'เล่นหลังทีม'}</small></span>
       </li>
     </ol>
-    <details className="c4-status-panel" open>
+    </TeamPanel>
+</>}
+{isDm && <>
+    <details className="c4-status-panel" open={isDm}>
       <summary>สถานะปัจจุบัน · รอบ {battle.round}</summary>
       <div className="c4-status-grid">{[...turn.party,...battle.enemies.map(member=>member.id)].map(id=>{
         const statuses=combatStatuses(battle,id,characters,name);
@@ -117,11 +144,12 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         </article>;
       })}</div>
     </details>
+</>}
     <div className="c4-body">
       <div className="c4-controls">
         <p className="c4-kicker">{isDm?'หน้าคุมฉาก':'ผู้สืบสวน'}</p>
         <h3 aria-live="polite">{heading}</h3>
-        {!isDm && turn.expandedActions && <p className="c4-hint">{myTurn?'เหลือ 1 การกระทำ':turn.acted.includes(self ?? '')?'ใช้การกระทำแล้ว':'รอถึงตา'} · สมาธิ {self && characters[self]?.focus}</p>}
+        {!isDm && turn.expandedActions && <p className="c4-hint">{myTurn?'เหลือ 1 การกระทำ':turn.acted.includes(self ?? '')?'ใช้การกระทำแล้ว':'รอถึงตา'}</p>}
         {paused ? <p className="c4-hint">พักคดีอยู่ รอ DM เปิดเล่นต่อ</p> : !turn.ready ?
           <p className="c4-hint">{isDm?'ส่งบทเปิด '+turn.scene+' จากคิวด้านล่างก่อนเริ่มรอบแรก':'รอ DM ส่งบทเปิดให้ทีมก่อนลงมือ'}</p> :
           waitingForStoryRoll ? <p className="c4-hint">รอการ์ด D20 สำหรับติดต่อผี</p> :
@@ -131,7 +159,9 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
             npcTurn?'DM กำลังเลือกการกระทำให้ผี':'รอเพื่อนร่วมทีมลงมือ คุณดูผลได้จากบันทึกรอบ'}</p>}
         {onManageRoll && <button type="button" className="c4-roll-link" onClick={onManageRoll}>เปิดคำขอทอย D20</button>}
       </div>
-      <aside className="c4-journal" aria-label="บันทึกการเผชิญหน้า" aria-live="polite">
+      {!isDm && latestBeat}
+      <Journal className="c4-journal" aria-label="บันทึกการเผชิญหน้า">
+        {!isDm && <summary>บันทึกย้อนหลัง · {turn.history.length} เหตุการณ์</summary>}
         <p className="c4-kicker">บันทึกที่ทีมเห็นร่วมกัน</p>
         <h3>ผลการเล่น</h3>
         {turn.history.length===0 ? <p className="c4-hint">การกระทำและผลทอยจะปรากฏที่นี่</p> :
@@ -141,8 +171,49 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
             {beat.check && <span className="c4-roll" data-result={beat.check.outcome}>D20 {beat.check.die}<br/>รวม {beat.check.total} · {outcomes[beat.check.outcome]}</span>}
           </li>)}</ol>}
         {turn.history.length>6 && <button type="button" className="c4-roll-link" aria-expanded={fullLog} onClick={()=>setFullLog(!fullLog)}>{fullLog?'แสดง 6 เหตุการณ์ล่าสุด':'ดูย้อนหลังทั้งหมดที่เก็บไว้ ('+turn.history.length+' เหตุการณ์)'}</button>}
-      </aside>
+      </Journal>
     </div>
+{!isDm && <>
+    <TeamPanel className="c4-team-panel">
+      {!isDm && <summary>ทีมและลำดับการเล่น · {turn.party.length} คน</summary>}
+    <ol className="c4-order" aria-label="ลำดับการเล่น">
+      {turn.party.map(id=>{
+        const c=characters[id];
+        const down=!c?.hp;
+        const status=down?'ล้ม':battle.active===id?'กำลังเล่น':turn.acted.includes(id)?'เล่นแล้ว':npcTurn?'รอรอบหน้า':'รอคิว';
+        return <li key={id} data-state={status} aria-current={battle.active===id?'step':undefined}>
+          {c && <img src={portraitUrl(c.profession)} alt=""/>}
+          <span><strong>{name(id)}{id===self?' · คุณ':''}</strong><small>{status}{c ? ' · ชีวิต '+c.hp+'/'+(c.maxHp ?? 10)+' · สติ '+c.sanity+' · สมาธิ '+c.focus : ''}</small>
+            {c && <small>{combatStatuses(battle,id,characters,name).map(status=>status.label).join(' · ') || 'ไม่มีสถานะพิเศษ'}</small>}
+            {c && <small>BODY {characterAttribute(c,'body')} · PER {characterAttribute(c,'mind','PER')} · INT {characterAttribute(c,'knowledge')} · SOC {characterAttribute(c,'spirit','SOC')} · SPI {characterAttribute(c,'spirit')} · RES {characterAttribute(c,'spirit','RES')}</small>}</span>
+        </li>;
+      })}
+      <li data-state={npcTurn?'กำลังเล่น':'รอคิว'} aria-current={npcTurn?'step':undefined}>
+        <span className="c4-npc-badge">DM</span><span><strong>{enemy.name}</strong><small>{npcTurn?'DM กำลังเลือก':'เล่นหลังทีม'}</small></span>
+      </li>
+    </ol>
+    </TeamPanel>
+</>}
+{!isDm && <>
+    <details className="c4-status-panel" open={isDm}>
+      <summary>สถานะปัจจุบัน · รอบ {battle.round}</summary>
+      <div className="c4-status-grid">{[...turn.party,...battle.enemies.map(member=>member.id)].map(id=>{
+        const statuses=combatStatuses(battle,id,characters,name);
+        return <article key={id}><strong>{name(id)}{id===self?' · คุณ':''}</strong>
+          {statuses.length ? <ul>{statuses.map(status=><li key={status.label}><b>{status.label}</b><p>{status.effect}</p><small>{status.expiry}</small></li>)}</ul> : <p>ไม่มีสถานะพิเศษ</p>}
+        </article>;
+      })}</div>
+    </details>
+</>}
+{!isDm && <>
+    <ExtraPanel className="c4-extra-panel">
+      {!isDm && <summary>เป้าหมาย แผน และเสียงเตือน</summary>}
+    <button type="button" className="c4-sound" aria-pressed={cue.enabled} onClick={()=>void cue.toggle()}>เสียงเตือนท่าผี: {cue.enabled?'เปิด':'ปิด'}</button>
+    {turn.ready && <section className="c4-plan" aria-label="วางแผนร่วมกัน">
+      <strong>{brief.title}</strong><p>{brief.goal}</p><small>{brief.plan}</small>
+    </section>}
+    </ExtraPanel>
+</>}
   </section>;
 }
 
@@ -189,10 +260,10 @@ function TurnChoices({battle,isDm,allowed,characters,name,action}:{
   const enemyDeclared=()=>turn.declared?.attackId===attack?.id && turn.declared?.targetId===pickedTarget;
   return <>
     {isDm && turn.canWithhold && <button type="button" disabled={!allowed} onClick={()=>action?.('guided',{command:'v51:forbear55'})}>แม่แก้วฝืนคำสั่ง · งดการโจมตีนี้ครั้งเดียว</button>}
-    <p className="c4-hint">{isDm?'เลือกท่าและเป้าหมาย แล้วกดทอยแทนผี':'เลือก 1 การกระทำ แล้วกดยืนยันเพื่อส่งตา'}</p>
+    {isDm && <p className="c4-hint">เลือกท่าและเป้าหมาย แล้วกดทอยแทนผี</p>}
     <div className="c4-choices" role="group" aria-label={isDm?'เลือกท่าของผี':'เลือกการกระทำ'}>
-      {choices.map(item=><button key={item.id} type="button" aria-pressed={choice===item.id} disabled={!allowed || item.disabled} onClick={()=>{setChoice(item.id);setTarget('');}}>
-        <span className="c4-mark" aria-hidden="true">{item.mark}</span><span><strong>{item.label}</strong><small>{item.detail}</small></span>
+      {choices.map(item=><button key={item.id} type="button" aria-pressed={choice===item.id} disabled={!allowed || item.disabled} title={item.detail} onClick={()=>{setChoice(item.id);setTarget('');}}>
+        <span className="c4-mark" aria-hidden="true">{item.mark}</span><span><strong>{item.label}</strong><small>{isDm?item.detail:item.detail.split(' · ')[0]}</small></span>
       </button>)}
     </div>
     {selected && <p className="c4-choice-preview" role="status">{selected.label} · {selected.detail}{choice==='withdraw'?' · ทุกคนจะออกจากการเผชิญหน้า':''}</p>}

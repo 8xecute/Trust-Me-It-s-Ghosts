@@ -21,6 +21,9 @@ test('DM reader renders immediately after case start with questions present',()=
  const html=renderToStaticMarkup(createElement(DmStoryReader,{reader,view:{scene:'A1'},connected:true,action:()=>{}}));
  assert.match(html,/คนหายมีใครบ้าง/);
  assert.match(html,/ดล นิด เพิ่ม/);
+ assert.match(html,/คำถามสำคัญ/);
+ assert.match(html,/data-important="true"/);
+ assert.match(html,/เฉพาะข้อสำคัญ/);
  assert.match(html,/ขอบคุณที่เดินทางมาครับ/);
  assert.match(html,/บทพูดเปิดและปฏิกิริยาในฉาก/);
  assert.equal((html.match(/ดล นิด เพิ่ม/g) ?? []).length,2,'answer appears only in its Q&A preview and editor');

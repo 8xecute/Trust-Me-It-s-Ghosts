@@ -749,7 +749,7 @@ for(const ending of ['A','B','C','D'] as const)test('v5.3 playable route deliver
 test('v5.5 DM opens the shield encounter while player start requests are rejected',()=>{
  const r=room(20,false,'5.5');
  r.toE();r.scene('E4');r.act('approach-ritual-core');r.scene('E6');
- assert.ok(!allowedGuidedScenes(r.saved().world).some(scene=>scene.id==='F1'));
+ assert.ok(allowedGuidedScenes(r.saved().world).some(scene=>scene.id==='F1'));
  assert.throws(()=>r.act('seal3'));
  assert.ok(r.panel().encounterStart);
  assert.ok(!r.view().case001!.actions.some(option=>option.id==='begin-final55'));
@@ -763,7 +763,7 @@ test('v5.5 DM opens the shield encounter while player start requests are rejecte
  assert.throws(()=>r.send(actorBefore,'caseObjective',{step:0}));
  assert.equal(r.view().caseMap!.battle!.final55?.step,0);
  r.publish('guided-cue:F1');
- r.scene('F3');
+ assert.throws(()=>r.scene('F3'),/เผชิญหน้า/);
  assert.equal(r.view().caseMap!.battle!.final55?.step,0);
  const checkpoint=r.saved();
  r.store.delete(r.code);r.store.restore(r.code,checkpoint);
@@ -806,7 +806,7 @@ test('v5.5 DM opens the shield encounter while player start requests are rejecte
 test('v5.5 door card opens the door without marking hostages found or safe',()=>{
  const r=room(20,false,'5.5');
  r.toE();
- assert.throws(()=>r.scene('E2'));
+ assert.ok(allowedGuidedScenes(r.saved().world).some(scene=>scene.id==='E2'));
  r.event('door-access55');r.scene('E2');
  assert.equal(r.state().opened,false);
  r.act('dice:E2_DOOR_BREAK:BODY');

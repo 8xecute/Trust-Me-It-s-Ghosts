@@ -55,6 +55,7 @@ export function guidedEndingText(ending:string) {
 export function allowedGuidedScenes(w:World) {
  const s=w.case001!,g=s.guided;
  if(!g) return [];
+ if(g.version==='5.5' && !s.report) return Object.values(sceneData(s));
  if(s.report) return [{id:'ENDING '+s.report.ending,phase:'ENDING' as Phase,entry_cue:s.report.title,suggested_questions:[],optional_check_id:null,forward_bridge:''}];
  return Object.values(sceneData(s)).filter(scene=>{
   if(s.v51) {
@@ -102,6 +103,7 @@ function canObserveDuringBattle(w:World,id:string) {
 }
 
 export function canOpenGuidedScene(w:World,id:string) {
+ if(w.case001?.guided?.version==='5.5')return !w.caseMap?.battle;
  return canObserveDuringBattle(w,id) && (!w.case001?.guided?.cellarPending || id==='E2');
 }
 
@@ -270,6 +272,15 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   return;
  }
  if(player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่อง');
+ if(command==='scene' && g.version==='5.5') {
+  if(w.caseMap?.battle)throw Error('จบการเผชิญหน้าก่อนเปลี่ยนฉาก');
+  const scene=sceneData(s)[target ?? ''];
+  if(!scene || scene.phase==='ENDING' || !w.caseMap)throw Error('ไม่พบฉากที่เลือก');
+  const site=scene.phase==='FINAL'?'E':scene.id==='H1'?s.site:scene.phase as Site;
+  for(const id of Object.keys(w.players).filter(id=>id!==w.humanDmId))travelCaseMap(w,id,site,caseGrid(site));
+  s.site=site;g.phase=scene.phase;delete g.transition;delete g.cellarPending;
+  observeGuidedScene(w,scene.id);return;
+ }
  if(g.cellarPending && (command==='propose' || command==='scene' && target!=='E2')) throw Error('ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก');
  if(command==='contactPrasert') {
   const contactScene=g.version==='5.5'?'F5':'H1';
