@@ -8,4 +8,6 @@ export const caseNpcs = [
  {id:'occult_engineer',name:'คนขับรถ'}, {id:'field_medic',name:'นักศึกษาฝึกงาน'},
 ] as const;
 export type CaseNpcId = typeof caseNpcs[number]['id'];
-export type CaseNpcPlacement = {id:CaseNpcId;x:number;y:number};
+// Presentation only: these fields never move an NPC in the story state.
+export type CaseNpcPosition = {x:number;y:number;scale?:number;hidden?:boolean};
+export type CaseNpcPlacement = {id:CaseNpcId} & CaseNpcPosition;

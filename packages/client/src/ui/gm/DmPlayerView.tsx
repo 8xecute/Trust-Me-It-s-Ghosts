@@ -29,7 +29,7 @@ export type PlayerPreview = {
   };
 };
 
-export function DmPlayerView({playerId,preview,action,connected}:{playerId:string;preview:PlayerPreview;action:(type:string,payload?:object)=>void;connected:boolean}) {
+export function DmPlayerView({playerId,preview}:{playerId:string;preview:PlayerPreview}) {
   const character=preview.characters?.[playerId], story=preview.case001;
   return <section className="game-panel" aria-label="มุมมองผู้สืบสวน">
     <h2>มุมมองผู้สืบสวน</h2>
@@ -40,7 +40,7 @@ export function DmPlayerView({playerId,preview,action,connected}:{playerId:strin
       <TurnEncounter site={preview.caseMap.site} battle={preview.caseMap.battle} characters={preview.characters ?? {}} self={playerId}/> :
       preview.caseMap.battle ?
       <EncounterBoard site={preview.caseMap.site} battle={preview.caseMap.battle} players={preview.players} characters={preview.characters ?? {}} self={playerId} turns={preview.turns}/> :
-      <CaseScene site={preview.caseMap.site} location={story.location} intro={story.intro} npcs={preview.caseMap.npcs} placeNpc={connected ? (npcId,position)=>action('dmPlaceNpc',{site:preview.caseMap!.site,npcId,position}) : undefined}/>)}
+      <CaseScene site={preview.caseMap.site} location={story.location} intro={story.intro} npcs={preview.caseMap.npcs}/>)}
     {story && <CastPortraits roles={Object.values(preview.characters ?? {}).map(entry=>entry.profession)} speakers={[...(story.speakers ?? []),...visibleCast(story.actions)]}/>}
     <GameHud exploring={!!story} hp={character?.hp} sanity={character?.sanity} focus={character?.focus} haunt={story?.haunt}/>
     <CaseNotebook view={story?.notebook}/>

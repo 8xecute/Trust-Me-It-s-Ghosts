@@ -11,6 +11,7 @@ import { DmStoryEvents, GuidedPanel } from '../case/GuidedPanel';
 import { D20Card, D20Result } from '../case/D20Card';
 import { DmHistory } from '../case/DmHistory';
 import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
+import { CaseScene } from '../case/CaseScene';
 import { TurnConclusion, TurnEncounter } from '../combat/TurnEncounter';
 
 function DmAdjudication({panel,enabled,action,playerName,onPrepared,checksOnly=false}:{
@@ -94,7 +95,7 @@ export function DmWorkspace({
   leaveRoom:()=>void;
   leaving:boolean;
 }) {
-  const [selectedTab,setDmTab]=useState<'guide'|'queue'|'dice'|'team'|'npcs'|'backup'|'history'>();
+  const [selectedTab,setDmTab]=useState<'guide'|'queue'|'dice'|'team'|'npcs'|'backup'|'history'|'scene'>();
   const dmTab=selectedTab ?? 'queue';
   useEffect(()=>{if(world?.paused)setDmTab('team');},[world?.paused]);
   const nextStep=useRef<HTMLElement>(null);
@@ -154,7 +155,7 @@ export function DmWorkspace({
       <option value="">เลือกผู้สืบสวน</option>
       {investigators.map(player=><option key={player.id} value={player.id}>{playerName(player.id)}</option>)}
     </select></label>
-    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview} action={action} connected={connected}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{world?.inactivePlayers?.includes(previewPlayer)?'ตัวละครนี้พักใน session วันนี้ ข้อมูลเดิมยังอยู่':investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
+    {preview && preview.players[previewPlayer] ? <DmPlayerView playerId={previewPlayer} preview={preview}/> : <section className="game-panel"><h2>มุมมองผู้สืบสวน</h2><p>{world?.inactivePlayers?.includes(previewPlayer)?'ตัวละครนี้พักใน session วันนี้ ข้อมูลเดิมยังอยู่':investigators.length ? 'กำลังโหลดฉากของผู้เล่น' : 'รอผู้สืบสวนเข้าห้อง ฉากและสถานะของทีมจะแสดงที่นี่'}</p></section>}
     </div><div className="dm-controls-pane">
     {world?.case001 ? <section className="game-panel">
       <div className="dm-case-status">
@@ -165,6 +166,7 @@ export function DmWorkspace({
         <button type="button" aria-pressed={dmTab==='queue' || handlingRoll} onClick={()=>setDmTab('queue')}><CaseNavIcon name="play"/><span>{turnEncounter?'เผชิญหน้า':'ดำเนินเกม'}</span>{queue.length ? ' · '+queue.length : ''}</button>
         <button type="button" aria-pressed={['guide','npcs','backup','history'].includes(dmTab)} onClick={()=>setDmTab('guide')}><CaseNavIcon name="journal"/><span>คู่มือฉาก</span></button>
         <button type="button" aria-pressed={dmTab==='team'} onClick={()=>setDmTab('team')}><CaseNavIcon name="room"/><span>จัดการห้อง</span></button>
+        <button type="button" aria-pressed={dmTab==='scene'} onClick={()=>setDmTab('scene')}><CaseNavIcon name="play"/><span>จัดฉาก</span></button>
       </nav>
       {(dmTab==='queue' || handlingRoll) && <div className="dm-case-secondary" aria-label="เครื่องมือระหว่างเล่น">
         {handlingRoll && <button type="button" onClick={()=>setDmTab('queue')}>{turnEncounter?'กลับไปฉากเผชิญหน้า':'กลับไปจ่ายบท'}</button>}
@@ -178,6 +180,13 @@ export function DmWorkspace({
       {dmTab==='dice' && world.latestRoll && <D20Card key={world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
       {!dmPanel && dmTab==='queue' && <p role="status">กำลังโหลดคิวและสถานะฉาก</p>}
       {world.manualDm && dmPanel && <>
+      {dmTab==='scene' && <section className="gm-pane" aria-label="จัดฉากเฉพาะ DM">
+        <h3>จัดภาพฉาก</h3>
+        <p className="note">วางใหม่จะซ่อนก่อน กดแสดงเมื่อต้องการให้ผู้เล่นเห็น · การย้ายภาพไม่ย้าย NPC ในเนื้อเรื่อง</p>
+        {world.caseMap && <CaseScene key={world.caseMap.site} site={world.caseMap.site} location={world.case001.location}
+          npcs={world.caseMap.npcs} editingDisabled={!available || !!world.caseMap.battle || !!world.case001.report}
+          placeNpc={(npcId,position)=>action('dmPlaceNpc',{site:world.caseMap!.site,npcId,position})}/>}
+      </section>}
       <section hidden={dmTab!=='guide'} className="gm-pane">
         <p className="note">คู่มือนี้มีไว้ให้ DM อ่านและสวมบทบาท ข้อความในคู่มือจะไม่ส่งไปถึงผู้เล่น</p>
         {world.guided && !dmPanel.storyReader && <GuidedPanel view={world.guided} scenes={dmPanel.storyReader?undefined:dmPanel.guidedScenes} npcDossiers={dmPanel.npcDossiers} dmNavigation={false} connected={connected && !world.paused} action={action} isDm/>}

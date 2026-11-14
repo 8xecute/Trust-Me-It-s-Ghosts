@@ -656,19 +656,6 @@ body:has(.dm-shell) { background: radial-gradient(ellipse at 72% 0%, #282b43 0%,
 .gm-script-response { padding:12px; border:1px solid var(--border); border-radius:8px; }
 .gm-script-response h5 { margin:0 0 6px; color:var(--accent); }
 
-.case-scene-stage { position:relative; display:block; width:100%; padding:0; margin:0; border:0; border-radius:0; background:#0c0b0a; }
-.case-scene-stage .case-scene-image { display:block; width:100%; height:auto; max-height:none; object-fit:fill; }
-.player-shell .case-scene-stage .case-scene-image, .case-world-pane .case-scene-stage .case-scene-image { max-height:none; object-fit:fill; }
-.case-scene-placement { cursor:crosshair; }
-.case-scene-placement:focus-visible { outline:3px solid var(--accent); outline-offset:-3px; }
-.scene-npc { position:absolute; transform:translate(-50%,-80%); display:flex; flex-direction:column; align-items:center; pointer-events:none; color:#fff; font-size:.7rem; line-height:1.2; text-shadow:0 1px 3px #000; }
-.case-illustration .scene-npc img { width:clamp(45px,9vw,90px); height:clamp(70px,14vw,135px); object-fit:contain; border:0; border-radius:0; background:transparent; filter:drop-shadow(0 2px 3px #000); }
-.scene-npc span { padding:2px 4px; border-radius:4px; background:#151722e8; white-space:nowrap; }
-.scene-npc-controls { padding:10px; display:grid; gap:6px; }
-.scene-npc-controls p { margin:0; font-size:.8rem; }
-.scene-npc-controls form { display:flex; flex-wrap:wrap; align-items:end; gap:6px; }
-.scene-npc-controls input { width:5.5em; }
-
 .update-badge { display:inline-block; min-width:1.4em; padding:1px 5px; margin-left:6px; border-radius:20px; color:#15120d; background:var(--accent); font-weight:700; }
 .case-updates { display:flex; flex-wrap:wrap; gap:6px; }
 .roll-opportunity { margin:10px 0; padding:12px; border:2px solid var(--accent); border-radius:10px; background:var(--well); }
