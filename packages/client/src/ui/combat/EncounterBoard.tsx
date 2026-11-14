@@ -12,14 +12,14 @@ export type BattleView={
   final55?:{step:0|1|2|3;shield:'up'|'down';damageBlocked?:boolean};
   title:string; round:number; active:string|null; objective:boolean;
   turnEncounter?:{
-    scene?:string;canPacify?:boolean;
+    scene?:string;canPacify?:boolean;pacifyDescription?:string;npcActive?:string;
     declared?:{attackId:string;targetId:string;round:number};canWithhold?:boolean;
     party:string[]; acted:string[]; maxHp:number; ready:boolean;
     history:{round:number;actor:string;label:string;target?:string;check?:{die:number;total:number;outcome:'success'|'partial'|'failure'};effect?:string}[];
     attacks?:{id:string;name:string;resource:'HP'|'Sanity';damage:number}[];
   };
   phase?:'chains'|'flood_memory'|'choice';
-  enemies:{id:string;name:string;position:Cell;hp:number;defense?:{PDEF:number;MDEF:number};telegraph?:{kind:'lash'|'wail';cells:Cell[];attack?:{name_th:string;telegraphOneBossTurnBeforeUse?:boolean}}}[];
+  enemies:{id:string;maxHp?:number;resolved?:boolean;hesitating?:boolean;outcome?:string;name:string;position:Cell;hp:number;defense?:{PDEF:number;MDEF:number};telegraph?:{kind:'lash'|'wail';cells:Cell[];attack?:{name_th:string;telegraphOneBossTurnBeforeUse?:boolean}}}[];
   danger:Cell[]; flooded:Cell[]; projections:Cell[];
   reaction:Record<string,number>; restrained:Record<string,number>;
 };

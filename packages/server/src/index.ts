@@ -1,4 +1,4 @@
-import {exportSession,importSession} from './portableSession.js';
+import {exportSession,importSession,sessionRecovery} from './portableSession.js';
 import {fileURLToPath} from 'node:url';
 import { BASIC_RULES_MODE } from '@baan/shared';
 import { createServer } from 'node:http';
@@ -110,6 +110,11 @@ io.on('connection', (socket) => {
    if(!code || !player)throw Error('ไม่ได้อยู่ในห้อง');
    (ack as Ack)({ok:true,save:exportSession(rooms,worlds,code,player)});
   }));
+  socket.on('session:recovery',(ack:unknown)=>handle(ack,()=>{
+   const code=rooms.roomCode(socket.id),player=rooms.playerId(socket.id);
+   if(!code || !player)throw Error('ไม่ได้อยู่ในห้อง');
+   (ack as Ack)({ok:true,codes:sessionRecovery(rooms,worlds,code,player)});
+  }));
   socket.on('session:import',(input:unknown,ack:unknown)=>handle(ack,()=>{
    if(rooms.roomCode(socket.id))throw Error('นำเข้าได้จากหน้าเข้าห้องเท่านั้น');
    const {code,token}=importSession(rooms,worlds,input);
@@ -129,7 +134,8 @@ io.on('connection', (socket) => {
    const code=rooms.roomCode(socket.id),player=rooms.playerId(socket.id);
    if(!code || !player || !worlds.hasStarted(code))throw Error('ยังไม่มีคดีให้พัก');
    if(worlds.checkpoint(code).world.humanDmId===player)worlds.prepareSession(code);
-   rooms.detach(socket.id);socket.leave(code);saveStartedRoom(code);broadcastSnapshot(code);
+   const session=rooms.detach(socket.id);socket.leave(code);saveStartedRoom(code);broadcastSnapshot(code);
+   if(session)io.to(code).emit('room:update',{...session.room,canStart:canStart(session.room)});
    (ack as Ack)({ok:true});
   }));
   socket.on('room:leave', (ack: unknown) => handle(ack, () => {

@@ -1,6 +1,12 @@
 import {Rooms} from './rooms.js';
 import {WorldStore} from './world.js';
 
+export function sessionRecovery(rooms:Rooms,worlds:WorldStore,code:string,player:string) {
+ const state=worlds.checkpoint(code).world;
+ if(state.humanDmId!==player || !state.case001)throw Error('เฉพาะ DM ที่ดูรหัสกลับเข้าของทีมได้');
+ return rooms.checkpoint(code).tokens.map(([token,session])=>({token,id:session.id}));
+}
+
 export function exportSession(rooms:Rooms,worlds:WorldStore,code:string,player:string) {
  const state=worlds.checkpoint(code);
  if(state.world.humanDmId!==player || !state.world.paused || !state.world.case001 || state.world.case001.report)throw Error('เฉพาะ DM ขณะพักคดีที่ยังไม่ปิด');
@@ -13,6 +19,7 @@ export function importSession(rooms:Rooms,worlds:WorldStore,input:unknown) {
  const data=input as ReturnType<typeof exportSession>;
  if(data.format!=='baan-session' || data.version!==1 || !data.membership || !data.state)throw Error('รุ่นไฟล์เซฟไม่รองรับ');
  const code=data.membership.room.code,world=data.state.world;
+ if(world?.case001?.guided?.version!=='5.5')throw Error('รองรับเฉพาะเซฟ CASE 001 v5.5 ไฟล์นี้เป็นรุ่นเก่าและยังไม่ได้ถูกนำเข้า');
  if(!/^[A-F0-9]{6}$/.test(code) || rooms.has(code) || !world.humanDmId || !world.dmSession || world.case001?.report ||
   data.membership.room.players.length>7 || !data.membership.room.players.some(p=>p.id===world.humanDmId) ||
   data.membership.room.players.map(p=>p.id).sort().join()!==Object.keys(world.players).sort().join())throw Error('ห้องนี้ยังเปิดอยู่หรือข้อมูลสมาชิกไม่ตรงกัน');

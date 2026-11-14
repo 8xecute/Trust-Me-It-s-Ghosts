@@ -15,14 +15,17 @@ import type { Cell, World } from '../world.js';
 type EnemyKind = 'drowned_echo'|'bound_wraith'|'ritual_guardian'|'kaew_boss';
 type EncounterId = 'EN01'|'EN02'|'EN03'|'EN04';
 const definitions = JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.encounters.json',import.meta.url),'utf8')) as
-  Record<EncounterId,{site:Site;title:string;roster:EnemyKind[]}>;
+  Record<EncounterId,{site:Site;title:string;roster:EnemyKind[];turnRoster55?:EnemyKind[]}>;
+type PacifyResponse={response:'hesitate'|'respond';description:string;success:string};
+const pacifyResponses=JSON.parse(readFileSync(new URL('../../scenarios/case-001/case-001.pacify-v55.json',import.meta.url),'utf8')) as Partial<Record<EncounterId,PacifyResponse>>;
+const pacifyResponse=(w:World,b:CaseBattle)=>w.case001?.guided?.version==='5.5' && b.turnEncounter ? pacifyResponses[b.id] : undefined;
 const enemies = {
   drowned_echo:{name:'ผีเงาจมน้ำ',hp:3},
   bound_wraith:{name:'ผีด้ายดำ',hp:4},
   ritual_guardian:{name:'ผีเฝ้าเรือน',hp:6},
   kaew_boss:{name:'แม่แก้ว',hp:12},
 };
-type Enemy = {id:string;kind:EnemyKind;state:GhostEncounter;tactics:Tactics};
+type Enemy = {maxHp?:number;id:string;kind:EnemyKind;state:GhostEncounter;tactics:Tactics};
 type TurnBeat = {
   round:number; actor:string; label:string; target?:string;
   check?:Pick<NonNullable<World['lastCheck']>,'die'|'total'|'outcome'>;
@@ -79,6 +82,8 @@ export function removeCasePlayer(w:World,id:string,gridFor:(site:Site)=>GhostGri
   }
 }
 const activeEnemies=(b:CaseBattle)=>b.enemies.filter(enemy=>enemy.state.phase!=='resolved');
+const peacefulBattle=(b:CaseBattle)=>b.turnEncounter && b.enemies.length>1 ?
+  b.enemies.every(enemy=>enemy.state.outcome==='pacified') : b.enemies.some(enemy=>enemy.state.outcome==='pacified');
 
 export function travelCaseMap(w:World, actor:string, site:Site, grid:GhostGrid) {
   const map=w.caseMap!;
@@ -121,7 +126,7 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
   const turnEncounter=['EN01','EN02','EN04'].includes(id) && noTimer(w.case001!) && !!w.humanDmId && !!combat;
   const occupied=[...Object.values(localPlayers(w,site)),...grid.blocked];
   const slots=points(grid).reverse().filter(p=>!occupied.some(q=>distance(p,q)===0));
-  const roster:EnemyKind[]=isV4 ? [id==='EN01' ? 'drowned_echo' : 'kaew_boss'] : definitions[id].roster.slice(0,count<=2 ? (id==='EN01'||id==='EN04'?1:2) : 3);
+  const roster:EnemyKind[]=turnEncounter && w.case001!.guided?.version==='5.5' && definitions[id].turnRoster55 ? definitions[id].turnRoster55! : isV4 ? [id==='EN01' ? 'drowned_echo' : 'kaew_boss'] : definitions[id].roster.slice(0,count<=2 ? (id==='EN01'||id==='EN04'?1:2) : 3);
   const members=roster.map((kind,index)=>{
     const state=startGhostEncounter(w.players[actor],slots[index]);
     const partySize=w.case001!.guided?.version==='5.5'?party.length:Object.keys(localPlayers(w,site)).length;
@@ -129,7 +134,7 @@ export function startCaseBattle(w:World,actor:string,grid:GhostGrid,roll:()=>num
     const tactics=newTactics({combat,movement:combat?.MOVE ?? (kind==='kaew_boss'?3:1),armor:kind==='ritual_guardian'?1:0,
       special:kind==='drowned_echo'?'wail':kind==='kaew_boss'?undefined:'lash',restrains:kind!=='ritual_guardian',
       boss:kind==='kaew_boss' && (!isV4 || id==='EN04'),canPacify:kind!=='kaew_boss' || isV4 && id==='EN02',anchorActive:kind==='kaew_boss' && (!isV4 || id==='EN04')});
-    return {id:id+'-'+(index+1),kind,state,tactics};
+    return {id:id+'-'+(index+1),maxHp:state.ghostHealth,kind,state,tactics};
   });
   const projectionCount=isV4 && hasFact(w.case001!,'kaew-dispersed') ? 1 : 2;
   map.battle={id,site,...(isV4 && id==='EN02' ? {title:'เผชิญหน้าแม่แก้วในสวน'} : {}),round:1,active:party[0],enemies:members,
@@ -173,14 +178,14 @@ export function finishCaseBattle(w:World,escaped=false) {
   const map=w.caseMap!, battle=map.battle!;
   if(battle.turnEncounter) {
     const outcome=escaped?'escaped':!readyPlayers(w,battle.site).length?'lost':
-      battle.enemies.some(enemy=>enemy.state.outcome==='pacified')?'pacified':'won';
+      peacefulBattle(battle)?'pacified':'won';
     map.turnConclusion={outcome,check:battle.turnEncounter.history.at(-1)?.check};
   }
   if(!map.completed.includes(battle.id)) map.completed.push(battle.id);
   const s=w.case001;
   if(s?.storyVersion===4 && !s.report) {
     const script=v4.encounters[battle.id];
-    const pacified=battle.enemies.some(enemy=>enemy.state.outcome==='pacified');
+    const pacified=peacefulBattle(battle);
     if(s.v51 && battle.id==='EN04') {delete map.battle;return;}
     if(s.v51 && (battle.id==='EN01' || battle.id==='EN02')) {
       const lost=!Object.entries(w.characters ?? {}).some(([id,c])=>id!==w.humanDmId && !w.inactivePlayers?.includes(id) && !!w.players[id] && map.sites[id]===battle.site && c.hp>0);
@@ -282,29 +287,33 @@ export function completeTurnPlayer(w:World,actor:string,label:string,check?:Turn
   else selectTurnPlayer(w,b);
 }
 
-const npcAttacks=(b:CaseBattle)=>b.enemies[0].tactics.profile?.combat?.attacks.filter(attack=>!attack.requires &&
+const turnEnemy=(b:CaseBattle)=>activeEnemies(b).find(enemy=>!b.turnEncounter!.acted.includes(enemy.id));
+const npcAttacks=(b:CaseBattle,enemy=turnEnemy(b))=>enemy?.tactics.profile?.combat?.attacks.filter(attack=>!attack.requires &&
  (attack.id!=='FLOOD_MEMORY' || b.phase==='flood_memory')) ?? [];
 const openingScene=(b:CaseBattle)=>b.id==='EN01'?'C4':b.id==='EN02'?'D4':'F1';
 
-export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown;step?:unknown},
+export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice:unknown;targetId?:unknown;attackId?:unknown;enemyId?:unknown;step?:unknown},
   roll:()=>number,completeRound:()=>void) {
   const b=w.caseMap?.battle;
   if(!b?.turnEncounter || a.round!==b.round || w.case001?.report) return fail('รอบนี้จบแล้ว โปรดเลือกอีกครั้ง');
   if(!w.case001?.guided?.presented.includes(openingScene(b))) return fail('รอ DM ส่งบทเปิดฉากก่อน');
-  const enemy=b.enemies[0];
+  const npc=turnEnemy(b);
+  const selected=b.enemies.find(enemy=>enemy.id===a.targetId);
+  const enemy=actor===w.humanDmId ? npc ?? b.enemies[0] :
+    a.choice==='strike' || a.choice==='pacify' ? selected ?? (b.enemies.length===1 ? b.enemies[0] : undefined) : b.enemies[0];
+  if(!enemy)return fail('เลือกผีเป้าหมายก่อน');
   if(actor===w.humanDmId) {
     if(b.active) return fail('ยังไม่ถึงตาของผี');
+    if(b.enemies.length>1 && (!npc || a.enemyId!==npc.id))return fail('ตาของผีเปลี่ยนแล้ว โปรดเลือกอีกครั้ง');
     if(a.choice==='withdraw') {
       if(b.id==='EN04')return fail('การถอยของผีไม่หยุดพิธี ให้เลือกผ่านตา');
       recordTurn(b,{actor:enemy.id,label:'ผีถอยกลับไปในคราบน้ำ'});
       enemy.state.phase='resolved';
       enemy.state.outcome='defeated';
-      finishCaseBattle(w);
-      return;
-    }
-    if(a.choice==='attack' || a.choice==='declareAttack') {
-      if(!activeEnemies(b).length || b.final55?.withheldAttack)return fail('ผีไม่มีการโจมตีในตานี้');
-      const attack=npcAttacks(b).find(option=>option.id===a.attackId);
+      if(!activeEnemies(b).length){finishCaseBattle(w);return;}
+    } else if(a.choice==='attack' || a.choice==='declareAttack') {
+      if(!activeEnemies(b).length || b.final55?.withheldAttack || (enemy.tactics.calmUntil ?? 0)>=b.round)return fail('ผีไม่มีการโจมตีในตานี้');
+      const attack=npcAttacks(b,enemy).find(option=>option.id===a.attackId);
       const target=a.targetId;
       if(!attack || typeof target!=='string' || !readyPlayers(w,b.site).includes(target)) return fail('เลือกท่าและผู้สืบสวนที่ยังลงมือได้');
       if(a.choice==='declareAttack') {
@@ -319,16 +328,19 @@ export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice
           enemy.tactics.defense[target]===b.round);
         if(result.outcome==='success' && attack.condition==='ROOTED')enemy.tactics.restrained[target]=b.round+1;
         recordTurn(b,{actor:enemy.id,target,label:attack.name_th,check:result,effect:result.damage ?
-          'เสีย'+(attack.damageResource==='HP'?'พลังชีวิต ':'สติ ')+result.damage : undefined});
+          (attack.damageResource==='HP'?'การโจมตีกระแทกเข้าร่าง เป้าหมายเสียพลังชีวิต ':'เสียงหลอนแทรกเข้าจิต เป้าหมายเสียสติ ')+result.damage : 'เป้าหมายรอดจากการโจมตี ไม่เสียพลังชีวิตหรือสติ'});
       }
-    } else if(a.choice==='pass') recordTurn(b,{actor:enemy.id,label:'รอดูท่าที'});
+    } else if(a.choice==='pass') recordTurn(b,{actor:enemy.id,label:(enemy.tactics.calmUntil ?? 0)>=b.round?'ผีชะงักตามเสียงเรียก': 'รอดูท่าที',effect:(enemy.tactics.calmUntil ?? 0)>=b.round?'งดโจมตีตานี้ แต่ยังไม่จบการเผชิญหน้า':undefined});
     else return fail();
-    enemy.tactics.defense={};
     if(a.choice!=='declareAttack') {
       delete enemy.tactics.telegraph;
       delete b.turnEncounter.declared;
     }
     if(b.final55)delete b.final55.withheldAttack;
+    b.turnEncounter.acted.push(enemy.id);
+    if(!readyPlayers(w,b.site).length) {completeRound();if(w.caseMap?.battle===b)finishCaseBattle(w);return;}
+    if(turnEnemy(b))return;
+    for(const member of b.enemies)member.tactics.defense={};
     completeRound();
     if(w.caseMap?.battle!==b) return;
     if(!readyPlayers(w,b.site).length) return finishCaseBattle(w);
@@ -339,6 +351,7 @@ export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice
   }
   if(b.active!==actor || !readyPlayers(w,b.site).includes(actor)) return fail('ยังไม่ถึงตาของคุณ');
   if(w.dmSession?.checks[actor] || w.dmSession?.rolls[actor]?.die===null) return fail('จัดการคำขอทอยที่ค้างก่อน');
+  if((a.choice==='strike' || a.choice==='pacify') && enemy.state.phase==='resolved')return fail('ผีเป้าหมายจบการเผชิญหน้าแล้ว');
   const local=localWorld(w,b,enemy);
   local.lastCheck=null;
   let label:string, effect:string|undefined, target:string|undefined;
@@ -349,6 +362,7 @@ export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice
       caseBattleAction(w,actor,{type:'caseObjective',step:a.step},caseGridForSession(b.site),roll,completeRound,true);
       local.lastCheck=w.lastCheck;
       if(w.caseMap?.battle!==b)return;
+      effect=local.lastCheck?.outcome==='success' ? 'จุดอาคมคลายตัวตามการลงมือของผู้สืบสวน' : 'จุดอาคมยังต้านไว้ ขั้นตอนยังไม่คืบหน้า';
       break;
     case 'strike': {
       if(b.final55)b.final55.damageBlocked=false;
@@ -360,23 +374,29 @@ export function turnEncounterAction(w:World,actor:string,a:{round:unknown;choice
         w.case001!.v51!.KAEW_TEMP_DISPERSED=true;
         w.case001!.v51!.kaewVoice53=true;
       }
-      if(damage) effect='ผีเสียพลังชีวิต '+damage;
+      target=enemy.id;
+      if(damage) effect='แรงขับไล่กระแทกร่างผี เสียพลังชีวิต '+damage+(enemy.state.ghostHealth===0 ? ' · ร่างผีสลาย'+(b.final55?' แต่พิธียังทำงาน':'') : '');
       else if(b.final55?.damageBlocked)effect='โจมตีโดน เกราะรับความเสียหายไว้';
+      else effect='แรงขับไล่ไม่ทำให้ร่างผีเสียพลังชีวิต';
       label='ขับไล่ผี';
       break;
     }
     case 'pacify':
-      negotiateV2(local,actor,roll,false);
+      if(!enemy.tactics.profile?.canPacify)return fail('ผีตนนี้ไม่เปิดรับการกล่อมระหว่างสู้');
+      negotiateV2(local,actor,roll,false,pacifyResponse(w,b)?.response);
+      target=enemy.id;
+      effect=pacifyResponse(w,b) ? (local.lastCheck?.outcome==='success' ? pacifyResponse(w,b)!.success : 'เสียงเรียกยังไปไม่ถึง ผียังคุกคามทีมต่อ') : enemy.state.outcome==='pacified' ? 'ผีคลายท่าทีคุกคามและสงบลง' : 'เสียงเรียกยังไปไม่ถึง ผียังไม่สงบ';
       label='กล่อมให้ผีสงบ';
       break;
     case 'stabilize':
       stabilize(local,actor,a.targetId,roll,false);
       target=a.targetId as string;
       label='พยุงเพื่อน';
-      if(w.characters![target].hp>0) effect='ฟื้นพลังชีวิต 1';
+      if(w.characters![target].hp>0) effect='เพื่อนที่ล้มกลับมามีแรง ฟื้นพลังชีวิต 1';
+      else effect='ยังพยุงเพื่อนให้ฟื้นไม่ได้ เพื่อนยังล้มอยู่';
       break;
     case 'guard':
-      enemy.tactics.defense[actor]=b.round;
+      for(const member of b.enemies)member.tactics.defense[actor]=b.round;
       label='ตั้งรับ';
       effect='ป้องกัน +2 ในตาผีรอบนี้';
       break;
@@ -580,13 +600,14 @@ export function battleView(map:CaseMap,site:Site,w?:World,isDm=false) {
     final55:b.final55 && {step:b.final55.step,shield:b.final55.shield,damageBlocked:b.final55.damageBlocked},
     turnEncounter:turn && w ? {
       party:Object.keys(localPlayers(w,b.site)).filter(id=>!!w.characters?.[id]),
-      acted:turn.acted,history:turn.history,maxHp:turn.maxHp,
+      acted:turn.acted,history:turn.history,maxHp:turn.maxHp,npcActive:turnEnemy(b)?.id,
+      pacifyDescription:pacifyResponse(w,b)?.description,
       scene:openingScene(b),canPacify:!!b.enemies[0].tactics.profile?.canPacify,
       ...(isDm?{declared:b.turnEncounter?.declared,canWithhold:!!b.final55 && !b.final55.trustUsed && !!b.enemies[0].tactics.telegraph && w?.case001?.v51?.KAEW_TRUST==='high'}:{}),
       ready:!!w.case001?.guided?.presented.includes(openingScene(b)),
-      ...(isDm ? {attacks:(activeEnemies(b).length && !b.final55?.withheldAttack?npcAttacks(b):[]).map(attack=>({id:attack.id,name:attack.name_th,resource:attack.damageResource,damage:attack.damage}))} : {}),
+      ...(isDm ? {attacks:(activeEnemies(b).length && !b.final55?.withheldAttack?((turnEnemy(b)?.tactics.calmUntil ?? 0)>=b.round ? [] : npcAttacks(b)):[]).map(attack=>({id:attack.id,name:attack.name_th,resource:attack.damageResource,damage:attack.damage}))} : {}),
     } : undefined,
-    enemies:visible.map(e=>({id:e.id,name:enemies[e.kind].name,position:e.state.ghost,hp:e.state.ghostHealth,telegraph:e.tactics.telegraph,
+    enemies:visible.map(e=>({id:e.id,maxHp:e.maxHp ?? turn?.maxHp ?? e.state.ghostHealth,resolved:e.state.phase==='resolved',hesitating:(e.tactics.calmUntil ?? 0)>=b.round,outcome:e.state.outcome,name:enemies[e.kind].name+(b.enemies.length>1?' '+(b.enemies.indexOf(e)+1):''),position:e.state.ghost,hp:e.state.ghostHealth,telegraph:e.tactics.telegraph,
       defense:e.tactics.profile?.combat && {PDEF:e.tactics.profile.combat.PDEF,MDEF:e.tactics.profile.combat.MDEF}})),
     danger:activeEnemies(b).flatMap(e=>e.tactics.telegraph?.cells ?? []),
     projections:[...b.projections,...(b.focusCell&&!b.armorDisabled?[b.focusCell]:[])],flooded:b.flooded ?? [],objective:!!b.focusCell&&!b.armorDisabled || b.projections.length>0,

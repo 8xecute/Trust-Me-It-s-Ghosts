@@ -147,3 +147,11 @@
 @media (prefers-reduced-motion:reduce) { .c4-spotlight { animation: none; } .c4-ghost,.c4-wards i { transition: none; } }
 
 .c4-encounter[data-wounded="true"] .c4-ghost { opacity: .6; }
+
+.c4-enemies { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 10px; padding: 12px; background: var(--c4-bg); }
+.c4-enemies article { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px; border: 1px solid var(--c4-edge); border-radius: 12px; background: var(--c4-panel); }
+.c4-enemies article[aria-current="step"] { border-color: var(--c4-gold); }
+.c4-enemies article[data-resolved="true"] { opacity: .55; }
+.c4-enemies img { width: 70px; height: 90px; object-fit: contain; }
+.c4-enemies p { font-size: .8rem; color: var(--c4-muted); }
+.c4-enemies progress { max-width: 120px; height: 8px; accent-color: var(--c4-mint); }

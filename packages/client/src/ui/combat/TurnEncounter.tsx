@@ -22,13 +22,13 @@ export function TurnConclusion({result}:{result:TurnConclusionView}) {
   </p>;
 }
 
-export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,paused,action,storyOption,waitingForStoryRoll,onStoryRoll,onManageRoll}:{
+export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,paused,action,waitingForStoryRoll,onManageRoll}:{
   site:CaseSite; battle:BattleView; characters:Record<string,Character>; self?:string;
   isDm?:boolean; enabled?:boolean; paused?:boolean; action?:(type:string,payload?:object)=>void;
-  storyOption?:StoryOption; waitingForStoryRoll?:boolean; onStoryRoll?:(id:string)=>void; onManageRoll?:()=>void;
+  waitingForStoryRoll?:boolean; onManageRoll?:()=>void;
 }) {
   const turn=battle.turnEncounter!;
-  const enemy=battle.enemies[0];
+  const enemy=battle.enemies.find(enemy=>enemy.id===turn.npcActive) ?? battle.enemies.find(enemy=>!enemy.resolved) ?? battle.enemies[0];
   const brief=encounterBrief(battle);
   const state=encounterState(battle);
   const threat=threatMessage(battle);
@@ -37,11 +37,11 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
   const npcTurn=!battle.active;
   const myTurn=isDm ? npcTurn : battle.active===self;
   const allowed=!!(enabled && action && turn.ready && myTurn && !waitingForStoryRoll);
-  const name=(id:string)=>id===enemy.id ? enemy.name : characters[id]?.playerName || characters[id]?.characterName ||
+  const name=(id:string)=>battle.enemies.find(candidate=>candidate.id===id)?.name || characters[id]?.playerName || characters[id]?.characterName ||
     (characters[id] ? professions[characters[id].profession].name : 'ผู้สืบสวน');
   const heading=!turn.ready?(isDm?'รอเปิดฉาก '+turn.scene:'รอ DM เปิดการเผชิญหน้า') : npcTurn ? 'ตาของ'+enemy.name :
     battle.active===self?'ถึงตาคุณแล้ว':'ตาของ'+name(battle.active!);
-  return <section className="c4-encounter" data-manifestation={state} data-wounded={enemy.hp>0 && enemy.hp<turn.maxHp/2} aria-label="ฉากเผชิญหน้า">
+  return <section className="c4-encounter" data-manifestation={state} data-wounded={enemy.hp>0 && enemy.hp<(enemy.maxHp ?? turn.maxHp)/2} aria-label="ฉากเผชิญหน้า">
     <header className="c4-stage" style={{backgroundImage:'linear-gradient(90deg, #081513 10%, #081513dc 45%, #08151338), url('+illustrations[site]+')'}}>
       {battle.final55 && <div className="c4-wards" aria-hidden="true">{[0,1,2].map(step=><i key={step} data-broken={battle.final55!.step>step}/> )}</div>}
       <img className="c4-ghost" src={turn.scene==='C4'?drowned:turn.scene==='D4'?kaew:kaewFinal} alt=""/>
@@ -50,11 +50,19 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         <h2>{battle.title}</h2>
         <p>{enemy.name}</p>
         <div className="c4-enemy-health">
-          <progress max={turn.maxHp} value={enemy.hp} aria-label="พลังชีวิตผี"/>
-          <span>{enemy.hp}/{turn.maxHp}</span>
+          <progress max={enemy.maxHp ?? turn.maxHp} value={enemy.hp} aria-label="พลังชีวิตผี"/>
+          <span>{enemy.hp}/{enemy.maxHp ?? turn.maxHp}</span>
         </div>
       </div>
     </header>
+    {battle.enemies.length>1 && <section className="c4-enemies" aria-label="ผีในฉาก">
+      {battle.enemies.map(member=><article key={member.id} data-resolved={!!member.resolved} aria-current={npcTurn && turn.npcActive===member.id?'step':undefined}>
+        <img src={drowned} alt=""/><div><strong>{member.name}</strong>
+          <p>{member.resolved?(member.outcome==='pacified'?'สงบแล้ว':'ร่างสลายแล้ว'):member.hesitating?'ชะงัก · งดโจมตีตานี้':npcTurn && turn.npcActive===member.id?'กำลังลงมือ':turn.acted.includes(member.id)?'เล่นแล้ว':'ยังคุกคามทีม'}</p>
+          <progress max={member.maxHp ?? turn.maxHp} value={member.hp} aria-label={'พลังชีวิต '+member.name}/><small> {member.hp}/{member.maxHp ?? turn.maxHp}</small>
+        </div>
+      </article>)}
+    </section>}
     <button type="button" className="c4-sound" aria-pressed={cue.enabled} onClick={()=>void cue.toggle()}>เสียงเตือนท่าผี: {cue.enabled?'เปิด':'ปิด'}</button>
     {turn.ready && <section className="c4-plan" aria-label="วางแผนร่วมกัน">
       <strong>{brief.title}</strong><p>{brief.goal}</p><small>{brief.plan}</small>
@@ -95,8 +103,8 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
         {paused ? <p className="c4-hint">พักคดีอยู่ รอ DM เปิดเล่นต่อ</p> : !turn.ready ?
           <p className="c4-hint">{isDm?'ส่งบทเปิด '+turn.scene+' จากคิวด้านล่างก่อนเริ่มรอบแรก':'รอ DM ส่งบทเปิดให้ทีมก่อนลงมือ'}</p> :
           waitingForStoryRoll ? <p className="c4-hint">รอการ์ด D20 สำหรับติดต่อผี</p> :
-          myTurn ? <TurnChoices key={battle.round+':'+battle.active} battle={battle} isDm={isDm}
-            allowed={allowed} characters={characters} name={name} action={action} storyOption={storyOption} onStoryRoll={onStoryRoll}/> :
+          myTurn ? <TurnChoices key={battle.round+':'+battle.active+':'+turn.npcActive} battle={battle} isDm={isDm}
+            allowed={allowed} characters={characters} name={name} action={action}/> :
           <p className="c4-hint">{isDm?'ทีมกำลังลงมือทีละคน คุณจะเลือกท่าให้ผีเมื่อทุกคนเล่นครบ':
             npcTurn?'DM กำลังเลือกการกระทำให้ผี':'รอเพื่อนร่วมทีมลงมือ คุณดูผลได้จากบันทึกรอบ'}</p>}
         {onManageRoll && <button type="button" className="c4-roll-link" onClick={onManageRoll}>เปิดคำขอทอย D20</button>}
@@ -115,9 +123,9 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
   </section>;
 }
 
-function TurnChoices({battle,isDm,allowed,characters,name,action,storyOption,onStoryRoll}:{
+function TurnChoices({battle,isDm,allowed,characters,name,action}:{
   battle:BattleView; isDm:boolean; allowed:boolean; characters:Record<string,Character>;name:(id:string)=>string;
-  action?:(type:string,payload?:object)=>void; storyOption?:StoryOption; onStoryRoll?:(id:string)=>void;
+  action?:(type:string,payload?:object)=>void;
 }) {
   const [choice,setChoice]=useState('');
   const [target,setTarget]=useState('');
@@ -125,11 +133,11 @@ function TurnChoices({battle,isDm,allowed,characters,name,action,storyOption,onS
   const down=turn.party.filter(id=>characters[id]?.hp===0);
   const choices:Choice[]=isDm ? [
     ...(turn.attacks ?? []).map(attack=>({id:attack.id,label:attack.name,detail:'ทอย D20 · ลด'+(attack.resource==='HP'?'ชีวิต':'สติ')+' '+attack.damage,mark:'D20'})),
-    {id:'pass',label:'รอดูท่าที',detail:'ส่งตากลับให้ทีม',mark:'—'},
+    {id:'pass',label:battle.enemies.find(enemy=>enemy.id===turn.npcActive)?.hesitating?'ผีชะงัก · ส่งตาต่อ':'รอดูท่าที',detail:'จบตาของผีตัวนี้',mark:'—'},
     ...(turn.scene!=='F1'?[{id:'withdraw',label:'ให้ผีถอย',detail:'ผีสลายและจบฉาก',mark:'↩'}]:[]),
   ] : [
     {id:'strike',label:'ขับไล่ผี',detail:'BODY · '+(battle.final55?.shield==='up'?'เกราะยังรับความเสียหายไว้':battle.final55?'ลดพลังชีวิตร่างผี แต่ไม่หยุดพิธี':'โจมตีเพื่อลดพลังชีวิตผี'),mark:'D20'},
-    ...(turn.canPacify?[{id:'pacify',label:'กล่อมให้สงบ',detail:'SPI · ใช้พลังจิตเพื่อจบฉาก',mark:'D20',disabled:!characters[battle.active!]?.sanity}]:[]),
+    ...(turn.canPacify?[{id:'pacify',label:'กล่อมให้สงบ',detail:turn.pacifyDescription ?? 'SPI · ใช้พลังจิตเพื่อจบฉาก',mark:'D20',disabled:!characters[battle.active!]?.sanity}]:[]),
     ...(battle.objective && turn.scene!=='C4'?[{id:'objective',label:battle.final55?shieldSteps[battle.final55.step]:'คลายจุดอาคม',detail:'2 AP · INT DC12 · สำเร็จแล้วบันทึกผลตามลำดับ',mark:'D20'}]:[]),
     {id:'guard',label:'ตั้งรับ',detail:'ป้องกัน +2 ในตาผีรอบนี้',mark:'+2'},
     ...(down.length ? [{id:'stabilize',label:'พยุงเพื่อน',detail:'ช่วยผู้สืบสวนที่ล้ม',mark:'D20'}] : []),
@@ -137,13 +145,12 @@ function TurnChoices({battle,isDm,allowed,characters,name,action,storyOption,onS
     {id:'withdraw',label:'พาทีมถอย',detail:'จบการเผชิญหน้าของทั้งทีม',mark:'↩'},
   ];
   const attack=turn.attacks?.find(option=>option.id===choice);
-  const targets=attack ? turn.party.filter(id=>!!characters[id]?.hp) : choice==='stabilize' ? down : [];
+  const targets= !isDm && (choice==='strike' || choice==='pacify') ? battle.enemies.filter(enemy=>!enemy.resolved && enemy.hp>0).map(enemy=>enemy.id) : attack ? turn.party.filter(id=>!!characters[id]?.hp) : choice==='stabilize' ? down : [];
   const pickedTarget=targets.includes(target) ? target : targets.length===1 ? targets[0] : '';
   const selected=choices.find(item=>item.id===choice && !item.disabled);
   const commit=()=>{
     if(!selected) return;
-    if(choice==='vision' && storyOption) onStoryRoll?.(storyOption.id);
-    else action?.('turnEncounter',{round:battle.round,choice:attack?(turn.scene==='F1' && !enemyDeclared()?'declareAttack':'attack'):choice,attackId:attack?.id,targetId:pickedTarget || undefined,step:battle.final55?.step});
+    action?.('turnEncounter',{round:battle.round,choice:attack?(turn.scene==='F1' && !enemyDeclared()?'declareAttack':'attack'):choice,attackId:attack?.id,targetId:pickedTarget || undefined,enemyId:turn.npcActive,step:battle.final55?.step});
   };
   const enemyDeclared=()=>turn.declared?.attackId===attack?.id && turn.declared?.targetId===pickedTarget;
   return <>
@@ -160,7 +167,7 @@ function TurnChoices({battle,isDm,allowed,characters,name,action,storyOption,onS
       {targets.map(id=><button type="button" key={id} aria-pressed={pickedTarget===id} disabled={!allowed} onClick={()=>setTarget(id)}>{name(id)}</button>)}
     </div>}
     <button type="button" className="c4-confirm" disabled={!allowed || !selected || (targets.length>0 && !pickedTarget)} onClick={commit}>
-      {!selected?'เลือกการกระทำก่อน':attack?(turn.scene==='F1' && !enemyDeclared()?'ประกาศท่าและเป้าหมาย':'ทอย D20 ให้ผี'):choice==='vision'?'ขอการ์ด D20':
+      {!selected?'เลือกการกระทำก่อน':attack?(turn.scene==='F1' && !enemyDeclared()?'ประกาศท่าและเป้าหมาย':'ทอย D20 ให้ผี'):
         selected.mark==='D20'?'ทอย D20 · '+selected.label:'ยืนยัน'+selected.label}
     </button>
   </>;

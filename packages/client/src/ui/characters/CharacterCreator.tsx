@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BASIC_RULES_MODE, maxPlayerNameLength, characterPresets, coreStatLabels, biographyFields, castProfiles, type Biography, professions, professionTechniques, type Character, type Profession, type Talent } from '@baan/shared';
 import { portraitUrl } from './CastPortraits';
 
@@ -25,75 +25,59 @@ export function CoreStats({stats}:{stats:NonNullable<Character['coreStats']>}) {
   return <dl className="character-stats" aria-label="ค่าสถานะพื้นฐาน">{Object.entries(coreStatLabels).map(([key,label]) => <div key={key}><dt>{label} <small>{key}</small></dt><dd>{stats[key as keyof typeof stats]}</dd></div>)}</dl>;
 }
 
-export function CharacterCreator({ character, biography, taken, takenBy={}, disabled, onCreate, names, onSaveNames, editable=false, showCoreStats=true }: {
-  character?: Character;
-  biography?: Biography;
-  taken: Profession[];
-  takenBy?:Partial<Record<Profession,string>>;
-  disabled: boolean;
-  showCoreStats?: boolean;
-  editable?: boolean;
-  names?:{playerName?:string;characterName?:string};
-  onSaveNames?:(playerName:string,characterName:string)=>void;
-  onCreate: (profession: Profession, talent: Talent | undefined, playerName: string, characterName: string) => void;
+export function CharacterCreator({character,biography,taken,takenBy={},disabled,onCreate,names,onRelease,editable=false,showCoreStats=true}: {
+  character?:Character;biography?:Biography;taken:Profession[];takenBy?:Partial<Record<Profession,string>>;
+  disabled:boolean;showCoreStats?:boolean;editable?:boolean;names?:{playerName?:string;characterName?:string};
+  onRelease?:()=>void;
+  onCreate:(profession:Profession,talent:Talent|undefined,playerName:string,characterName:string)=>void;
 }) {
-  const [profession, setProfession] = useState<Profession>(()=>character?.profession ?? roles.find(role=>!taken.includes(role)) ?? roles[0]);
-  const [talent, setTalent] = useState<Talent>(()=>professionTechniques[profession].talents[0].id);
-  const [playerName, setPlayerName] = useState(names?.playerName ?? character?.playerName ?? '');
-  const [characterName,setCharacterName]=useState(names?.characterName ?? character?.characterName ?? '');
-  const role=editable ? profession : character?.profession ?? profession;
-  const profile=castProfiles[role];
-  const unavailable=taken.includes(profession);
-  function cycle(step:number) {
-    const next=roles[(roles.indexOf(profession)+step+roles.length)%roles.length];
-    selectProfession(next);
-  }
-  function selectProfession(next:Profession) {
-    setProfession(next);
-    setTalent(professionTechniques[next].talents[0].id);
-  }
-  const talents = professionTechniques[profession].talents;
-  const stats = editable ? characterPresets[role] : character?.coreStats ?? characterPresets[role];
-  const chosenTalent=talents.find(entry=>entry.id===talent);
-  return <details className="game-panel character-panel" aria-label="ตัวละคร" open={!character || editable}>
-    <summary>{character ? `ตัวละครของคุณ · ${character.playerName ?? profile.name}` : 'เลือกตัวละครของคุณ'}</summary>
-    {editable && onSaveNames && <form className="player-names-form" aria-label="ตั้งชื่อผู้เล่นและชื่อในเกม" onSubmit={event=>{event.preventDefault();onSaveNames(playerName,characterName);}}>
-        <label className="character-name">ชื่อเล่นผู้เล่นจริง <input value={playerName} maxLength={maxPlayerNameLength}
-          onChange={event=>setPlayerName(event.target.value)} placeholder="ชื่อเล่นที่เพื่อนเรียก"/></label>
-        <label className="character-name">ชื่อในเกม <input value={characterName} maxLength={maxPlayerNameLength} onChange={event=>setCharacterName(event.target.value)} placeholder={profile.name}/></label>
-      <button type="submit" disabled={disabled}>บันทึกชื่อ</button>
-      <p className="note">บันทึกชื่อแยกจากการเลือกตัวละคร ทุกคนจะเห็นชื่อที่บันทึกแล้ว</p>
-    </form>}
-    {(!character || editable) && <div className="cast-picker">
-      <button type="button" aria-label="ตัวละครก่อนหน้า" onClick={()=>cycle(-1)}>‹</button>
-      <label>ตัวละครและอาชีพ
-        <select value={profession} onChange={event=>selectProfession(event.target.value as Profession)}>
-          {roles.map(option=><option key={option} value={option}>{castProfiles[option].name}{castProfiles[option].name!==professions[option].name ? ' · '+professions[option].name : ''}{taken.includes(option)?' (เลือกโดย '+(takenBy[option] ?? 'เพื่อนร่วมทีม')+')':''}</option>)}
-        </select>
-      </label>
-      <button type="button" aria-label="ตัวละครถัดไป" onClick={()=>cycle(1)}>›</button>
-    </div>}
-    <div className="character-profile">
-      <img src={portraitUrl(role)} alt={profile.name}/>
-      <div>
-        <h3>{(editable?playerName:character?.playerName) || playerName || 'ชื่อเล่นยังไม่ระบุ'} · {professions[role].name}</h3><p>ชื่อในเกม: {(editable?characterName:character?.characterName) || characterName || profile.name}</p>
-        {profile.name!==professions[role].name && <p className="character-role">{professions[role].name}</p>}
-        {(!character || editable) && <p className="note" role="status">{roles.indexOf(profession)+1}/{roles.length} · {unavailable?'เพื่อนเลือกแล้ว กรุณาเลือกตัวอื่น':'เลือกได้'}</p>}
-        <p className="character-role-help">{BASIC_RULES_MODE ? 'โหมดพื้นฐาน · ใช้ค่าสถานะประจำอาชีพและสมาธิ พักความสามารถพิเศษไว้ก่อน' : roleHelp[role]}</p>
-      </div>
-    </div>
-    {showCoreStats && <CoreStats stats={stats}/>}
-    {(!character || editable) && <details className="character-bio"><summary>ประวัติตัวละคร</summary><p>{profile.biography.background_story}</p></details>}
-    {character && !editable ? <>
-      <p>พลังชีวิต {character.hp} · สติ {character.sanity} · สมาธิ {character.focus}</p>
-      {!BASIC_RULES_MODE && character.talent && <p>พรสวรรค์ {professionTechniques[character.profession].talents.find(entry => entry.id === character.talent)?.name} · {talentHelp[character.talent]}</p>}
-      {biography && biographyFields.map(field=>biography[field] && <p key={field}>{bioLabels[field]} · {biography[field]}</p>)}
-    </> :
-      <form onSubmit={event => { event.preventDefault(); if(!disabled && !unavailable) onCreate(profession, BASIC_RULES_MODE ? undefined : talent, names?.playerName ?? character?.playerName ?? '', names?.characterName ?? character?.characterName ?? ''); }}>
-        {!BASIC_RULES_MODE && <label>พรสวรรค์ <select value={talent} onChange={event => setTalent(event.target.value as Talent)}>
-          {talents.map(entry => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
-        </select>{chosenTalent && <span className="character-help"><strong>{chosenTalent.reaction ? 'ตอบโต้' : chosenTalent.ap+' AP'} · สมาธิ {chosenTalent.focus}</strong><br/>{talentHelp[chosenTalent.id]}</span>}</label>}
-        <button className="primary" disabled={disabled || unavailable}>{unavailable ? 'ตัวละครนี้ถูกเลือกแล้ว' : character ? 'บันทึกตัวละคร' : 'ยืนยันตัวละคร'}</button>
-      </form>}
-  </details>;
+ const [editing,setEditing]=useState(false);
+ const [profession,setProfession]=useState<Profession>(character?.profession ?? roles.find(role=>!taken.includes(role)) ?? roles[0]);
+ const [talent,setTalent]=useState<Talent>(professionTechniques[profession].talents[0].id);
+ const [playerName,setPlayerName]=useState(names?.playerName ?? character?.playerName ?? '');
+ const [characterName,setCharacterName]=useState(names?.characterName ?? character?.characterName ?? '');
+ useEffect(()=>{
+  setEditing(false);
+  if(character){setProfession(character.profession);setTalent(character.talent ?? professionTechniques[character.profession].talents[0].id);}
+  setPlayerName(names?.playerName ?? character?.playerName ?? '');
+  setCharacterName(names?.characterName ?? character?.characterName ?? '');
+ },[character?.profession,character?.talent,names?.playerName,names?.characterName,character?.playerName,character?.characterName]);
+ const choosing=!character || editable && editing;
+ const role=choosing?profession:character.profession;
+ const profile=castProfiles[role];
+ const unavailable=taken.includes(profession);
+ const talents=professionTechniques[profession].talents;
+ const stats=choosing?characterPresets[role]:character.coreStats ?? characterPresets[role];
+ function cancelEdit(){setEditing(false);if(character)setProfession(character.profession);setPlayerName(names?.playerName ?? character?.playerName ?? '');setCharacterName(names?.characterName ?? character?.characterName ?? '');}
+ return <section className="game-panel character-panel character-selection" aria-label="ตัวละคร">
+  <header className="section-heading"><div><p className="eyebrow">ทีมภาคสนาม</p><h2>{choosing?'เลือกตัวละครของคุณ':'ตัวละครของคุณ'}</h2></div>
+   {character && <span className="state-badge success">{choosing?'ตัวเดิมยังอยู่':'เลือกแล้ว'}</span>}</header>
+  {choosing && <div className="cast-roster" aria-label="เลือกอาชีพ">
+   {roles.map(option=><button key={option} type="button" className="cast-option" aria-pressed={profession===option}
+    disabled={disabled || taken.includes(option)} onClick={()=>{setProfession(option);setTalent(professionTechniques[option].talents[0].id);}}>
+    <img src={portraitUrl(option)} alt=""/><strong>{professions[option].name}</strong>
+    <small>{taken.includes(option)?'เลือกโดย '+(takenBy[option] ?? 'เพื่อนร่วมทีม'):profession===option?'กำลังดู':'เลือกได้'}</small>
+   </button>)}
+  </div>}
+  <div className="character-profile">
+   <img src={portraitUrl(role)} alt={profile.name}/><div><p className="eyebrow">{professions[role].name}</p>
+    <h3>{characterName || profile.name}</h3><p>{playerName || 'ยังไม่ได้ตั้งชื่อผู้เล่น'}</p>
+    <p className="character-role-help">{BASIC_RULES_MODE?'ใช้ค่าสถานะประจำอาชีพในการทอยตามที่ DM กำหนด':roleHelp[role]}</p>
+    {character && !choosing && <p>ชีวิต {character.hp} · สติ {character.sanity} · สมาธิ {character.focus}</p>}
+   </div>
+  </div>
+  {showCoreStats && <CoreStats stats={stats}/>}
+  {choosing ? <form className="character-choice-form" onSubmit={event=>{event.preventDefault();if(!disabled && !unavailable)onCreate(profession,BASIC_RULES_MODE?undefined:talent,playerName.trim(),characterName.trim());}}>
+   <label>ชื่อผู้เล่น<input value={playerName} maxLength={maxPlayerNameLength} onChange={event=>setPlayerName(event.target.value)} placeholder="ชื่อที่เพื่อนเรียก"/></label>
+   <label>ชื่อในเกม<input value={characterName} maxLength={maxPlayerNameLength} onChange={event=>setCharacterName(event.target.value)} placeholder={profile.name}/></label>
+   {!BASIC_RULES_MODE && <label>พรสวรรค์<select value={talent} onChange={event=>setTalent(event.target.value as Talent)}>{talents.map(entry=><option key={entry.id} value={entry.id}>{entry.name}</option>)}</select><span>{talentHelp[talent]}</span></label>}
+   <div className="button-row"><button className="primary" disabled={disabled || unavailable}>{unavailable?'เพื่อนเลือกตัวละครนี้แล้ว':character?'เลือกตัวละครนี้แทน':'เลือกตัวละครนี้'}</button>
+    {character && <button type="button" disabled={disabled} onClick={cancelEdit}>ยกเลิกการแก้ไข</button>}</div>
+  </form> : editable && <div className="button-row"><button type="button" disabled={disabled} onClick={()=>setEditing(true)}>เปลี่ยนตัวละคร / ชื่อ</button>
+   {onRelease && <button type="button" className="quiet-button" disabled={disabled} onClick={onRelease}>ยกเลิกการเลือก</button>}</div>}
+  {choosing && unavailable && <p className="inline-notice" role="status">ตัวละครนี้มีคนเลือกแล้ว เลือกอาชีพอื่นจากด้านบน</p>}
+  <details className="character-bio"><summary>รู้จักตัวละครนี้</summary><p>{profile.biography.background_story}</p>
+   {character && !editable && biography && biographyFields.filter(field=>field!=='background_story').map(field=>biography[field] && <p key={field}>{bioLabels[field]} · {biography[field]}</p>)}
+  </details>
+ </section>;
 }

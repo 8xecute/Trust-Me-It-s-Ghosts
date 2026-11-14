@@ -361,12 +361,15 @@ export function stabilize(w: World, actor: string, input: unknown, roll: () => n
   e.turn=paid.turn;
 }
 
-export function negotiateV2(w: World, actor: string, roll: () => number, checkDistance=true) {
+export function negotiateV2(w: World, actor: string, roll: () => number, checkDistance=true, response:'resolve'|'hesitate'|'respond'='resolve') {
   const e=w.encounter, character=w.characters?.[actor], t=w.tactics;
   if(!e || !t || e.phase!=='player' || !character?.hp || !character.sanity ||
     (checkDistance && distance(w.players[actor],e.ghost)!==1) || t.dispersed || (t.concealed && (t.scanned ?? 0)<t.round)) return reject();
   const paid=spendAction(w.turns[actor],character.focus,{ap:2,focus:0}) ?? reject('AP ไม่พอ');
-  if(check(w,actor,'spirit',roll,undefined,t.profile?.combat?.MDEF ?? 12)) soothe(w);
+  if(check(w,actor,'spirit',roll,undefined,t.profile?.combat?.MDEF ?? 12)) {
+    if(response==='resolve')soothe(w);
+    else if(response==='hesitate') {t.calmUntil=t.round;delete t.telegraph;}
+  }
   e.turn=paid.turn;
 }
 

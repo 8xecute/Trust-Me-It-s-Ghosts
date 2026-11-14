@@ -85,7 +85,7 @@ export function DmWorkspace({
   previewPlayer:string;
   setPreviewPlayer:(id:string)=>void;
   dmPanel:CaseDmPanel|null;
-  action:(type:string,payload?:object,onSuccess?:()=>void)=>void;
+  action:(type:string,payload?:object,onSuccess?:()=>void,onSettled?:(error?:string)=>void)=>void;
   playerName:(id:string)=>string;
   canStart:boolean;
   status:string;
@@ -96,6 +96,7 @@ export function DmWorkspace({
 }) {
   const [selectedTab,setDmTab]=useState<'guide'|'queue'|'dice'|'team'|'npcs'|'backup'|'history'>();
   const dmTab=selectedTab ?? 'queue';
+  useEffect(()=>{if(world?.paused)setDmTab('team');},[world?.paused]);
   const nextStep=useRef<HTMLElement>(null);
   const [previewOpen,setPreviewOpen]=useState(false);
   const [selectedLine,setSelectedLine]=useState('');
@@ -197,7 +198,7 @@ export function DmWorkspace({
         <section><h4>คำใบ้แบบค่อยเป็นค่อยไป</h4><p className="note">เลือกให้เหมาะกับฉากและสิ่งที่ทีมพบแล้ว อย่าเล่าข้อมูลที่ยังไม่ควรรู้</p><ol>{dmPanel.backup.hints.map((hint,i)=><li key={i}>{hint}</li>)}</ol></section>
         <details><summary>พลาดเบาะแสหรือทอยไม่ผ่าน</summary><p className="note">ข้อมูลเตรียมบทเฉพาะ DM: ใช้แหล่งสำรองเมื่อทีมไปถึงและเข้าเงื่อนไขจริง</p><ul>{dmPanel.backup.alternatives.map((item,i)=><li key={i}>{item}</li>)}</ul></details>
         <section><h4>ทางไปต่อ</h4><p>{dmPanel.backup.exit}</p>{dmPanel.backup.blockers.length ? <ul>{dmPanel.backup.blockers.map(item=><li key={item}>{item}</li>)}</ul> : <p>ส่งสรุปและขอยืนยันจากหน้าดำเนินเกม</p>}<button type="button" onClick={()=>setDmTab('queue')}>กลับไปดำเนินเกม</button>{!dmPanel.backup.opened && <button type="button" onClick={()=>setDmTab('queue')}>ไปคิวบท</button>}</section>
-        <details><summary>เมื่อทีมอยากพักหรือปิดคดี</summary><p>ใช้ปุ่มพักคดีหรือถอนทีมในหน้าจัดการห้อง ปุ่มพักจะหยุดการกระทำของทุกคนและเปิดเล่นต่อได้ ตกลงพักกับทีมได้ และให้สมาชิกกลับเข้าห้องเดิมเมื่อพร้อมตามการตั้งค่าบันทึกของเซิร์ฟเวอร์ อย่ากดออกจากห้องหากต้องการกลับด้วยตัวละครเดิม</p><p>DM ถอนทีมได้ทุกบท และระบบใช้ผลที่เกิดขึ้นจริง การปิดคดีแล้วกลับมาสืบต่อไม่ได้</p></details>
+        <details><summary>เมื่อทีมอยากพักหรือปิดคดี</summary><p>ใช้ปุ่มพักคดีหรือถอนทีมในหน้าจัดการห้อง ปุ่มพักจะหยุดการกระทำของทุกคนและเปิดเล่นต่อได้ ตกลงพักกับทีมได้ และให้สมาชิกกลับเข้าห้องเดิมเมื่อพร้อมตามการตั้งค่าบันทึกของเซิร์ฟเวอร์ ออกชั่วคราวแล้วกลับด้วยปุ่มเล่นต่อหรือรหัสส่วนตัวได้</p><p>DM ถอนทีมได้ทุกบท และระบบใช้ผลที่เกิดขึ้นจริง การปิดคดีแล้วกลับมาสืบต่อไม่ได้</p></details>
        </> : <p>แผนสำรองนี้ใช้กับคดีแบบนำทางที่กำลังเล่น</p>}
       </section>
       {dmTab==='queue' && battle?.turnEncounter && world.caseMap &&
@@ -377,19 +378,18 @@ export function DmWorkspace({
           <button type="button" aria-pressed={previewOpen} onClick={()=>setPreviewOpen(!previewOpen)}>{previewOpen?'ซ่อน':'แสดง'}มุมมองผู้สืบสวน</button>
           <button type="button" disabled={!connected || leaving} onClick={leaveRoom}>ออกชั่วคราว</button>
         </div>
-        <details><summary>รายชื่อทีม · {investigators.length} คน</summary><ul>{investigators.map(player=><li key={player.id}>{playerName(player.id)} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul></details>
+        <details><summary>รายชื่อทีม · {investigators.length} คน</summary><ul>{investigators.map(player=><li key={player.id}>{playerName(player.id)} · {player.connected===false?'ยังไม่กลับเข้าห้อง':'อยู่ในห้อง'}</li>)}</ul></details>
     {dmTab==='team' && world?.case001 && !world.case001.report && <section className="session-tools" aria-label="จัดการคดี">
      {lethalSetting && <section className="dm-quick-card">
       <h4>ตั้งค่าความเสี่ยงของคดี · ไม่ใช่ผลการกระทำ</h4>
       <p>เปิดใช้เหตุถึงตายตามบท และเตรียมข้อความแจ้งทีม ไม่ทำให้ตัวละครเสียชีวิตทันที ไม่มีการตายจากเวลาที่ผ่านไป</p>
       <button type="button" disabled={!available} onClick={()=>action('guided',{command:'v51:enable-lethal'})}>เปิดใช้เหตุถึงตายตามบทและเตรียมแจ้งทีม</button>
      </section>}
-     <SessionSaveControls socket={socket} paused={!!world.paused} playerName={playerName}/>
-     {world.paused && <section aria-label="จัดทีมวันนี้"><h3>ผู้เล่นใน session วันนี้</h3><button disabled={!connected} onClick={()=>{if(window.confirm('ยกเลิกเฉพาะแผนและคำขอที่ยังไม่ได้ทอย? ผลทอยที่เกิดแล้วจะยังอยู่'))action('dmSessionControl',{command:'clearPending'});}}>ยกเลิกแผนและคำขอที่ยังไม่ทอย</button><p>พักตัวละครคนที่มาไม่ได้ไว้ แล้วเปิดเล่นต่อเมื่อผู้เล่นที่เลือกกลับเข้าห้องครบ</p>{investigators.map(p=><label key={p.id}><input type="checkbox" checked={!world.inactivePlayers?.includes(p.id)} disabled={!connected} onChange={e=>action('dmSessionControl',{command:'attendance',targetId:p.id,absent:!e.target.checked})}/>{playerName(p.id)} · {world.inactivePlayers?.includes(p.id)?'พักตัวละคร':'เล่นวันนี้'}</label>)}</section>}
-     <p role="status">{world.paused?'พักคดีอยู่ · ทุกคนรอ DM เปิดเล่นต่อ':'คดีกำลังดำเนินอยู่'}</p>
-     <button disabled={!connected} onClick={()=>action('dmSessionControl',{command:world.paused?'resume':'pause'})}>{world.paused?'เปิดเล่นต่อ':'พักคดี'}</button>
+     <SessionSaveControls socket={socket} connected={connected} paused={!!world.paused} playerName={playerName} investigators={investigators} inactive={world.inactivePlayers} action={action}/>
+     <details className="session-advanced"><summary>ย้อนบทหรือปิดคดี</summary>
      <button disabled={!connected} onClick={()=>{if(window.confirm('ย้อนกลับจุดเริ่มบทปัจจุบันสำหรับทุกคน? การกระทำหลังจุดนั้นจะถูกยกเลิก และคดีจะพักให้ตรวจสถานะก่อนเล่นต่อ'))action('dmSessionControl',{command:'rewind'});}}>ย้อนต้นบท</button>
      <button disabled={!connected} className="danger" onClick={()=>{if(window.confirm('ถอนทีมและปิดคดีสำหรับทุกคน? ระบบจะสรุปตามผลที่เกิดขึ้นจริง และกลับมาสืบต่อในห้องนี้ไม่ได้'))action('dmSessionControl',{command:'withdraw'});}}>ถอนทีมและปิดคดี</button>
+     </details>
     </section>}
       {dmPanel && <section className="gm-travel">        {dmPanel.wichai && <details><summary>ข้อมูลวิชัยสำหรับฉากต่อสู้</summary>
           <p>พลังชีวิต {dmPanel.wichai.baseHPFor2} · ป้องกันกาย {dmPanel.wichai.PDEF} · ป้องกันใจ {dmPanel.wichai.MDEF} · โจมตี {dmPanel.wichai.ATK} · ลำดับลงมือ {dmPanel.wichai.INIT} · ระยะเดิน {dmPanel.wichai.MOVE}</p>
@@ -417,7 +417,9 @@ export function DmWorkspace({
       </section>
     </section> : <section className="game-panel" aria-label="แผงผู้ดำเนินเรื่อง">
         <h2>แผงผู้ดำเนินเรื่อง</h2>
-        <p>ให้ผู้สืบสวน 2–6 คนเลือกตัวละครก่อนเริ่มคดี</p>
+        <p>ส่งรหัสห้องให้ทีม เลือกตัวละครครบอย่างน้อย 2 คนแล้วเริ่มได้</p>
+        <div className="room-code-display"><span>รหัสห้อง</span><strong>{room.code}</strong><button type="button" onClick={()=>void navigator.clipboard?.writeText(room.code)}>คัดลอกรหัส</button></div>
+        <ul className="attendance-list">{investigators.map(p=><li key={p.id}><strong>{playerName(p.id)}</strong><span className={'state-badge '+(world?.characters?.[p.id]?'success':'')}>{world?.characters?.[p.id]?'เลือกแล้ว':'กำลังเลือกตัวละคร'}</span></li>)}</ul>
         <button className="primary" disabled={!canStart} onClick={()=>action('caseStart',{mode:'story'})}>เริ่มคดี 001</button>
         <button disabled={!connected} onClick={()=>action('releaseDm')}>คืนบทผู้ดำเนินเรื่อง</button>
         <button disabled={!connected || leaving} onClick={leaveRoom}>ออกจากห้อง</button>

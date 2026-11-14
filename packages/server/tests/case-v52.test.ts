@@ -163,7 +163,7 @@ test('v5.5 reader stays concise and DM sends reviewed Q&A directly without a pla
  const qa=reader.qa!.find(q=>reader.sendableQaIds!.includes(q.id) && q.answer)!;
  assert.ok(qa);
  const state=r.state();
- assert.equal(r.panel().questions!.length,0);
+ assert.ok(!('questions' in r.panel()));
  assert.throws(()=>r.send('a','dmSendQa',{qaId:qa.id,text:'ปลอมสิทธิ์'}));
  assert.throws(()=>r.send('dm','dmSendQa',{qaId:'E5_Q001',text:'ผิดฉาก'}));
  assert.throws(()=>r.send('dm','dmSendQa',{qaId:qa.id,text:''}));
@@ -182,7 +182,7 @@ test('v5.5 reader stays concise and DM sends reviewed Q&A directly without a pla
 
 test('v5.5 DM alone controls story changes and advances without player confirmation',()=>{
  const r=room(20,false,'5.5');
- assert.throws(()=>r.send('a','askGm',{site:'A',text:'ข้อความ'}),/ไม่ใช้ระบบส่งข้อความ/);
+ assert.throws(()=>r.send('a','askGm',{site:'A',text:'ข้อความ'}),/เลิกใช้/);
  assert.throws(()=>r.send('a','guided',{command:'propose'}),/DM/);
  assert.throws(()=>r.send('a','caseAction',{actionId:'survey-arrival',site:'A'}),/DM/);
  assert.throws(()=>r.send('a','guided',{command:'scene',target:'A3'}),/DM/);
@@ -592,64 +592,9 @@ test('DM sees a short Thai case summary while the saved state keeps all gameplay
  r.toE();r.rescue();r.scene('E4');r.act('seal3');
  assert.deepEqual(r.panel().storySummary,['พบผู้สูญหาย 3/3 คน · พาไปจุดปลอดภัยแล้ว 3 คน','พิธีหยุดแล้ว']);
 });
-test('DM can confirm and send the matched answer directly from a player question',()=>{
- const r=room();
- r.send('a','askGm',{site:'A',text:r.view().guided!.prompts[0]});
- const card=r.panel().questions![0];
- const choice=card.suggestions[0];
- assert.equal(choice.id,'guided-talk:A1:6');
- assert.throws(()=>r.send('a','dmAnswer',{cardId:card.id,actionId:choice.id,confirmContext:true}));
- r.send('dm','dmAnswer',{cardId:card.id,actionId:choice.id,confirmContext:choice.confirmContext});
- assert.equal(r.panel().questions!.length,0);
- assert.match(r.view().narrative!.history.at(-1)!.text,/ดลหายก่อน/);
-});
-test('v5.3 runtime loads the story and confirms only a matching private answer',()=>{
- const r=room(20,false,'5.3');
- const reader=r.panel().storyReader!;
- assert.equal(reader.scenes.length,31);
- assert.equal(reader.checks.length,16);
- assert.equal(Object.keys(reader.endings).length,4);
- assert.throws(()=>r.store.dmPanel(r.code,'a'));
- const qa=reader.qa!.find(entry=>entry.id==='A1_Q001')!;
- assert.ok(qa);
- assert.ok(!JSON.stringify(r.view()).includes(qa.dm_note));
- r.send('a','askGm',{site:'A',text:'ใครหายไปบ้าง?'});
- const before=r.state();
- const card=r.panel().questions![0];
- assert.deepEqual(r.state(),before);
- assert.deepEqual(card.suggestions.map(choice=>choice.id),[qa.id]);
- assert.throws(()=>r.send('a','dmReply',{cardId:card.id,qaId:qa.id,text:qa.answer}));
- assert.throws(()=>r.send('dm','dmReply',{cardId:card.id,qaId:'A1_Q002',text:qa.answer}));
- r.send('dm','dmReply',{cardId:card.id,qaId:qa.id,text:qa.answer});
- assert.match(r.view().narrative!.history.at(-1)!.text,/ประเสริฐ · ดลหายก่อน/);
- const history=r.panel().storyReader!.answers!;
- assert.equal(history.length,1);
- assert.equal(history[0].qaId,qa.id);
- assert.equal(history[0].question,'ใครหายไปบ้าง?');
- assert.equal(history[0].scene,'A1');
- const compact=r.store.dmPanel(r.code,'dm',false);
- assert.ok('storyProgress' in compact);
- assert.deepEqual(compact.storyProgress!.answers,history);
- assert.ok(!('answers' in r.view()));
- const checkpoint=r.saved();r.store.delete(r.code);r.store.restore(r.code,checkpoint);
- assert.deepEqual(r.panel().storyReader!.answers,history);
- const unchanged=r.saved();r.panel();r.panel();
- assert.deepEqual(r.saved(),unchanged);
- assert.equal(r.panel().storyReader!.qa!.length,206);
- r.send('a','askGm',{site:'A',text:'ใครเดินผ่านตรงนี้เมื่อวาน?'});
- assert.deepEqual(r.panel().questions![0].suggestions,[]);
-});
-test('v5.3 keeps the grove question separate from land sales and hides private testimony',()=>{
- const r=room(20,false,'5.3');
- r.scene('A3');r.next();r.scene('B2');
- r.send('a','askGm',{site:'B',text:'วิชัยเข้าสวนคืนไหนแน่?'});
- const card=r.panel().questions![0];
- assert.deepEqual(card.suggestions.map(choice=>choice.id),['B2_Q006']);
- r.send('dm','dmDismiss',{cardId:card.id});
- r.scene('B3');
- r.send('a','askGm',{site:'B',text:'คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'});
- assert.deepEqual(r.panel().questions![0].suggestions,[]);
-});
+
+
+
 for(const reason of ['called','followed'])test('v5.3 requires the '+reason+' route and actual arrival before E5',()=>{
  const r=room(20,false,'5.3');
  r.toE();
@@ -748,43 +693,8 @@ test('v5.3 allows Kaew to speak through the bracelet without restoring her body'
  assert.equal(r.state().v51!.kaewVoice53,true);
  assert.equal(r.state().v51!.KAEW_TEMP_DISPERSED,true);
 });
-test('v5.3 rechecks the document and witness gates before delivering a Q&A reply',()=>{
- const r=room(20,false,'5.3');
- r.scene('A3');r.next();r.scene('B3');
- r.send('a','askGm',{site:'B',text:'คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'});
- assert.deepEqual(r.panel().questions![0].suggestions,[]);
- r.send('dm','guided',{command:'protect'});
- assert.equal(r.panel().questions![0].suggestions[0]?.id,'B3_Q002');
- r.send('dm','dmDismiss',{cardId:r.panel().questions![0].id});
- r.scene('B5');r.next();r.scene('C2');r.next();r.scene('D5');r.next();r.scene('E4');
- r.send('a','askGm',{site:'E',text:'กำไลคืออะไร?'});
- const card=r.panel().questions![0];
- assert.deepEqual(card.suggestions,[]);
- assert.throws(()=>r.send('dm','dmReply',{cardId:card.id,qaId:'E4_Q001',text:'ก่อนอ่าน'}));
- r.event('read-ritual-book');
- const answer=r.panel().questions![0].suggestions[0];
- assert.equal(answer.id,'E4_Q001');
- r.send('dm','dmReply',{cardId:card.id,qaId:answer.id,text:answer.answer});
- assert.match(r.view().narrative!.history.at(-1)!.text,/กำไลทองเหลือง/);
-});
-test('v5.3 player prompts always resolve to an eligible answer in the current scene',()=>{
- const r=room(20,false,'5.3');
- const verify=()=>{
-  const prompts=r.view().guided!.prompts;
-  for(const prompt of prompts) {
-   r.send('a','askGm',{site:r.view().caseMap!.site,text:prompt});
-   const card=r.panel().questions![0];
-   assert.equal(card.suggestions.length,1,prompt);
-   r.send('dm','dmDismiss',{cardId:card.id});
-  }
- };
- verify();
- r.scene('A3');r.next();r.scene('B3');verify();
- assert.ok(!r.view().guided!.prompts.includes('คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'));
- r.send('dm','guided',{command:'protect'});
- assert.ok(r.view().guided!.prompts.includes('คุณมั่นใจแค่ไหนว่าเป็นวิชัย?'));
- verify();
-});
+
+
 
 test('v5.3 DM can inspect an action consequence before recording it and see the recorded result',()=>{
  const r=room(20,false,'5.3');

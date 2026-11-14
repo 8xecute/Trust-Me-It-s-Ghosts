@@ -97,11 +97,7 @@ test('cue precedes prompts, hint requests are disabled and old scene questions a
  r.next();
  assert.equal(r.view().guided!.hint,undefined);
  r.scene('B2');
- r.send('a','askGm',{text:'เรื่องที่ดินเกี่ยวอย่างไร',site:'B'});
- const card=r.panel().questions![0];
- r.scene('B3');
- assert.equal(r.panel().questions![0].open,false);
- assert.throws(()=>r.send('dm','dmReply',{cardId:card.id,text:'ตอบเป็นวิชัย',speaker:'วิชัย'}));
+ assert.throws(()=>r.send('a','askGm',{text:'เรื่องที่ดินเกี่ยวอย่างไร',site:'B'}),/เลิกใช้/);
 });
 for(const count of [2,6]) test('v4.3 complete peaceful route reaches report A with '+count+' players',()=>{
  const r=room(count);
@@ -255,7 +251,7 @@ test('handoff journal excludes private narration and retains open questions',()=
 test('replayed confirmation cannot advance or repeat a saved chapter',()=>{
  const r=room();r.scene('A3');
  assert.throws(()=>r.send('a','guided',{command:'hint'}),/ถูกปิด/);
- r.send('a','askGm',{text:'จดชื่อผู้สูญหายไว้ครบหรือยัง',site:'A'});
+ assert.throws(()=>r.send('a','askGm',{text:'จดชื่อผู้สูญหายไว้ครบหรือยัง',site:'A'}),/เลิกใช้/);
  r.send('dm','guided',{command:'propose'});
  const action={id:'confirm-once',type:'guided' as const,command:'confirm',target:r.view().guided!.transition!.id};
  r.store.apply(r.code,'a',action);
@@ -266,7 +262,7 @@ test('replayed confirmation cannot advance or repeat a saved chapter',()=>{
  assert.equal(restored.snapshot(r.code,'a').guided!.phase,'B');
  assert.equal(restored.snapshot(r.code,'a').guided!.journals.length,1);
  assert.equal(restored.checkpoint(r.code).world.case001!.guided!.hints.A,undefined);
- assert.deepEqual(restored.snapshot(r.code,'a').guided!.journals[0].open_questions,['จดชื่อผู้สูญหายไว้ครบหรือยัง']);
+ assert.deepEqual(restored.snapshot(r.code,'a').guided!.journals[0].open_questions,[]);
  assert.throws(()=>restored.apply(r.code,'b',{...action,id:'stale-confirmation'}));
  assert.equal(restored.snapshot(r.code,'a').guided!.phase,'B');
 });
@@ -343,7 +339,7 @@ test('DM can pause, resume and withdraw before Final while players cannot bypass
  assert.throws(()=>r.send('a','dmSessionControl',{command:'pause'}));
  r.send('dm','dmSessionControl',{command:'pause'});assert(r.view().paused);
  assert.throws(()=>r.send('dm','guided',{command:'scene',target:'A3'}),/พักคดี/);
- assert.throws(()=>r.send('a','askGm',{text:'ไปต่อ',site:'A'}),/พักคดี/);
+ assert.throws(()=>r.send('a','askGm',{text:'ไปต่อ',site:'A'}),/เลิกใช้/);
  assert.equal(r.view().case001!.time,before.case001!.time);
  r.send('dm','dmSessionControl',{command:'resume'});assert(!r.view().paused);
  r.send('dm','dmSessionControl',{command:'withdraw'});
@@ -407,13 +403,4 @@ test('starting combat after the DM read C4 never duplicates its opening',()=>{
  r.send('a','start');
  assert.equal(r.view().narrative!.history.filter(beat=>beat.eventId==='guided-cue:C4').length,1);
  assert(!r.panel().narration.some(card=>card.eventId==='guided-cue:C4' || card.eventId==='EN01:start'));
-});
-
-
-test('player question choices have an available authored reply and remain gated by scene publication',()=>{
- const r=room();const options=r.view().guided!.questionOptions!;assert(options.length);
- assert(options.every(q=>r.panel().investigators[0].choices.some(c=>c.label===q.label && c.speaker===q.speaker && c.answer)));
- r.send('a','askGm',{site:'A',text:options[0].speaker+' · '+options[0].label});assert.equal(r.panel().questions!.length,1);
- r.send('dm','guided',{command:'scene',target:'A3'});assert.deepEqual(r.view().guided!.questionOptions,[]);
- r.publish('guided-cue:A3');assert(!JSON.stringify(r.view().guided!.questionOptions).includes('DM ลับ'));
 });

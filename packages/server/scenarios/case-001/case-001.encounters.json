@@ -1,5 +1,5 @@
 {
-  "EN01": {"site":"C","title":"เสียงใต้พื้น","roster":["drowned_echo","drowned_echo"]},
+  "EN01": {"turnRoster55":["drowned_echo","drowned_echo"],"site":"C","title":"เสียงใต้พื้น","roster":["drowned_echo","drowned_echo"]},
   "EN02": {"site":"D","title":"สวนต้องสาป","roster":["drowned_echo","bound_wraith","bound_wraith"]},
   "EN03": {"site":"E","title":"ผู้เฝ้ากำไล","roster":["ritual_guardian","bound_wraith","bound_wraith"]},
   "EN04": {"site":"E","title":"เสียงร้องสุดท้าย","roster":["kaew_boss","bound_wraith"]}

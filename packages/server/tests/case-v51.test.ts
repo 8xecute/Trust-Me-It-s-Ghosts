@@ -63,18 +63,7 @@ test('v5.1 merge keeps C4 available and publishes its opening once through the D
  assert.ok(allowedGuidedScenes(saved).some(scene=>scene.id==='C4'));
 });
 
-test('v5.1 question buttons expose approved labels only, retaining DM context gates',()=>{
- const r=room();assert.deepEqual(r.view().guided!.questionOptions,[]);
- const line=scenes51.A1.dialogue.find(line=>line.label==='ใคร?')!;
- r.event('context:'+line.id);
- const option=r.view().guided!.questionOptions!.find(q=>q.label===line.label)!;
- assert.ok(option);assert.deepEqual(Object.keys(option).sort(),['label','speaker']);
- assert.ok(r.panel().investigators[0].choices.some(c=>c.label===option.label && c.speaker===option.speaker && c.answer));
- r.send('a','askGm',{site:'A',text:option.speaker+' · '+option.label});
- assert.equal(r.panel().questions!.length,1);
- r.send('dm','guided',{command:'scene',target:'A3'});
- assert.deepEqual(r.view().guided!.questionOptions,[]);
-});
+
 
 test('v5.1 source imports 31 complete scenes, four endings and unchanged 16 dice cards',()=>{
  assert.equal(Object.keys(scenes51).length,31);assert.deepEqual(Object.keys(endings51),['A','B','C','D']);

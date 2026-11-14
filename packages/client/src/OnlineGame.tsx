@@ -52,6 +52,10 @@ export function OnlineGame() {
   const [dmPanel,setDmPanel] = useState<CaseDmPanel|null>(null);
   const dmReader=useRef<CaseDmPanel['storyReader']>(undefined);
   const [status,setStatus] = useState('');
+  const [entryBusy,setEntryBusy]=useState(false);
+  const entryLock=useRef(false);
+  const [characterBusy,setCharacterBusy]=useState(false);
+  const [copiedAccess,setCopiedAccess]=useState(false);
   const [leaving,setLeaving]=useState(false);
   const [connected,setConnected] = useState(false);
   const [biography,setBiography] = useState<Biography>();
@@ -71,14 +75,17 @@ export function OnlineGame() {
   function request(event:string,args:unknown[]=[],onSuccess?:()=>void,onSettled?:(error?:string)=>void) {
     const connection=socket.current;
     if (!connection?.connected) {setStatus('กำลังรอการเชื่อมต่อ');onSettled?.('กำลังรอการเชื่อมต่อ');return;}
+    const entryEvent=['room:create:v2','room:join:v2','room:resume','session:import'].includes(event);
+    if(entryEvent && entryLock.current)return;
+    if(entryEvent){entryLock.current=true;setEntryBusy(true);}
     connection.timeout(event==='session:import'?20000:5000).emit(event,...args,(error:Error|null,reply:Reply)=>{
+      if(entryEvent){entryLock.current=false;setEntryBusy(false);}
       if(error || !reply?.ok) {
         const message=error ? 'เซิร์ฟเวอร์ไม่ตอบกลับ' : reply?.error ?? 'ทำรายการไม่ได้';
-        setStatus(message);
+        setStatus(event==='room:resume' && reply?.error==='ไม่สามารถกลับเข้าห้อง'?'ยังไม่พบห้องเดิม ให้ DM โหลดไฟล์เซฟก่อน แล้วกดกลับเข้าเล่นต่ออีกครั้ง':message);
         onSettled?.(message);
         if(event==='room:resume' && !error) {
           sessionStorage.removeItem(sessionKey);
-          if(reply?.error!=='ห้องนี้เปิดอยู่ในอีกหน้าต่าง' && localStorage.getItem(savedSessionKey)===args[0]) localStorage.removeItem(savedSessionKey);
           latest.current=null;
           self.current='';
           setWorld(null);
@@ -86,7 +93,7 @@ export function OnlineGame() {
         }
         return;
       }
-      if(reply.token) {sessionStorage.setItem(sessionKey,reply.token);if(event==='session:import')localStorage.setItem(savedSessionKey,reply.token);}
+      if(reply.token) {sessionStorage.setItem(sessionKey,reply.token);localStorage.setItem(savedSessionKey,reply.token);}
       if(reply.playerId) self.current=reply.playerId;
       if(reply.room) setRoom(reply.room);
       if(reply.snapshot) receive(reply.snapshot,reply.persistent);
@@ -213,7 +220,7 @@ export function OnlineGame() {
   const savedToken=room ? null : localStorage.getItem(savedSessionKey);
   return <main className={`game-shell online-shell player-shell case-ui${room ? '' : ' lobby-shell'}${world?.case001?' case-ui-active':''}`}>
     <header className="online-heading"><div><p className="eyebrow">บริษัท เรื่องผีไว้ใจผม จำกัด · ปฏิบัติการภาคสนาม</p><h1>{world?.case001 ? world.case001.title : room ? 'เตรียมทีมสำรวจ' : 'รวมทีมรับคดี'}</h1></div><p className="turn-chip" role="status">{status || (connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ')}</p></header>
-    {!room ? <Lobby connected={connected} publicRooms={publicRooms}
+    {!room ? <Lobby connected={connected} publicRooms={publicRooms} busy={entryBusy} status={status}
       resumeRoom={savedToken ? ()=>{
         sessionStorage.setItem(sessionKey,savedToken);
         request('room:resume',[savedToken]);
@@ -223,13 +230,14 @@ export function OnlineGame() {
       createRoom={()=>request('room:create:v2')} joinRoom={roomCode=>request('room:join:v2',[roomCode])}/> : <>
       <details className="session-members" open={!world?.case001 && (room.version!==2 || !!character)}>
         <summary>ทีมของคุณ · ห้อง {room.code} · {room.players.length} คน</summary>
-      <ul>{room.players.map((player,index)=><li key={player.id}>{world?.characters?.[player.id] ? playerName(player.id)+' · '+professions[world.characters[player.id].profession].name : playerName(player.id)}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.ready?'พร้อม':'ยังไม่พร้อม'}</li>)}</ul>
-      {!world?.case001 && <button disabled={!connected} onClick={()=>request('room:ready',[!room.players.find(p=>p.id===self.current)?.ready])}>สลับสถานะพร้อม</button>}
+      <ul>{room.players.map((player,index)=><li key={player.id}>{world?.characters?.[player.id] ? playerName(player.id)+' · '+professions[world.characters[player.id].profession].name : playerName(player.id)}{player.id===self.current?' (คุณ)':''}{player.id===world?.humanDmId?' · ผู้ดำเนินเรื่อง':''} · {player.connected===false?'ออฟไลน์':player.id===world?.humanDmId?'อยู่ในห้อง':world?.characters?.[player.id]?'เลือกตัวละครแล้ว':'กำลังเลือกตัวละคร'}</li>)}</ul>
+      {room.version!==2 && !world?.case001 && <button disabled={!connected} onClick={()=>request('room:ready',[!room.players.find(p=>p.id===self.current)?.ready])}>สลับสถานะพร้อม</button>}
+      {world?.case001 && <details className="personal-recovery"><summary>สิทธิ์กลับเข้าของฉัน</summary><p>เครื่องเดิมจำสิทธิ์ไว้แล้ว ใช้ “กลับเข้าเล่นต่อ” จากหน้าแรก เมื่อเปลี่ยนเครื่องให้ใช้รหัสนี้</p><input readOnly aria-label="รหัสกลับเข้าส่วนตัว" value={sessionStorage.getItem(sessionKey) ?? ''} onFocus={e=>e.target.select()}/><button type="button" onClick={()=>{const token=sessionStorage.getItem(sessionKey);if(token)navigator.clipboard.writeText(token).then(()=>setCopiedAccess(true)).catch(()=>setStatus('เลือกรหัสแล้วคัดลอกด้วยตัวเอง'));}}>{copiedAccess?'คัดลอกแล้ว':'คัดลอกรหัสส่วนตัว'}</button></details>}
       <button type="button" disabled={!connected || leaving} onClick={leaveRoom}>{world?.case001?'ออกชั่วคราว':'ออกจากห้อง'}</button>
       </details>
       {room.version===2 && !world?.case001 && <CharacterCreator character={character} biography={biography}
-        taken={cast.filter(role=>role!==character?.profession)} takenBy={Object.fromEntries(investigators.flatMap((p,i)=>world?.characters?.[p.id] ? [[world.characters[p.id].profession,world.characters[p.id].playerName ?? 'ผู้เล่น '+(i+1)]] : []))} disabled={!connected}
-        editable names={world?.playerNames?.[self.current]} onSaveNames={(playerName,characterName)=>action('setPlayerNames',{playerName,characterName})} onCreate={(profession,talent,playerName,characterName)=>action(character?'updateCharacter':'createCharacter',{profession,talent,playerName,characterName})}/>}
+        taken={cast.filter(role=>role!==character?.profession)} takenBy={Object.fromEntries(investigators.flatMap((p,i)=>world?.characters?.[p.id] ? [[world.characters[p.id].profession,world.characters[p.id].playerName ?? 'ผู้เล่น '+(i+1)]] : []))} disabled={!connected || characterBusy}
+        editable names={world?.playerNames?.[self.current]} onRelease={()=>{setCharacterBusy(true);action('releaseCharacter',{},undefined,()=>setCharacterBusy(false));}} onCreate={(profession,talent,playerName,characterName)=>{setCharacterBusy(true);action(character?'updateCharacter':'createCharacter',{profession,talent,playerName,characterName},undefined,()=>setCharacterBusy(false));}}/>}
       {world?.case001 ? <section className="case-screen" aria-label="คดี 001">
         {world.inactivePlayers?.includes(self.current) && <p role="status">ตัวละครพักใน session นี้ ข้อมูลเดิมยังอยู่ รอ DM จัดทีมในครั้งถัดไป</p>}
         {world.paused && <p className="narration-card" role="status">พักคดีอยู่ · รอ DM เปิดเล่นต่อ สถานะและผลทอยเดิมยังอยู่</p>}
@@ -288,8 +296,7 @@ export function OnlineGame() {
           {world.caseMap.turnConclusion && !battle && world.guided?.scene==='C4' && <TurnConclusion result={world.caseMap.turnConclusion}/>}
           {battle?.turnEncounter ? <TurnEncounter site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
             self={self.current} enabled={connected && !world.paused} paused={world.paused} action={action}
-            storyOption={caseActions.find(option=>option.id.startsWith('dice:C4_DROWNED_ECHO_VISION:'))}
-            waitingForStoryRoll={waitingForRoll} onStoryRoll={actionId=>caseRequest({actionId})}/> :
+            waitingForStoryRoll={waitingForRoll}/> :
             battle ? <EncounterBoard site={world.caseMap.site} battle={battle} players={world.players}
             characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} turns={world.turns} action={connected ? action : undefined}/> :
             <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro} npcs={world.caseMap.npcs}/>}

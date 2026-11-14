@@ -9,7 +9,7 @@ import {WorldStore} from '../../packages/server/dist/world.js';
 import {exportSession} from '../../packages/server/dist/portableSession.js';
 
 test('portable file restores six members over Socket.IO and DM selects four for the next session',{timeout:20000},async t=>{
- const rooms=new Rooms(),worlds=new WorldStore(()=>20,true,true,true,false,'5.1');
+ const rooms=new Rooms(),worlds=new WorldStore(()=>20,true,true,true,false,'5.5');
  const {code}=rooms.create('old-dm',2),dm=rooms.playerId('old-dm');rooms.token('old-dm');
  worlds.create(code,2);worlds.addPlayer(code,dm);worlds.apply(code,dm,{id:'claim',type:'claimDm'});
  const roles=['medium','field_medic','occult_engineer','ritual_specialist','containment_specialist','paranormal_investigator'];
@@ -28,13 +28,20 @@ test('portable file restores six members over Socket.IO and DM selects four for 
  const act=(command,rest={})=>req(clients[0],'game:action',{id:String(++n),type:'dmSessionControl',command,...rest});
  const restored=await req(clients[0],'session:import',file);assert.equal(restored.ok,true,restored.error);assert.equal(restored.playerId,dm);assert.equal(restored.snapshot.paused,true);
  assert.equal((await act('resume')).ok,false);
+ const recovery=await req(clients[0],'session:recovery');assert.equal(recovery.ok,true);assert.equal(new Set(recovery.codes.map(c=>c.id)).size,7);
+ assert.ok(restored.room.players.every(p=>p.connected===(p.id===dm)));
  for(let i=0;i<4;i++){const token=file.membership.tokens.find(([,s])=>s.id===ids[i])[0];const r=await req(clients[i+1],'room:resume',token);assert.equal(r.playerId,ids[i]);assert.equal(r.snapshot.characters[ids[i]].profession,roles[i]);}
  assert.equal((await req(clients[1],'session:export')).ok,false);
+ assert.equal((await req(clients[1],'session:recovery')).ok,false);
+ const offline=once(clients[0],'room:update');assert.equal((await req(clients[1],'room:detach')).ok,true);
+ const [updated]=await offline;assert.equal(updated.players.find(p=>p.id===ids[0]).connected,false);
+ const token=file.membership.tokens.find(([,s])=>s.id===ids[0])[0];
+ assert.equal((await req(clients[1],'room:resume',token)).playerId,ids[0]);
  for(const id of ids.slice(4))assert.equal((await act('attendance',{targetId:id,absent:true})).ok,true);
  const backup=await req(clients[0],'session:export');assert.equal(backup.ok,true);assert.equal(backup.save.membership.room.players.length,7);
  assert.deepEqual(backup.save.state.world.inactivePlayers,ids.slice(4));
  assert.equal((await act('resume')).ok,true);
- const result=(await req(clients[1],'game:snapshot')).snapshot;assert.equal(result.paused,undefined);assert.equal(result.case001.time,'23:00');
+ const result=(await req(clients[1],'game:snapshot')).snapshot;assert.equal(result.paused,undefined);assert.equal(result.case001.time,undefined);
  assert.equal(Object.keys(result.characters).length,6);
  for(const forbidden of ['membership','tokens','personal_secret'])assert.ok(!JSON.stringify(result).includes(forbidden));
 });

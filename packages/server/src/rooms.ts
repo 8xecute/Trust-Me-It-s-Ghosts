@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-export interface Player { id: string; ready: boolean }
+export interface Player { id: string; ready: boolean; connected?: boolean }
 export interface Room { code: string; version?: 2; players: Player[] }
 export class Rooms {
  private rooms = new Map<string,Room>();
@@ -57,6 +57,6 @@ export class Rooms {
  roomCode(socket:string) { return this.memberships.get(socket); }
  playerId(socket:string) { return this.ids.get(socket); }
  private roomFor(socket:string):Room { const code=this.memberships.get(socket); const room=code && this.rooms.get(code); if(!room) throw new Error('ไม่ได้อยู่ในห้อง'); return room; }
- private snapshot(room:Room):Room { return {...room,players:room.players.map(p=>({...p}))}; }
+ private snapshot(room:Room):Room { const connected=new Set(this.connectedIds(room.code)); return {...room,players:room.players.map(p=>({...p,connected:connected.has(p.id)}))}; }
 }
 export function canStart(room: Room): boolean { return room.players.length>=2 && room.players.length<=(room.version===2?7:4) && room.players.every(p=>p.ready); }
