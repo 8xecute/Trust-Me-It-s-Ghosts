@@ -1,0 +1,66 @@
+{
+  "caseId": "CASE002",
+  "date": "2026-11-15",
+  "status": "STATIC_DOCUMENT_CHECKS_PASS",
+  "sceneCount": 25,
+  "qaCount": 75,
+  "proposedDiceCardCount": 8,
+  "evidenceCount": 12,
+  "checks": [
+    "scene IDs/order and eleven sections per scene",
+    "minimum three QA items per scene",
+    "three design JSON files parse and are disabled",
+    "unique check/evidence/event IDs and valid scene references",
+    "proposed DC values from existing core tiers; active DC null",
+    "read-only QA event and pending-attack archive lifecycle declared",
+    "local Markdown links resolve",
+    "master spec copy byte-identical to user attachment"
+  ],
+  "manualReview": "Separate agents reviewed compatibility, combat contracts and story; document review is not runtime proof",
+  "runtimeIntegrated": false,
+  "case002RuntimeTests": "NOT_IMPLEMENTED / NOT_RUN",
+  "userPlaytest": "NOT_RUN",
+  "limits": [
+    "No CASE002 loader/reducer/projector/scene/defense/death/ending code exists yet",
+    "Reachability is a draft narrative graph, not an executed engine proof",
+    "No runtime privacy or combat guarantees can be inferred from these checks",
+    "D01-B/D02-C approved; D05 direction selected with seeded-anchor draft; remaining profiles and numeric interactions must be implemented/validated before play"
+  ],
+  "files": {
+    "ARTWORK_GALLERY.html": "fe1b7d7412032d34d3bef1f1f986d4b2cc19bb0fed3abb47a8d2cfd25e184d3e",
+    "CASE002_Art_Map.dm.json": "662eba25923e3a3964e30b44c82a8e9ae7b61f8d611900964ee3d29e421cf40f",
+    "CASE002_Artwork.md": "ec6cb38c9e3331cb4c8c6f86eb701a57ed4b2a68f4d30d0918a25a93d3d6c275",
+    "CASE002_Artwork_Validation.json": "52c6e8a9cc405d28878e1e78b37d460f6b2aa6c9dd3de486eadc60d026885719",
+    "CASE002_Compatibility_Regression.md": "72fa405176ec65b38948965a7fbd45924c11b51acaee0c4f42569b8fa5ced902",
+    "CASE002_Dice_Cards.json": "2951e94bd869566d28276f5643c094cb7d3960d757143816a1bb4777e2cd28ca",
+    "CASE002_DM_Presentation_Contract.json": "19ae60db225e58bc5b905689e036f47b1af482b1e7baf8e696aad9c9f8bbc702",
+    "CASE002_DM_Runbook.md": "288483160aae7b4da2dcd87f8685d7f5bbbaf2ab358704b676ba7b53b1c21072",
+    "CASE002_FINAL_Anchor_Design.md": "0e1dc9809e12e779a36966ba9d63349c240eb78aad980f581515676f7c96c7a5",
+    "CASE002_Master_Spec_v1.0.md": "b4866823b511ef777217fa5d96391be39a9f81276a333c524b7a7e692d55bc00",
+    "CASE002_Open_Design_Decisions.md": "36bde2a6b823a09749060bd4f46778fb9a3f0c2d09e5c235ccf7474ea439d589",
+    "CASE002_QA_Playtest.md": "6ba4027120bc53f699075654ea5447f9333446158b75f48d2e5c6bd6648e6e09",
+    "CASE002_Repository_Audit.md": "aee88de7e73307796a1a3c70aabfaf69358abf8c885bef1d6e684a9966e0bd8d",
+    "CASE002_State_Trigger_Contract.json": "1f0d81c59604a0683747f354cf2c094e36eef509aff658f20347cd6ff026e770",
+    "CASE002_StoryScript_Draft.md": "abdb609d437af7350cb5cf66a6c408d1b2a3944cbdfa4fd08fd04f58d5ec3431",
+    "README.md": "90d2070eb5ea5513a766cd001a4361622e98ad91e6cc84db70ae65bb75760974"
+  },
+  "approvedDesignDecisions": [
+    "D01-B runtime v5.5",
+    "D02-C CASE002_DEFENSIVE_ROLL",
+    "D05 option2 direction: permanent stop possible after sacrifice"
+  ],
+  "pendingDesignDecisions": [
+    "D03 human/lethal profiles",
+    "D04 enemies/return conditions",
+    "D05 anchor numeric interactions (direction selected; details draft)",
+    "D06 ending mechanics",
+    "D07 card DCs"
+  ],
+  "artworkChecks": {
+    "selectedImages": 16,
+    "galleryImagesExist": true,
+    "sceneAssignments": 25,
+    "sourceProjectChecksumsMatch": true,
+    "browserTested": false
+  }
+}

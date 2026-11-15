@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { characterAttribute, professions, turnSkills, powerAttacks, type Character, type CaseSite } from '@baan/shared';
 import { portraitUrl } from '../characters/CastPortraits';
-import { illustrations } from '../case/CaseScene';
+import {sceneArt} from '../case/sceneArt';
 import drowned from '../../assets/case-001/combat/drowned.png';
 import kaew from '../../assets/case-001/combat/kaew.png';
 import kaewFinal from '../../assets/case-001/combat/kaewFinal.png';
@@ -28,8 +28,8 @@ export function TurnConclusion({result}:{result:TurnConclusionView}) {
   </div>;
 }
 
-export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,paused,action,waitingForStoryRoll,onManageRoll}:{
-  site:CaseSite; battle:BattleView; characters:Record<string,Character>; self?:string;
+export function TurnEncounter({scene,site,battle,characters,self,isDm=false,enabled,paused,action,waitingForStoryRoll,onManageRoll}:{
+  site:CaseSite; scene?:string; battle:BattleView; characters:Record<string,Character>; self?:string;
   isDm?:boolean; enabled?:boolean; paused?:boolean; action?:(type:string,payload?:object)=>void;
   waitingForStoryRoll?:boolean; onManageRoll?:()=>void;
 }) {
@@ -62,7 +62,7 @@ export function TurnEncounter({site,battle,characters,self,isDm=false,enabled,pa
       {describeChanges(latest).map(text=><small key={text}>{text}</small>)}
     </section>;
   return <section className="c4-encounter" data-player={!isDm} data-manifestation={state} data-wounded={enemy.hp>0 && enemy.hp<(enemy.maxHp ?? turn.maxHp)/2} aria-label="ฉากเผชิญหน้า">
-    <header className="c4-stage" style={{backgroundImage:'linear-gradient(90deg, #081513 10%, #081513dc 45%, #08151338), url('+illustrations[site]+')'}}>
+    <header className="c4-stage" style={{backgroundImage:'linear-gradient(90deg, #081513 10%, #081513dc 45%, #08151338), url('+sceneArt(site,scene ?? (turn.ready?turn.scene:undefined))+')'}}>
       {battle.final55 && <div className="c4-wards" aria-hidden="true">{[0,1,2].map(step=><i key={step} data-broken={battle.final55!.step>step}/> )}</div>}
       <img className="c4-ghost" src={turn.scene==='C4'?drowned:turn.scene==='D4'?kaew:kaewFinal} alt=""/>
       <div className="c4-stage-copy">

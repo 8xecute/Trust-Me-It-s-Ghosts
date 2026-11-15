@@ -1,0 +1,469 @@
+{
+  "caseId": "CASE002",
+  "version": "0.1.0-draft",
+  "status": "proposed_check_list_pending_D07",
+  "executable": false,
+  "visibility": "DM_ONLY",
+  "rulesSource": "../reference/01_UNIVERSAL_CORE_RULES_v1_3.md §3; DC11/14/17/20/22 are available tiers, not per-card approval",
+  "policy": {
+    "activeDC": null,
+    "attackRollsIncluded": false,
+    "partialMargin": 3,
+    "partialMarginSource": "Core v1.3 §3; partial only for explicitly supported action",
+    "freeProof": "ผู้เล่นสื่อสาร เทียบของหรืออ่านข้อมูลพื้นฐานที่ชัดเจนได้โดยไม่ทอย; การ์ดไม่ใช่เงื่อนไขเดินเรื่อง",
+    "alternatives": "INT/SPI/RES ใช้เฉพาะเมื่อประกาศวิธีที่เหมาะ มีความเสี่ยงและข้อมูลที่วิธีนั้นรู้ได้; DM ต้องบันทึก stat/DC/results ก่อนทอย ไม่สลับstatฟรีย้อนหลัง",
+    "bonuses": "ไม่มีโบนัสตัวเลขอัตโนมัติจากหลักฐาน; ใช้ข้อมูลเลือกวิธี/เป้าหมาย/เส้นทางจริงก่อน; ±2 ตาม Core ต้องมีเหตุและไม่ซ้อน",
+    "qa": "preview/search/read-only never commits state"
+  },
+  "cards": [
+    {
+      "id": "C002-CHECK-01",
+      "caseId": "CASE002",
+      "sceneId": "A1",
+      "title": "ตรวจที่มาของเสียงและจำนวนรถจากทางเข้าที่ปลอดภัย",
+      "trigger": "ตรวจที่มาของเสียงและจำนวนรถจากทางเข้าที่ปลอดภัย",
+      "supportedAction": "ตรวจที่มาของเสียงและจำนวนรถจากทางเข้าที่ปลอดภัย",
+      "stat": "PER",
+      "dc": null,
+      "proposed_dc": 14,
+      "dcTier": "Standard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "เห็นลานจอดว่างและไฟงานโดยไม่ทอย",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "ระบุต้นเสียงซ้ำและป้ายกำหนดงานที่ตรวจได้ ชี้ว่าภาพกับร่องรอยไม่ตรงกัน",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E01 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "พบป้ายหรือเสียงซ้ำหนึ่งอย่าง แต่ยังสรุปสาเหตุไม่ได้",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "แยกต้นเสียงไม่สำเร็จ ไม่มี HP/Sanity loss; ยังอ่านป้ายหรือถามประยูรได้",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "แยกต้นเสียงไม่สำเร็จ ไม่มี HP/Sanity loss; ยังอ่านป้ายหรือถามประยูรได้",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E01"
+    },
+    {
+      "id": "C002-CHECK-02",
+      "caseId": "CASE002",
+      "sceneId": "B2",
+      "title": "เปรียบเทียบบันทึกหลายคืนในเอกสารที่เปิดจริง",
+      "trigger": "เปรียบเทียบบันทึกหลายคืนในเอกสารที่เปิดจริง",
+      "supportedAction": "เปรียบเทียบบันทึกหลายคืนในเอกสารที่เปิดจริง",
+      "stat": "INT",
+      "dc": null,
+      "proposed_dc": 14,
+      "dcTier": "Standard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "อ่านวันที่จบงานคืนเจ็ดและรายการเหตุเข้าใจผิดได้ตรง ๆ",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "เรียงเหตุเข้าใจผิดกับหลักฐานที่ถือจริง แยกคำบอกเล่าออกจากบันทึกเวลา",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E03 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "พบเหตุซ้ำหนึ่งรายการแต่ยังเชื่อมเหตุไม่ได้ครบ",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "อ่านเนื้อหาตรงตัวได้อยู่; นำเอกสารไปเทียบรอยซ่อม B3 แทน",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "อ่านเนื้อหาตรงตัวได้อยู่; นำเอกสารไปเทียบรอยซ่อม B3 แทน",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E03"
+    },
+    {
+      "id": "C002-CHECK-03",
+      "caseId": "CASE002",
+      "sceneId": "B3",
+      "title": "วิเคราะห์ลำดับพิธีจากสมุดกับร่องรอยการซ่อม",
+      "trigger": "วิเคราะห์ลำดับพิธีจากสมุดกับร่องรอยการซ่อม",
+      "supportedAction": "วิเคราะห์ลำดับพิธีจากสมุดกับร่องรอยการซ่อม",
+      "stat": "INT",
+      "dc": null,
+      "proposed_dc": 17,
+      "dcTier": "Hard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "เห็นส่วนพิธีที่ขาดจากหน้าบันทึกและการรื้อเวที",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "ระบุว่าขั้นตอนไหนยังไม่เสร็จและต้องตรวจสิ่งใดเพิ่ม โดยไม่รับรองผลสะกดถาวร",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E04 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "ระบุส่วนที่ขาดได้ แต่ต้องเทียบหน้าประกอบที่ C3/E4",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "ยังได้สำเนาขั้นตอนและเส้นทางหลังเวที; ไม่ต้องย้อนหาผู้รู้ใหม่",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "ยังได้สำเนาขั้นตอนและเส้นทางหลังเวที; ไม่ต้องย้อนหาผู้รู้ใหม่",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E04"
+    },
+    {
+      "id": "C002-CHECK-04",
+      "caseId": "CASE002",
+      "sceneId": "C2",
+      "title": "ติดตามรอยลากโดยไม่เหยียบกลบร่องรอย",
+      "trigger": "ติดตามรอยลากโดยไม่เหยียบกลบร่องรอย",
+      "supportedAction": "ติดตามรอยลากโดยไม่เหยียบกลบร่องรอย",
+      "stat": "PER",
+      "dc": null,
+      "proposed_dc": 14,
+      "dcTier": "Standard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "เห็นรอยลากและได้ยินเสียงร้อง; ไม่ยืนยันว่าเป็นอิงจากเสียงอย่างเดียว",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "แยกรอยลากจริงกับเสียงล่อ พร้อมเส้นทางที่เดินได้และร่องรอยของอิงถ้ามี E05",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E06 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "ตามรอยจริงถึงทางกลับได้ แต่ยังระบุตัวคนไม่ได้",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "ยังเดินตามเส้นทางที่มองเห็นไป C4/E1 ได้ ไม่วาร์ปหรือสร้างอันตรายฟรี",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "ยังเดินตามเส้นทางที่มองเห็นไป C4/E1 ได้ ไม่วาร์ปหรือสร้างอันตรายฟรี",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E06"
+    },
+    {
+      "id": "C002-CHECK-05",
+      "caseId": "CASE002",
+      "sceneId": "C3",
+      "title": "เทียบแบบเครื่องแต่งกายและบันทึกการแสดงที่เปิดแล้ว",
+      "trigger": "เทียบแบบเครื่องแต่งกายและบันทึกการแสดงที่เปิดแล้ว",
+      "supportedAction": "เทียบแบบเครื่องแต่งกายและบันทึกการแสดงที่เปิดแล้ว",
+      "stat": "INT",
+      "dc": null,
+      "proposed_dc": 14,
+      "dcTier": "Standard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "อ่านประวัติครูสิงห์และเหตุศักดิ์/ชดจากเอกสารได้โดยไม่ทอย",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "พบแบบใช้รูปลักษณ์เดียวกันแทนหลายร่างและวิธีเทียบกับวัตถุจริง",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E07 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "พบความซ้ำของหน้ากาก แต่หลักฐานยังไม่พิสูจน์ตัวตนปัจจุบัน",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "เก็บแบบและบันทึกไว้ใช้ทดลองพูด/เทียบอุปกรณ์ที่ D1 ได้",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "เก็บแบบและบันทึกไว้ใช้ทดลองพูด/เทียบอุปกรณ์ที่ D1 ได้",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E07"
+    },
+    {
+      "id": "C002-CHECK-06",
+      "caseId": "CASE002",
+      "sceneId": "D1",
+      "title": "ประกาศตรวจรอยก้าว อาวุธ หรืออุปกรณ์ของร่างที่มองเห็นในระยะทำได้",
+      "trigger": "ประกาศตรวจรอยก้าว อาวุธ หรืออุปกรณ์ของร่างที่มองเห็นในระยะทำได้",
+      "supportedAction": "ประกาศตรวจรอยก้าว อาวุธ หรืออุปกรณ์ของร่างที่มองเห็นในระยะทำได้",
+      "stat": "PER",
+      "dc": null,
+      "proposed_dc": 17,
+      "dcTier": "Hard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "ให้ cues ที่ขัดกันก่อนทุกการโจมตี; รหัสร่วม/คำตอบส่วนตัวที่ตรงกันอาจพิสูจน์ได้โดยไม่ทอย",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "เห็นรายละเอียดที่เข้ากับเพื่อนและมีข้อพิสูจน์เฉพาะผู้สังเกต; เปิดทางสื่อสาร",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E08 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "พบข้อขัดแย้งพอหยุดทบทวน ยังต้องเทียบเสียง/รหัสหรือสัมผัสต่อ",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "ยังไม่แน่ใจ แต่ยังพูด รอ หรือถอยได้; ไม่บังคับโจมตีและไม่ลบเบาะแส",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "ยังไม่แน่ใจ แต่ยังพูด รอ หรือถอยได้; ไม่บังคับโจมตีและไม่ลบเบาะแส",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E08"
+    },
+    {
+      "id": "C002-CHECK-07",
+      "caseId": "CASE002",
+      "sceneId": "E2",
+      "title": "ตรวจเสื้อ รอยเชือก เสียงหรือรายละเอียดจากหลักฐานอิงที่ถือจริง",
+      "trigger": "ตรวจเสื้อ รอยเชือก เสียงหรือรายละเอียดจากหลักฐานอิงที่ถือจริง",
+      "supportedAction": "ตรวจเสื้อ รอยเชือก เสียงหรือรายละเอียดจากหลักฐานอิงที่ถือจริง",
+      "stat": "PER",
+      "dc": null,
+      "proposed_dc": 14,
+      "dcTier": "Standard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "ร่างไม่มีอาวุธและพยายามขอความช่วยเหลือ; ใครก็สังเกตได้",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "เทียบได้ว่าเป็นคนที่ตรงกับหลักฐานอิง; ยืนยันผ่านคำตอบ/รอยจริงที่เข้าถึงได้",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E09 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "พบเสื้อหรือรอยเชือกตรงหลักฐานหนึ่งข้อ ต้องถามหรือช่วยตรวจอีกขั้น",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "ยังพูดกับร่างและใช้ภาพ B4 เทียบได้; อิงไม่ตายและนายโรงไม่ auto-hit",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "ยังพูดกับร่างและใช้ภาพ B4 เทียบได้; อิงไม่ตายและนายโรงไม่ auto-hit",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E09"
+    },
+    {
+      "id": "C002-CHECK-08",
+      "caseId": "CASE002",
+      "sceneId": "E4",
+      "title": "ประกอบข้อกำหนดการแสดงกับบันทึกปิดโรงและเหตุที่ทีมพบจริง",
+      "trigger": "ประกอบข้อกำหนดการแสดงกับบันทึกปิดโรงและเหตุที่ทีมพบจริง",
+      "supportedAction": "ประกอบข้อกำหนดการแสดงกับบันทึกปิดโรงและเหตุที่ทีมพบจริง",
+      "stat": "INT",
+      "dc": null,
+      "proposed_dc": 17,
+      "dcTier": "Hard",
+      "approval": "pending D07; disabled",
+      "partial_supported": true,
+      "baseline": "เอกสารที่อ่านได้บอกเงื่อนไขมนุษย์ฆ่ามนุษย์เป็นข้อความตรง ไม่ล็อกด้วยทอย",
+      "bypass": "เมื่อวิธีที่ผู้เล่นอธิบายพิสูจน์ได้แน่ชัดโดยไม่มีความเสี่ยง ให้ข้อมูลที่เข้าถึงจริงโดยไม่ทอย",
+      "full": {
+        "narration": "แยกมนุษย์ลงมือจริงออกจากผี/หุ่น และชี้ว่าการตายต้องเกิดจริงในเขตที่กำหนด",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver only observed details to actual recipients; C002-E10 only if acquisition event actually occurred"
+        ]
+      },
+      "partial": {
+        "narration": "เข้าใจแกนมนุษย์ฆ่ามนุษย์ แต่ต้องตรวจเขตหรือผู้ลงมือจากหลักฐานเพิ่ม",
+        "stateChanges": [
+          "append resolved check result",
+          "deliver limited factual observation; no automatic complete evidence"
+        ]
+      },
+      "failure": {
+        "narration": "ยังอ่านข้อกำหนดตรงตัวและนำไปเทียบ C3/B3 ได้ ไม่เพิ่มเครื่องสังเวย",
+        "stateChanges": [
+          "append resolved check result only; preserve acquired baseline"
+        ]
+      },
+      "failForward": "ยังอ่านข้อกำหนดตรงตัวและนำไปเทียบ C3/B3 ได้ ไม่เพิ่มเครื่องสังเวย",
+      "dmPresentation": {
+        "before": "แจ้งวิธี Stat/DC ที่อนุมัติ ความเสี่ยงและขอบเขตผลก่อนทอย; ไม่เปิดเฉลยจากชื่อการ์ด",
+        "after": "เลือกบทตรงผลจริงและความรู้ของผู้รับ; ไม่ส่ง DM guidance ไปผู้เล่น"
+      },
+      "costs": {
+        "ap": null,
+        "focus": null,
+        "hp": 0,
+        "sanity": 0,
+        "note": "ไม่มีค่าหักจาก check เหล่านี้เอง; AP ใน combat ต้องใช้กฎ D01 ที่อนุมัติ ไม่คิดซ้ำกับท่า"
+      },
+      "guards": [
+        "scene actually opened for actor",
+        "declared action matches trigger",
+        "source accessible",
+        "not already conclusively verified"
+      ],
+      "onPreview": [],
+      "evidenceRef": "C002-E10"
+    }
+  ],
+  "characterBaseline": "runtime-v5.5 approved D01-B; no per-card DC approved"
+}

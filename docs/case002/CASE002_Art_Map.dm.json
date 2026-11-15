@@ -1,0 +1,173 @@
+{
+  "caseId": "CASE002",
+  "visibility": "DM_ONLY",
+  "status": "prepared_assets_not_runtime",
+  "runtimeIntegrated": false,
+  "sceneCount": 25,
+  "selectedImageCount": 16,
+  "sceneAssignments": [
+    {
+      "sceneId": "A1",
+      "imageId": "festival-entrance",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "A2",
+      "imageId": "festival-lane",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "A3",
+      "imageId": "festival-entrance",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "B1",
+      "imageId": "festival-lane",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "B2",
+      "imageId": "organizer-office",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "B3",
+      "imageId": "old-theatre",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "B4",
+      "imageId": "organizer-office",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "B5",
+      "imageId": "old-theatre",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "C1",
+      "imageId": "backstage-fork",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "C2",
+      "imageId": "prop-store",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "C3",
+      "imageId": "dressing-room",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "C4",
+      "imageId": "central-hall",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "D1",
+      "imageId": "central-hall",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "D2",
+      "imageId": "central-hall",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "D3",
+      "imageId": "central-hall",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "D4",
+      "imageId": "central-hall",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "D5",
+      "imageId": "central-hall",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "E1",
+      "imageId": "holding-room",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "E2",
+      "imageId": "holding-room",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "E3",
+      "imageId": "holding-room",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "E4",
+      "imageId": "final-stage-v2",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "E5",
+      "imageId": null,
+      "inheritActualLocation": true,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "F1",
+      "imageId": "final-stage-v2",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "F2",
+      "imageId": "final-stage-v2",
+      "inheritActualLocation": false,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    },
+    {
+      "sceneId": "F3",
+      "imageId": null,
+      "inheritActualLocation": true,
+      "guard": "DM has actually opened scene to this viewer at actual location; never page navigation, QA preview or other group state"
+    }
+  ],
+  "perceptionOverlay": {
+    "imageId": "fairgoers-clean",
+    "kind": "perceived_scenery_not_human_actor",
+    "visibleOnlyWhen": "current viewer actually perceives fairgoers; no automatic human NPC registration, HP or sacrifice eligibility"
+  },
+  "characterGuards": {
+    "prayun": "actually present and visible",
+    "ing": "true identity confirmed for recipient; otherwise neutral perceived appearance",
+    "appearance-unarmed": "unarmed masked appearance only; no real identity in player filename, labels or map",
+    "nayrong": "actually present physical form; true name only after recipient learned it",
+    "masked-performer": "actual A2 enemy; reuse of appearance later does not make real target a ghost"
+  },
+  "endingImages": "E5 and F3 inherit actual last visible location; no forced death/victory backdrop"
+}

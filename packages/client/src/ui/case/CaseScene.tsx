@@ -2,25 +2,16 @@ import {useEffect, useRef, useState, type CSSProperties, type PointerEvent} from
 import {caseNpcs, type CaseNpcId, type CaseNpcPlacement, type CaseNpcPosition, type CaseSite} from '@baan/shared';
 import {scenePlacement, scenePoint} from './scenePlacement';
 import './CaseScene.css';
+import {sceneArt} from './sceneArt';
 const npcCutouts=import.meta.glob<string>('../../assets/case-001/scene-cutouts/*.png',{eager:true,query:'?url',import:'default'});
 const combatCutouts=import.meta.glob<string>('../../assets/case-001/combat/*.png',{eager:true,query:'?url',import:'default'});
 const cutoutUrl=(id:string)=>npcCutouts['../../assets/case-001/scene-cutouts/'+id+'.png'] ?? combatCutouts['../../assets/case-001/combat/'+id+'.png'];
-import entrance from '../../assets/case-001/scenes/roadside-sala.jpg';
-import headmanHouse from '../../assets/case-001/scenes/headman-house.jpg';
-import missingVillagerHouse from '../../assets/case-001/scenes/missing-villager-house.jpg';
-import grove from '../../assets/case-001/scenes/banana-grove.jpg';
-import abandonedHouse from '../../assets/case-001/scenes/abandoned-house.jpg';
-
-export const illustrations: Record<CaseSite,string> = {
-  A:entrance, B:headmanHouse, C:missingVillagerHouse, D:grove, E:abandonedHouse,
-};
-
 export type PlaceNpc = (id:CaseNpcId,position:CaseNpcPosition|null)=>void;
-type Props={site:CaseSite;location:string;intro?:string;npcs?:CaseNpcPlacement[];placeNpc?:PlaceNpc;editingDisabled?:boolean};
+type Props={site:CaseSite;scene?:string;previewScene?:string;location:string;intro?:string;npcs?:CaseNpcPlacement[];placeNpc?:PlaceNpc;editingDisabled?:boolean};
 type Drag={id:CaseNpcId;pointer:number;startX:number;startY:number;position:CaseNpcPosition;moved:boolean;latest?:CaseNpcPlacement};
 const publicName=(id:CaseNpcId)=>id==='kaewFinal'?'นางตานี':caseNpcs.find(npc=>npc.id===id)?.name;
 
-export function CaseScene({site,location,intro,npcs=[],placeNpc,editingDisabled=false}:Props) {
+export function CaseScene({site,scene,previewScene,location,intro,npcs=[],placeNpc,editingDisabled=false}:Props) {
   const [selected,setSelected]=useState<CaseNpcId>('prasert');
   const [placing,setPlacing]=useState(false);
   const [playerView,setPlayerView]=useState(false);
@@ -29,7 +20,7 @@ export function CaseScene({site,location,intro,npcs=[],placeNpc,editingDisabled=
   const drag=useRef<Drag>();
   const selectedNpc=npcs.find(npc=>npc.id===selected);
   const editable=!!placeNpc && !editingDisabled && !playerView;
-  useEffect(()=>{setPlacing(false);setDraft(undefined);drag.current=undefined;},[site,editingDisabled,playerView]);
+  useEffect(()=>{setPlacing(false);setDraft(undefined);drag.current=undefined;},[site,scene,editingDisabled,playerView]);
   const choose=(id:CaseNpcId)=>{setSelected(id);setPlacing(false);};
   const save=(id:CaseNpcId,position:CaseNpcPosition)=>{
     const {x,y}=scenePlacement(position);
@@ -88,7 +79,7 @@ export function CaseScene({site,location,intro,npcs=[],placeNpc,editingDisabled=
             if(!placing || !editable || !stage.current || event.detail===0)return;
             const point=scenePoint(event.clientX,event.clientY,stage.current.getBoundingClientRect());
             save(selected,{...selectedNpc,...point,hidden:selectedNpc?.hidden ?? true});setPlacing(false);
-          }}><img className="case-scene-image" src={illustrations[site]} alt={location} draggable={false} width={1672} height={941}/><div className="scene-figures">{tokens}</div></div>
+          }}><img className="case-scene-image" src={sceneArt(site,playerView || scene==='H1'?previewScene:scene)} alt={location} draggable={false} width={1672} height={941}/><div className="scene-figures">{tokens}</div></div>
         {placeNpc && <p className="scene-editor-hint" role="status">{editingDisabled?'จัดภาพได้เมื่อเชื่อมต่อ เปิดเล่นคดี และอยู่นอกการเผชิญหน้า':playerView?'ภาพฝั่งผู้เล่น · ไม่แสดงตัวที่ซ่อน':placing?'แตะจุดวางเท้าบนภาพ · หรือกดยกเลิก':selectedNpc?'ลากตัวละครเพื่อย้าย · ใช้ปุ่มลูกศรเมื่อเลือกตัวละครได้':'เลือกตัวละคร แล้วกดเลือกจุดวาง'}</p>}
       </div>
       {placeNpc && !playerView && <aside className="scene-npc-controls" aria-label="เครื่องมือจัดภาพตัวละคร">

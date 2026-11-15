@@ -1,0 +1,208 @@
+{
+  "caseId": "CASE002",
+  "status": "ASSET_FILES_AND_ASSIGNMENTS_PASS",
+  "selectedImageCount": 16,
+  "characterImages": 5,
+  "sceneImages": 10,
+  "perceptionOverlays": 1,
+  "retainedUnusedVariants": 1,
+  "sceneAssignments": 25,
+  "checks": [
+    "All selected source/project files exist and SHA256 match",
+    "All character/perception corner alpha values are 0",
+    "All selected scene aspect ratios are wide 16:9-like",
+    "Every scene has guarded image assignment or explicit carry-forward",
+    "Selected images visually reviewed; finale v2 preserves original theatre geometry"
+  ],
+  "runtimeIntegrated": false,
+  "browserGalleryTested": false,
+  "items": [
+    {
+      "id": "prayun",
+      "selected": true,
+      "width": 1024,
+      "height": 1536,
+      "pixelFormat": "Format32bppArgb",
+      "cornerAlpha": 0,
+      "sourceSHA256": "cd3ebfe34a93e8b5fcb66ccd77a710b8cba64f5fa3c0e9e481e8b0734d7f79ac",
+      "projectSHA256": "cd3ebfe34a93e8b5fcb66ccd77a710b8cba64f5fa3c0e9e481e8b0734d7f79ac",
+      "bytes": 1696869
+    },
+    {
+      "id": "ing",
+      "selected": true,
+      "width": 1024,
+      "height": 1536,
+      "pixelFormat": "Format32bppArgb",
+      "cornerAlpha": 0,
+      "sourceSHA256": "207f1ec903d51520f7cdefba794aa3d348ae2cb6ba65b9bf2abedfe508a97b1b",
+      "projectSHA256": "207f1ec903d51520f7cdefba794aa3d348ae2cb6ba65b9bf2abedfe508a97b1b",
+      "bytes": 1716910
+    },
+    {
+      "id": "nayrong",
+      "selected": true,
+      "width": 1024,
+      "height": 1536,
+      "pixelFormat": "Format32bppArgb",
+      "cornerAlpha": 0,
+      "sourceSHA256": "bced43600f781e324761426a1d1aee3b0be2f1097bbed977a34c44a6641b23dc",
+      "projectSHA256": "bced43600f781e324761426a1d1aee3b0be2f1097bbed977a34c44a6641b23dc",
+      "bytes": 1848746
+    },
+    {
+      "id": "masked-performer",
+      "selected": true,
+      "width": 1024,
+      "height": 1536,
+      "pixelFormat": "Format32bppArgb",
+      "cornerAlpha": 0,
+      "sourceSHA256": "4b0f2920d3abe94561bb99e597b15a4c66c820ffc9193c13fb32ad9f3db591e9",
+      "projectSHA256": "4b0f2920d3abe94561bb99e597b15a4c66c820ffc9193c13fb32ad9f3db591e9",
+      "bytes": 2000509
+    },
+    {
+      "id": "appearance-unarmed",
+      "selected": true,
+      "width": 1024,
+      "height": 1536,
+      "pixelFormat": "Format32bppArgb",
+      "cornerAlpha": 0,
+      "sourceSHA256": "c77b9f4242d1f6470c9b2a50e6d0213b9da29461383d8416475b538f338224ab",
+      "projectSHA256": "c77b9f4242d1f6470c9b2a50e6d0213b9da29461383d8416475b538f338224ab",
+      "bytes": 1737578
+    },
+    {
+      "id": "festival-entrance",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "44df6771bf24bd21385810eb28bb538cfcb12f323c133669f25ed53a0b006640",
+      "projectSHA256": "44df6771bf24bd21385810eb28bb538cfcb12f323c133669f25ed53a0b006640",
+      "bytes": 3202045
+    },
+    {
+      "id": "festival-lane",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "2e8217d4494bc811466e2f7c810621d2d7df5376a9cdadca4f92b0b50c1ff34b",
+      "projectSHA256": "2e8217d4494bc811466e2f7c810621d2d7df5376a9cdadca4f92b0b50c1ff34b",
+      "bytes": 3136206
+    },
+    {
+      "id": "organizer-office",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "d33476aaf86db8eccff91ed296a82b98830f034e79de4f3bd29265824d120ac4",
+      "projectSHA256": "d33476aaf86db8eccff91ed296a82b98830f034e79de4f3bd29265824d120ac4",
+      "bytes": 2668082
+    },
+    {
+      "id": "old-theatre",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "48e9222167e3bea26b326856ebfeb1cb3595177f8d427e3b7b05f29bd6f12f92",
+      "projectSHA256": "48e9222167e3bea26b326856ebfeb1cb3595177f8d427e3b7b05f29bd6f12f92",
+      "bytes": 2712397
+    },
+    {
+      "id": "backstage-fork",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "6ffef0ed7242956403f401dd434138d8a46094788c58cf7717ea883ecd436c01",
+      "projectSHA256": "6ffef0ed7242956403f401dd434138d8a46094788c58cf7717ea883ecd436c01",
+      "bytes": 2531458
+    },
+    {
+      "id": "prop-store",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "665aa5952fa0cb05d2175bf008240be34fca47f1ced48298b8e01784192d62e8",
+      "projectSHA256": "665aa5952fa0cb05d2175bf008240be34fca47f1ced48298b8e01784192d62e8",
+      "bytes": 2682764
+    },
+    {
+      "id": "dressing-room",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "7f0a4f690ef76b7dd5f7c582639f7615058c5690bd2b058fe56ee8785ecdedb6",
+      "projectSHA256": "7f0a4f690ef76b7dd5f7c582639f7615058c5690bd2b058fe56ee8785ecdedb6",
+      "bytes": 2747244
+    },
+    {
+      "id": "central-hall",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "a3cd39fca42b479bb8c429bd64e8a14945f9d65cb273f3aadde277edca2ecf9a",
+      "projectSHA256": "a3cd39fca42b479bb8c429bd64e8a14945f9d65cb273f3aadde277edca2ecf9a",
+      "bytes": 2632993
+    },
+    {
+      "id": "holding-room",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "47eb8c5389381db4d6b71678378593418e4fe807ad8da1cc466f75017e552c6f",
+      "projectSHA256": "47eb8c5389381db4d6b71678378593418e4fe807ad8da1cc466f75017e552c6f",
+      "bytes": 2748083
+    },
+    {
+      "id": "final-stage",
+      "selected": false,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "38be7d1a64c7a05b68afc103a626f485c4faeee966d29e1de517d589fbd789c5",
+      "projectSHA256": "38be7d1a64c7a05b68afc103a626f485c4faeee966d29e1de517d589fbd789c5",
+      "bytes": 2776443
+    },
+    {
+      "id": "final-stage-v2",
+      "selected": true,
+      "width": 1672,
+      "height": 941,
+      "pixelFormat": "Format24bppRgb",
+      "cornerAlpha": 255,
+      "sourceSHA256": "d9f850a5483aa9561f4c31627c2eb7c9bfe14f0681608af884013792ea5bbda9",
+      "projectSHA256": "d9f850a5483aa9561f4c31627c2eb7c9bfe14f0681608af884013792ea5bbda9",
+      "bytes": 2618328
+    },
+    {
+      "id": "fairgoers-clean",
+      "selected": true,
+      "width": 1919,
+      "height": 820,
+      "pixelFormat": "Format32bppArgb",
+      "cornerAlpha": 0,
+      "sourceSHA256": "14639cee934a505b7db9bf28340e8683cb6e34c66e0c58143e9ebe1ddd895410",
+      "projectSHA256": "14639cee934a505b7db9bf28340e8683cb6e34c66e0c58143e9ebe1ddd895410",
+      "bytes": 1272776
+    }
+  ]
+}

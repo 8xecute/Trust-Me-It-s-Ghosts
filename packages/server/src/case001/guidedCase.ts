@@ -263,6 +263,7 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   g.phase=transition.to;
   delete g.transition;
   if(g.phase==='ENDING') throw Error('ใช้ผลลัพธ์คดีเพื่อปิดบท');
+  if(g.version==='5.5')return;
   const nextSite=g.phase==='FINAL'?'E':g.phase as Site;
   const travellers=Object.keys(w.players).filter(id=>id!==w.humanDmId);
   for(const id of travellers) travelCaseMap(w,id,nextSite,caseGrid(nextSite));
@@ -273,13 +274,18 @@ export function guidedCommand(w:World,player:string,command:string,target?:strin
   return;
  }
  if(player!==w.humanDmId) throw Error('เฉพาะผู้ดำเนินเรื่อง');
+ if(command==='phase' && g.version==='5.5') {
+  if(w.caseMap?.battle)throw Error('จบการเผชิญหน้าก่อนเปลี่ยนบท');
+  if(!['A','B','C','D','E','FINAL'].includes(target ?? ''))throw Error('ไม่พบ ACT ที่เลือก');
+  g.phase=target as Phase;delete g.transition;return;
+ }
  if(command==='scene' && g.version==='5.5') {
   if(w.caseMap?.battle)throw Error('จบการเผชิญหน้าก่อนเปลี่ยนฉาก');
   const scene=sceneData(s)[target ?? ''];
   if(!scene || scene.phase==='ENDING' || !w.caseMap)throw Error('ไม่พบฉากที่เลือก');
   const site=scene.phase==='FINAL'?'E':scene.id==='H1'?s.site:scene.phase as Site;
   for(const id of Object.keys(w.players).filter(id=>id!==w.humanDmId))travelCaseMap(w,id,site,caseGrid(site));
-  s.site=site;g.phase=scene.phase;delete g.transition;delete g.cellarPending;
+  s.site=site;delete g.transition;delete g.cellarPending;
   observeGuidedScene(w,scene.id);return;
  }
  if(g.cellarPending && (command==='propose' || command==='scene' && target!=='E2')) throw Error('ส่งบทเปิดห้องให้ทีมก่อนเปลี่ยนฉาก');

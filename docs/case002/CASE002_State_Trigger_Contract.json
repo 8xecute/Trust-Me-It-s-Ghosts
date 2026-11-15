@@ -1,0 +1,1030 @@
+{
+  "caseId": "CASE002",
+  "title": "งานวัดคืนที่แปด",
+  "version": "0.1.0-draft",
+  "status": "design_review_only",
+  "executable": false,
+  "runtimeIntegrated": false,
+  "visibility": "DM_ONLY",
+  "source": "CASE002_Master_Spec_v1.0.md",
+  "decisions": "CASE002_Open_Design_Decisions.md",
+  "rules": {
+    "timer": false,
+    "countdown": false,
+    "characterBaseline": "runtime-v5.5",
+    "combatBaseline": "runtime-v5.5",
+    "defensiveRollEnabled": false,
+    "lethalEnabled": false,
+    "enemyPresets": null,
+    "humanNpcPresets": null,
+    "reason": "D01-B/D02-C approved; D05 permanent-stop direction selected; D03/D04/D06/D07 and numeric anchor interactions remain draft; runtime not implemented",
+    "defensiveRollApproved": true
+  },
+  "identity": {
+    "canonicalCaseId": "CASE002",
+    "contentVersion": "0.1.0-draft",
+    "sceneIdPrefixOnWire": "CASE002:",
+    "unqualifiedSceneIds": "file-local only",
+    "unknownCase": "reject before any reader/reducer runs",
+    "legacySave": "version1 only after CASE001 validator passes; never infer from A1/F1"
+  },
+  "stateMapping": [
+    {
+      "logical": "CASE_PHASE",
+      "owner": "case002.phase",
+      "type": "A|B|C|D|E|FINAL|ENDING",
+      "default": "A",
+      "writer": "derive highest reached phase from committed scene events; never regress on one group's sceneOpened; use sceneByGroup for each audience"
+    },
+    {
+      "logical": "CASE_ACCEPTED",
+      "owner": "case002.accepted",
+      "type": "boolean",
+      "default": true,
+      "writer": "initialization; company already accepted before A1"
+    },
+    {
+      "logical": "PARTY_GROUPS",
+      "owner": "case002.groups",
+      "type": "Record<groupId,playerId[]>",
+      "default": {},
+      "writer": "groupAssignmentConfirmed; no duplicates; all active players partitioned"
+    },
+    {
+      "logical": "PARTY_SPLIT_STATUS",
+      "owner": "case002.splitStatus",
+      "type": "together|split|reunited",
+      "default": "together",
+      "writer": "actual group assignment + actor travel; not DM page navigation"
+    },
+    {
+      "logical": "PLAYER_REAL_POSITIONS",
+      "owner": "case002.positions",
+      "type": "Record<actorId,{locationId,x,y}>",
+      "default": {},
+      "writer": "validated spawn/travel/move; no illusion changes"
+    },
+    {
+      "logical": "GROUP_SCENES",
+      "owner": "case002.sceneByGroup",
+      "type": "Record<groupId,sceneId>",
+      "default": {},
+      "writer": "sceneOpened with matching actual group locations"
+    },
+    {
+      "logical": "PLAYER_PERCEPTIONS",
+      "owner": "case002.perceptions",
+      "type": "server-only Record<viewerId,opaqueAppearanceMapping>",
+      "default": {},
+      "writer": "illusionApplied/identityVerified; never public"
+    },
+    {
+      "logical": "ILLUSION_ACTIVE",
+      "owner": "case002.illusions",
+      "type": "server-only active illusion instances",
+      "default": [],
+      "writer": "DM-approved fiction event; no HP/location effect"
+    },
+    {
+      "logical": "DECEPTION_LEARNED",
+      "owner": "case002.knowledge",
+      "type": "Record<playerId,{evidenceIds,deliveredFacts,inferences}>",
+      "default": {},
+      "writer": "evidenceDelivered/knowledgeShared to actual recipients"
+    },
+    {
+      "logical": "ATTACK_INTENT",
+      "owner": "case002.pendingAttack",
+      "type": "null|staged server-owned attack",
+      "default": null,
+      "writer": "attackDeclared after authorization, range, resource and target lookup"
+    },
+    {
+      "logical": "ATTACK_ROLL_RESULT",
+      "owner": "case002.pendingAttack.attackerRoll",
+      "type": "null|{die,total,ruleVersion,eventId}",
+      "default": null,
+      "writer": "server d20 once per attack; no client dice totals"
+    },
+    {
+      "logical": "DEFENDER_RESPONSE",
+      "owner": "case002.pendingAttack.defenderResponse",
+      "type": "null|validated response",
+      "default": null,
+      "writer": "eligible defender only; D02-C approved: reserve before attacker roll, execute after identity reveal; NPC profile pending D03"
+    },
+    {
+      "logical": "FRIENDLY_FIRE_RESULT",
+      "owner": "case002.resolvedAttacks",
+      "type": "immutable attack ledger incl real actor/target, hp deltas, stages",
+      "default": [],
+      "writer": "combatResolved atomically once; server-only full ledger"
+    },
+    {
+      "logical": "ING_STATUS",
+      "owner": "case002.humans.ing",
+      "type": "{life:alive|downed|dead,discovery:hidden|located,restraint:bound|free,rescued:boolean,injured:boolean,safe:boolean}",
+      "default": {
+        "life": "alive",
+        "discovery": "hidden",
+        "restraint": "bound",
+        "rescued": false,
+        "injured": false,
+        "safe": false
+      },
+      "writer": "humanLocated/restraintRemoved/evacuationResolved/aidResolved/combatResolved/deathResolved; discover/rescue/injury/safety are independent"
+    },
+    {
+      "logical": "PRAYUN_STATUS",
+      "owner": "case002.humans.prayun",
+      "type": "human life/resource record",
+      "default": {
+        "life": "alive",
+        "injured": false,
+        "safe": false
+      },
+      "writer": "actual travel/help/combat; stats pending"
+    },
+    {
+      "logical": "ING_DEATH_CAUSE",
+      "owner": "case002.deaths",
+      "type": "immutable {deathEventId,victim,actor,actorKind,actionId,combatResolutionId,locationId,performanceZone,ruleVersion,dmConfirmed}[]",
+      "default": [],
+      "writer": "deathResolved only after approved lethal rules; never hp0 alone"
+    },
+    {
+      "logical": "PRAYU_CONFESSION",
+      "owner": "case002.prayunConfession",
+      "type": "concealed|partial|admitted",
+      "default": "concealed",
+      "writer": "actual confession delivered; cannot grant him sacrifice knowledge"
+    },
+    {
+      "logical": "SACRIFICE_STATUS",
+      "owner": "case002.sacrifice",
+      "type": "{status:incomplete|completed,deathEventId:string|null}",
+      "default": {
+        "status": "incomplete",
+        "deathEventId": null
+      },
+      "writer": "derive from confirmed death event; irreversible"
+    },
+    {
+      "logical": "NAYRONG_STATUS",
+      "owner": "case002.nayrong",
+      "type": "{physical:true,permanent:boolean,body:present|dispersed,threat:active|contained|stopped}",
+      "default": {
+        "physical": true,
+        "permanent": false,
+        "body": "present",
+        "threat": "active"
+      },
+      "writer": "combat body result != threat stop; permanence follows sacrifice"
+    },
+    {
+      "logical": "PLAYER_DEATHS",
+      "owner": "derived from case002.deaths",
+      "type": "number",
+      "default": 0,
+      "writer": "derived unique human-player deaths; never manual increment"
+    },
+    {
+      "logical": "EVIDENCE_FLAGS",
+      "owner": "case002.evidenceAcquisitions",
+      "type": "event ledger per source and recipients",
+      "default": [],
+      "writer": "declared action resolved + information delivered; not open/preview Q&A"
+    },
+    {
+      "logical": "ENDING_RESULT",
+      "owner": "case002.ending",
+      "type": "null|{id,modifiers,facts,resolverVersion}",
+      "default": null,
+      "writer": "endingResolved after explicit wrap-up and checked final facts"
+    },
+    {
+      "logical": "ANCHOR_LINK_INTACT",
+      "owner": "case002.anchor.linkIntact",
+      "type": "boolean",
+      "default": true,
+      "writer": "anchorNeutralized from actual resolved physical interaction only"
+    },
+    {
+      "logical": "ANCHOR_NEUTRALIZED",
+      "owner": "case002.anchor.neutralized",
+      "type": "boolean",
+      "default": false,
+      "writer": "anchorNeutralized; not discovery or QA"
+    },
+    {
+      "logical": "REFORMATION_ALLOWED",
+      "owner": "derived from anchor and approved D04 return conditions",
+      "type": "boolean",
+      "default": false,
+      "writer": "only explicit approved D04 reformation event; never if anchor neutralized"
+    }
+  ],
+  "initialization": {
+    "activeInvestigators": {
+      "min": 2,
+      "max": 6
+    },
+    "dmCount": 1,
+    "actors": "create only players + prayun + ing + nayrong + masked_performer; illusory crowd is scenery, not human",
+    "positions": "all players and Prayun at entrance; Ing concealed backstage; concrete map coordinates must exist before runtime starts",
+    "group": "one initial group containing active investigators",
+    "scene": "A1",
+    "partialInitialization": "reject playable start if missing rules, human/enemy stats, map coordinates or implemented anchor interaction; approved direction is not runtime readiness"
+  },
+  "scenes": {
+    "A": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "B": [
+      "B1",
+      "B2",
+      "B3",
+      "B4",
+      "B5"
+    ],
+    "C": [
+      "C1",
+      "C2",
+      "C3",
+      "C4"
+    ],
+    "D": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5"
+    ],
+    "E": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "FINAL": [
+      "F1",
+      "F2",
+      "F3"
+    ]
+  },
+  "sceneRouting": {
+    "path": [
+      "A1",
+      "A2",
+      "A3",
+      "B1",
+      "B2",
+      "B3",
+      "B4",
+      "B5",
+      "C1"
+    ],
+    "parallelBranches": {
+      "C1": [
+        "C2",
+        "C3"
+      ],
+      "C2": [
+        "C3",
+        "C4"
+      ],
+      "C3": [
+        "C2",
+        "C4"
+      ]
+    },
+    "afterMeeting": [
+      "C4",
+      "D1"
+    ],
+    "conditional": {
+      "D1": {
+        "attack": [
+          "D2",
+          "D3",
+          "D4",
+          "D5"
+        ],
+        "verifiedWithoutAttack": [
+          "D5"
+        ]
+      },
+      "D5": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "F1",
+        "F2",
+        "F3"
+      ]
+    },
+    "constraints": [
+      "B scenes may be revisited in any plausible order; critical leads have backups",
+      "C4 needs actual approach; never wait for nonexistent second team",
+      "single group may inspect C2 then C3; D1 uses distortion of observed companion with communication available; no invented enemy/human",
+      "D2-D4 are conditional stages, not mandatory combat",
+      "F1/F2 may start early from real interference; late exposition branches on known facts",
+      "F3 requires combat aftermath/retreat decision and resolved pending actions",
+      "DM may decline threat reaction; no advance merely because a page opens"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "C002-E01",
+      "primaryScene": "A1",
+      "summary": "ลานจอดกับกำหนดงานไม่ตรงภาพที่เห็น",
+      "acquisition": "ตรวจป้ายกำหนดงาน; ไม่มีรถไม่ได้พิสูจน์ว่าไม่มีคนจริงทั้งหมด",
+      "backupScene": "B2",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E02",
+      "primaryScene": "A2",
+      "summary": "ผีหน้ากากมีผลต่อวัตถุจริง",
+      "acquisition": "ผล encounter ที่ resolve แล้ว; ไม่ยืนยันว่าหน้ากากทุกตนเป็นผี",
+      "backupScene": "A3",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E03",
+      "primaryScene": "B2",
+      "summary": "บันทึกเจ็ดคืนและวันเลิกงาน",
+      "acquisition": "เปิดอ่านเอกสารจริง; แยกบันทึกคำให้การจากเหตุที่ทีมเห็น",
+      "backupScene": "B3",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E04",
+      "primaryScene": "B3",
+      "summary": "พิธีปิดโรงปีนี้ไม่ครบ",
+      "acquisition": "ตรวจสมุดและร่องรอยงานซ่อม; ยังไม่แปลว่ารู้วิธีหยุดภัยถาวร",
+      "backupScene": "E4",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E05",
+      "primaryScene": "B4",
+      "summary": "ภาพ เสื้อ และข้อความของอิง",
+      "acquisition": "ตรวจสิ่งของ; ไม่ยืนยันตำแหน่งปัจจุบันหรือว่าอิงยังมีชีวิตจากภาพเก่า",
+      "backupScene": "C2",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E06",
+      "primaryScene": "C2",
+      "summary": "ร่องรอยผู้ถูกลากและเสียงขอความช่วยเหลือ",
+      "acquisition": "ตรวจตำแหน่ง/เสียงจริง; เสียงไม่ใช่หลักฐานตัวตนลำพัง",
+      "backupScene": "E1",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E07",
+      "primaryScene": "C3",
+      "summary": "บันทึกหน้ากาก ครูสิงห์ ศักดิ์ และชด",
+      "acquisition": "เปิดเอกสารการแสดง; บุคคลในอดีตไม่ใช่มนุษย์เพิ่มในคืนนี้",
+      "backupScene": "E4",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E08",
+      "primaryScene": "D1",
+      "summary": "ความขัดแย้งของภาพลวงตาที่ตรวจสอบแล้ว",
+      "acquisition": "เปรียบเทียบรหัส/สัมผัส/อุปกรณ์หรือผลตรวจที่ resolve; ไม่ใช่เห็นชื่อฉาก",
+      "backupScene": "D5",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E09",
+      "primaryScene": "E2",
+      "summary": "ตัวตนอิงที่ยืนยันจากหลายร่องรอย",
+      "acquisition": "เสียง/หลักฐานส่วนตัว/การช่วยและการสื่อสารที่เกิดจริง",
+      "backupScene": "E3",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E10",
+      "primaryScene": "E4",
+      "summary": "เงื่อนไขมนุษย์ฆ่ามนุษย์ในพื้นที่การแสดง",
+      "acquisition": "ประกอบเอกสารหรือคำสารภาพเท่าที่ผู้พูดรู้; ประยูรไม่รู้สูตรนี้",
+      "backupScene": "F1",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E11",
+      "primaryScene": "A3",
+      "summary": "คำรับของประยูรว่าปิดบังเรื่องลูกและข้อตกลง",
+      "acquisition": "พูดจริงหลังทีมถาม/แสดงหลักฐาน/เลือกสารภาพ; ไม่ใช่เปิดหน้า Q&A",
+      "backupScene": "B4",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation_or_document_or_testimony; inference stored separately"
+    },
+    {
+      "id": "C002-E12",
+      "primaryScene": "B3",
+      "summary": "ไม้ครูของโรงและการแยกจุดยึดออกจากพิธีปิดโรงเดิม",
+      "acquisition": "actual inspect/read B3/C3/E4; no mandatory full roll; recipients only",
+      "backupScene": "E4",
+      "criticalRollLock": false,
+      "knowledgeKind": "observation/document; inference kept separate"
+    }
+  ],
+  "events": [
+    {
+      "id": "groupAssignmentConfirmed",
+      "requires": [
+        "DM authorization",
+        "actual player decision",
+        "2–6 active investigators partition exactly once"
+      ],
+      "writes": [
+        "groups",
+        "splitStatus"
+      ],
+      "never": [
+        "positions",
+        "knowledge union"
+      ]
+    },
+    {
+      "id": "actorMoved",
+      "requires": [
+        "valid path/range for chosen rules",
+        "not immobilized",
+        "actor permissions"
+      ],
+      "writes": [
+        "positions",
+        "invalidate safety for actors entering actual danger; no automatic safe evacuation from map click"
+      ],
+      "never": [
+        "HP",
+        "other-group knowledge"
+      ]
+    },
+    {
+      "id": "sceneOpened",
+      "requires": [
+        "actor arrival",
+        "DM opens only recipients present"
+      ],
+      "writes": [
+        "sceneByGroup",
+        "monotone aggregate phase derived from committed arrivals",
+        "delivered narration"
+      ],
+      "never": [
+        "move whole party",
+        "auto reveal all clue IDs"
+      ]
+    },
+    {
+      "id": "evidenceDelivered",
+      "requires": [
+        "resolved declared inspection/question/document action",
+        "source physically accessible or real communicated testimony",
+        "guard satisfied",
+        "explicit recipients"
+      ],
+      "writes": [
+        "evidenceAcquisitions",
+        "recipient knowledge"
+      ],
+      "never": [
+        "death",
+        "sacrifice",
+        "final stop"
+      ]
+    },
+    {
+      "id": "confessionDelivered",
+      "requires": [
+        "Prayun alive, conscious, actually communicating",
+        "question/evidence/voluntary admission occurred",
+        "content only what Prayun knows",
+        "actual recipients; no preview"
+      ],
+      "writes": [
+        "prayunConfession advances concealed -> partial -> admitted as actually spoken",
+        "recipient delivered testimony; no auto trust bonus"
+      ],
+      "never": [
+        "Prayun learns sacrifice formula",
+        "confession because QA opened"
+      ]
+    },
+    {
+      "id": "qaPreviewed",
+      "requires": [
+        "DM only"
+      ],
+      "writes": [],
+      "never": [
+        "state transitions",
+        "automatic publish"
+      ]
+    },
+    {
+      "id": "humanLocated",
+      "requires": [
+        "actual approach/inspection finds real human at position",
+        "server entity exists; no duplicate spawn",
+        "identity disclosure separately guarded per viewer"
+      ],
+      "writes": [
+        "human discovery located",
+        "recipient observation only"
+      ],
+      "never": [
+        "auto rescue",
+        "auto safety",
+        "revive downed/dead"
+      ]
+    },
+    {
+      "id": "restraintRemoved",
+      "requires": [
+        "human physically reachable",
+        "real declared freeing action resolved",
+        "human not replaced by illusion entity"
+      ],
+      "writes": [
+        "restraint free",
+        "rescued true if actual release complete; independent of life/injury"
+      ],
+      "never": [
+        "auto heal",
+        "auto evacuation",
+        "alive by narration"
+      ]
+    },
+    {
+      "id": "aidResolved",
+      "requires": [
+        "approved D01/D03 aid rule/profile",
+        "actual helper position/resources/ability",
+        "target not confirmed dead unless explicitly approved revival (none here)"
+      ],
+      "writes": [
+        "approved HP/condition/danger changes once",
+        "life downed->alive only on valid recovery",
+        "injury persists according to approved rule"
+      ],
+      "never": [
+        "new aid DC",
+        "restore on act transition",
+        "undo sacrifice"
+      ]
+    },
+    {
+      "id": "evacuationResolved",
+      "requires": [
+        "actual escorted travel and current positions",
+        "all route barriers/threats resolved",
+        "specific human reached safe area and remains protected"
+      ],
+      "writes": [
+        "specific human safe true",
+        "actorMoved into danger invalidates safety before scene opens"
+      ],
+      "never": [
+        "free full-team travel",
+        "bring evacuee back into final"
+      ]
+    },
+    {
+      "id": "attackCancelled",
+      "requires": [
+        "pending stage declared before any attacker roll",
+        "same authorized actor/DM",
+        "no frozen die exists"
+      ],
+      "writes": [
+        "release reserved costs once",
+        "archive cancellation and clear pending"
+      ],
+      "never": [
+        "cancel a revealed/frozen attack",
+        "reroll fishing"
+      ]
+    },
+    {
+      "id": "illusionApplied",
+      "requires": [
+        "DM authorized Nayrong deception",
+        "actual target positions remain"
+      ],
+      "writes": [
+        "perceptions",
+        "illusions"
+      ],
+      "never": [
+        "real movement",
+        "HP",
+        "extra humans"
+      ]
+    },
+    {
+      "id": "identityVerified",
+      "requires": [
+        "resolved check or plausible no-roll proof",
+        "audience from actual observations/communication"
+      ],
+      "writes": [
+        "recipient perception",
+        "recipient knowledge"
+      ],
+      "never": [
+        "reveal all players globally"
+      ]
+    },
+    {
+      "id": "attackDeclared",
+      "requires": [
+        "eligible attacker",
+        "action confirmed",
+        "viewer appearanceRef current and local",
+        "range/LOS/resources",
+        "rules approved",
+        "no unresolved pendingAttack (single queue slot); no overwrite",
+        "server reserves attack cost at declaration; commits once before roll; cancellation allowed before roll only, release reservation without reroll"
+      ],
+      "writes": [
+        "pendingAttack"
+      ],
+      "never": [
+        "damage",
+        "identity disclosure to attacker"
+      ]
+    },
+    {
+      "id": "defenseModeCommitted",
+      "requires": [
+        "stage declared",
+        "eligible conscious defender chooses fixed defense or D02-C before attacker roll/result",
+        "if D02-C: reserve Focus1 and one Reaction; AP0",
+        "do not reveal real target/defender metadata to attacker"
+      ],
+      "writes": [
+        "freeze mode fixed/active and reservation",
+        "stage defense_mode_committed"
+      ],
+      "never": [
+        "choose better of fixed and rolled defense after seeing result",
+        "grant NPC resources without approved D03 profile"
+      ]
+    },
+    {
+      "id": "attackerRolled",
+      "requires": [
+        "pending attack stage defense_mode_committed",
+        "server d20",
+        "atomic once"
+      ],
+      "writes": [
+        "frozen attacker roll",
+        "attack stage",
+        "commit reserved attacker cost once; frozen die cannot be cancelled/replaced after reveal"
+      ],
+      "never": [
+        "reroll for plot",
+        "damage"
+      ]
+    },
+    {
+      "id": "defenderInformed",
+      "requires": [
+        "attacker roll committed"
+      ],
+      "writes": [
+        "defender-only identity/attack projection",
+        "pending response stage"
+      ],
+      "never": [
+        "global reveal",
+        "free Guard",
+        "assume post-roll reaction approved"
+      ]
+    },
+    {
+      "id": "defenderResponseCommitted",
+      "requires": [
+        "stage defender_informed",
+        "same defender or explicitly authorized eligible protector",
+        "D02-C mode already committed before attacker roll; execute reserved D20 defense after identity reveal, or fixed fallback",
+        "response or explicit decline chosen once"
+      ],
+      "writes": [
+        "freeze defenderResponse and commit response cost once",
+        "stage response_committed"
+      ],
+      "never": [
+        "second reaction",
+        "free post-roll Guard",
+        "new die for same attack"
+      ]
+    },
+    {
+      "id": "combatResolved",
+      "requires": [
+        "approved D02 timing/defense semantics",
+        "frozen rule version",
+        "response accepted/declined",
+        "server computes attack vs defense once"
+      ],
+      "writes": [
+        "resource deltas exactly once (exclude costs already committed)",
+        "archive full attack to resolvedAttacks including attackId and all stage events",
+        "clear pendingAttack atomically with archived outcome",
+        "injured/life downed from approved human profile when applicable; no death without separate validated event"
+      ],
+      "never": [
+        "HP0 means dead",
+        "second resolution under a new actionId"
+      ]
+    },
+    {
+      "id": "deathResolved",
+      "requires": [
+        "approved D03 human and lethal profiles",
+        "referenced real combat or action hazard outcome",
+        "actual danger/death threshold",
+        "DM confirms already validated outcome"
+      ],
+      "writes": [
+        "deaths",
+        "life state",
+        "derived playerDeaths",
+        "stable globally unique deathEventId, unambiguous causal resolution reference"
+      ],
+      "never": [
+        "kill by narration",
+        "kill from elapsed investigation"
+      ]
+    },
+    {
+      "id": "sacrificeEvaluated",
+      "requires": [
+        "confirmed real human killer",
+        "confirmed real human victim",
+        "distinct living humans immediately before fatal resolved action",
+        "death event with causal action id",
+        "approved performance-zone coordinates",
+        "DM confirmation"
+      ],
+      "writes": [
+        "sacrifice completed only if all pass",
+        "nayrong.permanent true"
+      ],
+      "never": [
+        "ghost kills count",
+        "puppet kills count",
+        "downed counts",
+        "completed reverts"
+      ]
+    },
+    {
+      "id": "knowledgeShared",
+      "requires": [
+        "actual player says what is shared",
+        "communicating participants",
+        "explicit delivered facts and recipients"
+      ],
+      "writes": [
+        "recipient knowledge"
+      ],
+      "never": [
+        "on regroup auto-union"
+      ]
+    },
+    {
+      "id": "threatOutcomeResolved",
+      "requires": [
+        "approved D05 route",
+        "causal encounter or ritual action results",
+        "no pending attack"
+      ],
+      "writes": [
+        "nayrong body/threat"
+      ],
+      "never": [
+        "dispersed automatically means stopped",
+        "old rite stops permanent Nayrong",
+        "body respawns just because scene/phase changes"
+      ]
+    },
+    {
+      "id": "endingResolved",
+      "requires": [
+        "DM wrap-up",
+        "no pending attack or unconfirmed death",
+        "validated facts + approved D06 resolver"
+      ],
+      "writes": [
+        "ending"
+      ],
+      "never": [
+        "ending prose modifies facts"
+      ]
+    },
+    {
+      "id": "bodyReformed",
+      "requires": [
+        "approved D04 explicit return condition satisfied",
+        "recorded causal event distinct from scene navigation",
+        "not permanently stopped"
+      ],
+      "writes": [
+        "nayrong body present at validated position"
+      ],
+      "never": [
+        "new boss power",
+        "default phase-based revival"
+      ]
+    },
+    {
+      "id": "anchorNeutralized",
+      "requires": [
+        "real object physically accessible",
+        "actual declared action and validated resolution",
+        "approved v5.5 interaction contract; unresolved DC/AP cannot default",
+        "not a narrative/QA or evidence-discovery event"
+      ],
+      "writes": [
+        "anchor.linkIntact=false",
+        "anchor.neutralized=true",
+        "reformation denied; no new body respawn",
+        "derive stopped only if hostile body already dispersed"
+      ],
+      "never": [
+        "undo sacrifice",
+        "revive victims",
+        "instant free boss HP damage",
+        "force a human death to unlock method"
+      ]
+    }
+  ],
+  "attackPipeline": {
+    "status": "D01-B/D02-C approved design; pending D03/D04; not executable",
+    "stages": [
+      "declared",
+      "defense_mode_committed",
+      "attacker_rolled",
+      "defender_informed",
+      "response_committed",
+      "resolved"
+    ],
+    "storage": "server only full intent, frozen positions/ruleVersion, real actor/target, die, paid costs and chosen response; reserve then commit costs before rolling, lock intent after roll; no post-roll cancel to reroll",
+    "projection": {
+      "attackerBeforeRoll": "opaque appearanceRef + perceived cues only",
+      "defenderAfterRoll": "real attacker identity and declared attack; damage still pending",
+      "attackerAfterHit": "actual friendly-fire identity and factual injury",
+      "miss": "no injury; verification/communication path remains"
+    },
+    "timingConflict": "Resolved by user selecting D02-C: reserve active defense before attacker roll; freeze attack roll; reveal to defender; execute reserved defense roll after reveal. No second fixed-defense check or free post-roll Guard.",
+    "dedupe": [
+      "player+actionId",
+      "attackId stage compare-and-swap",
+      "resolvedAttackIds persists across reconnect/import",
+      "resource debit and ledger append in one server transition",
+      "refuse second declaration until current attack archived; keep resolvedAttackId even if new actionId retries"
+    ],
+    "abandonOrDisconnect": "pause pending stage; no real-time auto damage or automatic death",
+    "abort": "before attacker roll only: release reservation and record cancellation; after roll pause/resume or resolve frozen intent, never discard"
+  },
+  "sacrifice": {
+    "monotone": true,
+    "performanceZone": "pending map assignment; D/E may both qualify only when explicitly defined before encounter",
+    "causality": "server ownership and actual killer kind from action record; cannot trust client display or text",
+    "afterCompleted": "all later E/F read-aloud branches describe permanent return already occurred; no waiting for first offering"
+  },
+  "endingDraft": {
+    "status": "pending D05/D06",
+    "priority": [
+      {
+        "id": "D",
+        "when": "threat uncontrolled, party defeated or uncontrolled withdrawal; after sacrifice, body dispersed but anchor still intact does not mean lasting stop",
+        "note": "save people without claiming stopped; permanent return remains explicit"
+      },
+      {
+        "id": "C",
+        "when": "threat stopped by an approved valid method AND at least one confirmed human death",
+        "note": "new lasting-stop direction selected: require real anchor neutralization and hostile body dispersed; retain actual sacrifice/deaths"
+      },
+      {
+        "id": "A",
+        "when": "threat stopped AND sacrifice incomplete AND Ing/Prayun safe alive AND playerDeaths=0 AND all confirmedHumanDeaths=0"
+      },
+      {
+        "id": "B",
+        "when": "threat contained temporarily AND safe evacuation of living humans AND sacrifice incomplete AND all confirmedHumanDeaths=0"
+      },
+      {
+        "id": "D",
+        "when": "all remaining mixed outcomes",
+        "note": "conservative draft; show exact facts; not an invented happy resolution"
+      }
+    ],
+    "modifiers": [
+      "Fallen Agent if unique actual player death",
+      "Prayun accountability: concealed/partial/admitted and testimony provenance",
+      "sacrifice completed -> permanent return explicitly stated",
+      "record actual killer separately from illusion instigator"
+    ],
+    "prose": "generated from facts only; no resurrection, reset injuries or automatic confession"
+  },
+  "savePlan": {
+    "runtimeImplemented": false,
+    "proposedEnvelopeVersion": 2,
+    "required": [
+      "caseId",
+      "contentVersion",
+      "rulesVersion",
+      "server state",
+      "event seq",
+      "seen action ids",
+      "resolved attack ids",
+      "membership"
+    ],
+    "roundTrip": [
+      "groups",
+      "positions",
+      "per-view knowledge",
+      "illusions",
+      "pending attack stage/die/cost/response",
+      "deaths",
+      "sacrifice",
+      "ending",
+      "anchor discovery, link/neutralized state and causal events"
+    ],
+    "legacy": "leave CASE001 v1 reader/writer unchanged until explicit dispatch is added; new unknown identity rejected",
+    "exportAccess": "DM-only; full save contains secret and must never be a player download"
+  },
+  "userDecisions": {
+    "D01": {
+      "choice": "B",
+      "status": "approved",
+      "characterBaseline": "runtime-v5.5",
+      "startingPlayerHP": 15,
+      "turnEconomy": "one action ends turn"
+    },
+    "D02": {
+      "choice": "C",
+      "status": "approved_design_not_runtime",
+      "ruleId": "CASE002_DEFENSIVE_ROLL",
+      "physical": "D20 + BODY + preparedGuardBonus",
+      "mental": "D20 + RES + preparedGuardBonus",
+      "replaces": "fixed base 10, not an additional defense check",
+      "ap": 0,
+      "focus": 1,
+      "reaction": 1,
+      "commit": "before attacker roll/result; do not disclose real identity to attacker",
+      "roll": "after attacker roll is frozen and defender identity reveal",
+      "fallback": "fixed defense if no valid active-defense commitment",
+      "npcEligibility": "pending D03 profile"
+    },
+    "D05": {
+      "status": "direction_approved_details_draft",
+      "choice": "2",
+      "method": "permanent stop possible after sacrifice by cutting a seeded anchor; body combat and rescue still required",
+      "design": "CASE002_FINAL_Anchor_Design.md",
+      "mechanicsEnabled": false
+    }
+  },
+  "anchorDesign": {
+    "status": "story_design_draft",
+    "object": "ไม้ครูของโรง",
+    "existsFromStart": true,
+    "linkIntact": true,
+    "neutralized": false,
+    "discoverySeparateFromNeutralization": true,
+    "interactionDC": null,
+    "interactionCost": null,
+    "method": "actual access and resolved action disconnecting the stage-bound prop; not reading or HP of boss alone",
+    "permanentStop": "anchor neutralized AND hostile physical body dispersed; either order",
+    "availableBeforeSacrifice": true,
+    "sacrificeHistoryMonotone": true,
+    "reformationAfterNeutralized": false,
+    "evidenceId": "C002-E12",
+    "guard": "no new stat/DC/AP default from CASE001"
+  }
+}

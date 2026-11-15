@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { BASIC_RULES_MODE, professions, caseGrid, castProfiles, type CaseSite, type Character } from '@baan/shared';
 import { TacticalTechniques } from './TacticalTechniques';
 import { portraitUrl } from '../characters/CastPortraits';
-import { illustrations } from '../case/CaseScene';
+import {sceneArt} from '../case/sceneArt';
 import { cellKey, combatPoint, movementPreview } from './combatPresentation';
 const cutouts=import.meta.glob<string>('../../assets/case-001/combat/*.png',{eager:true,query:'?url',import:'default'});
 const tokenArt=(key:string)=>cutouts['../../assets/case-001/combat/'+key+'.png'];
@@ -26,8 +26,8 @@ export type BattleView={
 const at=(a:Cell,b?:Cell)=>a.x===b?.x && a.y===b?.y;
 const cellName=({x,y}:Cell)=>String.fromCharCode(65+x)+(y+1);
 
-export function EncounterBoard({site,battle,players,characters,self,ap,turns,action}:{
-  site:CaseSite; battle:BattleView; players:Record<string,Cell>; characters:Record<string,Character>;
+export function EncounterBoard({scene,site,battle,players,characters,self,ap,turns,action}:{
+  site:CaseSite; scene?:string; battle:BattleView; players:Record<string,Cell>; characters:Record<string,Character>;
   self:string; ap?:number; turns?:Record<string,{ap:number}>; action?:(type:string,payload?:object)=>void;
 }) {
   const [selected,setSelected]=useState<Cell>();
@@ -70,7 +70,7 @@ export function EncounterBoard({site,battle,players,characters,self,ap,turns,act
           {member.hp===0 && <span className="combat-warning">หมดสภาพ</span>}</div>
         </article>;
       })}</aside>
-      <div className="combat-arena" style={{backgroundImage:'linear-gradient(#0a151c55,#0a151cbb),url('+illustrations[site]+')'}}>
+      <div className="combat-arena" style={{backgroundImage:'linear-gradient(#0a151c55,#0a151cbb),url('+sceneArt(site,scene)+')'}}>
         <div className="board-scroll" ref={viewport} tabIndex={0} aria-label="สนามต่อสู้ เลื่อนเพื่อดูทุกช่อง">
           <div className="combat-stage" style={{width:(grid.width+grid.height)*32+64,height:(grid.width+grid.height)*16+140}}>
             {Array.from({length:grid.width*grid.height},(_,i)=>{

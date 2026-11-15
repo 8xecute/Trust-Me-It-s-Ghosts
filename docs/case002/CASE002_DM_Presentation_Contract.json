@@ -1,0 +1,355 @@
+{
+  "caseId": "CASE002",
+  "version": "0.1.0-draft",
+  "status": "presentation_design_not_connected",
+  "executable": false,
+  "visibility": "DM_ONLY",
+  "dmPriority": [
+    "เปิดเผยข้อมูลได้แค่ไหนและใครรู้",
+    "ผลที่ต้องบันทึกและเหตุที่เกิดจริง",
+    "บทสวมบท"
+  ],
+  "privacyBoundary": {
+    "serverOnly": [
+      "real entity identity mapping",
+      "true positions of unseen actors",
+      "all evidence source texts before discovered",
+      "secret Nayrong goal",
+      "Prayun hidden deal",
+      "Ing hidden identity/position",
+      "unpublished dialogue/QA",
+      "full death and attack causal ledger",
+      "group knowledge not communicated",
+      "full session save",
+      "random seed and future d20"
+    ],
+    "publicProjection": "explicit allowlist per authenticated room member; never spread server state/object rest; DM preview uses same player projector",
+    "playerAllowed": [
+      "caseId + contentVersion",
+      "own accessible scene image + neutral title",
+      "own actor resources and known inventory",
+      "perceived entities with opaque viewer-bound appearanceRef",
+      "published narration for actual recipients",
+      "own confirmed declarations and requests",
+      "DM-sent roll card limited to its actor",
+      "own notebook observations/testimony/inference",
+      "permitted defender action window after actual attacker roll",
+      "information explicitly communicated to self"
+    ],
+    "allTransports": [
+      "initial/join/resume snapshot",
+      "action acknowledgement including errors",
+      "game:snapshot polling/WebSocket",
+      "DM preview",
+      "dice result/notification",
+      "narrative and combat history",
+      "room/lobby summary",
+      "portable save download authorization",
+      "static player assets/bundle",
+      "accessibility names/alt/title data attributes"
+    ],
+    "opaqueRef": {
+      "scope": "viewer + perception revision + encounter + action window",
+      "lookup": "server validates same viewer/room/location/revision then binds real entity for intent; client never supplies authoritative real target",
+      "stale": "generic invalid-target response; refresh without identity hints",
+      "persistence": "store server mapping and pending binding; invalidate/reforge public refs on reconnect as needed without reroll/double damage"
+    },
+    "lobby": "CASE002 remains coming-soon until runtime acceptance passes; show no secret preview"
+  },
+  "ui": {
+    "player": {
+      "scene": "ภาพฉากใหญ่; notebook/roll/action tools collapsible; map positions not derived from illusion",
+      "action": "ช่องประกาศเป้าหมาย/วิธีอิสระเฉพาะCASE002 ตามข้อกำหนดล่าสุด; no automatic adjudication, no ready-made questions; DM can ask clarification",
+      "roll": "no generic roll menu; only own DM-approved supported card",
+      "sharing": "player chooses facts to communicate; regroup itself shares nothing",
+      "notes": "แยกสิ่งเห็น คำบอกเล่า และข้อสันนิษฐาน; no hidden fact checklist"
+    },
+    "dm": {
+      "view": "เห็นตัวตนจริง ตำแหน่งจริง กลุ่มและภาพที่แต่ละคนเห็น; clearly label DM-only panes",
+      "sceneControls": "เปิดบทให้ผู้รับที่อยู่จริงเท่านั้น; never whole-party travel as side effect",
+      "questions": "ค้น QA ภายใน DM; preview is read-only; send only guarded player answer after actual question/action",
+      "resultControls": "each control shows trigger, before/after and required causal event; cannot manually mark sacrifice without validated death",
+      "combat": "stage + frozen die + eligible response/resource + resolve status; no reroll/edit total after reveal",
+      "assets": "newCASE002 location images needed before visual runtime acceptance; do not substitute CASE001 scenes"
+    }
+  },
+  "disclosureLayers": [
+    {
+      "id": "L0",
+      "when": "arrival",
+      "allow": [
+        "visible fair lights/music",
+        "empty parking",
+        "Prayun asks check old stage"
+      ],
+      "deny": [
+        "there are no real villagers",
+        "Prayun deal",
+        "Ing identity",
+        "sacrifice condition"
+      ]
+    },
+    {
+      "id": "L1",
+      "when": "specific safe inspections",
+      "allow": [
+        "schedule date",
+        "repeating perceived motion/voices",
+        "physical evidence from actual A2 encounter"
+      ],
+      "deny": [
+        "all masks are enemies",
+        "secret law of sacrifice"
+      ]
+    },
+    {
+      "id": "L2",
+      "when": "documents/Ing traces actually read",
+      "allow": [
+        "public fair ended night7",
+        "failed closing rite",
+        "Ing photo/note",
+        "historical Singh/Sak/Chot document facts"
+      ],
+      "deny": [
+        "current location/life of Ing from an old photo",
+        "Prayun knows sacrifice rule"
+      ]
+    },
+    {
+      "id": "L3",
+      "when": "identity proof or combat reveal",
+      "allow": [
+        "specific observer sees discrepancy",
+        "defender learns real attacker after frozen roll",
+        "attacker learns hurt ally after actual hit"
+      ],
+      "deny": [
+        "automatic both-team omniscience",
+        "mask name/portrait revealing actual entity before allowed stage"
+      ]
+    },
+    {
+      "id": "L4",
+      "when": "actual E4 document comparison or equivalent factual proof",
+      "allow": [
+        "human killing human condition",
+        "ghost killings excluded",
+        "permanent return if actually completed"
+      ],
+      "deny": [
+        "readout completes sacrifice",
+        "false claim waiting for first sacrifice if completed inD"
+      ]
+    },
+    {
+      "id": "L5",
+      "when": "approved finale and aftermath resolved",
+      "allow": [
+        "actual body/threat state",
+        "survivors and causal deaths",
+        "ending derived facts"
+      ],
+      "deny": [
+        "old rite ends permanent manifestation",
+        "dispersal always means lasting victory",
+        "unapproved new power"
+      ]
+    }
+  ],
+  "npcKnowledge": {
+    "prayun": {
+      "knows": [
+        "Ing missing",
+        "real fair ended",
+        "Nayrong offered return of daughter if company brought in",
+        "he concealed risk"
+      ],
+      "doesNotKnow": [
+        "full sacrifice criterion",
+        "what other group currently sees",
+        "current hidden Ing location without actual lead",
+        "boss mechanics"
+      ],
+      "concealReason": "fear for daughter and fear company refuses",
+      "moreInfoWhen": [
+        "asked about empty parking/schedule -> admits event ended",
+        "shown Ing evidence or direct compassionate question -> admits daughter and deal",
+        "accusation/threat changes attitude only, not knowledge"
+      ],
+      "outOfScopeAnswer": "ผมไม่รู้เรื่องนั้นครับ ผมบอกได้เฉพาะสิ่งที่เห็นหรือได้ยินเอง",
+      "record": "confession event with actual recipients only; distrust is player inference unless explicit mechanical rule",
+      "confessionAnswer": {
+        "guard": "confessionDelivered event with actual question/evidence/voluntary admission and explicit recipients",
+        "text": "มันบอกว่าจะคืนอิง ถ้าผมพาพวกคุณมา ผมรู้แค่นั้น ผมไม่รู้เงื่อนไขอื่นจริง ๆ"
+      }
+    },
+    "ing": {
+      "knows": [
+        "own capture and sensations",
+        "father and personal possessions",
+        "what she directly heard/experienced"
+      ],
+      "doesNotKnow": [
+        "full Singh history without source",
+        "teamD actions she did not see",
+        "automatic knowledge of sacrifice rule"
+      ],
+      "communicatesWhen": "alive, conscious, accessible and able to speak; no dialogue if downed/dead/gagged before freed",
+      "voice": "ขออย่าเข้ามาทำร้ายหนู หนูไม่มีอาวุธ... ช่วยแก้เชือกให้หนูที",
+      "record": "identity/rescue/safety tracked separately from injury"
+    },
+    "nayrong": {
+      "knowledge": "own deception and aims; may lie deliberately",
+      "restrictions": [
+        "no omniscience about private player notebook/plans",
+        "physical from beginning",
+        "no power only gained inFINAL except permanent return from actual sacrifice",
+        "no victim appears merely to enable plot"
+      ],
+      "voice": "เล่นให้จบสิ คนดูยังรออยู่",
+      "reveal": "not automatically identified as Singh before document/observed introduction"
+    },
+    "maskedPerformer": {
+      "kind": "physical enemy, not a dialogue NPC",
+      "cues": [
+        "white wooden mask",
+        "tilted neck",
+        "iron scraping",
+        "telegraphed charge"
+      ],
+      "restrictions": [
+        "A2 attack actually resolved",
+        "reused visual inD is perception only",
+        "not all later mask-looking beings are this enemy"
+      ]
+    }
+  },
+  "readAloudBranches": [
+    {
+      "id": "E_AFTER_D_SACRIFICE",
+      "guard": "sacrifice.completed and observers saw relevant evidence",
+      "text": "เสียงหัวเราะจากเวทีดังทับเสียงดนตรี ร่างชายในชุดการแสดงยังแตะพื้นไม้และทิ้งรอยหนักไว้เหมือนเดิม แต่ถ้อยคำของมันเปลี่ยนไป: 'โรงนี้มีเจ้าของแล้ว'",
+      "dmOnly": "permanent state changes from confirmed death, not from this line"
+    },
+    {
+      "id": "E_SACRIFICE_UNKNOWN_TO_VIEWER",
+      "guard": "sacrifice.completed but viewer did not observe or learn",
+      "text": "เสียงหัวเราะจากเวทีดังขึ้นอีกครั้ง ไม่มีใครบอกได้จากตรงนี้ว่าเกิดอะไรขึ้นอีกด้าน",
+      "dmOnly": "do not reveal unseen death; same objective state"
+    },
+    {
+      "id": "F_NO_SACRIFICE",
+      "guard": "sacrifice.incomplete; neutral scene only, no assumed nearby survivor",
+      "text": "ร่างชายในชุดการแสดงก้าวลงจากเวที รอยเหล็กครูดพื้นตามทุกย่างก้าว ทางที่คุณเลือกยืนและทางที่ยังถอยได้อยู่ตรงหน้า",
+      "dmOnly": "do not announce hidden survivor positions"
+    },
+    {
+      "id": "F_AFTER_SACRIFICE",
+      "guard": "sacrifice.completed AND permanent return known AND old-rite limitation actually learned by recipients",
+      "text": "ร่างชายในชุดการแสดงยืนขวางเวที พื้นไม้ลั่นใต้เท้ามัน คุณรู้แล้วว่าทำพิธีเดิมซ้ำไม่อาจลบสิ่งที่เกิดขึ้น การรับมือกับอันตรายตรงหน้ายังอยู่ในมือคุณ",
+      "dmOnly": "lasting stop route requires approved D05 option"
+    },
+    {
+      "id": "F_LOCAL_SURVIVOR",
+      "guard": "recipient actually sees living survivor at their location",
+      "text": "[เรียกเฉพาะชื่อที่ผู้รับรู้แล้ว] ยังอยู่ในระยะที่คุณมองเห็น คุณจะจัดคนคุ้มกันหรือรักษาทางออกอย่างไร",
+      "dmOnly": "manual guarded insertion only, not generic template fallback; use neutral noun if identity not known"
+    },
+    {
+      "id": "F_FACTS_UNKNOWN",
+      "guard": "recipients have not learned sacrifice/rite limits or boss identity",
+      "text": "ร่างชายในชุดการแสดงอยู่ตรงเวที เงาม่านขยับตามแสงที่แกว่ง คุณยังเห็นทางเดินที่มาถึงและสิ่งกีดขวางตรงหน้า",
+      "dmOnly": "use only actually visible positions; do not project global sacrifice status or hidden names"
+    }
+  ],
+  "controls": [
+    {
+      "id": "preview_qa",
+      "writes": [],
+      "playerOutput": null
+    },
+    {
+      "id": "publish_guarded_answer",
+      "requires": "actual question/action + explicit recipients; npc_dialogue: speaker present, alive/able and knows; scene_narration/evidence_readout: source accessible and actually inspected/read; dm_action_guidance: DM-only, never player payload",
+      "writes": [
+        "delivered narrative"
+      ],
+      "separateStateEvent": "fact acquisition/confession needs resolved action provenance"
+    },
+    {
+      "id": "request_roll",
+      "requires": "declared supported action + approved stat/DC + actor consent",
+      "writes": [
+        "own pending roll card"
+      ],
+      "playerOutput": "neutral perceived action; no hidden NPC label"
+    },
+    {
+      "id": "record_combat",
+      "requires": "server resolved outcome event",
+      "writes": [
+        "single authoritative combat result"
+      ],
+      "playerOutput": "per-stage projector"
+    },
+    {
+      "id": "confirm_death",
+      "requires": "server validated approved lethal outcome; cannot choose arbitrary life state",
+      "writes": [
+        "confirmed causal death record"
+      ],
+      "playerOutput": "only witnesses/recipients"
+    },
+    {
+      "id": "finalize_ending",
+      "requires": "no unresolved attack/death; approved resolver",
+      "writes": [
+        "fact-derived ending"
+      ],
+      "playerOutput": "fact-consistent epilogue"
+    }
+  ],
+  "userDecisions": {
+    "D01": {
+      "choice": "B",
+      "status": "approved",
+      "characterBaseline": "runtime-v5.5",
+      "startingPlayerHP": 15,
+      "turnEconomy": "one action ends turn"
+    },
+    "D02": {
+      "choice": "C",
+      "status": "approved_design_not_runtime",
+      "ruleId": "CASE002_DEFENSIVE_ROLL",
+      "physical": "D20 + BODY + preparedGuardBonus",
+      "mental": "D20 + RES + preparedGuardBonus",
+      "replaces": "fixed base 10, not an additional defense check",
+      "ap": 0,
+      "focus": 1,
+      "reaction": 1,
+      "commit": "before attacker roll/result; do not disclose real identity to attacker",
+      "roll": "after attacker roll is frozen and defender identity reveal",
+      "fallback": "fixed defense if no valid active-defense commitment",
+      "npcEligibility": "pending D03 profile"
+    },
+    "D05": {
+      "status": "direction_approved_details_draft",
+      "choice": "2",
+      "method": "permanent stop possible after sacrifice by cutting a seeded anchor; body combat and rescue still required",
+      "design": "CASE002_FINAL_Anchor_Design.md",
+      "mechanicsEnabled": false
+    }
+  },
+  "anchorPresentation": {
+    "identityBeforeInvestigation": "ordinary wooden stage prop, no name label/glow/secret ID",
+    "sources": [
+      "B3 physical inspection",
+      "C3 prop/history records",
+      "E4 backup instructions"
+    ],
+    "afterDiscovery": "explicit recipients learn C002-E12; no automatic damage or neutralization",
+    "afterSacrifice": "permanent-stop path remains; old annual rite remains invalid",
+    "visualAssets": "CASE002_Artwork.md; gallery is DM-only, not a public snapshot"
+  }
+}

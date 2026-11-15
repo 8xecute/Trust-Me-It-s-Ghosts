@@ -40,6 +40,7 @@ function room(die=20,lethal=false,version:'5.2'|'5.3'|'5.5'='5.2') {
  const next=()=>{
   send('dm','guided',{command:'propose'});
   if(view().guided!.transition)send(version==='5.5'?'dm':'a','guided',{command:'confirm',target:view().guided!.transition!.id});
+  if(version==='5.5'){const phase=view().guided!.phase;scene(phase==='FINAL'?'F1':phase+'1');}
   const cue=panel().narration.find(c=>c.current && c.eventId==='guided-cue:'+view().guided!.scene);
   if(cue)publish(cue.eventId);
  };
@@ -192,10 +193,10 @@ test('v5.5 DM alone controls story changes and advances without player confirmat
  assert.throws(()=>r.send('a','guided',{command:'confirm',target:'ปลอม'}),/DM/);
  r.send('dm','guided',{command:'propose'});
  assert.equal(r.state().guided!.phase,'B');
- assert.equal(r.state().guided!.scene,'B1');
+ assert.equal(r.state().guided!.scene,'A3');
  assert.equal(r.state().guided!.transition,undefined);
  assert.equal(r.state().guided!.journals.length,before.world.case001!.guided!.journals.length+1);
- assert.ok(r.players.every(id=>r.view(id).caseMap!.site==='B'));
+ assert.ok(r.players.every(id=>r.view(id).caseMap!.site==='A'));
  assert.throws(()=>r.send('a','guided',{command:'evacuate'}),/DM/);
  assert.throws(()=>r.send('a','guided',{command:'select-disclosure',target:'{}'}),/DM/);
 });

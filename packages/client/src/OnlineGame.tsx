@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import type { Biography } from '@baan/shared';
 import { CaseScene } from './ui/case/CaseScene';
+import {publishedScene} from './ui/case/sceneArtCatalog';
 import { CastPortraits, portraitUrl, visibleCast } from './ui/characters/CastPortraits';
 import { EncounterBoard } from './ui/combat/EncounterBoard';
 import { TurnConclusion, TurnEncounter } from './ui/combat/TurnEncounter';
@@ -165,6 +166,7 @@ export function OnlineGame() {
     investigators.every(player=>world?.characters?.[player.id]);
   const character=world?.characters?.[self.current];
   const battle=world?.caseMap?.battle;
+  const visualScene=world?.caseMap?publishedScene(world.caseMap.site,world.narrative):undefined;
   const turnEncounter=!!battle?.turnEncounter;
   const showEncounter=turnEncounter && caseTab==='scene';
   useEffect(()=>{if(turnEncounter) setCaseTab('scene');},[turnEncounter]);
@@ -296,12 +298,12 @@ export function OnlineGame() {
         <div className={'case-workspace'+(battle?' case-workspace-encounter':'')+(turnEncounter?' case-workspace-c4':'')} data-view={caseTab}><div className="case-world-pane" hidden={caseTab!=='scene'}>
         {world.caseMap && <>
           {world.caseMap.turnConclusion && !battle && <TurnConclusion result={world.caseMap.turnConclusion}/>}
-          {battle?.turnEncounter ? <TurnEncounter site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
+          {battle?.turnEncounter ? <TurnEncounter scene={visualScene} site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
             self={self.current} enabled={connected && !world.paused} paused={world.paused} action={action}
             waitingForStoryRoll={waitingForRoll}/> :
-            battle ? <EncounterBoard site={world.caseMap.site} battle={battle} players={world.players}
+            battle ? <EncounterBoard scene={visualScene} site={world.caseMap.site} battle={battle} players={world.players}
             characters={world.characters ?? {}} self={self.current} ap={world.turns[self.current]?.ap} turns={world.turns} action={connected ? action : undefined}/> :
-            <CaseScene site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro} npcs={world.caseMap.npcs}/>}
+            <CaseScene scene={visualScene} site={world.caseMap.site} location={world.case001.location} intro={world.case001.intro} npcs={world.caseMap.npcs}/>}
           {!battle && <CastPortraits roles={cast} speakers={[...(world.case001.speakers ?? []),...visibleCast(caseActions)]}/>}
           {!turnEncounter && (!['5.2','5.3','5.5'].includes(world.guided?.version ?? '') || world.lastCheck) && <section className="narration-card case-response" aria-label="เหตุการณ์ล่าสุด" aria-live="polite">
             <h3>{['5.2','5.3','5.5'].includes(world.guided?.version ?? '')?'ผลการทอย':'เหตุการณ์ล่าสุด'} <button type="button" onClick={()=>setCaseTab('story')}>อ่านบทเต็ม</button></h3>

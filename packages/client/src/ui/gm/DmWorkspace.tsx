@@ -13,6 +13,7 @@ import { D20Card, D20Result } from '../case/D20Card';
 import { DmHistory } from '../case/DmHistory';
 import { DmPlayerView, type PlayerPreview } from './DmPlayerView';
 import { CaseScene } from '../case/CaseScene';
+import {publishedScene} from '../case/sceneArtCatalog';
 import { TurnConclusion, TurnEncounter } from '../combat/TurnEncounter';
 import {dmEventGroup,isSceneInteraction} from './dmEventGroups';
 
@@ -208,14 +209,23 @@ export function DmWorkspace({
       {['guide','npcs','history'].includes(dmTab) && <div className="dm-case-secondary" aria-label="เอกสารอ้างอิง DM">
         {(['guide','npcs','history'] as const).map((tab,index)=><button key={tab} type="button" aria-pressed={dmTab===tab} onClick={()=>setDmTab(tab)}>{['สารบัญฉาก','แฟ้ม NPC','บันทึก'][index]}</button>)}
       </div>}
-      {guided?.version==='5.5' && <form onSubmit={event=>{event.preventDefault();const id=new FormData(event.currentTarget).get('scene');if(typeof id==='string' && id)openScene(id);}}>
+      {guided?.version==='5.5' && <section aria-label="DM เลือก ACT และฉาก">
+       <form key={guided.phase} onSubmit={event=>{event.preventDefault();action('guided',{command:'phase',target:new FormData(event.currentTarget).get('phase')});}}>
+        <label>ACT ปัจจุบัน <select name="phase" defaultValue={guided.phase} disabled={!available || !!battle}>
+         {['A','B','C','D','E','FINAL'].map(phase=><option key={phase} value={phase}>{phase==='FINAL'?'ช่วงท้าย':'ACT '+phase}</option>)}
+        </select></label>
+        <button type="submit" disabled={!available || !!battle}>เปลี่ยน ACT</button>
+        <p className="note">เปลี่ยนเฉพาะ ACT ฉากและตำแหน่งทีมยังคงเดิม</p>
+       </form>
+       <form onSubmit={event=>{event.preventDefault();const id=new FormData(event.currentTarget).get('scene');if(typeof id==='string' && id)openScene(id);}}>
         <label>DM เลือกเปลี่ยนฉาก <select name="scene" defaultValue="" disabled={!available || !!battle} required>
           <option value="">เลือกฉากที่จะย้ายทั้งทีมไป</option>
           {readyScenes.map(scene=><option key={scene.id} value={scene.id}>{sceneName(scene.id)}</option>)}
         </select></label>
         <button type="submit" disabled={!available || !!battle}>เปลี่ยนฉากทั้งทีม</button>
         {!!battle && <p className="note">จบการเผชิญหน้าก่อนเปลี่ยนฉาก</p>}
-      </form>}
+        <p className="note">เลือกฉากและย้ายทีมได้โดยไม่เปลี่ยน ACT</p>
+      </form></section>}
       {saveWarning && <p className="gm-alert" role="alert">{saveWarning}</p>}
       {world.paused && <p className="gm-alert" role="status">คดีพักอยู่ <button type="button" onClick={()=>setDmTab('team')}>ไปเปิดเล่นต่อ</button></p>}
       {dmTab==='dice' && world.latestRoll && <D20Card key={world.latestRoll.id} card={world.latestRoll} rollerName={playerName(world.latestRoll.playerId)}/>}
@@ -224,7 +234,7 @@ export function DmWorkspace({
       {dmTab==='scene' && <section className="gm-pane" aria-label="จัดฉากเฉพาะ DM">
         <h3>จัดภาพฉาก</h3>
         <p className="note">วางใหม่จะซ่อนก่อน กดแสดงเมื่อต้องการให้ผู้เล่นเห็น · การย้ายภาพไม่ย้าย NPC ในเนื้อเรื่อง</p>
-        {world.caseMap && <CaseScene key={world.caseMap.site} site={world.caseMap.site} location={world.case001.location}
+        {world.caseMap && <CaseScene key={world.caseMap.site} scene={guided?.scene} previewScene={preview?.caseMap?.site===world.caseMap.site?publishedScene(world.caseMap.site,preview.narrative):undefined} site={world.caseMap.site} location={world.case001.location}
           npcs={world.caseMap.npcs} editingDisabled={!available || !!world.caseMap.battle || !!world.case001.report}
           placeNpc={(npcId,position)=>action('dmPlaceNpc',{site:world.caseMap!.site,npcId,position})}/>}
       </section>}
@@ -241,7 +251,7 @@ export function DmWorkspace({
 
       {dmPanel?.encounterStart && <section className="game-panel" aria-label="เริ่มการเผชิญหน้าโดย DM"><h3>พร้อมเปิดฉากต่อสู้</h3><p>เริ่มเมื่อทีมพร้อม แล้วส่งบทเปิดให้ผู้เล่นก่อนรอบแรก</p><button type="button" disabled={!connected || !!world?.paused} onClick={()=>action('dmStartEncounter')}>{dmPanel.encounterStart.label}</button></section>}
       {dmTab==='queue' && battle?.turnEncounter && world.caseMap &&
-        <TurnEncounter site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
+        <TurnEncounter scene={guided?.scene} site={world.caseMap.site} battle={battle} characters={world.characters ?? {}}
           isDm enabled={available} paused={world.paused} action={action}
           onManageRoll={pendingDice.some(entry=>entry.id===battle.active)?()=>setDmTab('dice'):undefined}/>}
       <section hidden={dmTab!=='queue'} className="gm-pane dm-live-grid">

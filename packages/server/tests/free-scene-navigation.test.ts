@@ -7,10 +7,15 @@ test('DM freely moves the team between v5.5 scenes without granting story facts'
  for(const id of ['dm','a','b'])store.addPlayer('FREE',id);
  act('dm','claimDm');act('a','createCharacter',{profession:'medium'});act('b','createCharacter',{profession:'field_medic'});act('dm','caseStart',{mode:'story'});
  const before=store.checkpoint('FREE').world.case001!;
+ assert.throws(()=>act('a','guided',{command:'phase',target:'D'}));
+ act('dm','guided',{command:'phase',target:'D'});
+ assert.equal(store.snapshot('FREE','a').guided!.scene,'A1');
+ assert.equal(store.snapshot('FREE','a').caseMap!.site,'A');
+ assert.throws(()=>act('dm','guided',{command:'phase',target:'ENDING'}));
  assert.throws(()=>act('a','guided',{command:'scene',target:'E3'}));
  for(const target of ['E3','B4','A1']){
   act('dm','guided',{command:'scene',target});
-  for(const id of ['a','b']){const view=store.snapshot('FREE',id);assert.equal(view.caseMap!.site,target[0]);assert.equal(view.guided!.scene,target);}
+  for(const id of ['a','b']){const view=store.snapshot('FREE',id);assert.equal(view.caseMap!.site,target[0]);assert.equal(view.guided!.scene,target);assert.equal(view.guided!.phase,'D');}
  }
  const after=store.checkpoint('FREE').world.case001!;
  assert.deepEqual(after.evidence,before.evidence);assert.deepEqual(after.v51,before.v51);

@@ -1,0 +1,367 @@
+{
+  "caseId": "CASE002",
+  "tool": "built-in image_gen",
+  "artStyle": "Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark.",
+  "visibility": "DM_ONLY production manifest; not a public snapshot",
+  "runtimeIntegrated": false,
+  "selectedCount": 16,
+  "items": [
+    {
+      "id": "prayun",
+      "kind": "character",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-1a72e594-9dab-49d1-b948-5bc1988144f3.png",
+      "prompt": "Use case: illustration-story. Single game character sprite/cutout. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Full-body Thai man, a worried temple-fair organizer and father around his fifties, natural Thai facial structure, short slightly graying hair, clean shaven, plain faded light-khaki short-sleeve work shirt over dark trousers and worn shoes. A crumpled folded event paper in one hand, other hand open in hesitant explanation. Ordinary civilian, remorse and exhaustion rather than villainy. Three-quarter front standing view, face fully readable, entire head hands and shoes inside frame, centered with generous margin. Real transparent alpha background, no environment, no nameplate, no ground rectangle. No wounds, no weapon, no supernatural features. Portrait orientation.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/characters/prayun.png",
+      "projectPath": "packages/client/src/assets/case-002/characters/prayun.png",
+      "metadata": {
+        "id": "prayun",
+        "selected": true,
+        "width": 1024,
+        "height": 1536,
+        "pixelFormat": "Format32bppArgb",
+        "cornerAlpha": 0,
+        "sourceSHA256": "cd3ebfe34a93e8b5fcb66ccd77a710b8cba64f5fa3c0e9e481e8b0734d7f79ac",
+        "projectSHA256": "cd3ebfe34a93e8b5fcb66ccd77a710b8cba64f5fa3c0e9e481e8b0734d7f79ac",
+        "bytes": 1696869
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "ing",
+      "kind": "character",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-06e6e297-8941-45c9-95be-1dcae3da47d9.png",
+      "prompt": "Use case: illustration-story. Single game character sprite/cutout. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Full-body young adult Thai woman, daughter of temple-fair organizer, early twenties visual design, natural Thai facial structure, straight shoulder-length black hair, modest pale cream volunteer T-shirt with a distinctive small green stitched repair band at left sleeve, plain dark jeans and practical sneakers. Worried yet alert expression, both empty hands visible and open as she seeks help. Ordinary civilian, no weapon. Three-quarter front standing, whole head hands shoes inside frame, generous transparent margin. Real transparent alpha background, no environment, no nameplate, no text on shirt. No blood, no rope, no wounds, no supernatural features, no mask. Portrait orientation.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/characters/ing.png",
+      "projectPath": "packages/client/src/assets/case-002/characters/ing.png",
+      "metadata": {
+        "id": "ing",
+        "selected": true,
+        "width": 1024,
+        "height": 1536,
+        "pixelFormat": "Format32bppArgb",
+        "cornerAlpha": 0,
+        "sourceSHA256": "207f1ec903d51520f7cdefba794aa3d348ae2cb6ba65b9bf2abedfe508a97b1b",
+        "projectSHA256": "207f1ec903d51520f7cdefba794aa3d348ae2cb6ba65b9bf2abedfe508a97b1b",
+        "bytes": 1716910
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "nayrong",
+      "kind": "character",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-bc24a7fb-a734-4558-9cdc-a33ce988084d.png",
+      "prompt": "Use case: illustration-story. Single full-body villain game sprite, transparent alpha. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. A sinister mature Thai travelling-theatre troupe master, the ghost of Khru Singh called Nayrong. Human-proportioned tangible physical body, severe angular Thai face, slicked-back greying black hair, cold knowing theatrical smile, worn dark maroon traditional theatrical jacket with restrained tarnished gold trim, black trousers, dusty stage slippers. Open empty hands as if directing performers; no staff, no weapon, no mask, no supernatural beam, no second form. Three-quarter front stance, whole head hands and feet visible, centered with margin. No background, no ground rectangle, no lettering or nameplate. Ominous rather than gore.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/characters/nayrong.png",
+      "projectPath": "packages/client/src/assets/case-002/characters/nayrong.png",
+      "metadata": {
+        "id": "nayrong",
+        "selected": true,
+        "width": 1024,
+        "height": 1536,
+        "pixelFormat": "Format32bppArgb",
+        "cornerAlpha": 0,
+        "sourceSHA256": "bced43600f781e324761426a1d1aee3b0be2f1097bbed977a34c44a6641b23dc",
+        "projectSHA256": "bced43600f781e324761426a1d1aee3b0be2f1097bbed977a34c44a6641b23dc",
+        "bytes": 1848746
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "masked-performer",
+      "kind": "character",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-6018c19b-9db0-4370-b9b7-5a67be72e715.png",
+      "prompt": "Use case: illustration-story. Single full-body enemy game sprite on true transparent alpha. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Thai theatre masked physical ghost-performer: plain aged WHITE WOODEN MASK with narrow dark eyes and a restrained fixed mouth, neck unnaturally tilted to one side, worn charcoal performance costume, human proportions, dragging a long blunt iron prop bar touching the ground with one hand. Body poised and dangerous but no attack impact, no gore, no victim. The white wooden mask, tilted neck and dragged iron bar must be visually memorable for later illusions. Full standing three-quarter front pose, whole head hands feet bar in frame with generous margin. No background, no name label, no UI, no occult symbols.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/characters/masked-performer.png",
+      "projectPath": "packages/client/src/assets/case-002/characters/masked-performer.png",
+      "metadata": {
+        "id": "masked-performer",
+        "selected": true,
+        "width": 1024,
+        "height": 1536,
+        "pixelFormat": "Format32bppArgb",
+        "cornerAlpha": 0,
+        "sourceSHA256": "4b0f2920d3abe94561bb99e597b15a4c66c820ffc9193c13fb32ad9f3db591e9",
+        "projectSHA256": "4b0f2920d3abe94561bb99e597b15a4c66c820ffc9193c13fb32ad9f3db591e9",
+        "bytes": 2000509
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "appearance-unarmed",
+      "kind": "character",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-73151c5c-8af6-47fe-a6b8-ecbf5a9cf5bf.png",
+      "prompt": "Use case: identity-preserve edit for a game perception sprite. Edit target: the supplied full-body Thai young woman sprite. Create ONLY a perceived-appearance variant: obscure her face behind the same kind of plain aged WHITE WOODEN theatrical mask with narrow dark eye holes and fixed restrained mouth used by a masked performer. This is a visual illusion representation, not a new real enemy. Keep her exact full-body pose, body proportions, dark shoulder-length hair where visible, cream T-shirt with green stitched repair on sleeve, dark jeans, shoes, open empty hands and lack of weapons. No crown, no armor, no monster limbs, no blood, no injury, no rope, no background. Preserve true transparent alpha, full-body framing, hand-painted inked Thai folk-horror game style. No name, no words, no UI.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/characters/appearance-unarmed.png",
+      "projectPath": "packages/client/src/assets/case-002/characters/appearance-unarmed.png",
+      "metadata": {
+        "id": "appearance-unarmed",
+        "selected": true,
+        "width": 1024,
+        "height": 1536,
+        "pixelFormat": "Format32bppArgb",
+        "cornerAlpha": 0,
+        "sourceSHA256": "c77b9f4242d1f6470c9b2a50e6d0213b9da29461383d8416475b538f338224ab",
+        "projectSHA256": "c77b9f4242d1f6470c9b2a50e6d0213b9da29461383d8416475b538f338224ab",
+        "bytes": 1737578
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "festival-entrance",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-5231b8bd-22fa-4d2c-8083-92d2c4e488fa.png",
+      "prompt": "Use case: illustration-story. Wide 16:9 large playable game scene background. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Night at the entrance of a rural Thai temple fair after the seventh night: foreground spacious EMPTY parking area, no cars or motorcycles; beyond an open modest temple-fair gate strings of warm festoon bulbs, muted colorful pennants, lit festival stalls receding into blue night. Plausibly busy-looking lights but absolutely no people, ghosts or visible human silhouettes. Eye-level establishing view, walkable foreground and center path prominent, architecture readable, layered depth, old temple roof visible at a distance. No legible sign writing, no calendar date, no clue close-up, no anchor or boss imagery. Full-bleed environment artwork, not a map or collage.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/festival-entrance.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/festival-entrance.png",
+      "metadata": {
+        "id": "festival-entrance",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "44df6771bf24bd21385810eb28bb538cfcb12f323c133669f25ed53a0b006640",
+        "projectSHA256": "44df6771bf24bd21385810eb28bb538cfcb12f323c133669f25ed53a0b006640",
+        "bytes": 3202045
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "festival-lane",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-da2c1f4a-5e80-4976-b9d1-892f86542c47.png",
+      "prompt": "Use case: illustration-story. Wide 16:9 playable game background. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Inside a rural Thai temple fair at night: a broad dusty walking lane between modest food/game stalls, cloth awnings and bright but slightly uncanny repeating rows of amber bulbs, weathered wooden benches, shuttered prize shelves and plain unmarked serving tables. Thai temple compound with traditional low roofs, not a Western carnival. The aisle is EMPTY: no people, no human silhouettes, no ghosts, no monsters, no victims. Open central walkable space for separate character sprites; inviting festivity with subtle unease, distant old timber performance theatre at end. No readable labels, no plot revelation, no close-up evidence.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/festival-lane.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/festival-lane.png",
+      "metadata": {
+        "id": "festival-lane",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "2e8217d4494bc811466e2f7c810621d2d7df5376a9cdadca4f92b0b50c1ff34b",
+        "projectSHA256": "2e8217d4494bc811466e2f7c810621d2d7df5376a9cdadca4f92b0b50c1ff34b",
+        "bytes": 3136206
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "organizer-office",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-7bc00b0e-cfa6-4b26-bce4-9d4951818867.png",
+      "prompt": "Wide 16:9 Thai horror game environment, Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. A small empty temple-fair organizer office inside an old timber pavilion. Wide view from doorway: simple desk at left with CLOSED paper ledgers and ordinary folders, unmarked pinboard, hanging plain volunteer shirts on wall, rotary wall fan, dusty chairs, open center floor and side passage toward old theatre. Blue moonlight through wooden shutters, dim amber desk bulb. Absolutely no people, no face photographs, no readable writing, no calendar numbers, no visible diary pages that reveal evidence, no ghosts, no weapons, no body. Investigation background, not a clue close-up. Same rustic temple festival as the empty fair lane.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/organizer-office.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/organizer-office.png",
+      "metadata": {
+        "id": "organizer-office",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "d33476aaf86db8eccff91ed296a82b98830f034e79de4f3bd29265824d120ac4",
+        "projectSHA256": "d33476aaf86db8eccff91ed296a82b98830f034e79de4f3bd29265824d120ac4",
+        "bytes": 2668082
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "old-theatre",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-b408a92b-2927-4f89-9d2d-fbe7809e1796.png",
+      "prompt": "Wide 16:9 Thai horror game environment, Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Inside an old timber travelling-theatre hall on a rural Thai temple compound, eye-level wide view from rear of empty audience space facing a low wooden stage with faded dark red curtains. Recently replaced pale floor planks interrupt much darker old boards at stage edge. Plain backstage doors, simple pillar construction, unmarked old paper book on a side shelf, modest dim festoon bulbs and moonlight through gaps. Broad empty foreground for sprites. No people, ghosts, masks with faces visible, no ritual circles or magic glow, no readable text, no boss or captive. Do not show an obvious highlighted solution or anchor.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/old-theatre.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/old-theatre.png",
+      "metadata": {
+        "id": "old-theatre",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "48e9222167e3bea26b326856ebfeb1cb3595177f8d427e3b7b05f29bd6f12f92",
+        "projectSHA256": "48e9222167e3bea26b326856ebfeb1cb3595177f8d427e3b7b05f29bd6f12f92",
+        "bytes": 2712397
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "backstage-fork",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-98d73f5b-ae82-42a7-8d7e-71baf8b9268c.png",
+      "prompt": "Wide 16:9 Thai horror game environment, Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. A believable T-shaped BACKSTAGE FORK inside the same aged Thai timber theatre. Main foreground corridor leads to a central post then branches visibly left toward a prop-storage room and right toward a dressing-room doorway. Low warm work light, cool moonlight through slats, curtain ropes and timber beams, dusty floor with faint everyday scuff marks but no blood. The two paths are open and physically connected; no locked magical gate, no labyrinth, no barricade. No characters, no silhouettes, no ghosts, no readable signs. Open walkable floor and clear entrances, suitable for player-controlled party split.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/backstage-fork.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/backstage-fork.png",
+      "metadata": {
+        "id": "backstage-fork",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "6ffef0ed7242956403f401dd434138d8a46094788c58cf7717ea883ecd436c01",
+        "projectSHA256": "6ffef0ed7242956403f401dd434138d8a46094788c58cf7717ea883ecd436c01",
+        "bytes": 2531458
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "prop-store",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-1f0ae943-8e2c-4755-af6c-56858fe92941.png",
+      "prompt": "Wide 16:9 Thai horror game environment, Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Empty prop-storage room along the left backstage route of the old Thai temple-fair theatre. Stacked wooden scenery flats, rough timber chests, rolled stage cloth, coiled plain rope on a shelf, wheeled prop rack pushed aside leaving a clear route to a rear doorway, small scuffed drag marks along dusty wooden floor. One amber work bulb, thin blue light through slats. A grounded place to inspect traces, not a torture room. No human, no captive, no ghost, no corpse, no blood, no readable clue text, no glowing artifact. Space in foreground and depth to the rear doorway.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/prop-store.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/prop-store.png",
+      "metadata": {
+        "id": "prop-store",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "665aa5952fa0cb05d2175bf008240be34fca47f1ced48298b8e01784192d62e8",
+        "projectSHA256": "665aa5952fa0cb05d2175bf008240be34fca47f1ced48298b8e01784192d62e8",
+        "bytes": 2682764
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "dressing-room",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-2188ccf0-52eb-42b0-b671-4e08e0f35b05.png",
+      "prompt": "Wide 16:9 Thai horror game environment. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Empty old Thai theatre dressing room connected to backstage. Faded mirrors with a few dim amber bulbs, worn wooden dressing table, plain closed archival folders and folded paper stacks, several plain carved wooden theatrical masks hanging on a side rack, dark red costumes on hooks, broad open foreground and doorway. Blue moonlight through slats. Mirrors reflect only the EMPTY room, absolutely no person or face in mirrors. No human photographs, no legible documents, no ghosts, no blood, no magic glow. Investigation atmosphere; do not reveal hidden historical accusations or identify a special anchor.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/dressing-room.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/dressing-room.png",
+      "metadata": {
+        "id": "dressing-room",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "7f0a4f690ef76b7dd5f7c582639f7615058c5690bd2b058fe56ee8785ecdedb6",
+        "projectSHA256": "7f0a4f690ef76b7dd5f7c582639f7615058c5690bd2b058fe56ee8785ecdedb6",
+        "bytes": 2747244
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "central-hall",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-e4a495cc-6573-4efc-af36-945c233726dd.png",
+      "prompt": "Wide 16:9 Thai horror game environment. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. Spacious empty CENTRAL HALL behind an old rural Thai temple-fair theatre, physically connected entrances at left and right with parted dark-red curtains, plain weathered timber floor across the full center, a high slatted wooden wall and practical hanging work bulbs, shallow oblique eye-level view so two groups approaching from opposite doorways could see one another. Clear continuous floor between both entrances, no magical barriers, no mirrors, no traps. No people, no ghost silhouettes, no weapons or bodies, no readable marks. Same theatre architecture, neutral staging for optional mistaken identity encounter.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/central-hall.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/central-hall.png",
+      "metadata": {
+        "id": "central-hall",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "a3cd39fca42b479bb8c429bd64e8a14945f9d65cb273f3aadde277edca2ecf9a",
+        "projectSHA256": "a3cd39fca42b479bb8c429bd64e8a14945f9d65cb273f3aadde277edca2ecf9a",
+        "bytes": 2632993
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "holding-room",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-654b7fbb-aa52-4153-96a7-5a4a1edab1bd.png",
+      "prompt": "Wide 16:9 Thai horror game environment. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. A small EMPTY backstage rest room inside the same Thai timber theatre, seen from just inside the doorway, ordinary wooden chair, faded cloth on a low table, a loose coil of rope placed off to the side rather than binding anyone, old fabric partition and small shuttered window, clear accessible floor and open doorway for rescue. Dim warm work lamp against blue moonlight. No characters, no captive, no injuries, no blood, no corpse, no occult ritual, no locked magical gate. Do not embed a girl or white mask in background. Neutral background usable before and after a real rescue.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/holding-room.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/holding-room.png",
+      "metadata": {
+        "id": "holding-room",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "47eb8c5389381db4d6b71678378593418e4fe807ad8da1cc466f75017e552c6f",
+        "projectSHA256": "47eb8c5389381db4d6b71678378593418e4fe807ad8da1cc466f75017e552c6f",
+        "bytes": 2748083
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "final-stage",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-06181dc2-67de-40d4-92bd-e79995a657e7.png",
+      "prompt": "Wide 16:9 large playable Thai horror game environment. Dark Thai folk-horror game illustration, semi-realistic hand-painted graphic-novel concept art, fine dark ink edges, tactile weathered wood and cloth, muted blue-gray moonlight and dim amber tungsten bulbs, deep blue-green shadows but readable shapes, serious grounded contemporary rural Thai temple festival. Consistent visual set for the Thai investigation TRPG Trust Me It's Ghosts. No text, no lettering, no UI, no logos, no watermark. View from a broad wooden performance floor facing the FRONT of an old rural Thai theatre stage, matching an aged timber hall with faded deep-red curtains, newer pale repair boards near the edge contrasting with darker worn stage timber, small ordinary wooden prop stand beside a side-stage post, plain narrow wooden objects among ordinary props without highlighting any special item. Dim amber festoon and practical lamps, blue night through side doors. Open center floor, accessible wings and visible retreat doorway, suitable for several separate character sprites. No people, no boss, no victim, no ritual circles, no magic glow, no fire, no victory/destruction aftermath, no writing, no visible puzzle answer.",
+      "selected": false,
+      "sourcePath": "assets/source/case-002/scenes/final-stage.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/final-stage.png",
+      "metadata": {
+        "id": "final-stage",
+        "selected": false,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "38be7d1a64c7a05b68afc103a626f485c4faeee966d29e1de517d589fbd789c5",
+        "projectSHA256": "38be7d1a64c7a05b68afc103a626f485c4faeee966d29e1de517d589fbd789c5",
+        "bytes": 2776443
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "final-stage-v2",
+      "kind": "scene",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-6013571c-8336-4f77-9ade-2f27c7eaf7d8.png",
+      "prompt": "Use case: precise-object-edit for a Thai horror game environment. Edit target: this exact empty old timber theatre hall. Create a finale-ready view while LOCKING the camera, architecture, stage dimensions, beams, curtains, floor and left-side stairs of this reference. Change ONLY the stage-edge planks to include a modest patch of newer pale repair timber, and add a small ordinary prop stand in the far right stage wing with plain narrow wooden stage props, not highlighted or glowing. Keep broad empty walking space and the existing visible exit route on the left. Same hand-painted inked texture, amber practical lights, blue night through wood. Do not enlarge or redesign the stage, do not add central stairs, no people, no boss, no victims, no fire, no magic, no text, no ending outcome. Wide 16:9 environment.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/scenes/final-stage-v2.png",
+      "projectPath": "packages/client/src/assets/case-002/scenes/final-stage-v2.png",
+      "metadata": {
+        "id": "final-stage-v2",
+        "selected": true,
+        "width": 1672,
+        "height": 941,
+        "pixelFormat": "Format24bppRgb",
+        "cornerAlpha": 255,
+        "sourceSHA256": "d9f850a5483aa9561f4c31627c2eb7c9bfe14f0681608af884013792ea5bbda9",
+        "projectSHA256": "d9f850a5483aa9561f4c31627c2eb7c9bfe14f0681608af884013792ea5bbda9",
+        "bytes": 2618328
+      },
+      "visuallyReviewed": true
+    },
+    {
+      "id": "fairgoers-clean",
+      "kind": "perception",
+      "generatedPath": "C:\\Users\\Frank\\.codex\\generated_images\\01a1de5a-0023-72b1-b48e-686b260944c3\\exec-c1e6bb75-9edd-411b-94bc-50a9f44a4045.png",
+      "prompt": "Use case: background-extraction. Edit target: supplied illustration. KEEP ONLY the four full-body people, preserving every person's appearance, pose, clothing, scale and amber/blue lighting. REMOVE ALL other pixels: temple, tree, stalls, roofs, lights, flags, all architecture, ground and sky. All background and all space between the four people must be completely transparent alpha. Do not draw any environment or new object. The deliverable is four separate human silhouettes together on one transparent canvas, not a scene. Keep all four pairs of feet inside frame. No lettering or watermark.",
+      "selected": true,
+      "sourcePath": "assets/source/case-002/perceptions/fairgoers-clean.png",
+      "projectPath": "packages/client/src/assets/case-002/perceptions/fairgoers-clean.png",
+      "metadata": {
+        "id": "fairgoers-clean",
+        "selected": true,
+        "width": 1919,
+        "height": 820,
+        "pixelFormat": "Format32bppArgb",
+        "cornerAlpha": 0,
+        "sourceSHA256": "14639cee934a505b7db9bf28340e8683cb6e34c66e0c58143e9ebe1ddd895410",
+        "projectSHA256": "14639cee934a505b7db9bf28340e8683cb6e34c66e0c58143e9ebe1ddd895410",
+        "bytes": 1272776
+      },
+      "visuallyReviewed": true
+    }
+  ]
+}
