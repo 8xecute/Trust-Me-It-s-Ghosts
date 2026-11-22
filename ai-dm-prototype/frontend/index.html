@@ -36,11 +36,11 @@
 
       <hr class="dossier-rule" />
 
-      <form id="join-form" class="join-form">
+      <form id="join-form" class="join-form" autocomplete="off">
         <div class="form-row">
           <div class="form-group">
             <label for="player-name">ชื่อผู้สืบสวน</label>
-            <input id="player-name" type="text" maxlength="24" placeholder="ระบุชื่อผู้เล่น" required />
+            <input id="player-name" name="investigator_alias" type="text" maxlength="24" placeholder="ระบุชื่อผู้เล่น" autocomplete="off" required />
           </div>
           <div class="form-group">
             <label for="room-code">รหัสห้องสืบสวน</label>
@@ -113,7 +113,7 @@
 
       <div class="topbar-right">
         <div class="hud-meta-group">
-          <span id="hud-turn-pill" class="hud-stat">เทิร์น 0/6</span>
+          <span id="hud-turn-pill" class="hud-stat">เทิร์นฉากนี้ 0</span>
           <span class="hud-sep" aria-hidden="true">·</span>
           <span id="hud-quota-pill" class="hud-stat" title="โควตาเสียงพากย์สด Live TTS ของห้องนี้">เสียงสด 0/25</span>
           <span id="hud-api-pill" class="pill pill-warn">กำลังตรวจสอบ API</span>

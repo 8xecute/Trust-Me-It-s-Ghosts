@@ -422,7 +422,7 @@
     $("hud-scene-subtitle").textContent = state.combat?.active
       ? "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย"
       : state.scene_subtitle;
-    $("hud-turn-pill").textContent = `เทิร์น ${state.scene_turn_count}/${state.anti_stall_turn_limit}`;
+    $("hud-turn-pill").textContent = `เทิร์นฉากนี้ ${state.scene_turn_count}`;
     $("hud-quota-pill").textContent = `เสียงสด ${state.live_tts_used}/${state.live_tts_limit}`;
 
     if (!state.combat?.active) {
@@ -1278,6 +1278,13 @@
 
   function setupUIEvents() {
     syncAudioControlsUI();
+    const playerNameInput = $("player-name");
+    if (playerNameInput) {
+      playerNameInput.value = "";
+      window.addEventListener("pageshow", () => {
+        playerNameInput.value = "";
+      });
+    }
 
     $("refresh-rooms-btn")?.addEventListener("click", () => {
       loadActiveRooms();

@@ -187,7 +187,15 @@ def test_anti_stall_sanity_drop_and_automated_endings() -> None:
     assert last_outcome is not None
     queued_ids = [ev["dialogue_id"] for ev in last_outcome["queued_events"]]
     assert "a1_antistall_hint" in queued_ids
-    assert "a2_radio_voice" in queued_ids
+    # Anti-stall now only gives a gentle hint and does NOT force scene transition
+    assert room.current_scene == "A1"
+    assert player.sanity == 10
+
+    # Player explicitly chooses to open the folder by the van -> transitions to A2 & plays eerie radio
+    move_a2 = DMDecision(mode="script", character="DM", selected_audio_id="a1_open_folder_to_a2")
+    a2_outcome = mgr.validate_and_apply_decision(room, move_a2, "พลอย")
+    a2_queued_ids = [ev["dialogue_id"] for ev in a2_outcome["queued_events"]]
+    assert "a2_radio_voice" in a2_queued_ids
     assert room.current_scene == "A2"
     assert player.sanity == 9  # -1 Sanity from hearing the eerie radio voice
 

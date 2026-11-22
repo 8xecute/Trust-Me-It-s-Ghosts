@@ -438,7 +438,7 @@
       "unlocks": {
         "clues": ["headman_files_exist"],
         "items": [],
-        "next_scene": "A2",
+        "next_scene": null,
         "trust_delta": {}
       }
     },
@@ -680,7 +680,7 @@
       "unlocks": {
         "clues": ["location_headman_house"],
         "items": [],
-        "next_scene": "A3",
+        "next_scene": null,
         "trust_delta": {}
       }
     },

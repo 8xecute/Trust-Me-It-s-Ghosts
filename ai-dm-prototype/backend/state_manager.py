@@ -1277,7 +1277,7 @@ class RoomManager:
         ):
             stall_entry = self.repo.get_dialogue(anti_stall_id)
             if stall_entry:
-                stall_next_scene = self._apply_dialogue_unlocks(room, stall_entry)
+                self._apply_dialogue_unlocks(room, stall_entry)
                 self.append_log(room, stall_entry["speaker"], stall_entry["text"], kind="hint")
                 queued_events.append(
                     self._build_audio_payload(
@@ -1287,8 +1287,6 @@ class RoomManager:
                         mode="script",
                     )
                 )
-                if stall_next_scene:
-                    queued_events.extend(self._advance_scene(room, stall_next_scene))
 
         if not was_ended and room.ending_triggered:
             ending_cfg = self.repo.get_ending(room.ending_triggered)
