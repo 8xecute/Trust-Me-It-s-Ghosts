@@ -1,0 +1,1055 @@
+{
+  "voice_profiles": {
+    "DM": {
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม ลึกลับ ชวนขนลุก พูดจังหวะชัดถ้อยชัดคำและเว้นจังหวะอย่างมีอารมณ์"
+    },
+    "ประเสริฐ": {
+      "voice": "Fenrir",
+      "style": "เสียงชายไทยวัยกลางคน ผู้ใหญ่บ้านที่พยายามคุมสติแต่มีน้ำเสียงเคร่งเครียด เกร็ง และเหนื่อยล้า"
+    },
+    "เสียงวิทยุ": {
+      "voice": "Aoede",
+      "style": "เสียงผู้หญิงสั่นเครือ ขาดห้วง เหนื่อยหอบคล้ายคนกำลังสำลักน้ำ มีความหวาดกลัวและสิ้นหวัง"
+    },
+    "ผีเงาจมน้ำ": {
+      "voice": "Aoede",
+      "style": "เสียงกระซิบเย็นเยียบ แหบพร่า ปนเสียงสำลักน้ำ น่าสะพรึงกลัว"
+    }
+  },
+  "dialogues": [
+    {
+      "id": "a1_intro_dm",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม ลึกลับ ชวนขนลุก พูดช้าชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "บทเปิดฉาก A1 เมื่อทีมเดินทางมาถึงศาลาริมทางบ้านหนองตาล"
+      },
+      "text": "รถตู้บริษัทเลี้ยวผ่านป้าย บ้านหนองตาล แสงไฟหน้ารถกวาดไปตามบ้านที่ปิดเงียบ หลายหลังมีถุงและกล่องสัมภาระวางอยู่หน้าชาน แต่ไม่มีใครออกมาดู ใต้ศาลาริมทาง ชายวัยกลางคนยืนถือไฟฉายกับแฟ้มกระดาษ เมื่อเห็นรถบริษัท เขารีบเดินเข้ามาหา ก่อนหันกลับไปมองแนวสวนกล้วยมืด ๆ อีกครั้ง",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_prasert_greet",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน เคร่งเครียด รีบร้อนแต่พยายามสุภาพ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ประเสริฐแนะนำตัวและแจ้งชื่อคนหายทั้ง 3 คน"
+      },
+      "text": "ผมประเสริฐ ผู้ใหญ่บ้านครับ ขอบคุณที่รับงานนี้ คนหายไปสามคนแล้ว... ดล นิด แล้วก็เพิ่ม หายกันคนละคืน ผมอยากให้พวกคุณช่วยพากลับบ้านให้ได้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["missing_names"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_order",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ตอบตรงประเด็น แต่น้ำเสียงหนักใจ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าคนหายมีใครบ้าง ลำดับการหายตัว ใครหายก่อนหลัง"
+      },
+      "text": "ดลหายก่อนครับ แล้วก็นิด ตามด้วยเพิ่ม หายกันคนละคืนเลย",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["missing_names"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_location",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน จริงจัง ชี้ทางไปทางสวนและบ้านผู้ใหญ่",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าแต่ละคนหายตรงไหน แถวไหน หรือขอดูแฟ้มรายละเอียดเพิ่ม"
+      },
+      "text": "เท่าที่มีคนเล่ากันก็แถวทางสวนกล้วยครับ แต่จุดที่เห็นแต่ละคนเป็นครั้งสุดท้ายต้องดูในแฟ้มที่บ้านผมอีกที",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["banana_grove_area", "headman_files_exist"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_police",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ตอบเรียบ ๆ เหมือนเล่าข้อเท็จจริง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามเรื่องตำรวจ ตำรวจค้นหาไปถึงไหนแล้ว แจ้งความหรือยัง"
+      },
+      "text": "เขารับแจ้งแล้วครับ เข้าไปตรวจทางสวนมาบ้าง แต่ที่มันกว้างยังตรวจไม่ทั่ว และยังไม่เจอเบาะแสพอจะชี้ว่าต้องไปทางไหน ตำรวจก็ตามเรื่องต่ออยู่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_why_company",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน กังวลใจกับความกลัวของชาวบ้าน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าทำไมต้องจ้างบริษัทล่าผี ทั้งที่มีตำรวจอยู่แล้ว"
+      },
+      "text": "ตำรวจเขาก็ตามเรื่องอยู่ครับ แต่ยังหาคนไม่เจอ ชาวบ้านเริ่มกลัวกันหนัก ผมเลยอยากให้พวกคุณช่วยตรวจเรื่องแปลก ๆ แถวสวนอีกทาง",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_fee",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ตอบสั้น ๆ สุภาพ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามเรื่องค่าจ้าง เงินค่าตอบแทน หรือบริษัทรับงานแล้วใช่ไหม"
+      },
+      "text": "เรื่องค่าใช้จ่าย ผมตกลงกับทางบริษัทไว้ก่อนพวกคุณเดินทางมาแล้วครับ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_green_lady",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ชะงักเล็กน้อย กดเสียงต่ำอย่างระมัดระวัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ใช้เฉพาะเมื่อผู้เล่นถามถึง ผู้หญิงชุดเขียว หรือ แก้ว โดยตรงเท่านั้น"
+      },
+      "text": "มีคนเล่าให้ผมฟังอยู่ครับ... พอพูดถึงผู้หญิงชุดเขียว ผมก็นึกถึงแก้ว แต่เธอตายไปนานแล้ว ผมยังบอกไม่ได้ว่าเรื่องนี้เกี่ยวกับเธอไหม",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["kaew_mention"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_qa_hiding_secret",
+      "scene": "A1",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน อึดอัดใจและพยายามตัดบทกลับไปเรื่องช่วยคนหาย",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นกดดันหรือถามว่าประเสริฐปิดบังเรื่องเก่าหรือมีพิรุธ"
+      },
+      "text": "ผมรู้ว่าที่นี่มีเรื่องให้สงสัยเยอะ... แต่ตอนนี้ผมอยากให้ช่วยตามคนทั้งสามก่อนครับ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {"ประเสริฐ": -1}
+      }
+    },
+    {
+      "id": "a1_inspect_report_free",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นขอดูหรือรับสำเนาใบรับแจ้งคนหายจากประเสริฐ"
+      },
+      "text": "ประเสริฐยื่นสำเนาใบรับแจ้งความให้คุณดู ในกระดาษระบุรายชื่อ ดล นิด และเพิ่ม พร้อมเวลาที่พบครั้งสุดท้ายคร่าว ๆ แต่แผนที่และแฟ้มรายละเอียดเพิ่มเติมยังเก็บอยู่ที่บ้านผู้ใหญ่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["missing_names", "headman_files_exist"],
+        "items": ["missing_report_copy"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_open_folder_to_a2",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนระทึก เตรียมเข้าสู่เหตุการณ์วิทยุ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นขอเปิดแฟ้มดูตรงศาลา ขอไปบ้านผู้ใหญ่ หรือพร้อมเคลื่อนเข้าฉากวิทยุ A2"
+      },
+      "text": "ขณะที่ประเสริฐกำลังคลี่แฟ้มในมือให้ดูใกล้แสงไฟจากรถตู้ซึ่งประตูข้างยังเปิดค้างอยู่ จู่ ๆ ก็มีเสียงซ่าดังลอดออกมาจากวิทยุสื่อสารในรถ!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["headman_files_exist"],
+        "items": [],
+        "next_scene": "A2",
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_check_per_full",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ จับสังเกตละเอียด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A1_PER_OBSERVE สำเร็จเต็ม"
+      },
+      "text": "สายตาของคุณกวาดมองรอบศาลา ข้าวของหน้าบ้านหลายหลังถูกมัดเตรียมไว้เหมือนคนพร้อมจะย้ายหนีได้ทุกเมื่อ ส่วนประเสริฐมักหลบตาทุกครั้งที่พูดถึงแนวสวนกล้วย คล้ายเขากังวลบางอย่างมากกว่าที่เล่า",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["prasert_nervous_clue"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_check_per_partial",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A1_PER_OBSERVE สำเร็จบางส่วน"
+      },
+      "text": "หมู่บ้านเงียบผิดปกติสำหรับเวลาหัวค่ำ ชาวบ้านปิดหน้าต่างสนิทแทบทุกหลัง ประเสริฐเองก็ดูเคร่งเครียดและเร่งรีบ แต่คุณยังจับไม่ได้ว่าเขาหลบเลี่ยงเรื่องใดอยู่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_check_per_fail",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เรียบนิ่ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A1_PER_OBSERVE ล้มเหลว"
+      },
+      "text": "ใต้แสงไฟหน้ารถที่สาดผ่านม่านฝน คุณเห็นเพียงผู้ใหญ่บ้านที่ยืนกังวลและหมู่บ้านที่เงียบสงัด ยังไม่พบพิรุธใดที่ยืนยันได้ชัด",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_check_int_full",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A1_INT_FILES สำเร็จเต็ม"
+      },
+      "text": "คุณไล่ตรวจวันที่ในสำเนาใบรับแจ้งอย่างละเอียด พบว่าทั้งสามคนหายไปห่างกันคืนละหนึ่งวันตามลำดับ และช่องบันทึกตำแหน่งสุดท้ายยังเว้นรายละเอียดสำคัญไว้ ซึ่งตรงกับที่ต้องไปตรวจในแฟ้มที่บ้านผู้ใหญ่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["report_timeline_gap", "headman_files_exist"],
+        "items": ["missing_report_copy"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_check_int_partial",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A1_INT_FILES สำเร็จบางส่วน"
+      },
+      "text": "เอกสารเป็นสำเนาใบรับแจ้งจริง มีชื่อ ดล นิด และเพิ่มครบถ้วน แต่ข้อมูลพิกัดละเอียดและแผนที่ไม่ได้แนบมากับใบนี้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["headman_files_exist"],
+        "items": ["missing_report_copy"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_check_int_fail",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เรียบนิ่ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A1_INT_FILES ล้มเหลว"
+      },
+      "text": "ตัวหนังสือในสำเนาเลอะน้ำฝนบางส่วน ทำให้คุณอ่านได้แค่รายชื่อคนหายทั้งสามและข้อมูลเบื้องต้นเหมือนที่ประเสริฐเล่า",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": ["missing_report_copy"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a1_antistall_hint",
+      "scene": "A1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เร่งเร้าจังหวะเรื่องอย่างระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "Anti-stall สำหรับฉาก A1 เมื่อคุยยืดเยื้อเกินกำหนด"
+      },
+      "text": "ประเสริฐเหลือบมองนาฬิกาก่อนรีบคลี่แฟ้มข้างประตูรถตู้ที่ยังเปิดค้างไว้... ทันใดนั้น วิทยุสื่อสารในรถก็ส่งเสียงซ่าดังแทรกความเงียบขึ้นมาเอง!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["headman_files_exist"],
+        "items": [],
+        "next_scene": "A2",
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_radio_dm_intro",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ กดดัน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "บทนำฉาก A2 เสียงซ่าและเสียงน้ำไหลเชี่ยวจากวิทยุรถตู้"
+      },
+      "text": "เสียงซ่าดังลอดออกมาจากวิทยุสื่อสารในรถตู้ ประตูข้างรถที่เปิดค้างอยู่ทำให้ทุกคนที่ศาลาได้ยินชัด ทั้งที่ไม่มีใครแตะเครื่อง เสียงน้ำไหลเชี่ยวดังกลบคลื่นวิทยุ ก่อนจะมีเสียงผู้หญิงพูดขาดห้วง เหมือนกำลังสำลักน้ำ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_radio_voice",
+      "scene": "A2",
+      "speaker": "เสียงวิทยุ",
+      "voice": "Aoede",
+      "style": "เสียงผู้หญิงสั่นเครือ ขาดห้วง เหนื่อยหอบคล้ายสำลักน้ำ มีเสียงสะท้อนหลอน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เสียงผู้หญิงจากวิทยุสื่อสารพูดขาดห้วง"
+      },
+      "text": "น้ำ... น้ำมาแล้ว... ข้าจะช่วยเอ็ง... ดึงมือข้าไว้...! ...ยังมีคนอยู่...",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["radio_still_alive"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_prasert_shock",
+      "scene": "A2",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ตกใจ เสียงสั่นเล็กน้อย",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ปฏิกิริยาของประเสริฐหลังได้ยินเสียงวิทยุ"
+      },
+      "text": "เมื่อกี้... พวกคุณได้ยินเหมือนผมใช่ไหมครับ? ผมไม่รู้ว่ามันมาได้ยังไง",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_qa_replay_static",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นลองเปิดไฟล์บันทึกย้อนหลัง ฟังซ้ำ หรือกดตรวจเครื่องวิทยุธรรมดา"
+      },
+      "text": "เมื่อลองเปิดบันทึกย้อนหลังหรือตรวจเครื่องวิทยุธรรมดา กลับได้ยินเพียงเสียงซ่าเท่านั้น ไม่มีเสียงพูดติดไว้ในเทปเลย แม้ทุกคนที่ยืนอยู่ข้างรถจะได้ยินชัดเจนเหมือนกันก็ตาม",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["radio_no_recording"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_qa_whose_voice",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าเป็นเสียงใคร หรือถามว่าวิทยุพูดว่าอะไร"
+      },
+      "text": "ในเสียงน้ำเชี่ยวและเสียงไอสำลัก ทุกคนได้ยินคำว่า น้ำมาแล้ว ข้าจะช่วยเอ็ง และคำว่า ยังมีคนอยู่ แต่ตอนนี้ยังบอกไม่ได้ว่าเป็นเสียงใครหรือส่งมาจากทิศไหน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_qa_radio_origin",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าเสียงดังมาจากไหน ข้างนอกรถหรือในวิทยุ"
+      },
+      "text": "เสียงดังลอดออกมาจากลำโพงวิทยุสื่อสารในรถตู้โดยตรง ทั้งที่ไม่มีใครกดปุ่มรับสัญญาณ แต่ยังไม่ทราบต้นกำเนิดของคลื่นเสียงนั้น",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_check_spi_full",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ขนลุก เยือกเย็น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A2_RADIO_ECHO สำเร็จเต็ม"
+      },
+      "text": "คลื่นเย็นวาบไหลผ่านปลายนิ้ว ภาพผิวน้ำเชี่ยวซ้อนขึ้นมาแวบเดียว คุณแยกได้ว่าเสียงนี้เป็นร่องรอยความทรงจำที่ถูกรบกวน ไม่ใช่ผู้พูดผ่านวิทยุสด ๆ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["radio_memory_echo"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_check_spi_partial",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A2_RADIO_ECHO สำเร็จบางส่วน"
+      },
+      "text": "เสียงซ่าเบาลงวูบหนึ่ง มือที่จับวิทยุเย็นชาจนต้องคลายออก มีลมชื้นเย็นลอดผ่านซอกนิ้ว ทั้งที่กระจกรถยังปิดสนิท คุณจับที่มาของเสียงนั้นไม่ได้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["radio_supernatural_chill"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_check_spi_fail",
+      "scene": "A2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เรียบนิ่ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย A2_RADIO_ECHO ล้มเหลว"
+      },
+      "text": "คุณปรับคลื่นและตั้งใจฟังซ้ำ แต่สัญญาณหายไปแล้ว ไม่มีอะไรยืนยันได้มากกว่าที่ทุกคนได้ยิน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_move_to_a3",
+      "scene": "A2",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน เร่งเร้าให้เดินทางต่อ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นตรวจวิทยุเสร็จแล้ว และชวนกันไปดูแฟ้มต่อที่บ้านผู้ใหญ่"
+      },
+      "text": "ไปดูข้อมูลที่บ้านผมกันก่อนเถอะครับ ขืนยืนอยู่ตรงนี้อาจไม่ช่วยอะไร แฟ้มกับแผนที่รออยู่ที่บ้านแล้ว",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["location_headman_house"],
+        "items": [],
+        "next_scene": "A3",
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a2_antistall_hint",
+      "scene": "A2",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน เร่งชวนออกเดินทาง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "Anti-stall สำหรับฉาก A2 เมื่ออยู่ในเหตุการณ์วิทยุนานเกินกำหนด"
+      },
+      "text": "ไฟสถานะวิทยุกลับมานิ่งสนิทแล้ว ประเสริฐรีบชี้ไปยังถนนด้านใน... ไปดูแฟ้มกับแผนที่ที่บ้านผมกันเถอะครับ จะได้รู้ว่าควรเริ่มตามจากตรงไหน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["location_headman_house"],
+        "items": [],
+        "next_scene": "A3",
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_intro_prasert",
+      "scene": "A3",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ชี้ทางด้วยความกังวล",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "บทเปิดฉาก A3 ประเสริฐชี้ไปบ้านไม้ที่เปิดไฟอยู่"
+      },
+      "text": "บ้านผมอยู่ทางนั้นครับ แฟ้มคนหายกับแผนที่อยู่ที่บ้าน ไปดูกันก่อน จะได้รู้ว่าเราควรเริ่มตามจากตรงไหน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["location_headman_house"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_qa_who_waiting",
+      "scene": "A3",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน อธิบายชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าใครรออยู่ที่บ้าน หรือจะได้คุยกับใครบ้าง"
+      },
+      "text": "มีวิชัย ผู้ช่วยผม เขาช่วยเตรียมแผนที่อยู่ ส่วนต้นเป็นอาสาที่เคยเห็นคนเข้าออกแถวทางสวน ผมเรียกเขามาคุยกับพวกคุณครับ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["witnesses_at_house"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_qa_why_not_grove",
+      "scene": "A3",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน เตือนด้วยเหตุผล",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นขอให้พาเข้าสวนเลย หรือถามว่าทำไมไม่เข้าสวนตอนนี้"
+      },
+      "text": "ผมไม่ได้ห้ามพวกคุณทำงานนะครับ แต่สวนมันมีหลายทาง ผมอยากให้ดูแผนที่กับฟังคนที่เห็นเหตุการณ์ก่อน จะได้ไม่ต้องเดินเดาสุ่ม",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_qa_why_wichai_knows",
+      "scene": "A3",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ตอบเรียบ ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าวิชัยรู้ได้อย่างไรว่าบริษัทกำลังมา"
+      },
+      "text": "ผมแจ้งให้วิชัยช่วยเตรียมแฟ้มกับแผนที่ไว้ครับ เขาเป็นผู้ช่วยผม ก็เลยรู้ว่าพวกคุณจะมา",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_antistall_hint",
+      "scene": "A3",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน กวักมือเรียกเข้าไปในบ้าน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "Anti-stall สำหรับฉาก A3 เรียกทีมเข้าบ้านผู้ใหญ่"
+      },
+      "text": "ฝนเริ่มหนักขึ้นแล้วครับ แสงตะเกียงในบ้านผมเปิดรออยู่ เข้าไปดูแฟ้มกับแผนที่ข้างในกันเลยดีกว่าครับ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["location_headman_house"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_ending_true",
+      "scene": "A3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนติดตาม เหมือนปิดบทนำอย่างน่าขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "จบ ACT A สำเร็จเมื่อทีมเดินเข้าสู่บ้านผู้ใหญ่บ้านเพื่อตรวจแฟ้ม"
+      },
+      "text": "ประเสริฐเดินนำทีมไปตามถนนเงียบ ๆ ถึงบ้านไม้ที่ยังเปิดไฟอยู่ ภายในมีแสงตะเกียงจากห้องรับแขกและเสียงขยับกระดาษเบา ๆ เหมือนมีใครกำลังรอฟังอยู่... จบบทนำ ACT A เตรียมก้าวเข้าสู่บ้านผู้ใหญ่ใน ACT B",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["location_headman_house"],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "a3_ending_bad",
+      "scene": "A3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สยองขวัญ กดดัน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "จบแบบ Bad Ending ของ ACT A เมื่อทีมฝืนเดินเข้าสวนกล้วยมืดโดยไม่มีแผนที่"
+      },
+      "text": "ทางดินหน้าสวนแยกไปหลายทาง ใต้แสงไฟฉาย แนวต้นกล้วยเรียงต่อกันจนดูคล้ายกันไปหมด ไม่มีป้ายหรือร่องรอยไหนบอกชัดว่าควรตามทางใดต่อ เสียงน้ำไหลเชี่ยวปริศนาเริ่มดังล้อมเข้ามาในความมืด... ทีมสืบสวนหลงทางกลางสวนกล้วยโดยขาดแผนที่และข้อมูลพยาน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "filler_dm_think",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สั้น ๆ ลึกลับ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับ DM"
+      },
+      "text": "อืม... ลองดูบรรยากาศรอบตัวให้ดีนะครับ...",
+      "is_filler": true,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "filler_prasert_hmm",
+      "scene": "*",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ครุ่นคิดสั้น ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับประเสริฐตอนนึกคำตอบ"
+      },
+      "text": "เอ่อ... ขอผมนึกดูสักครู่นะครับ...",
+      "is_filler": true,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "filler_prasert_hesitate",
+      "scene": "*",
+      "speaker": "ประเสริฐ",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยกลางคน ลังเล อ้ำอึ้งสั้น ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับประเสริฐตอนอึกอัก"
+      },
+      "text": "คือ... เรื่องนั้น...",
+      "is_filler": true,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "filler_radio_static",
+      "scene": "*",
+      "speaker": "เสียงวิทยุ",
+      "voice": "Aoede",
+      "style": "เสียงกระซิบแผ่วเบาแทรกคลื่นวิทยุ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับเสียงวิทยุ"
+      },
+      "text": "ซ่า... ฟังให้ดี...",
+      "is_filler": true,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "combat_drowned_intro",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตื่นเต้น กดดัน และสยองขวัญ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เปิดฉากต่อสู้กับผีเงาจมน้ำบริเวณปากทางสวนกล้วย"
+      },
+      "text": "เสียงน้ำไหลเชี่ยวโอบล้อมดงกล้วย เงาดำเปียกโชกผุดขึ้นจากแอ่งโคลน! กลิ่นดินโคลนเน่าคละคลุ้งพร้อมเสียงสำลักน้ำที่คุ้นเคย ทุกคนเตรียมตั้งหลักรับมือ!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ghost_move_wet_claw",
+      "scene": "COMBAT",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Aoede",
+      "style": "เสียงกระซิบเย็นเยียบ แหบพร่า เกรี้ยวกราด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผีเงาจมน้ำใช้ท่าเล็บเปียกน้ำ"
+      },
+      "text": "อย่าหนี... เข้ามาในน้ำด้วยกัน...!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ghost_move_underfloor_hand",
+      "scene": "COMBAT",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Aoede",
+      "style": "เสียงกระซิบเย็นเยียบ ปนเสียงโคลนขยับและเสียงหัวเราะเบา ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผีเงาจมน้ำใช้ท่ามือจากใต้พื้น"
+      },
+      "text": "ขาของเจ้า... จมลงมาในโคลนเสียเถอะ...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ghost_move_drowned_whisper",
+      "scene": "COMBAT",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Aoede",
+      "style": "เสียงสำลักน้ำกระซิบข้างหู น่าขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผีเงาจมน้ำใช้ท่าเสียงเรียกจากคราบน้ำ"
+      },
+      "text": "อยู่เป็นเพื่อนข้า... น้ำท่วมแล้ว... ไม่มีใครรอดหรอก...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "combat_win_disperse",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ โล่งอกแต่ยังคงความขลัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมขับไล่ผีเงาจมน้ำได้สำเร็จ"
+      },
+      "text": "แสงและแรงปะทะทำให้เงาเปียกโชกสลายกลายเป็นละอองน้ำ ทีมสืบสวนรอดจากปากทางสวนกล้วยและมุ่งหน้ากลับสู่บ้านผู้ใหญ่ได้สำเร็จ!",
+      "is_filler": false,
+      "unlocks": { "clues": ["location_headman_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "combat_win_soothe",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สงบ เยือกเย็น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมปลอบประโลมผีเงาจมน้ำสำเร็จ"
+      },
+      "text": "เสียงปลอบโยนทำให้คลื่นอาฆาตสงบลงชั่วคราว เงาจมน้ำค่อย ๆ จางหายไปในความมืด ทีมสืบสวนปลอดภัยและพร้อมเข้าบ้านผู้ใหญ่!",
+      "is_filler": false,
+      "unlocks": { "clues": ["location_headman_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "combat_escape",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ กระชับ ตื่นเต้น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมคุ้มกันถอยรอดออกจากสวนกล้วยสำเร็จ"
+      },
+      "text": "ทีมช่วยกันเปิดทางถอยกลับออกมาถึงแนวถนนอย่างหวุดหวิด ประเสริฐรีบกวักมือเรียกให้เข้าไปดูแฟ้มในบ้านผู้ใหญ่ทันที",
+      "is_filler": false,
+      "unlocks": { "clues": ["location_headman_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "combat_defeat_bad",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สยองขวัญ กดดัน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมพ่ายแพ้ในการปะทะกับผีเงาจมน้ำ"
+      },
+      "text": "ทีมสืบสวนอ่อนแรงและเสียขวัญท่ามกลางดงกล้วยมืดมิด เสียงน้ำไหลโอบล้อมจนต้องถอยร่นออกมาตั้งหลักใหม่...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "filler_ghost_choke",
+      "scene": "*",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Aoede",
+      "style": "เสียงสำลักน้ำเย็นเยียบสั้น ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับผีเงาจมน้ำ"
+      },
+      "text": "แฮ่ก... น้ำ... เย็น...",
+      "is_filler": true,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CASE 001: เสียงร้องจากสวนกล้วย — AI Game Master</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- LOBBY SCREEN -->
+  <main id="lobby-screen" class="lobby-screen">
+    <div class="lobby-backdrop" aria-hidden="true"></div>
+    <div class="lobby-vignette" aria-hidden="true"></div>
+
+    <div class="lobby-card">
+      <div class="dossier-header">
+        <div class="lobby-badge">TABLETOP HORROR TRPG • AUTOMATED AI DM</div>
+        <div class="dossier-header-right">
+          <div id="lobby-server-status" class="pill pill-warn">กำลังเชื่อมต่อเซิร์ฟเวอร์...</div>
+          <div class="confidential-stamp">แฟ้มคดีลับ • หมายเลข 001</div>
+        </div>
+      </div>
+
+      <h1 class="lobby-title">เสียงร้องจากสวนกล้วย</h1>
+      <p class="lobby-subtitle">
+        บ้านหนองตาล พ.ศ. 2534 — ช่วงเปิดคดี ACT A (ศาลาริมทาง · รถตู้บริษัท · บ้านผู้ใหญ่บ้าน)<br />
+        คุยแผนกับทีมผ่าน Discord แล้วกด Push-to-Talk ส่งคำพูดให้ AI DM • ห้ามเลือกอาชีพซ้ำในห้องเดียวกัน
+      </p>
+
+      <div class="brass-divider" aria-hidden="true"><span>✦</span></div>
+
+      <form id="join-form" class="join-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="player-name">ชื่อผู้สืบสวน</label>
+            <input id="player-name" type="text" maxlength="24" placeholder="เช่น ต้น, พลอย, หมอ" required />
+          </div>
+          <div class="form-group">
+            <label for="room-code">รหัสแฟ้มห้อง (Room Code)</label>
+            <div class="room-input-wrap">
+              <input id="room-code" type="text" maxlength="16" value="BANANA01" required />
+              <button type="button" id="random-room-btn" class="btn btn-ghost">สุ่มรหัส</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="active-rooms-section" class="active-rooms-section">
+          <div class="active-rooms-header">
+            <span>ห้องสืบสวนที่เปิดอยู่ตอนนี้ (คลิกเพื่อเลือกห้อง)</span>
+            <button type="button" id="refresh-rooms-btn" class="btn btn-ghost btn-sm">รีเฟรชรายชื่อห้อง</button>
+          </div>
+          <div id="active-rooms-list" class="active-rooms-list">
+            <div class="active-rooms-empty">กำลังโหลดรายชื่อห้อง...</div>
+          </div>
+        </div>
+
+        <div id="reconnect-banner" class="reconnect-banner hidden">
+          ✦ พบข้อมูลตัวละครเดิมของคุณในห้องนี้ — หากเข้าห้องด้วยชื่อเดิม ระบบจะเชื่อมต่อกลับตัวละครเดิมให้อัตโนมัติ
+        </div>
+
+        <div class="role-section">
+          <div class="role-section-header">
+            <span>เลือกแฟ้มประวัตินักสืบ (1 อาชีพต่อ 1 คน)</span>
+            <span class="role-hint">พลังชีวิต 15 · สติ 10 · โฟกัส 4 + ท่าประจำอาชีพ</span>
+          </div>
+          <details class="stat-legend">
+            <summary>? คำอธิบายค่าสถานะทั้ง 6 ค่าและค่าพลัง</summary>
+            <div class="stat-legend-grid">
+              <div><b>BODY (ร่างกาย):</b> โจมตีกายภาพ &amp; ป้องกันแรงปะทะ (PDEF)</div>
+              <div><b>PER (การสังเกต):</b> สังเกตพิรุธ จับรายละเอียดในฉาก (ทอย PER ใน A1)</div>
+              <div><b>INT (เชาวน์ปัญญา):</b> วิเคราะห์เอกสาร เชื่อมโยงหลักฐาน (ทอย INT ใน A1)</div>
+              <div><b>SOC (การเข้าสังคม):</b> เจรจา ซักถามพยาน และกล่อมวิญญาณ</div>
+              <div><b>SPI (จิตวิญญาณ):</b> สัมผัสคลื่นผี (ทอย SPI ใน A2) กล่อม/ต้านพลังหลอน (MDEF)</div>
+              <div><b>RES (ความต้านทาน):</b> ต้านทานดาเมจทั้งทางร่างกายและจิตใจ</div>
+              <div><b>พลังชีวิต (HP):</b> เต็ม 15 — หากเหลือ 0 จะหมดสติในฉากต่อสู้</div>
+              <div><b>สติ (Sanity):</b> เต็ม 10 — ลดลงจากเหตุสยอง/เสียงหลอน เหลือ 0 จะเสียขวัญ</div>
+              <div><b>โฟกัส (Focus):</b> เต็ม 4 — ใช้จ่าย 1 แต้มเพื่อปล่อยท่าประจำอาชีพ</div>
+            </div>
+          </details>
+          <div id="role-grid" class="role-grid">
+            <div class="role-loading">กำลังเปิดแฟ้มประวัตินักสืบ...</div>
+          </div>
+        </div>
+
+        <button type="submit" id="join-btn" class="btn btn-primary btn-lg">
+          เปิดแฟ้มคดี เข้าห้องสืบสวนและเปิดเสียง
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="game-screen hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="room-pill">
+          <span class="room-tag">คดี:</span>
+          <strong id="hud-room-code">BANANA01</strong>
+          <button id="copy-room-btn" class="icon-mini-btn" title="คัดลอกรหัสห้อง">คัดลอก</button>
+        </div>
+        <div class="scene-meta">
+          <div id="hud-scene-title" class="scene-title">A1: ศาลาริมทาง ทางเข้าบ้านหนองตาล</div>
+          <div id="hud-scene-subtitle" class="scene-subtitle">พบผู้ใหญ่ประเสริฐเพื่อสอบถามข้อมูลเบื้องต้น</div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div id="hud-turn-pill" class="pill pill-neutral">เทิร์นฉากนี้: 0/6</div>
+        <div id="hud-quota-pill" class="pill pill-neutral" title="โควตาเสียงพากย์สด Live TTS ของห้องนี้">เสียงสด: 0/25</div>
+        <div id="hud-api-pill" class="pill pill-warn">กำลังตรวจสอบ API...</div>
+        <div class="vol-control" title="ปรับความดังเสียงพากย์">
+          <button id="voice-mute-btn" class="vol-btn" type="button">🔊 พูด</button>
+          <input id="voice-vol-slider" class="vol-slider" type="range" min="0" max="100" value="100" aria-label="ระดับเสียงพากย์" />
+        </div>
+        <div class="vol-control" title="ปรับความดังเสียงฝนและเอฟเฟกต์">
+          <button id="ambient-mute-btn" class="vol-btn" type="button">🌧 ฝน/SFX</button>
+          <input id="ambient-vol-slider" class="vol-slider" type="range" min="0" max="100" value="70" aria-label="ระดับเสียงฝนและเอฟเฟกต์" />
+        </div>
+        <button id="demo-combat-btn" class="btn btn-danger-ghost btn-sm" title="กระโดดเข้าฉากทดสอบสู้ผีเงาจมน้ำ">⚔ ทดสอบฉากต่อสู้</button>
+        <button id="reset-room-btn" class="btn btn-ghost btn-sm" title="เริ่มเล่นช่วง ACT A ใหม่">เริ่มคดีใหม่</button>
+      </div>
+    </header>
+
+    <div class="workspace-grid">
+      <!-- CENTER TABLETOP STAGE -->
+      <section class="stage-column">
+        <div class="stage-tabs">
+          <button class="stage-tab active" data-view="scene">✦ ฉากเหตุการณ์ 2D</button>
+          <button class="stage-tab" data-view="board">⌖ กระดานแผนที่บ้านหนองตาล</button>
+        </div>
+
+        <div class="stage-viewport">
+          <!-- 2D SCENE VIEW -->
+          <div id="scene-view" class="scene-view">
+            <img id="scene-bg-img" class="scene-bg-img" src="/assets/scenes/a1_sala.png" alt="ฉากเหตุการณ์" />
+            <div class="scene-vignette"></div>
+            <div class="scene-ornament-frame" aria-hidden="true"></div>
+
+            <div id="npc-layer" class="npc-layer">
+              <div id="npc-card-prasert" class="npc-sprite-wrap" data-speaker="ประเสริฐ">
+                <img src="/assets/characters/prasert.png" alt="ผู้ใหญ่ประเสริฐ" class="npc-sprite" />
+                <span class="npc-label">ผู้ใหญ่ประเสริฐ</span>
+              </div>
+            </div>
+
+            <!-- TURN-BASED COMBAT OVERLAY STAGE -->
+            <div id="combat-stage" class="combat-stage hidden">
+              <div class="combat-hud-card">
+                <div class="combat-hud-top">
+                  <span id="combat-round-badge" class="combat-round-badge">รอบที่ 1 • ตาผู้สืบสวน</span>
+                  <span id="combat-tags" class="combat-tags"></span>
+                </div>
+                <div class="combat-enemy-name" id="combat-enemy-name">ผีเงาจมน้ำ</div>
+                <div class="combat-meters">
+                  <div class="meter-row">
+                    <span>พลังชีวิตผี</span>
+                    <strong id="combat-hp-text">8 / 8</strong>
+                  </div>
+                  <div class="meter-track"><div id="combat-hp-fill" class="meter-fill hp" style="width: 100%"></div></div>
+
+                  <div class="meter-row">
+                    <span>กล่อมวิญญาณ</span>
+                    <strong id="combat-soothe-text">0 / 3</strong>
+                  </div>
+                  <div class="meter-track"><div id="combat-soothe-fill" class="meter-fill soothe" style="width: 0%"></div></div>
+
+                  <div class="meter-row">
+                    <span>เปิดทางถอย</span>
+                    <strong id="combat-retreat-text">0 / 2</strong>
+                  </div>
+                  <div class="meter-track"><div id="combat-retreat-fill" class="meter-fill retreat" style="width: 0%"></div></div>
+                </div>
+              </div>
+
+              <div id="ghost-sprite-wrap" class="ghost-sprite-wrap">
+                <img id="ghost-sprite-img" src="/assets/characters/drowned_echo.png" alt="ผีเงาจมน้ำ" class="ghost-sprite" />
+              </div>
+            </div>
+
+            <div id="party-strip" class="party-strip"></div>
+
+            <!-- START OVERLAY -->
+            <div id="start-overlay" class="stage-overlay">
+              <div class="overlay-card">
+                <div class="overlay-crest">❖ บทนำ ACT A ❖</div>
+                <h2>พร้อมเข้าสู่หมู่บ้านหนองตาลแล้วหรือยัง?</h2>
+                <p>เมื่อทุกคนเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ AI DM เริ่มเล่าฉากเปิดคดี A1</p>
+                <button id="start-game-btn" class="btn btn-primary btn-lg">เริ่มบทนำ ACT A</button>
+              </div>
+            </div>
+
+            <!-- ENDING OVERLAY -->
+            <div id="ending-overlay" class="stage-overlay hidden">
+              <div class="overlay-card ending-card">
+                <div id="ending-badge" class="ending-badge">สรุปผล ACT A</div>
+                <h2 id="ending-title">จบบทนำ</h2>
+                <p id="ending-summary"></p>
+                <button id="ending-reset-btn" class="btn btn-primary">เล่น ACT A ใหม่อีกครั้ง</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2D ANTIQUE VILLAGE BOARD MAP VIEW -->
+          <div id="board-view" class="board-view hidden">
+            <div class="board-header">
+              <span>แผนที่ปฏิบัติการ 2D — คลิกที่หมุดสถานที่เพื่อเคลื่อนย้ายทีม</span>
+              <span id="board-current-label" class="board-current-label">ตำแหน่งปัจจุบัน: ศาลาริมทาง</span>
+            </div>
+            <div class="board-canvas-wrap">
+              <svg class="board-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <pattern id="isoGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(212,168,83,0.09)" stroke-width="0.35" />
+                  </pattern>
+                  <radialGradient id="mapGlow" cx="50%" cy="50%" r="55%">
+                    <stop offset="0%" stop-color="rgba(212,168,83,0.08)" />
+                    <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+                  </radialGradient>
+                </defs>
+                <rect width="100" height="100" fill="url(#isoGrid)" />
+                <rect width="100" height="100" fill="url(#mapGlow)" />
+                <!-- Stylized river / grove contour -->
+                <path d="M 0 84 Q 35 76, 62 86 T 100 80" fill="none" stroke="rgba(56,178,155,0.18)" stroke-width="1.2" />
+                <path d="M 54 62 Q 72 58, 92 68" fill="none" stroke="rgba(56,178,155,0.12)" stroke-width="0.7" stroke-dasharray="1.5 1.5" />
+                <!-- Compass Rose -->
+                <g transform="translate(89, 13)" stroke="rgba(212,168,83,0.42)" fill="none" stroke-width="0.45">
+                  <circle cx="0" cy="0" r="5.5" />
+                  <path d="M 0 -7 L 0 7 M -7 0 L 7 0" />
+                  <polygon points="0,-6 1.2,-1.5 -1.2,-1.5" fill="rgba(212,168,83,0.6)" />
+                </g>
+                <text x="89" y="22.5" text-anchor="middle" fill="rgba(212,168,83,0.55)" font-size="3">ทิศเหนือ</text>
+                <!-- Village Routes -->
+                <line x1="22" y1="62" x2="45" y2="46" class="map-road" />
+                <line x1="45" y1="46" x2="76" y2="30" class="map-road" />
+                <line x1="45" y1="46" x2="70" y2="72" class="map-road map-road-danger" />
+              </svg>
+              <div id="board-nodes-layer" class="board-nodes-layer"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMBAT ACTION BAR -->
+        <div id="combat-actions-bar" class="combat-actions-bar hidden">
+          <div class="combat-bar-header">
+            <span id="combat-turn-status">เลือก 1 การกระทำของคุณในรอบนี้</span>
+            <span id="combat-last-log" class="combat-last-log"></span>
+          </div>
+          <div class="combat-btn-grid">
+            <button type="button" class="btn combat-btn" data-action="strike">
+              <strong>⚔ โจมตี</strong>
+              <span>ทอย BODY/SPI สู้</span>
+            </button>
+            <button type="button" class="btn combat-btn" data-action="soothe">
+              <strong>🕯 กล่อมวิญญาณ</strong>
+              <span>ทอย SOC/SPI สงบผี</span>
+            </button>
+            <button type="button" class="btn combat-btn" data-action="steady">
+              <strong>✦ ดึงสติ</strong>
+              <span>+2 สติ, +1 โฟกัส, ล้างสถานะ</span>
+            </button>
+            <button type="button" id="combat-skill-btn" class="btn combat-btn skill" data-action="role_skill">
+              <strong>❖ <span id="combat-skill-name">ท่าประจำอาชีพ</span></strong>
+              <span id="combat-skill-desc">ใช้ 1 โฟกัส</span>
+            </button>
+            <button type="button" class="btn combat-btn retreat" data-action="retreat">
+              <strong>⮌ คุ้มกันถอยทัพ</strong>
+              <span>เปิดทางหนีกลับถนน</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- DICE CHECK PANEL -->
+        <div id="dice-panel" class="dice-panel hidden">
+          <div class="dice-info">
+            <svg class="d20-icon" viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
+              <polygon points="20,2 37,12 37,28 20,38 3,28 3,12" fill="rgba(212,168,83,0.16)" stroke="#f3d188" stroke-width="2" />
+              <polygon points="20,9 31,26 9,26" fill="none" stroke="#d4a853" stroke-width="1.3" />
+              <line x1="20" y1="2" x2="20" y2="9" stroke="#d4a853" stroke-width="1.2" />
+              <line x1="3" y1="12" x2="9" y2="26" stroke="#d4a853" stroke-width="1.2" />
+              <line x1="37" y1="12" x2="31" y2="26" stroke="#d4a853" stroke-width="1.2" />
+              <line x1="20" y1="38" x2="9" y2="26" stroke="#d4a853" stroke-width="1.2" />
+              <line x1="20" y1="38" x2="31" y2="26" stroke="#d4a853" stroke-width="1.2" />
+              <text x="20" y="23.5" text-anchor="middle" fill="#f3d188" font-size="8.5" font-weight="700">20</text>
+            </svg>
+            <div>
+              <div class="dice-label-row"><span class="dice-badge">ทอยเต๋า D20</span> <span id="dice-check-title" class="dice-title">ตรวจสอบเบาะแส</span></div>
+              <div id="dice-check-meta" class="dice-meta">ค่าสถานะ: PER | เป้าหมาย DC 12</div>
+            </div>
+          </div>
+          <button id="roll-dice-btn" class="btn btn-dice">ทอย D20</button>
+        </div>
+
+        <div id="dice-result-banner" class="dice-result-banner hidden"></div>
+
+        <!-- LIVE SUBTITLE & NARRATION BOX -->
+        <div class="subtitle-box">
+          <div class="subtitle-top">
+            <img id="subtitle-avatar" class="subtitle-avatar hidden" alt="ผู้พูด" />
+            <span id="subtitle-speaker" class="speaker-badge">ระบบ</span>
+            <div id="audio-wave" class="audio-wave hidden" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <span id="thinking-status" class="thinking-status"></span>
+          </div>
+          <p id="subtitle-text" class="subtitle-text">
+            ยินดีต้อนรับสู่แฟ้มคดีบ้านหนองตาล กด "เริ่มบทนำ ACT A" เพื่อเริ่มฟังเสียงบรรยายจาก AI DM
+          </p>
+        </div>
+
+        <!-- QUICK PROMPTS & CONTROLS -->
+        <div class="controls-panel">
+          <div id="turn-queue-bar" class="turn-queue-bar hidden"></div>
+          <div id="quick-prompts" class="quick-prompts"></div>
+
+          <div class="input-controls">
+            <button id="ptt-btn" class="ptt-btn" type="button">
+              <span class="ptt-dot"></span>
+              <span id="ptt-label">กดค้างเพื่อพูด (หรือ Spacebar)</span>
+            </button>
+
+            <form id="chat-form" class="chat-form">
+              <input
+                id="chat-input"
+                type="text"
+                maxlength="300"
+                placeholder="หรือพิมพ์คำถาม / การกระทำ (เช่น โจมตี, กล่อม)..."
+                autocomplete="off"
+              />
+              <button type="submit" class="btn btn-secondary">ส่งคำสั่ง</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SIDEBAR: CHARACTER SHEET & CASE DOSSIER -->
+      <aside class="journal-column">
+        <div id="my-character-bar" class="my-character-bar"></div>
+
+        <div class="journal-tabs">
+          <button class="journal-tab active" data-tab="clues">แฟ้มเบาะแส</button>
+          <button class="journal-tab" data-tab="log">บันทึกคดี</button>
+          <button class="journal-tab" data-tab="players">ทีมสืบสวน</button>
+        </div>
+
+        <div class="journal-body">
+          <div id="tab-clues" class="journal-pane active">
+            <div class="journal-card">
+              <h3>ท่าทีผู้ใหญ่ประเสริฐ</h3>
+              <div class="trust-bar-wrap">
+                <div id="trust-value-label" class="trust-label">ปกติ (0)</div>
+                <div class="trust-track">
+                  <div id="trust-fill" class="trust-fill" style="width: 37.5%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="journal-card">
+              <h3>เบาะแสที่พบ (<span id="clues-count">0</span>)</h3>
+              <ul id="clues-list" class="item-list">
+                <li class="empty-note">ยังไม่มีเบาะแส — ลองสอบถามประเสริฐหรือสังเกตพื้นที่</li>
+              </ul>
+            </div>
+
+            <div class="journal-card">
+              <h3>หลักฐาน & ไอเท็ม (<span id="items-count">0</span>)</h3>
+              <ul id="items-list" class="item-list">
+                <li class="empty-note">ยังไม่มีเอกสารหรือไอเท็ม</li>
+              </ul>
+            </div>
+          </div>
+
+          <div id="tab-log" class="journal-pane">
+            <div id="transcript-log" class="transcript-log"></div>
+          </div>
+
+          <div id="tab-players" class="journal-pane">
+            <div id="players-list" class="players-list"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="/audio_fx.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

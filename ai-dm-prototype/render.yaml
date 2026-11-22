@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ai-trpg-gm-case001
+    runtime: python
+    rootDir: ai-dm-prototype
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:socket_app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /healthz
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_PAID_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_DM_MODEL
+        value: gemini-3.5-flash-lite
+      - key: GEMINI_LIVE_TTS_MODEL
+        value: gemini-3.8-flash-lite-tts
+      - key: GROQ_STT_MODEL
+        value: whisper-large-v3-turbo
