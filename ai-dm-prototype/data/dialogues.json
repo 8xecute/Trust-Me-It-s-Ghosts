@@ -5,16 +5,44 @@
       "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม ลึกลับ ชวนขนลุก พูดจังหวะชัดถ้อยชัดคำและเว้นจังหวะอย่างมีอารมณ์"
     },
     "ประเสริฐ": {
+      "voice": "Algenib",
+      "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าวแบบผู้ใหญ่บ้านมีอายุ สุขุม เคร่งเครียด เหนื่อยล้า พูดจังหวะหนักแน่นไม่เร่งรีบ"
+    },
+    "วิชัย": {
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลายๆ เจ้าหน้าที่ชุดสีกากีสวมแว่น สุขุม จริงจัง น้ำเสียงเป็นทางการ แน่วแน่ เย็นชาและระแวดระวัง"
+    },
+    "เพิ่ม": {
+      "voice": "Enceladus",
+      "style": "เสียงชายชาวสวนวัย 45-55 ปี ทุ้มต่ำ แผ่วห้าว ผ่านโลกและเหนื่อยล้าแบบคนทำงานกลางแจ้ง พูดห้วนตรงไปตรงมา"
+    },
+    "ต้น": {
       "voice": "Fenrir",
-      "style": "เสียงชายไทยวัยกลางคน ผู้ใหญ่บ้านที่พยายามคุมสติแต่มีน้ำเสียงเคร่งเครียด เกร็ง และเหนื่อยล้า"
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่นอายุ 20 ต้นๆ ห้าวๆ กวนนิดๆ พลังงานสูง พูดตรงไปตรงมาแบบวัยรุ่นต่างจังหวัด"
+    },
+    "ดล": {
+      "voice": "Puck",
+      "style": "เสียงชายหนุ่มวัย 20 ต้นๆ ร่าเริง สดใส กระตือรือร้น เป็นมิตร มีความอยากรู้อยากเห็นและชอบผจญภัย"
+    },
+    "นิด": {
+      "voice": "Leda",
+      "style": "เสียงหญิงสาววัย 20 ต้นๆ เสียงใส อ่อนโยน ช่างสังเกต มีความอยากรู้อยากเห็นแบบช่างภาพสาว"
+    },
+    "ยายบุญมี": {
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชราวัย 70 ปีขึ้นไป ผู้เฒ่าประจำหมู่บ้าน เสียงทุ้มต่ำ นุ่มลึก พูดเนิบช้า เปี่ยมด้วยความขลัง เมตตา และรู้ความลับเก่าแก่"
     },
     "เสียงวิทยุ": {
       "voice": "Aoede",
       "style": "เสียงผู้หญิงสั่นเครือ ขาดห้วง เหนื่อยหอบคล้ายคนกำลังสำลักน้ำ มีความหวาดกลัวและสิ้นหวัง"
     },
     "ผีเงาจมน้ำ": {
-      "voice": "Aoede",
-      "style": "เสียงกระซิบเย็นเยียบ แหบพร่า ปนเสียงสำลักน้ำ น่าสะพรึงกลัว"
+      "voice": "Kore",
+      "style": "เสียงวิญญาณหญิงเย็นเยียบ กดต่ำ แหบพร่า ดุร้าย ปนเสียงสำลักน้ำ น่าสะพรึงกลัว"
+    },
+    "แม่แก้ว (นางตานี)": {
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ นุ่มทุ้ม เศร้าสร้อย เยือกเย็น โหยหวนแต่สง่างามและเปี่ยมด้วยความอาลัย"
     }
   },
   "dialogues": [
@@ -44,8 +72,8 @@
       "id": "a1_prasert_greet",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
-      "style": "เสียงชายวัยกลางคน เคร่งเครียด รีบร้อนแต่พยายามสุภาพ",
+      "voice": "Algenib",
+      "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว สุขุม เคร่งเครียด เหนื่อยล้า แต่พยายามพูดอย่างสุภาพกับทีมสืบสวน",
       "trigger_condition": {
         "requires_clues": [],
         "requires_items": [],
@@ -66,7 +94,7 @@
       "id": "a1_qa_order",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ตอบตรงประเด็น แต่น้ำเสียงหนักใจ",
       "trigger_condition": {
         "requires_clues": [],
@@ -88,7 +116,7 @@
       "id": "a1_qa_location",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน จริงจัง ชี้ทางไปทางสวนและบ้านผู้ใหญ่",
       "trigger_condition": {
         "requires_clues": [],
@@ -110,7 +138,7 @@
       "id": "a1_qa_police",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ตอบเรียบ ๆ เหมือนเล่าข้อเท็จจริง",
       "trigger_condition": {
         "requires_clues": [],
@@ -132,7 +160,7 @@
       "id": "a1_qa_why_company",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน กังวลใจกับความกลัวของชาวบ้าน",
       "trigger_condition": {
         "requires_clues": [],
@@ -154,7 +182,7 @@
       "id": "a1_qa_fee",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ตอบสั้น ๆ สุภาพ",
       "trigger_condition": {
         "requires_clues": [],
@@ -176,7 +204,7 @@
       "id": "a1_qa_green_lady",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ชะงักเล็กน้อย กดเสียงต่ำอย่างระมัดระวัง",
       "trigger_condition": {
         "requires_clues": [],
@@ -198,7 +226,7 @@
       "id": "a1_qa_hiding_secret",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน อึดอัดใจและพยายามตัดบทกลับไปเรื่องช่วยคนหาย",
       "trigger_condition": {
         "requires_clues": [],
@@ -462,7 +490,7 @@
       "id": "a2_prasert_shock",
       "scene": "A2",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ตกใจ เสียงสั่นเล็กน้อย",
       "trigger_condition": {
         "requires_clues": [],
@@ -616,7 +644,7 @@
       "id": "a2_move_to_a3",
       "scene": "A2",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน เร่งเร้าให้เดินทางต่อ",
       "trigger_condition": {
         "requires_clues": [],
@@ -638,7 +666,7 @@
       "id": "a2_antistall_hint",
       "scene": "A2",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน เร่งชวนออกเดินทาง",
       "trigger_condition": {
         "requires_clues": [],
@@ -660,7 +688,7 @@
       "id": "a3_intro_prasert",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ชี้ทางด้วยความกังวล",
       "trigger_condition": {
         "requires_clues": [],
@@ -682,7 +710,7 @@
       "id": "a3_qa_who_waiting",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน อธิบายชัดเจน",
       "trigger_condition": {
         "requires_clues": [],
@@ -704,7 +732,7 @@
       "id": "a3_qa_why_not_grove",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน เตือนด้วยเหตุผล",
       "trigger_condition": {
         "requires_clues": [],
@@ -726,7 +754,7 @@
       "id": "a3_qa_why_wichai_knows",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ตอบเรียบ ๆ",
       "trigger_condition": {
         "requires_clues": [],
@@ -748,7 +776,7 @@
       "id": "a3_antistall_hint",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน กวักมือเรียกเข้าไปในบ้าน",
       "trigger_condition": {
         "requires_clues": [],
@@ -836,7 +864,7 @@
       "id": "filler_prasert_hmm",
       "scene": "*",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ครุ่นคิดสั้น ๆ",
       "trigger_condition": {
         "requires_clues": [],
@@ -858,7 +886,7 @@
       "id": "filler_prasert_hesitate",
       "scene": "*",
       "speaker": "ประเสริฐ",
-      "voice": "Fenrir",
+      "voice": "Algenib",
       "style": "เสียงชายวัยกลางคน ลังเล อ้ำอึ้งสั้น ๆ",
       "trigger_condition": {
         "requires_clues": [],
@@ -919,7 +947,7 @@
       "id": "ghost_move_wet_claw",
       "scene": "COMBAT",
       "speaker": "ผีเงาจมน้ำ",
-      "voice": "Aoede",
+      "voice": "Kore",
       "style": "เสียงกระซิบเย็นเยียบ แหบพร่า เกรี้ยวกราด",
       "trigger_condition": {
         "requires_clues": [],
@@ -936,7 +964,7 @@
       "id": "ghost_move_underfloor_hand",
       "scene": "COMBAT",
       "speaker": "ผีเงาจมน้ำ",
-      "voice": "Aoede",
+      "voice": "Kore",
       "style": "เสียงกระซิบเย็นเยียบ ปนเสียงโคลนขยับและเสียงหัวเราะเบา ๆ",
       "trigger_condition": {
         "requires_clues": [],
@@ -953,7 +981,7 @@
       "id": "ghost_move_drowned_whisper",
       "scene": "COMBAT",
       "speaker": "ผีเงาจมน้ำ",
-      "voice": "Aoede",
+      "voice": "Kore",
       "style": "เสียงสำลักน้ำกระซิบข้างหู น่าขนลุก",
       "trigger_condition": {
         "requires_clues": [],
@@ -1038,7 +1066,7 @@
       "id": "filler_ghost_choke",
       "scene": "*",
       "speaker": "ผีเงาจมน้ำ",
-      "voice": "Aoede",
+      "voice": "Kore",
       "style": "เสียงสำลักน้ำเย็นเยียบสั้น ๆ",
       "trigger_condition": {
         "requires_clues": [],

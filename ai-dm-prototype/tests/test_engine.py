@@ -486,3 +486,57 @@ def test_empty_room_auto_closes_after_ttl_and_cancels_on_reconnect() -> None:
     assert "EMPTY01" not in mgr.rooms
     assert mgr.get_taken_roles("EMPTY01") == []
     assert mgr.list_public_rooms() == []
+
+
+def test_all_npc_voice_profiles_are_unique() -> None:
+    repo = ScenarioRepository()
+    profiles = repo.voice_profiles
+    assert len(profiles) >= 11
+
+    voices = [p["voice"] for p in profiles.values()]
+    assert len(voices) == len(set(voices)), f"Duplicate NPC voices found: {voices}"
+
+    for entry in repo.dialogues:
+        speaker = entry.get("speaker")
+        if speaker in profiles and entry.get("voice"):
+            assert entry["voice"] == profiles[speaker]["voice"]
+
+
+def test_usage_tracker_api_and_healthz_log_filter() -> None:
+    import logging
+    from backend.main import _QuietPollingAccessFilter, usage_tracker
+
+    flt = _QuietPollingAccessFilter()
+    rec_health = logging.LogRecord(
+        "uvicorn.access", logging.INFO, "", 0, '10.237.26.125:44316 - "GET /healthz HTTP/1.1" 200', (), None
+    )
+    rec_rooms = logging.LogRecord(
+        "uvicorn.access", logging.INFO, "", 0, '127.0.0.1:1000 - "GET /api/rooms HTTP/1.1" 200', (), None
+    )
+    rec_err = logging.LogRecord(
+        "uvicorn.access", logging.INFO, "", 0, '127.0.0.1:1000 - "GET /healthz HTTP/1.1" 500', (), None
+    )
+    assert flt.filter(rec_health) is False
+    assert flt.filter(rec_rooms) is False
+    assert flt.filter(rec_err) is True
+
+    with TestClient(app) as client:
+        before_visits = usage_tracker.total_page_visits
+        res_home = client.get("/", headers={"x-forwarded-for": "203.150.10.25", "user-agent": "Chrome/130 Windows"})
+        assert res_home.status_code == 200
+
+        usage_tracker.register_socket_client("sid_test_1", "203.150.10.25", "Chrome/130 Windows")
+        usage_tracker.record_join("sid_test_1", "TEST01", "tok_test_1", "ผู้ทดสอบ", "นักสืบ", False)
+        usage_tracker.record_turn("tok_test_1", "TEST01", "ผู้ทดสอบ", "script")
+        usage_tracker.record_leave("sid_test_1", "tok_test_1", "TEST01", "ผู้ทดสอบ", 0)
+
+        res_usage = client.get("/api/usage")
+        assert res_usage.status_code == 200
+        body = res_usage.json()
+        assert body["totals"]["page_visits"] == before_visits + 1
+        assert body["totals"]["unique_visitors"] >= 1
+        assert body["totals"]["total_joins"] >= 1
+        assert body["totals"]["total_turns"] >= 1
+        assert any(s["player_name"] == "ผู้ทดสอบ" and s["turns_count"] == 1 for s in body["recent_sessions"])
+        # Ensure raw IP is masked (never stored/exposed unmasked)
+        assert all("203.150.10.25" not in s["visitor"] for s in body["recent_sessions"])

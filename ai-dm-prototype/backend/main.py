@@ -12,7 +12,7 @@ from typing import Any, Optional
 
 import socketio
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -21,12 +21,26 @@ load_dotenv(BASE_DIR / ".env")
 
 from backend.dm_engine import AIDMEngine  # noqa: E402
 from backend.state_manager import RoomManager, RoomState, ScenarioRepository  # noqa: E402
+from backend.usage_tracker import UsageTracker  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("ai_dm_server")
+
+
+class _QuietPollingAccessFilter(logging.Filter):
+    """Suppress high-frequency 200 OK healthcheck and lobby polling access logs on Render."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        if ('"GET /healthz' in msg or '"GET /api/rooms' in msg) and " 200" in msg:
+            return False
+        return True
+
+
+logging.getLogger("uvicorn.access").addFilter(_QuietPollingAccessFilter())
 
 FRONTEND_DIR = BASE_DIR / "frontend"
 AUDIO_DIR = BASE_DIR / "audio_assets"
@@ -38,6 +52,27 @@ ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 repo = ScenarioRepository()
 room_manager = RoomManager(repo)
 dm_engine = AIDMEngine()
+usage_tracker = UsageTracker()
+
+
+def _extract_client_info_from_environ(environ: dict[str, Any]) -> tuple[str, str]:
+    """Extract client IP (respecting Render X-Forwarded-For) and User-Agent from Socket.IO environ."""
+    headers: dict[str, str] = {}
+    scope = environ.get("asgi.scope")
+    if isinstance(scope, dict):
+        for raw_k, raw_v in scope.get("headers") or []:
+            k = raw_k.decode("latin-1").lower() if isinstance(raw_k, (bytes, bytearray)) else str(raw_k).lower()
+            v = raw_v.decode("latin-1") if isinstance(raw_v, (bytes, bytearray)) else str(raw_v)
+            headers[k] = v
+    raw_ip = (
+        headers.get("x-forwarded-for")
+        or headers.get("x-real-ip")
+        or str(environ.get("HTTP_X_FORWARDED_FOR") or environ.get("REMOTE_ADDR") or "")
+    )
+    if not raw_ip and isinstance(scope, dict) and scope.get("client"):
+        raw_ip = str(scope["client"][0])
+    ua = headers.get("user-agent") or str(environ.get("HTTP_USER_AGENT") or "")
+    return raw_ip, ua
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
@@ -160,6 +195,27 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def _track_page_visit_middleware(request: Request, call_next):
+    response = await call_next(request)
+    if request.method == "GET" and request.url.path == "/" and response.status_code < 400:
+        raw_ip = (
+            request.headers.get("x-forwarded-for")
+            or request.headers.get("x-real-ip")
+            or (request.client.host if request.client else "")
+        )
+        ua = request.headers.get("user-agent") or ""
+        visitor, device = usage_tracker.record_page_visit(raw_ip, ua)
+        logger.info(
+            "[USAGE] VISIT | visitor=%s | device=%s | total_visits=%d | unique=%d",
+            visitor,
+            device,
+            usage_tracker.total_page_visits,
+            len(usage_tracker.unique_visitors),
+        )
+    return response
+
+
 @app.get("/healthz")
 async def healthz() -> dict[str, Any]:
     _cleanup_empty_rooms_and_locks()
@@ -198,6 +254,19 @@ async def get_scenario() -> dict[str, Any]:
 async def list_active_rooms() -> dict[str, Any]:
     _cleanup_empty_rooms_and_locks()
     return {"rooms": room_manager.list_public_rooms()}
+
+
+@app.get("/api/usage")
+async def get_usage_summary() -> dict[str, Any]:
+    """Return in-memory visitor, session, and gameplay usage analytics (no secrets)."""
+    _cleanup_empty_rooms_and_locks()
+    online_players = sum(
+        sum(1 for p in r.players.values() if p.connected) for r in room_manager.rooms.values()
+    )
+    return usage_tracker.get_summary(
+        active_rooms=len(room_manager.rooms),
+        online_players=online_players,
+    )
 
 
 @app.get("/api/rooms/{room_code}/roles")
@@ -263,6 +332,14 @@ async def _run_ghost_turn(room: RoomState) -> None:
             )
 
         await _emit_room_state(room)
+        if room.ending_triggered:
+            usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
+            logger.info(
+                "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
+                room.room_code,
+                room.ending_triggered,
+                room.total_turn_count,
+            )
     finally:
         await sio.emit("dm:thinking", {"active": False, "stage": ""}, room=room.room_code)
 
@@ -285,6 +362,14 @@ async def _execute_combat_action(room: RoomState, sid: str, action_id: str) -> N
             await sio.emit("dm:audio", ev, room=room.room_code)
 
         await _emit_room_state(room)
+        if room.ending_triggered:
+            usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
+            logger.info(
+                "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
+                room.room_code,
+                room.ending_triggered,
+                room.total_turn_count,
+            )
         if res["ready_for_ghost_turn"] and room.combat and room.combat.active:
             await _run_ghost_turn(room)
 
@@ -333,6 +418,29 @@ async def _process_player_turn(room: RoomState, sid: str, player_name: str, text
                 decision.requested_check_id,
             )
             outcome = room_manager.validate_and_apply_decision(room, decision, player_name)
+            actor = room_manager.get_player_by_sid(sid)
+            usage_tracker.record_turn(
+                actor.player_token if actor else None,
+                room.room_code,
+                player_name,
+                decision.mode,
+            )
+            logger.info(
+                "[USAGE] TURN | room=%s | player=%s | mode=%s | scene=%s | total_turns=%d",
+                room.room_code,
+                player_name,
+                decision.mode,
+                room.current_scene,
+                room.total_turn_count,
+            )
+            if room.ending_triggered:
+                usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
+                logger.info(
+                    "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
+                    room.room_code,
+                    room.ending_triggered,
+                    room.total_turn_count,
+                )
 
             await sio.emit("dm:audio", outcome["primary_event"], room=room.room_code)
 
@@ -374,7 +482,9 @@ async def _process_player_turn(room: RoomState, sid: str, player_name: str, text
 
 
 @sio.event
-async def connect(sid: str, environ: dict[str, Any]) -> None:  # noqa: ARG001
+async def connect(sid: str, environ: dict[str, Any]) -> None:
+    raw_ip, ua = _extract_client_info_from_environ(environ)
+    usage_tracker.register_socket_client(sid, raw_ip, ua)
     logger.debug("Client connected: %s", sid)
 
 
@@ -385,15 +495,31 @@ async def disconnect(sid: str) -> None:
         if mic_released:
             await sio.emit("mic:unlocked", {}, room=room.room_code)
         if player:
+            online_left = sum(1 for p in room.players.values() if p.connected)
+            duration_s = usage_tracker.record_leave(
+                sid, player.player_token, room.room_code, player.name, online_left
+            )
+            logger.info(
+                "[USAGE] LEAVE | room=%s | player=%s (%s) | duration=%ds | online_left=%d",
+                room.room_code,
+                player.name,
+                player.role_name,
+                duration_s,
+                online_left,
+            )
             room_manager.append_log(
                 room, "ระบบ", f"{player.name} ขาดการเชื่อมต่อ (สามารถกลับเข้าห้องเดิมได้)", kind="system"
             )
+        else:
+            usage_tracker.pop_socket_client(sid)
         await _emit_room_state(room)
         if mic_released:
             await _drain_input_queue(room)
         if room.combat and room.combat.active and room_manager.check_ready_for_ghost_turn(room):
             room.combat.phase = "ghost"
             await _run_ghost_turn(room)
+    else:
+        usage_tracker.pop_socket_client(sid)
 
 
 @sio.on("room:join")
@@ -423,6 +549,21 @@ async def on_room_join(sid: str, data: dict[str, Any]) -> None:
         return
 
     await sio.enter_room(sid, room.room_code)
+    sess = usage_tracker.record_join(
+        sid, room.room_code, player.player_token, player.name, player.role_name, reconnected
+    )
+    online_cnt = sum(1 for p in room.players.values() if p.connected)
+    logger.info(
+        "[USAGE] %s | room=%s | player=%s | role=%s | visitor=%s | device=%s | online=%d/%d",
+        "RECONNECT" if reconnected else "JOIN",
+        room.room_code,
+        player.name,
+        player.role_name,
+        sess.visitor,
+        sess.device,
+        online_cnt,
+        len(room.players),
+    )
     action_label = "กลับเข้าห้องสืบสวนอีกครั้ง" if reconnected else "เข้าร่วมทีมสืบสวน"
     room_manager.append_log(
         room,
@@ -609,7 +750,10 @@ async def on_mic_transcribe(sid: str, data: dict[str, Any]) -> None:
         )
         return
 
-    await sio.emit("mic:transcript", {"ok": True, "text": transcript.strip()[:300]}, to=sid)
+    clean_text = transcript.strip()[:300]
+    usage_tracker.record_voice_stt(player.player_token, room.room_code, player.name, len(clean_text))
+    logger.info("[USAGE] STT | room=%s | player=%s | chars=%d", room.room_code, player.name, len(clean_text))
+    await sio.emit("mic:transcript", {"ok": True, "text": clean_text}, to=sid)
 
 
 @sio.on("mic:audio")
@@ -751,7 +895,25 @@ async def on_dice_roll(sid: str, _data: dict[str, Any] | None = None) -> None:
         await sio.emit("dm:error", {"message": str(exc)}, to=sid)
         return
 
-    await sio.emit("dice:result", result["roll"], room=room.room_code)
+    roll = result["roll"]
+    roller = room_manager.get_player_by_sid(sid)
+    usage_tracker.record_dice(
+        roller.player_token if roller else None,
+        room.room_code,
+        roll["rolled_by"],
+        roll["check_id"],
+        roll["total"],
+        roll["tier"],
+    )
+    logger.info(
+        "[USAGE] DICE | room=%s | player=%s | check=%s | total=%d | tier=%s",
+        room.room_code,
+        roll["rolled_by"],
+        roll["check_id"],
+        roll["total"],
+        roll["tier"],
+    )
+    await sio.emit("dice:result", roll, room=room.room_code)
     if result["audio_event"]:
         await sio.emit("dm:audio", result["audio_event"], room=room.room_code)
     await _emit_room_state(room)
@@ -764,13 +926,24 @@ async def on_board_move(sid: str, data: dict[str, Any]) -> None:
     if not room:
         return
     node_id = str(data.get("node_id") or "")
+    actor_name = player.name if player else "ผู้สืบสวน"
     try:
-        result = room_manager.move_board_node(
-            room.room_code, node_id, player.name if player else "ผู้สืบสวน"
-        )
+        result = room_manager.move_board_node(room.room_code, node_id, actor_name)
     except ValueError as exc:
         await sio.emit("dm:error", {"message": str(exc)}, to=sid)
         return
+
+    if room.combat and room.combat.active and node_id == "banana_grove_edge":
+        usage_tracker.record_combat_start(room.room_code, actor_name)
+        logger.info("[USAGE] COMBAT_START | room=%s | by=%s", room.room_code, actor_name)
+    elif room.ending_triggered:
+        usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
+        logger.info(
+            "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
+            room.room_code,
+            room.ending_triggered,
+            room.total_turn_count,
+        )
 
     await _emit_room_state(room)
     for ev in result["events"]:
@@ -780,6 +953,7 @@ async def on_board_move(sid: str, data: dict[str, Any]) -> None:
 @sio.on("combat:start_demo")
 async def on_combat_start_demo(sid: str, _data: dict[str, Any] | None = None) -> None:
     room = room_manager.get_room_by_sid(sid)
+    player = room_manager.get_player_by_sid(sid)
     if not room:
         return
     if room.combat and room.combat.active:
@@ -787,6 +961,9 @@ async def on_combat_start_demo(sid: str, _data: dict[str, Any] | None = None) ->
     if room.ending_triggered:
         room.ending_triggered = None
     events = room_manager.start_combat(room.room_code, return_scene=room.current_scene)
+    actor_name = player.name if player else "ผู้สืบสวน"
+    usage_tracker.record_combat_start(room.room_code, actor_name)
+    logger.info("[USAGE] COMBAT_START | room=%s | by=%s", room.room_code, actor_name)
     await _emit_room_state(room)
     for ev in events:
         await sio.emit("dm:audio", ev, room=room.room_code)
