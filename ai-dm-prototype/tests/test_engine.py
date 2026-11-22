@@ -513,14 +513,39 @@ def test_usage_tracker_api_and_healthz_log_filter() -> None:
     rec_rooms = logging.LogRecord(
         "uvicorn.access", logging.INFO, "", 0, '127.0.0.1:1000 - "GET /api/rooms HTTP/1.1" 200', (), None
     )
+    rec_audio = logging.LogRecord(
+        "uvicorn.access",
+        logging.INFO,
+        "",
+        0,
+        '27.130.34.95:0 - "GET /audio_assets/a1_intro_dm.wav HTTP/1.1" 206 Partial Content',
+        (),
+        None,
+    )
+    rec_asset = logging.LogRecord(
+        "uvicorn.access",
+        logging.INFO,
+        "",
+        0,
+        '27.130.34.95:0 - "GET /assets/characters/prasert.png HTTP/1.1" 200 OK',
+        (),
+        None,
+    )
+    rec_favicon = logging.LogRecord(
+        "uvicorn.access", logging.INFO, "", 0, '27.130.34.95:0 - "GET /favicon.ico HTTP/1.1" 404 Not Found', (), None
+    )
     rec_err = logging.LogRecord(
         "uvicorn.access", logging.INFO, "", 0, '127.0.0.1:1000 - "GET /healthz HTTP/1.1" 500', (), None
     )
     assert flt.filter(rec_health) is False
     assert flt.filter(rec_rooms) is False
+    assert flt.filter(rec_audio) is False
+    assert flt.filter(rec_asset) is False
+    assert flt.filter(rec_favicon) is False
     assert flt.filter(rec_err) is True
 
     with TestClient(app) as client:
+        assert client.get("/favicon.ico").status_code == 204
         before_visits = usage_tracker.total_page_visits
         res_home = client.get("/", headers={"x-forwarded-for": "203.150.10.25", "user-agent": "Chrome/130 Windows"})
         assert res_home.status_code == 200

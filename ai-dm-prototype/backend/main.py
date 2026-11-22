@@ -12,7 +12,7 @@ from typing import Any, Optional
 
 import socketio
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -31,16 +31,33 @@ logger = logging.getLogger("ai_dm_server")
 
 
 class _QuietPollingAccessFilter(logging.Filter):
-    """Suppress high-frequency 200 OK healthcheck and lobby polling access logs on Render."""
+    """Suppress noisy static, audio-range (206), polling, and healthcheck access logs on Render."""
+
+    _QUIET_PREFIXES = (
+        '"GET /healthz',
+        '"GET /api/rooms',
+        '"GET /api/scenario',
+        '"GET /audio_assets/',
+        '"GET /assets/',
+        '"GET /audio_fx.js',
+        '"GET /styles.css',
+        '"GET /app.js',
+    )
 
     def filter(self, record: logging.LogRecord) -> bool:
         msg = record.getMessage()
-        if ('"GET /healthz' in msg or '"GET /api/rooms' in msg) and " 200" in msg:
+        if '"GET /favicon.ico' in msg:
+            return False
+        if any(prefix in msg for prefix in self._QUIET_PREFIXES) and any(
+            code in msg for code in (" 200", " 204", " 206", " 304")
+        ):
             return False
         return True
 
 
 logging.getLogger("uvicorn.access").addFilter(_QuietPollingAccessFilter())
+for _noisy_logger in ("google_genai", "google_genai.models", "httpx", "httpx2"):
+    logging.getLogger(_noisy_logger).setLevel(logging.WARNING)
 
 FRONTEND_DIR = BASE_DIR / "frontend"
 AUDIO_DIR = BASE_DIR / "audio_assets"
@@ -216,6 +233,11 @@ async def _track_page_visit_middleware(request: Request, call_next):
     return response
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon() -> Response:
+    return Response(status_code=204)
+
+
 @app.get("/healthz")
 async def healthz() -> dict[str, Any]:
     _cleanup_empty_rooms_and_locks()
@@ -282,6 +304,21 @@ async def _emit_room_state(room: RoomState) -> None:
     await sio.emit("room:state", room_manager.serialize_public_state(room), room=room.room_code)
 
 
+def _record_ending_once(room: RoomState) -> None:
+    if not room.ending_triggered:
+        return
+    if getattr(room, "_usage_ending_logged", None) == room.ending_triggered:
+        return
+    setattr(room, "_usage_ending_logged", room.ending_triggered)
+    usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
+    logger.info(
+        "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
+        room.room_code,
+        room.ending_triggered,
+        room.total_turn_count,
+    )
+
+
 async def _run_ghost_turn(room: RoomState) -> None:
     await sio.emit(
         "dm:thinking",
@@ -332,14 +369,7 @@ async def _run_ghost_turn(room: RoomState) -> None:
             )
 
         await _emit_room_state(room)
-        if room.ending_triggered:
-            usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
-            logger.info(
-                "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
-                room.room_code,
-                room.ending_triggered,
-                room.total_turn_count,
-            )
+        _record_ending_once(room)
     finally:
         await sio.emit("dm:thinking", {"active": False, "stage": ""}, room=room.room_code)
 
@@ -362,14 +392,7 @@ async def _execute_combat_action(room: RoomState, sid: str, action_id: str) -> N
             await sio.emit("dm:audio", ev, room=room.room_code)
 
         await _emit_room_state(room)
-        if room.ending_triggered:
-            usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
-            logger.info(
-                "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
-                room.room_code,
-                room.ending_triggered,
-                room.total_turn_count,
-            )
+        _record_ending_once(room)
         if res["ready_for_ghost_turn"] and room.combat and room.combat.active:
             await _run_ghost_turn(room)
 
@@ -433,14 +456,7 @@ async def _process_player_turn(room: RoomState, sid: str, player_name: str, text
                 room.current_scene,
                 room.total_turn_count,
             )
-            if room.ending_triggered:
-                usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
-                logger.info(
-                    "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
-                    room.room_code,
-                    room.ending_triggered,
-                    room.total_turn_count,
-                )
+            _record_ending_once(room)
 
             await sio.emit("dm:audio", outcome["primary_event"], room=room.room_code)
 
@@ -936,14 +952,8 @@ async def on_board_move(sid: str, data: dict[str, Any]) -> None:
     if room.combat and room.combat.active and node_id == "banana_grove_edge":
         usage_tracker.record_combat_start(room.room_code, actor_name)
         logger.info("[USAGE] COMBAT_START | room=%s | by=%s", room.room_code, actor_name)
-    elif room.ending_triggered:
-        usage_tracker.record_ending(room.room_code, room.ending_triggered, room.total_turn_count)
-        logger.info(
-            "[USAGE] ENDING | room=%s | ending=%s | turns=%d",
-            room.room_code,
-            room.ending_triggered,
-            room.total_turn_count,
-        )
+    else:
+        _record_ending_once(room)
 
     await _emit_room_state(room)
     for ev in result["events"]:
@@ -960,6 +970,7 @@ async def on_combat_start_demo(sid: str, _data: dict[str, Any] | None = None) ->
         return
     if room.ending_triggered:
         room.ending_triggered = None
+        setattr(room, "_usage_ending_logged", None)
     events = room_manager.start_combat(room.room_code, return_scene=room.current_scene)
     actor_name = player.name if player else "ผู้สืบสวน"
     usage_tracker.record_combat_start(room.room_code, actor_name)

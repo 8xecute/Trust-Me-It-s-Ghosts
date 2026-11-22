@@ -315,43 +315,42 @@
     box.innerHTML = `
       <div class="char-top">
         <img src="${me.avatar}" alt="${me.role_name}" />
-        <div style="min-width:0;">
-          <div style="font-weight:700; font-size:0.9rem;"></div>
-          <div style="font-size:0.74rem; color:#a69a88;"></div>
-          <div>${statusChips}</div>
+        <div class="char-head-info">
+          <div class="char-name"></div>
+          <div class="char-skill"></div>
+          <div class="char-statuses">${statusChips}</div>
         </div>
       </div>
       <div class="char-bars">
         <div class="mini-stat" title="พลังชีวิต (HP): หากเหลือ 0 จะหมดสติในฉากต่อสู้">
-          <div class="mini-stat-head"><span style="color:#fca5a5;">พลังชีวิต</span><strong>${me.hp}/${me.max_hp}</strong></div>
+          <div class="mini-stat-head"><span class="mini-label-hp">พลังชีวิต</span><strong>${me.hp}/${me.max_hp}</strong></div>
           <div class="mini-bar-track"><div class="mini-bar-fill hp" style="width:${hpPct}%"></div></div>
         </div>
         <div class="mini-stat" title="สติ (Sanity): ลดลงเมื่อเจอเหตุหลอน/ผีโจมตีจิต หากเหลือ 0 จะเสียขวัญ">
-          <div class="mini-stat-head"><span style="color:#93c5fd;">สติ</span><strong>${me.sanity}/${me.max_sanity}</strong></div>
+          <div class="mini-stat-head"><span class="mini-label-san">สติ</span><strong>${me.sanity}/${me.max_sanity}</strong></div>
           <div class="mini-bar-track"><div class="mini-bar-fill san" style="width:${sanPct}%"></div></div>
         </div>
         <div class="mini-stat" title="โฟกัส (Focus): ใช้จ่าย 1 แต้มเพื่อใช้ท่าประจำอาชีพ (ฟื้นได้ด้วยคำสั่ง ดึงสติ)">
-          <div class="mini-stat-head"><span style="color:#f3d188;">โฟกัส</span><strong>${me.focus}/${me.max_focus}</strong></div>
+          <div class="mini-stat-head"><span class="mini-label-foc">โฟกัส</span><strong>${me.focus}/${me.max_focus}</strong></div>
           <div class="mini-bar-track"><div class="mini-bar-fill foc" style="width:${focPct}%"></div></div>
         </div>
       </div>
       <div class="char-attr-strip">${attrStrip}</div>
       <details class="stat-legend compact" ${prevDetailsOpen ? "open" : ""}>
-        <summary>? คำอธิบายค่าสถานะ</summary>
+        <summary>คำอธิบายค่าสถานะ</summary>
         <div class="stat-legend-grid">
-          <div><b>BODY:</b> โจมตีกายภาพ / ป้องกัน PDEF</div>
-          <div><b>PER:</b> สังเกตพิรุธและรายละเอียดรอบตัว</div>
-          <div><b>INT:</b> วิเคราะห์เอกสารและหลักฐาน</div>
-          <div><b>SOC:</b> เจรจาพยานและกล่อมวิญญาณ</div>
-          <div><b>SPI:</b> สัมผัสคลื่นผี / ต้านพลังหลอน MDEF</div>
-          <div><b>RES:</b> ต้านทานความเสียหายกายและจิต</div>
-          <div><b>HP / สติ / โฟกัส:</b> เลือด / ขวัญกำลังใจ / แต้มปล่อยท่าอาชีพ</div>
+          <div><b>BODY</b> โจมตีกายภาพและป้องกัน PDEF</div>
+          <div><b>PER</b> สังเกตพิรุธและรายละเอียดรอบตัว</div>
+          <div><b>INT</b> วิเคราะห์เอกสารและหลักฐาน</div>
+          <div><b>SOC</b> เจรจาพยานและกล่อมวิญญาณ</div>
+          <div><b>SPI</b> สัมผัสคลื่นผีและต้านพลังหลอน MDEF</div>
+          <div><b>RES</b> ต้านทานความเสียหายกายและจิต</div>
+          <div><b>HP / สติ / โฟกัส</b> เลือด / ขวัญกำลังใจ / แต้มใช้ท่า</div>
         </div>
       </details>
     `;
-    box.querySelector(".char-top > div > div:nth-child(1)").textContent = `${me.name} — ${me.role_name}`;
-    box.querySelector(".char-top > div > div:nth-child(2)").textContent =
-      `ท่า: ${me.skill?.name || "-"}`;
+    box.querySelector(".char-name").textContent = `${me.name} — ${me.role_name}`;
+    box.querySelector(".char-skill").textContent = `ท่าประจำอาชีพ: ${me.skill?.name || "-"}`;
   }
 
   function renderCombatUI(state, me) {
@@ -423,8 +422,8 @@
     $("hud-scene-subtitle").textContent = state.combat?.active
       ? "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย"
       : state.scene_subtitle;
-    $("hud-turn-pill").textContent = `เทิร์นฉากนี้: ${state.scene_turn_count}/${state.anti_stall_turn_limit}`;
-    $("hud-quota-pill").textContent = `เสียงสด: ${state.live_tts_used}/${state.live_tts_limit}`;
+    $("hud-turn-pill").textContent = `เทิร์น ${state.scene_turn_count}/${state.anti_stall_turn_limit}`;
+    $("hud-quota-pill").textContent = `เสียงสด ${state.live_tts_used}/${state.live_tts_limit}`;
 
     if (!state.combat?.active) {
       $("scene-bg-img").src = state.background_image;
@@ -457,7 +456,7 @@
       const chip = document.createElement("div");
       chip.className = "party-chip";
       chip.innerHTML = `<img src="${p.avatar}" alt="${p.role_name}" /><span></span>`;
-      chip.querySelector("span").textContent = `${p.name} · ♥${p.hp} 🧠${p.sanity}`;
+      chip.querySelector("span").textContent = `${p.name} · HP ${p.hp} · สติ ${p.sanity}`;
       partyStrip.appendChild(chip);
     });
 
@@ -475,8 +474,8 @@
       btn.style.top = `${node.y}%`;
       btn.disabled = !node.unlocked || Boolean(state.combat?.active);
       btn.innerHTML = `
-        <div class="board-node-title">${node.unlocked ? "" : "🔒 "}${node.name}</div>
-        <div class="board-node-sub">${node.subtitle}</div>
+        <div class="board-node-title">${node.name}</div>
+        <div class="board-node-sub">${node.unlocked ? node.subtitle : `${node.subtitle} (ยังไม่ปลดล็อก)`}</div>
       `;
       btn.addEventListener("click", () => {
         if (!socket || !node.unlocked) return;
@@ -559,24 +558,24 @@
         ? '<span class="status-chip online">ออนไลน์</span>'
         : '<span class="status-chip offline">หลุดชั่วคราว</span>';
       const combatBadge = state.combat?.active
-        ? `<span style="color:${p.acted_this_round ? "#34d399" : "#fbbf24"};"> · ${p.acted_this_round ? "ลงมือแล้ว" : "รอลงมือ"}</span>`
+        ? `<span class="${p.acted_this_round ? "combat-acted" : "combat-waiting"}"> · ${p.acted_this_round ? "ลงมือแล้ว" : "รอลงมือ"}</span>`
         : "";
 
       row.innerHTML = `
         <img src="${p.avatar}" alt="${p.role_name}" />
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; font-size:0.86rem;"></div>
-          <div style="font-size:0.74rem; color:#93a4ba;"></div>
-          <div style="font-size:0.72rem; margin-top:3px;"></div>
+        <div class="player-meta">
+          <div class="player-name-row"></div>
+          <div class="player-role-row"></div>
+          <div class="player-stat-row"></div>
         </div>
       `;
-      row.querySelector("div > div:nth-child(1)").innerHTML =
+      row.querySelector(".player-name-row").innerHTML =
         `${p.name}${isMe ? " (คุณ)" : ""} ${onlineChip}`;
-      row.querySelector("div > div:nth-child(2)").innerHTML =
+      row.querySelector(".player-role-row").innerHTML =
         `${p.role_name}${combatBadge}`;
-      row.querySelector("div > div:nth-child(3)").textContent =
+      row.querySelector(".player-stat-row").textContent =
         `HP ${p.hp}/${p.max_hp} · สติ ${p.sanity}/${p.max_sanity} · โฟกัส ${p.focus}/${p.max_focus}` +
-        (statusText ? ` · [${statusText}]` : "");
+        (statusText ? ` · ${statusText}` : "");
       playersList.appendChild(row);
     });
 
@@ -587,8 +586,8 @@
         const waitingText =
           tq.items && tq.items.length > 0
             ? `คิวรอ: ${tq.items.map((it, idx) => `${idx + 1}. ${it.player_name}`).join(", ")}`
-            : "ยังไม่มีคนต่อคิว";
-        queueBar.textContent = `⏳ ${tq.stage || `กำลังถึงคิวของ ${tq.owner_name || "ผู้เล่น"}`} · ${waitingText}`;
+            : "ไม่มีคิวรอ";
+        queueBar.textContent = `${tq.stage || `กำลังถึงคิวของ ${tq.owner_name || "ผู้เล่น"}`} · ${waitingText}`;
         queueBar.classList.remove("hidden");
       } else {
         queueBar.classList.add("hidden");
@@ -614,19 +613,19 @@
     if (chatInput) {
       chatInput.disabled = lockChatForMe;
       chatInput.placeholder = inCombat
-        ? "โหมดต่อสู้: ปิดการพิมพ์ชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน..."
+        ? "โหมดต่อสู้: เลือกคำสั่งต่อสู้ด้านบน"
         : iAmHoldingOrQueued
-          ? "คำสั่งของคุณกำลังประมวลผลหรืออยู่ในคิวแล้ว กรุณารอสักครู่..."
+          ? "คำสั่งอยู่ในคิว กำลังประมวลผล"
           : tq.busy
-            ? `ขณะนี้ ${tq.owner_name || "ผู้เล่นอื่น"} กำลังใช้เทิร์น (พิมพ์เพื่อเข้าคิวรอได้)...`
-            : "หรือพิมพ์คำถาม / การกระทำของคุณที่นี่...";
+            ? `${tq.owner_name || "ผู้เล่นอื่น"} กำลังใช้เทิร์น — พิมพ์เพื่อต่อคิวได้`
+            : "พิมพ์คำถามหรือการกระทำ";
     }
     if (chatSubmit) {
       chatSubmit.disabled = lockChatForMe;
       chatSubmit.textContent = iAmHoldingOrQueued
-        ? "อยู่ในคิวแล้ว..."
+        ? "อยู่ในคิว"
         : tq.busy
-          ? "เข้าคิวส่ง"
+          ? "ต่อคิวส่ง"
           : "ส่งคำสั่ง";
     }
     document.querySelectorAll(".quick-chip").forEach((chip) => {
@@ -1222,7 +1221,7 @@
       const banner = $("dice-result-banner");
       banner.className = `dice-result-banner ${roll.tier}`;
       banner.textContent =
-        `🎲 ${roll.rolled_by} ทอย ${roll.stat}: D20 (${roll.d20}) + โบนัส (${roll.modifier}) = ${roll.total} / DC ${roll.dc} → ${roll.tier_label}`;
+        `${roll.rolled_by} ทอย ${roll.stat}: D20 (${roll.d20}) + โบนัส (${roll.modifier}) = ${roll.total} / DC ${roll.dc} — ${roll.tier_label}`;
       banner.classList.remove("hidden");
       appendTranscriptLog(
         "ผลทอย D20",
@@ -1253,6 +1252,10 @@
     });
   }
 
+  const SVG_SPEAKER_ON = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>';
+  const SVG_SPEAKER_OFF = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>';
+  const SVG_RAIN_ON = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="M8 19v2" /><path d="M12 17v4" /><path d="M16 19v2" /></svg>';
+
   function syncAudioControlsUI() {
     const voiceSlider = $("voice-vol-slider");
     const voiceBtn = $("voice-mute-btn");
@@ -1262,13 +1265,13 @@
     if (voiceSlider) voiceSlider.value = String(Math.round(voiceVolume * 100));
     if (voiceBtn) {
       const mutedVoice = isMuted || voiceVolume <= 0;
-      voiceBtn.textContent = mutedVoice ? "🔇 พูด" : "🔊 พูด";
+      voiceBtn.innerHTML = `${mutedVoice ? SVG_SPEAKER_OFF : SVG_SPEAKER_ON}<span>เสียงพูด</span>`;
       voiceBtn.classList.toggle("muted", mutedVoice);
     }
     if (ambSlider) ambSlider.value = String(Math.round(ambientVolume * 100));
     if (ambBtn) {
       const ambOn = audioFX ? audioFX.ambientEnabled && ambientVolume > 0 : false;
-      ambBtn.textContent = ambOn ? "🌧 ฝน/SFX" : "🔇 ฝน/SFX";
+      ambBtn.innerHTML = `${ambOn ? SVG_RAIN_ON : SVG_SPEAKER_OFF}<span>บรรยากาศ</span>`;
       ambBtn.classList.toggle("muted", !ambOn);
     }
   }
