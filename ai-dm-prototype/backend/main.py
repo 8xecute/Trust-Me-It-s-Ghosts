@@ -82,10 +82,23 @@ def _match_combat_action(text: str) -> Optional[str]:
     return None
 
 
+def _cleanup_empty_rooms_and_locks() -> list[str]:
+    closed_codes = room_manager.cleanup_empty_rooms()
+    for code in closed_codes:
+        _room_turn_locks.pop(code, None)
+        logger.info(
+            "Auto-closed empty room %s (no active users for %ds)",
+            code,
+            int(room_manager.empty_room_ttl_seconds),
+        )
+    return closed_codes
+
+
 async def _idle_watcher_loop() -> None:
-    """Gentle ambient prompt if an active room stays silent for >120 seconds."""
+    """Close empty rooms after TTL and emit gentle ambient prompt if an active room stays silent."""
     while True:
-        await asyncio.sleep(30)
+        await asyncio.sleep(15)
+        _cleanup_empty_rooms_and_locks()
         now = time.time()
         for room in list(room_manager.rooms.values()):
             has_connected = any(p.connected for p in room.players.values())
@@ -149,6 +162,7 @@ app.add_middleware(
 
 @app.get("/healthz")
 async def healthz() -> dict[str, Any]:
+    _cleanup_empty_rooms_and_locks()
     return {
         "ok": True,
         "groq_configured": dm_engine.groq_ready,
@@ -156,6 +170,7 @@ async def healthz() -> dict[str, Any]:
         "pregen_audio_count": repo.count_cached_audio(),
         "total_dialogues": len(repo.dialogues),
         "active_rooms": len(room_manager.rooms),
+        "empty_room_ttl_seconds": int(room_manager.empty_room_ttl_seconds),
     }
 
 
@@ -181,6 +196,7 @@ async def get_scenario() -> dict[str, Any]:
 
 @app.get("/api/rooms")
 async def list_active_rooms() -> dict[str, Any]:
+    _cleanup_empty_rooms_and_locks()
     return {"rooms": room_manager.list_public_rooms()}
 
 

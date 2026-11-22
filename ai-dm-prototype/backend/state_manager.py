@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import time
 from dataclasses import dataclass, field
@@ -16,6 +17,7 @@ DATA_DIR = BASE_DIR / "data"
 AUDIO_DIR = BASE_DIR / "audio_assets"
 MIC_LOCK_TIMEOUT_SECONDS = 18.0
 MAX_LIVE_TTS_PER_ROOM = 25
+DEFAULT_EMPTY_ROOM_TTL_SECONDS = 120.0
 
 
 class ScenarioRepository:
@@ -185,6 +187,7 @@ class RoomState:
     active_speaker_name: Optional[str] = None
     mic_locked_at: Optional[float] = None
     last_activity_at: float = field(default_factory=time.time)
+    empty_since: Optional[float] = None
     idle_prompted: bool = False
     live_tts_used: int = 0
     live_tts_limit: int = MAX_LIVE_TTS_PER_ROOM
@@ -200,10 +203,19 @@ class RoomState:
 class RoomManager:
     """Manages rooms, unique roles, reconnect, mic lock, guardrails, dice, and turn-based combat."""
 
-    def __init__(self, repo: ScenarioRepository) -> None:
+    def __init__(self, repo: ScenarioRepository, empty_room_ttl_seconds: Optional[float] = None) -> None:
         self.repo = repo
         self.rooms: dict[str, RoomState] = {}
         self.sid_to_player: dict[str, tuple[str, str]] = {}  # sid -> (room_code, player_token)
+        if empty_room_ttl_seconds is not None:
+            ttl = float(empty_room_ttl_seconds)
+        else:
+            raw_ttl = os.getenv("EMPTY_ROOM_TTL_SECONDS", str(int(DEFAULT_EMPTY_ROOM_TTL_SECONDS)))
+            try:
+                ttl = float(raw_ttl)
+            except ValueError:
+                ttl = DEFAULT_EMPTY_ROOM_TTL_SECONDS
+        self.empty_room_ttl_seconds: float = max(5.0, ttl)
 
     @staticmethod
     def normalize_room_code(room_code: str) -> str:
@@ -231,7 +243,32 @@ class RoomManager:
             return None
         return room.players.get(info[1])
 
+    def cleanup_empty_rooms(
+        self, ttl_seconds: Optional[float] = None, now: Optional[float] = None
+    ) -> list[str]:
+        """Close and delete rooms that have had zero connected players for at least TTL seconds."""
+        ttl = self.empty_room_ttl_seconds if ttl_seconds is None else float(ttl_seconds)
+        current = time.time() if now is None else float(now)
+        closed_codes: list[str] = []
+
+        for code, room in list(self.rooms.items()):
+            has_online = any(p.connected for p in room.players.values())
+            if has_online:
+                room.empty_since = None
+                continue
+            if room.empty_since is None:
+                room.empty_since = current
+            if (current - room.empty_since) >= ttl:
+                self.rooms.pop(code, None)
+                stale_sids = [sid for sid, (rc, _tok) in self.sid_to_player.items() if rc == code]
+                for stale_sid in stale_sids:
+                    self.sid_to_player.pop(stale_sid, None)
+                closed_codes.append(code)
+
+        return closed_codes
+
     def get_taken_roles(self, room_code: str) -> list[str]:
+        self.cleanup_empty_rooms()
         code = self.normalize_room_code(room_code)
         room = self.rooms.get(code)
         if not room:
@@ -240,23 +277,32 @@ class RoomManager:
 
     def list_public_rooms(self) -> list[dict[str, Any]]:
         """Return spoiler-free active room summaries sorted by recent activity."""
+        self.cleanup_empty_rooms()
+        now = time.time()
         active = [r for r in self.rooms.values() if r.players]
         active.sort(key=lambda r: r.last_activity_at, reverse=True)
         summaries: list[dict[str, Any]] = []
         for room in active:
             scene_cfg = self.repo.get_scene(room.current_scene) or {}
+            online_count = sum(1 for p in room.players.values() if p.connected)
+            closing_in_seconds: Optional[int] = None
+            if online_count == 0 and room.empty_since is not None:
+                closing_in_seconds = max(
+                    0, int(round(self.empty_room_ttl_seconds - (now - room.empty_since)))
+                )
             summaries.append(
                 {
                     "room_code": room.room_code,
                     "scene_id": room.current_scene,
                     "scene_title": scene_cfg.get("title", room.current_scene),
                     "player_count": len(room.players),
-                    "online_count": sum(1 for p in room.players.values() if p.connected),
+                    "online_count": online_count,
                     "max_players": 6,
                     "started": room.started,
                     "in_combat": bool(room.combat and room.combat.active),
                     "ended": room.ending_triggered is not None,
                     "taken_roles": [p.role_id for p in room.players.values()],
+                    "closing_in_seconds": closing_in_seconds,
                 }
             )
         return summaries
@@ -284,6 +330,7 @@ class RoomManager:
                 existing.name = clean_name
             self.sid_to_player[sid] = (room.room_code, existing.player_token)
             room.last_activity_at = time.time()
+            room.empty_since = None
             return room, existing, True
 
         # 2) New player -> enforce unique role per room
@@ -315,6 +362,7 @@ class RoomManager:
         room.players[token] = player
         self.sid_to_player[sid] = (room.room_code, token)
         room.last_activity_at = time.time()
+        room.empty_since = None
         return room, player, False
 
     def remove_player(self, sid: str) -> tuple[Optional[RoomState], Optional[PlayerInfo], bool]:
@@ -331,6 +379,9 @@ class RoomManager:
         if player and player.sid == sid:
             player.connected = False
             player.sid = None
+
+        if not any(p.connected for p in room.players.values()):
+            room.empty_since = room.empty_since or time.time()
 
         mic_released = False
         if room.active_speaker_sid == sid:

@@ -121,14 +121,17 @@
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = `active-room-card ${rm.room_code === selectedCode ? "selected" : ""}`;
+      const isEmptyRoom = rm.online_count === 0;
       const badgeClass = rm.in_combat ? "active-room-badge combat" : "active-room-badge";
-      const statusText = rm.ended
-        ? "จบช่วง A แล้ว"
-        : rm.in_combat
-          ? "กำลังสู้ผี"
-          : rm.started
-            ? `กำลังเล่น (${rm.scene_id})`
-            : "รอเริ่มคดี";
+      const statusText = isEmptyRoom
+        ? "ห้องว่าง"
+        : rm.ended
+          ? "จบช่วง A แล้ว"
+          : rm.in_combat
+            ? "กำลังสู้ผี"
+            : rm.started
+              ? `กำลังเล่น (${rm.scene_id})`
+              : "รอเริ่มคดี";
 
       btn.innerHTML = `
         <div class="active-room-top">
@@ -139,7 +142,9 @@
       `;
       btn.querySelector(".active-room-code").textContent = rm.room_code;
       btn.querySelector(".active-room-meta").textContent =
-        `สมาชิก ${rm.player_count}/${rm.max_players} คน (ออนไลน์ ${rm.online_count}) · ${rm.scene_id}`;
+        isEmptyRoom && rm.closing_in_seconds != null
+          ? `ไม่มีผู้เล่นออนไลน์ · ปิดอัตโนมัติใน ${rm.closing_in_seconds} วิ · ${rm.scene_id}`
+          : `สมาชิก ${rm.player_count}/${rm.max_players} คน (ออนไลน์ ${rm.online_count}) · ${rm.scene_id}`;
 
       btn.addEventListener("click", () => {
         $("room-code").value = rm.room_code;

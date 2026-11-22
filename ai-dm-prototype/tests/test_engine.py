@@ -450,3 +450,39 @@ def test_gemini_audio_stt_primary_with_groq_fallback() -> None:
     # 2. Gemini raises error -> automatically falls back to Groq Whisper
     engine._gemini_client = SimpleNamespace(models=_FakeModelsFail())
     assert asyncio.run(engine.transcribe_audio(b"fake-audio-bytes", "speech.webm", "audio/webm")) == "ขอดูแฟ้มคดี"
+
+
+def test_empty_room_auto_closes_after_ttl_and_cancels_on_reconnect() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo, empty_room_ttl_seconds=60.0)
+
+    room, p1, _ = mgr.add_player("EMPTY01", "esid_1", "ต้น", "investigator")
+    assert room.empty_since is None
+
+    # Last player disconnects -> empty_since is set and countdown appears in lobby summary
+    mgr.remove_player("esid_1")
+    assert room.empty_since is not None
+    t0 = room.empty_since
+    public_rooms = mgr.list_public_rooms()
+    assert len(public_rooms) == 1
+    assert public_rooms[0]["online_count"] == 0
+    assert public_rooms[0]["closing_in_seconds"] is not None
+
+    # Before TTL expires, cleanup keeps the room open
+    assert mgr.cleanup_empty_rooms(now=t0 + 30.0) == []
+    assert "EMPTY01" in mgr.rooms
+
+    # Reconnecting before TTL clears empty_since and cancels auto-close
+    _, _, reconnected = mgr.add_player("EMPTY01", "esid_2", "ต้น", "investigator", player_token=p1.player_token)
+    assert reconnected is True
+    assert room.empty_since is None
+    assert mgr.cleanup_empty_rooms(now=t0 + 120.0) == []
+
+    # Disconnect again and advance past TTL -> room is closed and roles freed
+    mgr.remove_player("esid_2")
+    assert room.empty_since is not None
+    closed = mgr.cleanup_empty_rooms(now=room.empty_since + 61.0)
+    assert closed == ["EMPTY01"]
+    assert "EMPTY01" not in mgr.rooms
+    assert mgr.get_taken_roles("EMPTY01") == []
+    assert mgr.list_public_rooms() == []
