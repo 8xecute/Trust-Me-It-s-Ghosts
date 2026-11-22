@@ -14,8 +14,25 @@ from typing import Any, Callable, Optional, TypeVar
 from backend.schemas import DMDecision, GhostTurnDecision, StateUpdates
 from backend.state_manager import RoomManager, RoomState, ScenarioRepository
 
-logger = logging.getLogger(__name__)
+WORLD_LORE_SUMMARY = (
+    "ฉากหลัง: หมู่บ้านหนองตาล ชนบทไทยปี พ.ศ. 2534 (1991) เวลาหัวค่ำราวสองทุ่มเศษ ฝนตกพรำต่อเนื่อง บรรยากาศเงียบวังเวง "
+    "ชาวบ้านส่วนใหญ่ปิดไฟปิดหน้าต่างเงียบ และหลายหลังมัดสัมภาระวางไว้หน้าชานคล้ายเตรียมย้ายหนี\n"
+    "ทีมผู้เล่น: พนักงานจากบริษัทรับจ้างสืบสวนลี้ลับ เดินทางมาด้วยรถตู้บริษัท (จอดเปิดไฟหน้าอยู่ริมถนนข้างศาลา "
+    "ในรถมีอุปกรณ์ภาคสนามพื้นฐาน เช่น ไฟฉาย วิทยุสื่อสาร ปฐมพยาบาล และเครื่องสแกนคลื่นของนักศึกษาฝึกงาน)\n"
+    "ตัวละครผู้ใหญ่ประเสริฐ: ชายวัย 50+ เป็นผู้ใหญ่บ้านที่เคร่งเครียด เหนื่อยล้า แต่พยายามคุมสติและสุภาพกับทีม "
+    "เขายืนรออยู่ที่ศาลาพร้อมไฟฉายและสำเนาใบรับแจ้งคนหาย (ส่วนแผนที่ละเอียดและแฟ้มเต็มอยู่ที่บ้านของเขา) "
+    "เขาหวั่นใจทุกครั้งที่พูดถึงแนวสวนกล้วยและอดีตของ 'แก้ว'\n"
+    "การใช้ดุลยพินิจตอบคำถามทั่วไป: สามารถบรรยายรายละเอียดสภาพอากาศ สิ่งของรอบตัว บรรยากาศหมู่บ้านยุค 2534 "
+    "ท่าทีตัวละคร หรือคำถามเล่นบทบาทสมมติทั่วไปของประเสริฐ/DM ได้อย่างเป็นธรรมชาติ โดยไม่ขัดกฎห้ามสปอยล์ด้านล่าง"
+)
+
+SCENE_ENVIRONMENT_NOTES = {
+    "A1": "ศาลาริมทางไม้เก่าหน้าทางเข้าหมู่บ้าน ฝนโปรยปราย มีแสงไฟหน้ารถตู้ส่องไปตามบ้านเรือนที่ปิดเงียบ ประเสริฐยืนคุยอยู่หน้าศาลา",
+    "A2": "ข้างประตูรถตู้บริษัทที่เปิดค้างไว้ วิทยุสื่อสารในรถเพิ่งส่งเสียงซ่าและเสียงผู้หญิงสำลักน้ำ ประเสริฐยืนหน้าซีดอยู่ใกล้ ๆ",
+    "A3": "หน้าบ้านไม้สองชั้นของประเสริฐที่ยังเปิดไฟสว่างในห้องรับแขก ส่วนด้านขวามือเป็นซอยมืดทอดไปสู่ปากทางสวนกล้วย",
+}
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 THAI_STT_PROMPT = "ประเสริฐ, วิชัย, สวนกล้วย, ผู้หญิงชุดเขียว, ใบรับแจ้งความ, วิทยุสื่อสาร"
 
@@ -156,21 +173,61 @@ class AIDMEngine:
         msg = str(exc)
         return "RequestsPerDay" in msg or "per day" in msg.lower()
 
+    @staticmethod
+    def _is_transient_error(exc: Exception) -> bool:
+        msg = str(exc).lower()
+        return any(
+            tok in msg
+            for tok in (
+                "503",
+                "unavailable",
+                "high demand",
+                "overloaded",
+                "502",
+                "504",
+                "deadline_exceeded",
+                "timed out",
+                "connection",
+            )
+        )
+
     def _run_with_gemini_failover(self, call_fn: Callable[[Any], T]) -> T:
-        """Try primary GEMINI_API_KEY first, failing over to GEMINI_PAID_API_KEY on quota errors."""
+        """Try primary GEMINI_API_KEY with transient retry, failing over to paid key on quota or 503."""
+
+        def _call_with_retry(client: Any) -> T:
+            last_exc: Optional[Exception] = None
+            for attempt in range(3):
+                try:
+                    return call_fn(client)
+                except Exception as exc:  # noqa: BLE001
+                    last_exc = exc
+                    if not self._is_transient_error(exc) or attempt >= 2:
+                        raise
+                    backoff = 1.0 * (attempt + 1)
+                    logger.warning(
+                        "Gemini transient error (attempt %d/3), retrying in %.1fs: %s",
+                        attempt + 1,
+                        backoff,
+                        exc,
+                    )
+                    time.sleep(backoff)
+            assert last_exc is not None
+            raise last_exc
+
         now = time.time()
         if self._gemini_client is not None and now >= self._primary_cooldown_until:
             try:
-                return call_fn(self._gemini_client)
+                return _call_with_retry(self._gemini_client)
             except Exception as exc:  # noqa: BLE001
-                if self._gemini_paid_client is not None and self._is_quota_error(exc):
+                should_failover = self._is_quota_error(exc) or self._is_transient_error(exc)
+                if self._gemini_paid_client is not None and should_failover:
                     if self._is_daily_quota_error(exc):
                         self._primary_cooldown_until = time.time() + 600.0
                     logger.info("Switching from primary GEMINI_API_KEY to GEMINI_PAID_API_KEY")
-                    return call_fn(self._gemini_paid_client)
+                    return _call_with_retry(self._gemini_paid_client)
                 raise
         if self._gemini_paid_client is not None:
-            return call_fn(self._gemini_paid_client)
+            return _call_with_retry(self._gemini_paid_client)
         raise RuntimeError("No Gemini client configured")
 
     async def transcribe_audio(
@@ -239,6 +296,7 @@ class AIDMEngine:
                 "speaker": d["speaker"],
                 "topic_hint": (d.get("trigger_condition") or {}).get("topic_hint", ""),
                 "text": d["text"],
+                "already_played": d["id"] in room.played_audio_ids,
             }
             for d in eligible_dialogues
         ]
@@ -259,6 +317,20 @@ class AIDMEngine:
             for c in available_checks
         ]
 
+        party_summary = [
+            {
+                "name": p.name,
+                "role": p.role_name,
+                "is_current_speaker": p.name == player_name,
+                "hp": f"{p.hp}/{p.max_hp}",
+                "sanity": f"{p.sanity}/{p.max_sanity}",
+                "focus": f"{p.focus}/{p.max_focus}",
+                "top_stats": {k: v for k, v in (p.stats or {}).items() if v >= 3},
+                "skill": (p.skill or {}).get("name", ""),
+            }
+            for p in room.players.values()
+        ]
+
         game_state_snapshot = {
             "current_scene": room.current_scene,
             "scene_turn_count": room.scene_turn_count,
@@ -273,10 +345,11 @@ class AIDMEngine:
             f"- {rule}" for rule in scene_cfg.get("spoiler_guardrails", [])
         )
 
-        recent_turns = room.transcript_log[-6:]
+        recent_turns = room.transcript_log[-12:]
         recent_lines = "\n".join(
             f"{t['speaker']}: {t['text']}" for t in recent_turns
         )
+        scene_env = SCENE_ENVIRONMENT_NOTES.get(room.current_scene, "")
 
         ending_note = ""
         if room.current_scene == "A3":
@@ -288,16 +361,24 @@ class AIDMEngine:
 
         return f"""คุณคือ AI Game Master (DM) และผู้สวมบท NPC สำหรับเกมสืบสวนสยองขวัญภาษาไทย 'CASE 001: เสียงร้องจากสวนกล้วย' (ช่วง ACT A)
 
-## ฉากปัจจุบัน
+## ฉากปัจจุบันและสภาพแวดล้อม
 - Scene: {room.current_scene} ({scene_cfg.get('title', '')})
 - สถานการณ์: {scene_cfg.get('subtitle', '')}
+- สภาพแวดล้อม: {scene_env}
 
-## กฎเหล็กและข้อห้ามสปอยล์ (ห้ามละเมิดเด็ดขาด)
+## ข้อมูลโลกและบริบทฉาก (ใช้ตอบคำถามทั่วไปและบทบาทสมมติได้อิสระ)
+{WORLD_LORE_SUMMARY}
+
+## ทีมผู้สืบสวนในห้องตอนนี้
+{json.dumps(party_summary, ensure_ascii=False)}
+
+## กฎการตัดสินใจและข้อห้ามสปอยล์ (ห้ามละเมิดข้อห้ามสปอยล์เด็ดขาด)
 {guardrails}
 - ห้ามเสกเบาะแสหรือไอเท็มนอกเหนือจากฉากปัจจุบัน และห้ามข้ามฉากเองหากผู้เล่นยังไม่ตัดสินใจ
-- เน้นใช้บทพูดตามสคริปต์ (mode='script') เป็นหลักเสมอ ถ้าความหมายของผู้เล่นตรงหรือใกล้เคียงกับบทที่มีใน dialogue_menu ให้เลือก mode='script' และใส่ selected_audio_id ที่ตรงที่สุด
-- ใช้ mode='improvise' เฉพาะเมื่อคำถาม/การกระทำของผู้เล่นอยู่นอกบทพูดที่มีใน dialogue_menu จริง ๆ โดยตอบสั้น ๆ 1-2 ประโยคภาษาไทยที่เป็นธรรมชาติตามนิสัยตัวละคร (เช่น ประเสริฐ หรือ DM) พร้อมเลือก filler_audio_id ที่ตรงกับผู้พูด
-- ถ้าผู้เล่นขอทำแอ็กชันที่ตรงกับ trigger_hint ใน available_checks และยังไม่ได้ทอย -> ให้ตั้งค่า requested_check_id เป็น id ของ check นั้น และอธิบายสั้น ๆ ให้ผู้เล่นกดทอยเต๋า
+- เลือก mode='script' และ selected_audio_id จาก dialogue_menu เฉพาะเมื่อคำถามตรงกับ topic_hint ของบทที่ already_played=false เท่านั้น
+- ห้ามเลือกบทที่ already_played=true ซ้ำ ยกเว้นผู้เล่นขอให้พูดซ้ำหรือทบทวนโดยตรง — หากผู้เล่นถามต่อยอดหรือถามซ้ำ ให้ใช้ mode='improvise' ตอบขยายความหรือรับมุกอย่างเป็นธรรมชาติแทน
+- เมื่อผู้เล่นถามคำถามทั่วไป สำรวจสิ่งของ/สภาพแวดล้อม (เช่น รถตู้ สภาพอากาศ เสื้อผ้า อาชีพเพื่อน) หรือชวนคุยเล่นในบทบาท -> ใช้ mode='improvise' (ตั้ง selected_audio_id=null) แล้วให้ character='ประเสริฐ' หรือ 'DM' ตอบตรงคำถาม 1-3 ประโยคภาษาไทยที่เป็นธรรมชาติ พร้อมเลือก filler_audio_id ที่ตรงกับผู้พูด
+- ถ้าผู้เล่นขอทำแอ็กชันที่ตรงกับ trigger_hint ใน available_checks และยังไม่ได้ทอย -> ให้ตั้งค่า requested_check_id เป็น id ของ check นั้น และใช้ mode='improvise' (selected_audio_id=null) อธิบายสั้น ๆ ใน improvised_text ให้ผู้เล่นกดทอยเต๋า
 {ending_note}
 
 ## สถานะเกมปัจจุบัน (Game State)
@@ -312,7 +393,7 @@ class AIDMEngine:
 ## การ์ดทอยเต๋า (Dice Checks) ที่ยังใช้ได้ในฉากนี้
 {json.dumps(check_menu, ensure_ascii=False)}
 
-## บทสนทนาล่าสุด
+## บทสนทนาล่าสุด (12 ข้อความล่าสุด)
 {recent_lines or '(ยังไม่มีบทสนทนาก่อนหน้า)'}
 
 ## คำพูดของผู้เล่นในเทิร์นนี้

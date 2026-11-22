@@ -565,3 +565,82 @@ def test_usage_tracker_api_and_healthz_log_filter() -> None:
         assert any(s["player_name"] == "ผู้ทดสอบ" and s["turns_count"] == 1 for s in body["recent_sessions"])
         # Ensure raw IP is masked (never stored/exposed unmasked)
         assert all("203.150.10.25" not in s["visitor"] for s in body["recent_sessions"])
+
+
+def test_script_mode_with_check_or_improvised_text_and_pending_check_blocks_antistall() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    room, _, _ = mgr.add_player("CTX01", "sid_1", "ฟรังก์", "investigator")
+    mgr.start_game("CTX01")
+
+    # 1. If Gemini emits mode="script" with selected_audio_id=None and improvised_text, honor it
+    out1 = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(
+            mode="script",
+            character="ประเสริฐ",
+            selected_audio_id=None,
+            improvised_text="คืนนี้ฝนตกหนักมาก ข้าวของในรถตู้ยังแห้งดีใช่ไหมครับ",
+        ),
+        "ฟรังก์",
+    )
+    assert out1["needs_live_tts"] is True
+    assert out1["live_tts_text"] == "คืนนี้ฝนตกหนักมาก ข้าวของในรถตู้ยังแห้งดีใช่ไหมครับ"
+
+    # 2. Advance to turn 5, then open A1_PER_OBSERVE with mode="script" and id=None on turn 6
+    for _ in range(4):
+        mgr.validate_and_apply_decision(
+            room,
+            DMDecision(mode="improvise", character="ประเสริฐ", improvised_text="ครับผม"),
+            "ฟรังก์",
+        )
+    assert room.scene_turn_count == 5
+
+    out6 = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(
+            mode="script",
+            character="DM",
+            selected_audio_id=None,
+            requested_check_id="A1_PER_OBSERVE",
+        ),
+        "ฟรังก์",
+    )
+    assert room.pending_check is not None
+    assert room.pending_check["id"] == "A1_PER_OBSERVE"
+    assert "ทอยเต๋า" in out6["live_tts_text"]
+    # Anti-stall must wait while a pending_check is waiting for player roll
+    assert room.current_scene == "A1"
+    assert room.scene_turn_count == 6
+
+
+def test_gemini_503_transient_retry_and_failover(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
+    engine = AIDMEngine()
+    engine._gemini_client = "primary"
+    engine._gemini_paid_client = "paid"
+    engine._primary_cooldown_until = 0.0
+
+    # 1. Primary hits transient 503 once, succeeds on retry without burning paid key
+    calls: list[str] = []
+
+    def flaky_once(client: str) -> str:
+        calls.append(client)
+        if len(calls) == 1:
+            raise RuntimeError("503 UNAVAILABLE: This model is currently experiencing high demand.")
+        return "recovered_primary"
+
+    assert engine._run_with_gemini_failover(flaky_once) == "recovered_primary"
+    assert calls == ["primary", "primary"]
+
+    # 2. Primary persistently 503 -> fails over to paid key instead of crashing to keyword fallback
+    calls2: list[str] = []
+
+    def persistent_primary_503(client: str) -> str:
+        calls2.append(client)
+        if client == "primary":
+            raise RuntimeError("503 UNAVAILABLE")
+        return "paid_rescued"
+
+    assert engine._run_with_gemini_failover(persistent_primary_503) == "paid_rescued"
+    assert calls2 == ["primary", "primary", "primary", "paid"]

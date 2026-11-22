@@ -1159,6 +1159,9 @@ class RoomManager:
         live_tts_speaker = "DM"
         live_tts_text = ""
 
+        if decision.requested_check_id and room.pending_check is None:
+            self.trigger_check(room, decision.requested_check_id, actor_name)
+
         if decision.mode == "script" and decision.selected_audio_id in eligible_by_id:
             entry = eligible_by_id[decision.selected_audio_id]
             proposed_next_scene = self._apply_dialogue_unlocks(room, entry)
@@ -1172,7 +1175,21 @@ class RoomManager:
             if entry["id"] == "a3_ending_true" and room.ending_triggered is None:
                 room.ending_triggered = "act_a_complete"
         else:
-            if decision.mode == "script" and decision.selected_audio_id not in eligible_by_id:
+            raw_improv = (decision.improvised_text or "").strip()[:450]
+            if decision.mode == "script" and decision.selected_audio_id is None and raw_improv:
+                speaker = (
+                    decision.character
+                    if decision.character in self.repo.voice_profiles
+                    else ("ประเสริฐ" if room.current_scene in {"A1", "A3"} else "DM")
+                )
+                safe_text = raw_improv
+            elif decision.mode == "script" and decision.selected_audio_id is None and room.pending_check is not None:
+                speaker = "DM"
+                safe_text = (
+                    f"คุณเตรียม{room.pending_check['title']} — "
+                    f"กดปุ่มทอยเต๋า {room.pending_check['stat']} (เป้าหมาย DC {room.pending_check['dc']}) เพื่อดูผลลัพธ์ได้เลย"
+                )
+            elif decision.mode == "script" and decision.selected_audio_id not in eligible_by_id:
                 speaker = "ประเสริฐ" if room.current_scene in {"A1", "A3"} else "DM"
                 safe_text = (
                     "เอ่อ... เรื่องนั้นผมยังบอกอะไรไม่ได้ครับ ตอนนี้ลองดูข้อมูลที่เรามีอยู่ตรงหน้าก่อนนะครับ"
@@ -1185,9 +1202,7 @@ class RoomManager:
                     if decision.character in self.repo.voice_profiles
                     else ("ประเสริฐ" if room.current_scene in {"A1", "A3"} else "DM")
                 )
-                safe_text = (decision.improvised_text or "").strip()[:450]
-                if not safe_text:
-                    safe_text = "อืม... ลองตรวจดูรายละเอียดรอบ ๆ อีกครั้งนะครับ"
+                safe_text = raw_improv or "อืม... ลองตรวจดูรายละเอียดรอบ ๆ อีกครั้งนะครับ"
 
             filler = self.repo.fillers_by_id.get(decision.filler_audio_id or "")
             if not filler:
@@ -1205,9 +1220,6 @@ class RoomManager:
             needs_live_tts = True
             live_tts_speaker = speaker
             live_tts_text = safe_text
-
-        if decision.requested_check_id and room.pending_check is None:
-            self.trigger_check(room, decision.requested_check_id, actor_name)
 
         updates = decision.state_updates
         for clue_id in updates.add_clues:
@@ -1258,6 +1270,7 @@ class RoomManager:
         anti_stall_id = current_scene_cfg.get("anti_stall_audio_id")
         if (
             not room.ending_triggered
+            and room.pending_check is None
             and room.scene_turn_count >= stall_limit
             and anti_stall_id
             and anti_stall_id not in room.played_audio_ids
