@@ -529,6 +529,73 @@ async def _drain_input_queue(room: RoomState) -> None:
         await _run_text_turn(room, queued_player, next_item["sid"], next_item["text"])
 
 
+@sio.on("mic:transcribe")
+async def on_mic_transcribe(sid: str, data: dict[str, Any]) -> None:
+    """Transcribe player's voice to text and send it back only to the sender's chat input."""
+    room = room_manager.get_room_by_sid(sid)
+    player = room_manager.get_player_by_sid(sid)
+    if not room or not player:
+        return
+
+    if room.combat and room.combat.active:
+        await sio.emit(
+            "mic:transcript",
+            {"ok": False, "error": "ขณะนี้อยู่ในฉากต่อสู้ ปิดการพูดคุยชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน"},
+            to=sid,
+        )
+        return
+
+    if room.ending_triggered:
+        await sio.emit(
+            "mic:transcript",
+            {"ok": False, "error": "บทนำ ACT A จบลงแล้ว กรุณากด 'เริ่มคดีใหม่' เพื่อเล่นซ้ำ"},
+            to=sid,
+        )
+        return
+
+    raw_payload = data.get("audio")
+    mime_type = str(data.get("mime_type") or "audio/webm")
+    if isinstance(raw_payload, str):
+        if "," in raw_payload:
+            raw_payload = raw_payload.split(",", 1)[1]
+        audio_bytes = base64.b64decode(raw_payload)
+    elif isinstance(raw_payload, (bytes, bytearray)):
+        audio_bytes = bytes(raw_payload)
+    else:
+        audio_bytes = b""
+
+    if len(audio_bytes) < 400:
+        await sio.emit(
+            "mic:transcript",
+            {"ok": False, "error": "ไฟล์เสียงสั้นเกินไป กรุณากดปุ่มไมค์ค้างไว้ขณะพูด"},
+            to=sid,
+        )
+        return
+
+    try:
+        transcript = await dm_engine.transcribe_audio(
+            audio_bytes, _ext_from_mime(mime_type), mime_type=mime_type
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("STT error for %s: %s", player.name, exc)
+        await sio.emit(
+            "mic:transcript",
+            {"ok": False, "error": f"ถอดเสียงไม่สำเร็จ ({exc}) — สามารถพิมพ์ข้อความในช่องแชทด้านล่างแทนได้"},
+            to=sid,
+        )
+        return
+
+    if not transcript:
+        await sio.emit(
+            "mic:transcript",
+            {"ok": False, "error": "ไม่ได้ยินเสียงพูดชัดเจน กรุณาลองพูดใหม่อีกครั้ง"},
+            to=sid,
+        )
+        return
+
+    await sio.emit("mic:transcript", {"ok": True, "text": transcript.strip()[:300]}, to=sid)
+
+
 @sio.on("mic:audio")
 async def on_mic_audio(sid: str, data: dict[str, Any]) -> None:
     room = room_manager.get_room_by_sid(sid)
@@ -587,7 +654,9 @@ async def on_mic_audio(sid: str, data: dict[str, Any]) -> None:
     )
     try:
         try:
-            transcript = await dm_engine.transcribe_audio(audio_bytes, _ext_from_mime(mime_type))
+            transcript = await dm_engine.transcribe_audio(
+                audio_bytes, _ext_from_mime(mime_type), mime_type=mime_type
+            )
         except Exception as exc:  # noqa: BLE001
             logger.warning("STT error for %s: %s", player.name, exc)
             await sio.emit("dm:thinking", {"active": False, "stage": ""}, room=room.room_code)

@@ -19,4 +19,4 @@ services:
       - key: GEMINI_LIVE_TTS_MODEL
         value: gemini-3.8-flash-lite-tts
       - key: GROQ_STT_MODEL
-        value: whisper-large-v3-turbo
+        value: whisper-large-v3

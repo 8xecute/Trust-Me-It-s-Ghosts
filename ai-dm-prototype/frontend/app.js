@@ -26,13 +26,23 @@
   let activeSubtitleTimer = null;
   let pendingGapTimer = null;
 
-  // Push-to-Talk state
+  // Push-to-Talk & Click-to-Talk (Web Speech API th-TH primary + Gemini Audio STT fallback)
+  const SpeechRecognitionCtor =
+    window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  let speechRecognition = null;
+  let useWebSpeechFallback = !SpeechRecognitionCtor;
   let isHoldingMic = false;
+  let isToggleListening = false;
+  let micPressStartTime = 0;
+  let preSpeechInputText = "";
+  let webSpeechHadResult = false;
+  let isTranscribingMic = false;
   let mediaStream = null;
   let mediaRecorder = null;
   let audioChunks = [];
   let recordedMimeType = "audio/webm";
   let maxRecordTimer = null;
+  let stopTailTimer = null;
 
   const $ = (id) => document.getElementById(id);
 
@@ -580,17 +590,16 @@
       }
     }
 
-    const micBlockedByQueue = Boolean(
-      (state.mic_locked && state.active_speaker_sid !== socket?.id) ||
-        (tq.busy && state.active_speaker_sid !== socket?.id)
-    );
-    updateMicButtonUI(micBlockedByQueue, tq.owner_name || state.active_speaker_name);
-
     const inCombat = Boolean(state.combat?.active);
+    if (inCombat && (isHoldingMic || isToggleListening)) {
+      stopListeningNow();
+    }
     const myId = myPlayer?.id;
     const iAmHoldingOrQueued = Boolean(
       myId && (tq.owner_id === myId || (tq.items || []).some((it) => it.player_id === myId))
     );
+    updateMicButtonUI(iAmHoldingOrQueued);
+
     const controlsPanel = document.querySelector(".controls-panel");
     const chatInput = $("chat-input");
     const chatSubmit = $("chat-form")?.querySelector('button[type="submit"]');
@@ -620,7 +629,7 @@
     });
   }
 
-  function updateMicButtonUI(lockedByOther, holderName = "") {
+  function updateMicButtonUI(lockedByOwnTurn = false) {
     const btn = $("ptt-btn");
     const label = $("ptt-label");
     if (currentState?.combat?.active) {
@@ -629,22 +638,37 @@
       label.textContent = "ปิดไมค์ชั่วคราวระหว่างต่อสู้";
       return;
     }
+    if (isToggleListening) {
+      btn.classList.add("recording");
+      btn.classList.remove("locked-other");
+      btn.disabled = false;
+      label.textContent = "กำลังฟังเสียงไทย... (คลิกอีกครั้งหรือกด Space เพื่อหยุด)";
+      return;
+    }
     if (isHoldingMic) {
       btn.classList.add("recording");
       btn.classList.remove("locked-other");
       btn.disabled = false;
-      label.textContent = "กำลังบันทึกเสียง... ปล่อยเพื่อส่งให้ AI DM";
+      label.textContent = useWebSpeechFallback
+        ? "กำลังบันทึกเสียง... ปล่อยเพื่อส่งถอดเสียง (หรือคลิกสั้นเพื่อเปิดค้าง)"
+        : "กำลังฟังเสียงไทยแบบเรียลไทม์... ปล่อยเมื่อพูดจบ";
       return;
     }
     btn.classList.remove("recording");
-    if (lockedByOther) {
+    if (isTranscribingMic) {
       btn.classList.add("locked-other");
       btn.disabled = true;
-      label.textContent = `รอคิว: ${holderName || "ผู้เล่นอื่น"} กำลังใช้งาน...`;
+      label.textContent = "กำลังถอดเสียงเป็นข้อความ...";
+      return;
+    }
+    if (lockedByOwnTurn) {
+      btn.classList.add("locked-other");
+      btn.disabled = true;
+      label.textContent = "คำสั่งของคุณอยู่ในคิวแล้ว...";
     } else {
       btn.classList.remove("locked-other");
       btn.disabled = false;
-      label.textContent = "กดค้างเพื่อพูด (หรือกด Space ค้าง)";
+      label.textContent = "คลิกหรือกดค้างเพื่อพูด → ลงช่องแชท (Space)";
     }
   }
 
@@ -784,43 +808,175 @@
     socket.emit("chat:message", { text: clean });
   }
 
+  function _focusChatInputEnd() {
+    const input = $("chat-input");
+    if (input && !input.disabled && input.value.trim()) {
+      input.focus();
+      const len = input.value.length;
+      input.setSelectionRange(len, len);
+    }
+  }
+
+  function startWebSpeechRecognition() {
+    if (!SpeechRecognitionCtor || useWebSpeechFallback) return false;
+    try {
+      const recognition = new SpeechRecognitionCtor();
+      recognition.lang = "th-TH";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      const input = $("chat-input");
+      preSpeechInputText = input && input.value.trim() ? input.value.trim() : "";
+      webSpeechHadResult = false;
+      speechRecognition = recognition;
+
+      recognition.onresult = (event) => {
+        let finals = "";
+        let interims = "";
+        for (let i = 0; i < event.results.length; i += 1) {
+          const res = event.results[i];
+          const txt = res[0]?.transcript || "";
+          if (res.isFinal) {
+            finals += `${txt} `;
+          } else {
+            interims += txt;
+          }
+        }
+        const combinedSpeech = `${finals} ${interims}`.trim().replace(/\s+/g, " ");
+        if (combinedSpeech) webSpeechHadResult = true;
+        if (input && !input.disabled) {
+          const nextVal = preSpeechInputText
+            ? combinedSpeech
+              ? `${preSpeechInputText} ${combinedSpeech}`
+              : preSpeechInputText
+            : combinedSpeech;
+          input.value = nextVal.slice(0, 300);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        const errCode = event?.error || "";
+        if (errCode === "aborted") return;
+        isHoldingMic = false;
+        isToggleListening = false;
+        if (maxRecordTimer) {
+          clearTimeout(maxRecordTimer);
+          maxRecordTimer = null;
+        }
+        speechRecognition = null;
+        audioFX?.setDucking(isPlayingQueue);
+        updateMicButtonUI(false);
+
+        if (errCode === "no-speech") {
+          showToast("ไม่ได้ยินเสียงพูดชัดเจน กรุณาลองพูดใหม่อีกครั้ง");
+        } else if (
+          errCode === "network" ||
+          errCode === "service-not-allowed" ||
+          errCode === "language-not-supported"
+        ) {
+          useWebSpeechFallback = true;
+          showToast("สลับเป็นโหมดถอดเสียงผ่าน Gemini Audio STT — กดพูดอีกครั้งได้เลย");
+        } else if (errCode === "not-allowed" || errCode === "audio-capture") {
+          showToast("ไม่สามารถเข้าถึงไมโครโฟนได้ กรุณาอนุญาตสิทธิ์ไมค์ในเบราว์เซอร์");
+        } else {
+          useWebSpeechFallback = true;
+          showToast("ระบบถอดเสียงเบราว์เซอร์ขัดข้อง สลับเป็น Gemini Audio STT ให้แล้ว");
+        }
+      };
+
+      recognition.onend = () => {
+        const wasActive = speechRecognition === recognition;
+        if (wasActive) {
+          speechRecognition = null;
+          isHoldingMic = false;
+          isToggleListening = false;
+          if (maxRecordTimer) {
+            clearTimeout(maxRecordTimer);
+            maxRecordTimer = null;
+          }
+          audioFX?.setDucking(isPlayingQueue);
+          updateMicButtonUI(false);
+          if (webSpeechHadResult) {
+            _focusChatInputEnd();
+            showToast("ถอดเสียงลงช่องแชทแล้ว — ตรวจสอบแล้วกด 'ส่งคำสั่ง' หรือ Enter");
+          }
+        }
+      };
+
+      recognition.start();
+      maxRecordTimer = setTimeout(() => {
+        if (isHoldingMic || isToggleListening) stopListeningNow();
+      }, 20000);
+      return true;
+    } catch (_err) {
+      useWebSpeechFallback = true;
+      speechRecognition = null;
+      return false;
+    }
+  }
+
   async function startPushToTalk() {
-    if (isHoldingMic || !socket) return;
+    if (isHoldingMic || isToggleListening || isTranscribingMic || !socket) return;
     if (currentState?.combat?.active) {
       showToast("ขณะนี้อยู่ในฉากต่อสู้ ปิดการใช้ไมค์ชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน");
       return;
     }
-    if (
-      (currentState?.mic_locked && currentState?.active_speaker_sid !== socket.id) ||
-      (currentState?.turn_queue?.busy && currentState?.active_speaker_sid !== socket.id)
-    ) {
-      showToast(`รอคิว: ${currentState.turn_queue?.owner_name || currentState.active_speaker_name || "ผู้เล่นอื่น"} กำลังใช้งานอยู่`);
+    const tq = currentState?.turn_queue || {};
+    const myId = myPlayer?.id;
+    const iAmHoldingOrQueued = Boolean(
+      myId && (tq.owner_id === myId || (tq.items || []).some((it) => it.player_id === myId))
+    );
+    if (iAmHoldingOrQueued) {
+      showToast("คำสั่งของคุณกำลังประมวลผลหรืออยู่ในคิวแล้ว กรุณารอสักครู่");
       return;
     }
+
+    if (stopTailTimer) {
+      clearTimeout(stopTailTimer);
+      stopTailTimer = null;
+    }
+    isHoldingMic = true;
+    updateMicButtonUI(false);
+    audioFX?.setDucking(true);
+
+    // Tier 1: Real-time Google Thai Web Speech API (streams straight to #chat-input)
+    if (!useWebSpeechFallback && SpeechRecognitionCtor && startWebSpeechRecognition()) {
+      return;
+    }
+
+    // Tier 2 Fallback: MediaRecorder -> Backend Gemini Multimodal Audio STT / Groq Whisper
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      isHoldingMic = false;
+      audioFX?.setDucking(isPlayingQueue);
+      updateMicButtonUI(false);
       showToast("เบราว์เซอร์นี้ไม่รองรับการอัดเสียง กรุณาพิมพ์ในช่องแชทแทน");
       return;
     }
 
-    isHoldingMic = true;
-    updateMicButtonUI(false);
-    socket.emit("mic:start", {});
-
     try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!isHoldingMic) {
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+      });
+      if (!isHoldingMic && !isToggleListening) {
         mediaStream.getTracks().forEach((t) => t.stop());
         mediaStream = null;
-        socket.emit("mic:cancel", {});
+        audioFX?.setDucking(isPlayingQueue);
         return;
       }
 
       const mime = pickSupportedMimeType();
       recordedMimeType = mime || "audio/webm";
       audioChunks = [];
-      mediaRecorder = mime
-        ? new MediaRecorder(mediaStream, { mimeType: mime })
-        : new MediaRecorder(mediaStream);
+      const recorderOpts = mime
+        ? { mimeType: mime, audioBitsPerSecond: 64000 }
+        : { audioBitsPerSecond: 64000 };
+      mediaRecorder = new MediaRecorder(mediaStream, recorderOpts);
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) audioChunks.push(e.data);
@@ -831,15 +987,19 @@
           mediaStream.getTracks().forEach((t) => t.stop());
           mediaStream = null;
         }
+        audioFX?.setDucking(isPlayingQueue);
         const blob = new Blob(audioChunks, { type: recordedMimeType });
         audioChunks = [];
         if (blob.size < 450) {
-          socket.emit("mic:cancel", {});
-          showToast("กดค้างนานกว่านี้อีกนิดขณะพูดนะครับ");
+          isTranscribingMic = false;
+          updateMicButtonUI(false);
+          showToast("พูดนานกว่านี้อีกนิดนะครับ หรือใช้คลิกครั้งเดียวเพื่อเปิดไมค์ค้าง");
           return;
         }
+        isTranscribingMic = true;
+        updateMicButtonUI(false);
         const arrayBuf = await blob.arrayBuffer();
-        socket.emit("mic:audio", {
+        socket.emit("mic:transcribe", {
           audio: arrayBuf,
           mime_type: blob.type || recordedMimeType,
         });
@@ -847,29 +1007,89 @@
 
       mediaRecorder.start(200);
       maxRecordTimer = setTimeout(() => {
-        if (isHoldingMic) stopPushToTalk();
-      }, 15000);
+        if (isHoldingMic || isToggleListening) stopListeningNow();
+      }, 20000);
     } catch (err) {
       isHoldingMic = false;
+      isToggleListening = false;
+      isTranscribingMic = false;
+      audioFX?.setDucking(isPlayingQueue);
       updateMicButtonUI(false);
-      socket.emit("mic:cancel", {});
       showToast(`ไม่สามารถเปิดไมโครโฟนได้: ${err.message}`);
     }
   }
 
-  function stopPushToTalk() {
-    if (!isHoldingMic) return;
+  function stopListeningNow() {
     isHoldingMic = false;
+    isToggleListening = false;
     if (maxRecordTimer) {
       clearTimeout(maxRecordTimer);
       maxRecordTimer = null;
     }
-    updateMicButtonUI(false);
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
-    } else if (socket) {
-      socket.emit("mic:cancel", {});
+    if (stopTailTimer) {
+      clearTimeout(stopTailTimer);
+      stopTailTimer = null;
     }
+
+    if (speechRecognition) {
+      const activeRec = speechRecognition;
+      // Delay ~200ms so Web Speech API finalizes the trailing Thai syllable
+      stopTailTimer = setTimeout(() => {
+        stopTailTimer = null;
+        try {
+          activeRec.stop();
+        } catch (_err) {
+          speechRecognition = null;
+          audioFX?.setDucking(isPlayingQueue);
+          updateMicButtonUI(false);
+        }
+      }, 200);
+      updateMicButtonUI(false);
+      return;
+    }
+
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      isTranscribingMic = true;
+      updateMicButtonUI(false);
+      // Capture trailing ~250ms so the final Thai syllable isn't clipped on key/mouse release
+      stopTailTimer = setTimeout(() => {
+        stopTailTimer = null;
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        } else {
+          isTranscribingMic = false;
+          audioFX?.setDucking(isPlayingQueue);
+          updateMicButtonUI(false);
+        }
+      }, 250);
+    } else {
+      isTranscribingMic = false;
+      audioFX?.setDucking(isPlayingQueue);
+      updateMicButtonUI(false);
+    }
+  }
+
+  function handleMicPressStart() {
+    if (isToggleListening) {
+      stopListeningNow();
+      return;
+    }
+    if (isHoldingMic || isTranscribingMic) return;
+    micPressStartTime = Date.now();
+    startPushToTalk();
+  }
+
+  function handleMicRelease() {
+    if (!isHoldingMic) return;
+    const elapsed = Date.now() - micPressStartTime;
+    if (elapsed < 300) {
+      // Quick click (<300ms): keep listening hands-free until clicked again
+      isHoldingMic = false;
+      isToggleListening = true;
+      updateMicButtonUI(false);
+      return;
+    }
+    stopListeningNow();
   }
 
   function connectAndJoin(playerName, roomCode, roleId) {
@@ -962,6 +1182,34 @@
       }
       updateMicButtonUI(true, data.holder_name);
       showToast(`ไมค์ถูกใช้งานโดย ${data.holder_name} อยู่`);
+    });
+
+    socket.on("mic:transcript", (data) => {
+      isTranscribingMic = false;
+      const tq = currentState?.turn_queue || {};
+      const myId = myPlayer?.id;
+      const iAmHoldingOrQueued = Boolean(
+        myId && (tq.owner_id === myId || (tq.items || []).some((it) => it.player_id === myId))
+      );
+      updateMicButtonUI(iAmHoldingOrQueued);
+
+      if (!data?.ok) {
+        if (data?.error) showToast(data.error);
+        return;
+      }
+      const text = (data.text || "").trim();
+      if (!text) return;
+
+      const input = $("chat-input");
+      if (input && !input.disabled) {
+        const existing = input.value.trim();
+        const combined = existing ? `${existing} ${text}` : text;
+        input.value = combined.slice(0, 300);
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }
+      showToast("ถอดเสียงลงช่องแชทแล้ว — ตรวจสอบแล้วกด 'ส่งคำสั่ง' หรือ Enter");
     });
 
     socket.on("dice:result", (roll) => {
@@ -1126,6 +1374,24 @@
 
     $("chat-form").addEventListener("submit", (e) => {
       e.preventDefault();
+      if (speechRecognition) {
+        try {
+          speechRecognition.abort();
+        } catch (_err) {
+          // ignore
+        }
+        speechRecognition = null;
+      }
+      if (isHoldingMic || isToggleListening) {
+        isHoldingMic = false;
+        isToggleListening = false;
+        if (maxRecordTimer) {
+          clearTimeout(maxRecordTimer);
+          maxRecordTimer = null;
+        }
+        audioFX?.setDucking(isPlayingQueue);
+        updateMicButtonUI(false);
+      }
       const input = $("chat-input");
       const val = input.value.trim();
       if (!val) return;
@@ -1157,22 +1423,22 @@
     const pttBtn = $("ptt-btn");
     pttBtn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      startPushToTalk();
+      handleMicPressStart();
     });
-    window.addEventListener("pointerup", () => stopPushToTalk());
-    window.addEventListener("pointercancel", () => stopPushToTalk());
+    window.addEventListener("pointerup", () => handleMicRelease());
+    window.addEventListener("pointercancel", () => handleMicRelease());
 
     window.addEventListener("keydown", (e) => {
       if (e.code !== "Space" || e.repeat) return;
       const tag = document.activeElement?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if ($("game-screen").classList.contains("hidden")) return;
-      if (currentState?.combat?.active || currentState?.turn_queue?.busy) return;
+      if (currentState?.combat?.active) return;
       e.preventDefault();
-      startPushToTalk();
+      handleMicPressStart();
     });
     window.addEventListener("keyup", (e) => {
-      if (e.code === "Space") stopPushToTalk();
+      if (e.code === "Space") handleMicRelease();
     });
   }
 

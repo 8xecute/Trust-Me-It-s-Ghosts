@@ -7,6 +7,7 @@ import base64
 import json
 import logging
 import os
+import re
 import time
 from typing import Any, Callable, Optional, TypeVar
 
@@ -15,6 +16,71 @@ from backend.state_manager import RoomManager, RoomState, ScenarioRepository
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
+
+THAI_STT_PROMPT = "ประเสริฐ, วิชัย, สวนกล้วย, ผู้หญิงชุดเขียว, ใบรับแจ้งความ, วิทยุสื่อสาร"
+
+GEMINI_STT_INSTRUCTION = (
+    "ถอดเสียงพูดภาษาไทยของผู้เล่นในคลิปเสียงนี้ให้เป็นข้อความภาษาไทยที่ถูกต้องตรงตามเสียงพูดทุกคำ "
+    "(คำศัพท์ที่อาจพบในเกม: ประเสริฐ, วิชัย, สวนกล้วย, บ้านผู้ใหญ่บ้าน, ใบรับแจ้งความ, วิทยุสื่อสาร, "
+    "ผู้หญิงชุดเขียว, ผีเงาจมน้ำ, ทอยเต๋า, สังเกต, ตรวจสอบ, ค่าจ้าง, ตำรวจ)\n"
+    "กฎสำคัญ:\n"
+    "- ตอบกลับมาเฉพาะข้อความที่ผู้เล่นพูดเท่านั้น ห้ามใส่เครื่องหมายคำพูด คำอธิบาย หรือคำนำ\n"
+    "- หากไม่มีเสียงพูดหรือมีแต่เสียงรบกวน ให้ตอบว่า <EMPTY>"
+)
+
+_WHISPER_HALLUCINATIONS = {
+    "ขอบคุณ",
+    "ขอบคุณครับ",
+    "ขอบคุณค่ะ",
+    "ขอบคุณที่รับชม",
+    "ขอบคุณที่รับชมครับ",
+    "ขอบคุณที่รับชมค่ะ",
+    "ขอบคุณสำหรับการรับชม",
+    "ขอบคุณสำหรับการรับชมครับ",
+    "ขอบคุณสำหรับการรับชมค่ะ",
+    "โปรดติดตามตอนต่อไป",
+    "กดติดตาม",
+    "ซับไตเติล",
+    "amaraorg",
+    "mbc",
+}
+
+
+def _get_field(item: Any, key: str, default: Any = None) -> Any:
+    if isinstance(item, dict):
+        return item.get(key, default)
+    return getattr(item, key, default)
+
+
+def _clean_whisper_transcript(result: Any) -> str:
+    """Filter high-no-speech segments and standalone Thai Whisper hallucinations."""
+    if isinstance(result, str):
+        raw_text = result.strip()
+    else:
+        segments = _get_field(result, "segments")
+        if isinstance(segments, list) and segments:
+            kept: list[str] = []
+            for seg in segments:
+                seg_text = str(_get_field(seg, "text", "") or "").strip()
+                if not seg_text:
+                    continue
+                no_speech = _get_field(seg, "no_speech_prob")
+                if no_speech is not None and float(no_speech) > 0.72:
+                    continue
+                avg_logprob = _get_field(seg, "avg_logprob")
+                if avg_logprob is not None and float(avg_logprob) < -1.2:
+                    continue
+                kept.append(seg_text)
+            raw_text = " ".join(kept).strip()
+        else:
+            raw_text = str(_get_field(result, "text", "") or "").strip()
+
+    if not raw_text:
+        return ""
+    normalized = re.sub(r"[\s\.\,\!\?\-\"'“”‘’()\[\]]+", "", raw_text).lower()
+    if normalized in _WHISPER_HALLUCINATIONS:
+        return ""
+    return raw_text
 
 
 class AIDMEngine:
@@ -29,7 +95,7 @@ class AIDMEngine:
             os.getenv("GEMINI_PAID_API_KEY") or os.getenv("GEMINI_FALLBACK_API_KEY") or ""
         ).strip()
 
-        self.stt_model = os.getenv("GROQ_STT_MODEL", "whisper-large-v3-turbo")
+        self.stt_model = os.getenv("GROQ_STT_MODEL", "whisper-large-v3")
         self.dm_model = os.getenv("GEMINI_DM_MODEL", "gemini-3.5-flash-lite")
         self.live_tts_model = os.getenv("GEMINI_LIVE_TTS_MODEL", "gemini-3.8-flash-lite-tts")
 
@@ -107,22 +173,51 @@ class AIDMEngine:
             return call_fn(self._gemini_paid_client)
         raise RuntimeError("No Gemini client configured")
 
-    async def transcribe_audio(self, audio_bytes: bytes, filename: str = "speech.webm") -> str:
-        """Transcribe Thai player audio via Groq Whisper Large V3 Turbo."""
+    async def transcribe_audio(
+        self, audio_bytes: bytes, filename: str = "speech.webm", mime_type: str = "audio/webm"
+    ) -> str:
+        """Transcribe Thai player audio via Gemini Multimodal (primary) with Groq Whisper fallback."""
+        clean_mime = (mime_type or "audio/webm").split(";")[0].strip() or "audio/webm"
+
+        if self.gemini_ready:
+            def _call_gemini_stt(client: Any) -> str:
+                from google.genai import types
+                from google.genai.types import GenerateContentConfig
+
+                response = client.models.generate_content(
+                    model=self.dm_model,
+                    contents=[
+                        GEMINI_STT_INSTRUCTION,
+                        types.Part.from_bytes(data=audio_bytes, mime_type=clean_mime),
+                    ],
+                    config=GenerateContentConfig(temperature=0.0),
+                )
+                return _clean_whisper_transcript(getattr(response, "text", "") or "")
+
+            try:
+                gemini_text = await asyncio.to_thread(self._run_with_gemini_failover, _call_gemini_stt)
+                cleaned = gemini_text.strip()
+                if cleaned == "<EMPTY>" or cleaned.upper() == "EMPTY":
+                    return ""
+                return cleaned
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Gemini audio STT failed, falling back to Groq Whisper: %s", exc)
+                if not self._groq_client:
+                    raise
+
         if not self._groq_client:
-            raise RuntimeError("ยังไม่ได้ตั้งค่า GROQ_API_KEY สำหรับถอดเสียงพูด")
+            raise RuntimeError("ยังไม่ได้ตั้งค่า GEMINI_API_KEY หรือ GROQ_API_KEY สำหรับถอดเสียงพูด")
 
         def _call_groq() -> str:
             result = self._groq_client.audio.transcriptions.create(
                 model=self.stt_model,
                 file=(filename, audio_bytes),
                 language="th",
-                response_format="text",
+                prompt=THAI_STT_PROMPT,
+                response_format="verbose_json",
                 temperature=0.0,
             )
-            if isinstance(result, str):
-                return result.strip()
-            return getattr(result, "text", "").strip()
+            return _clean_whisper_transcript(result)
 
         return await asyncio.to_thread(_call_groq)
 

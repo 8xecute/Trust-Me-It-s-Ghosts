@@ -13,7 +13,7 @@ PROTO_DIR = Path(__file__).resolve().parent.parent
 if str(PROTO_DIR) not in sys.path:
     sys.path.insert(0, str(PROTO_DIR))
 
-from backend.dm_engine import AIDMEngine  # noqa: E402
+from backend.dm_engine import AIDMEngine, _clean_whisper_transcript  # noqa: E402
 from backend.main import app  # noqa: E402
 from backend.schemas import DMDecision, GhostTurnDecision, StateUpdates  # noqa: E402
 from backend.state_manager import (  # noqa: E402
@@ -399,3 +399,54 @@ def test_input_queue_prevents_simultaneous_turns() -> None:
     assert first is not None and first["player_name"] == "พลอย"
     assert second is not None and second["player_name"] == "หมอ"
     assert mgr.pop_next_queued_input(room) is None
+
+
+def test_whisper_transcript_cleaning_filters_silence_and_hallucinations() -> None:
+    # 1. Valid Thai segment stays, while high no_speech_prob / low avg_logprob segments drop
+    res_mixed = {
+        "segments": [
+            {"text": " ถามผู้ใหญ่ประเสริฐเรื่องคนหาย ", "no_speech_prob": 0.12, "avg_logprob": -0.35},
+            {"text": "ขอบคุณครับ", "no_speech_prob": 0.85, "avg_logprob": -0.5},
+            {"text": "ซุบซิบไม่ชัด", "no_speech_prob": 0.25, "avg_logprob": -1.5},
+        ]
+    }
+    assert _clean_whisper_transcript(res_mixed) == "ถามผู้ใหญ่ประเสริฐเรื่องคนหาย"
+
+    # 2. Standalone Whisper hallucination boilerplate is suppressed
+    assert _clean_whisper_transcript({"text": "  ขอบคุณที่รับชมค่ะ!  "}) == ""
+    assert (
+        _clean_whisper_transcript(
+            {"segments": [{"text": "ขอบคุณที่รับชมค่ะ", "no_speech_prob": 0.2, "avg_logprob": -0.4}]}
+        )
+        == ""
+    )
+
+
+def test_gemini_audio_stt_primary_with_groq_fallback() -> None:
+    import asyncio
+    from types import SimpleNamespace
+
+    engine = AIDMEngine()
+
+    class _FakeModelsOK:
+        def generate_content(self, **_kwargs):
+            return SimpleNamespace(text="ถามผู้ใหญ่ประเสริฐเรื่องใบรับแจ้งความ")
+
+    class _FakeModelsFail:
+        def generate_content(self, **_kwargs):
+            raise RuntimeError("gemini unavailable")
+
+    class _FakeGroqTranscriptions:
+        def create(self, **_kwargs):
+            return {"text": "ขอดูแฟ้มคดี"}
+
+    engine._gemini_client = SimpleNamespace(models=_FakeModelsOK())
+    engine._gemini_paid_client = None
+    engine._groq_client = SimpleNamespace(audio=SimpleNamespace(transcriptions=_FakeGroqTranscriptions()))
+
+    # 1. Gemini Audio STT succeeds -> uses Gemini without calling Groq
+    assert asyncio.run(engine.transcribe_audio(b"fake-audio-bytes", "speech.webm", "audio/webm;codecs=opus")) == "ถามผู้ใหญ่ประเสริฐเรื่องใบรับแจ้งความ"
+
+    # 2. Gemini raises error -> automatically falls back to Groq Whisper
+    engine._gemini_client = SimpleNamespace(models=_FakeModelsFail())
+    assert asyncio.run(engine.transcribe_audio(b"fake-audio-bytes", "speech.webm", "audio/webm")) == "ขอดูแฟ้มคดี"
