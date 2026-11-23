@@ -4,9 +4,12 @@
   let socket = null;
   let scenarioMeta = null;
   let selectedRoleId = "investigator";
+  let selectedStartAct = "A";
   let takenRoles = [];
   let myPlayer = null;
   let currentState = null;
+  let renderedNpcSignature = "";
+  let renderedBoardAct = "";
   let isMuted = false;
   let voiceVolume = Math.max(0, Math.min(1, parseFloat(localStorage.getItem("ai_dm_voice_vol") ?? "1")));
   let ambientVolume = Math.max(0, Math.min(1, parseFloat(localStorage.getItem("ai_dm_ambient_vol") ?? "0.7")));
@@ -45,6 +48,19 @@
   let stopTailTimer = null;
 
   const $ = (id) => document.getElementById(id);
+
+  const NPC_DISPLAY_LABELS = {
+    "ประเสริฐ": "ผู้ใหญ่ประเสริฐ",
+    "วิชัย": "วิชัย (ผู้ช่วยผู้ใหญ่)",
+    "ต้น": "ต้น (อาสาสมัคร)",
+  };
+
+  const SPEAKER_AVATARS = {
+    "ประเสริฐ": "/assets/characters/prasert.png",
+    "วิชัย": "/assets/characters/wichai.png",
+    "ต้น": "/assets/characters/ton.png",
+    "ผีเงาจมน้ำ": "/assets/characters/drowned_echo.png",
+  };
 
   function normalizeRoomCode(val) {
     return (val || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 16) || "BANANA01";
@@ -122,11 +138,12 @@
       btn.type = "button";
       btn.className = `active-room-card ${rm.room_code === selectedCode ? "selected" : ""}`;
       const isEmptyRoom = rm.online_count === 0;
+      const roomAct = rm.act || (String(rm.scene_id || "").startsWith("B") ? "B" : "A");
       const badgeClass = rm.in_combat ? "active-room-badge combat" : "active-room-badge";
       const statusText = isEmptyRoom
         ? "ห้องว่าง"
         : rm.ended
-          ? "จบช่วง A แล้ว"
+          ? `จบช่วง ${roomAct} แล้ว`
           : rm.in_combat
             ? "กำลังสู้ผี"
             : rm.started
@@ -410,8 +427,96 @@
     });
   }
 
+  function renderNpcLayer(state) {
+    const layer = $("npc-layer");
+    if (!layer) return;
+    const visibleNpcs = (state.npcs || []).filter((n) => n.visible !== false);
+    const sig = visibleNpcs.map((n) => `${n.name}:${n.sprite}`).join("|");
+    layer.classList.toggle("multi-npc", visibleNpcs.length >= 2);
+    if (sig === renderedNpcSignature) return;
+    renderedNpcSignature = sig;
+    layer.innerHTML = "";
+    visibleNpcs.forEach((npc) => {
+      const wrap = document.createElement("div");
+      wrap.className = "npc-sprite-wrap";
+      wrap.dataset.speaker = npc.name;
+      const displayName = NPC_DISPLAY_LABELS[npc.name] || npc.name;
+      const img = document.createElement("img");
+      img.src = npc.sprite;
+      img.alt = displayName;
+      img.className = "npc-sprite";
+      const label = document.createElement("span");
+      label.className = "npc-label";
+      label.textContent = displayName;
+      wrap.appendChild(img);
+      wrap.appendChild(label);
+      layer.appendChild(wrap);
+    });
+  }
+
+  function renderBoardRoutes(act) {
+    const routesLayer = $("board-routes-layer");
+    if (!routesLayer || renderedBoardAct === act) return;
+    renderedBoardAct = act;
+    routesLayer.innerHTML = "";
+    const segments =
+      act === "B"
+        ? [
+            { x1: 42, y1: 50, x2: 24, y2: 66, cls: "map-road" },
+            { x1: 42, y1: 50, x2: 68, y2: 36, cls: "map-road" },
+            { x1: 42, y1: 50, x2: 82, y2: 72, cls: "map-road" },
+            { x1: 68, y1: 36, x2: 82, y2: 72, cls: "map-road" },
+          ]
+        : [
+            { x1: 22, y1: 62, x2: 45, y2: 46, cls: "map-road" },
+            { x1: 45, y1: 46, x2: 76, y2: 30, cls: "map-road" },
+            { x1: 45, y1: 46, x2: 70, y2: 72, cls: "map-road map-road-danger" },
+          ];
+    segments.forEach((seg) => {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", String(seg.x1));
+      line.setAttribute("y1", String(seg.y1));
+      line.setAttribute("x2", String(seg.x2));
+      line.setAttribute("y2", String(seg.y2));
+      line.setAttribute("class", seg.cls);
+      routesLayer.appendChild(line);
+    });
+  }
+
+  function renderNpcTrustList(act, trustMap) {
+    const listEl = $("npc-trust-list");
+    const titleEl = $("trust-card-title");
+    if (!listEl) return;
+    const npcs = act === "B" ? ["วิชัย", "ต้น"] : ["ประเสริฐ"];
+    if (titleEl) {
+      titleEl.textContent = act === "B" ? "ท่าทีพยานและผู้ช่วย (ACT B)" : "ท่าทีผู้ใหญ่ประเสริฐ";
+    }
+    listEl.innerHTML = "";
+    npcs.forEach((npcName) => {
+      const val = trustMap?.[npcName] ?? 0;
+      const pct = Math.max(5, Math.min(100, ((val + 3) / 8) * 100));
+      const statusLabel =
+        val > 0 ? `เชื่อใจ (+${val})` : val < 0 ? `ระแวง (${val})` : "ปกติ (0)";
+      const item = document.createElement("div");
+      item.className = "npc-trust-item";
+      item.innerHTML = `
+        <div class="npc-trust-head">
+          <span class="npc-trust-name"></span>
+          <span class="trust-label"></span>
+        </div>
+        <div class="trust-track">
+          <div class="trust-fill" style="width: ${pct}%"></div>
+        </div>
+      `;
+      item.querySelector(".npc-trust-name").textContent = NPC_DISPLAY_LABELS[npcName] || npcName;
+      item.querySelector(".trust-label").textContent = statusLabel;
+      listEl.appendChild(item);
+    });
+  }
+
   function renderState(state) {
     currentState = state;
+    const act = state.act || (String(state.current_scene || "").startsWith("B") ? "B" : "A");
     const me = (state.players || []).find((p) => p.id === myPlayer?.id || p.sid === socket?.id);
     $("game-screen").classList.toggle("in-combat", Boolean(state.combat?.active));
 
@@ -424,24 +529,56 @@
       : state.scene_subtitle;
     $("hud-turn-pill").textContent = `เทิร์นฉากนี้ ${state.scene_turn_count}`;
     $("hud-quota-pill").textContent = `เสียงสด ${state.live_tts_used}/${state.live_tts_limit}`;
+    $("demo-combat-btn")?.classList.toggle("hidden", act === "B");
+    if ($("reset-room-btn")) {
+      $("reset-room-btn").title = act === "B" ? "เริ่มเล่นช่วง ACT B ใหม่" : "เริ่มเล่นช่วง ACT A ใหม่";
+    }
 
     if (!state.combat?.active) {
       $("scene-bg-img").src = state.background_image;
     }
-    const prasertNpc = (state.npcs || []).find((n) => n.name === "ประเสริฐ");
-    $("npc-card-prasert").classList.toggle("hidden", !prasertNpc || !prasertNpc.visible);
+    renderNpcLayer(state);
 
     // Overlays
     $("start-overlay").classList.toggle("hidden", Boolean(state.started));
+    if (!state.started) {
+      if (act === "B") {
+        $("start-overlay-crest").textContent = "บทที่ 2 · ACT B";
+        $("start-overlay-title").textContent = "ก้าวเข้าสู่บ้านผู้ใหญ่บ้าน";
+        $("start-overlay-desc").textContent = "เมื่อสมาชิกเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดฉาก B1";
+        $("start-game-btn").textContent = "เริ่มบท ACT B";
+      } else {
+        $("start-overlay-crest").textContent = "บทนำ ACT A";
+        $("start-overlay-title").textContent = "พร้อมเข้าสู่หมู่บ้านหนองตาล";
+        $("start-overlay-desc").textContent = "เมื่อสมาชิกเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดคดี A1";
+        $("start-game-btn").textContent = "เริ่มบทนำ ACT A";
+      }
+    }
+
     const endingOverlay = $("ending-overlay");
     if (state.ending) {
       endingOverlay.classList.remove("hidden");
+      const endingAct = state.ending.id === "act_b_complete" ? "B" : "A";
       const badge = $("ending-badge");
       badge.textContent =
-        state.ending.type === "true_ending" ? "TRUE ENDING • ACT A" : "BAD ENDING • ACT A";
+        state.ending.type === "true_ending"
+          ? `TRUE ENDING • ACT ${endingAct}`
+          : `BAD ENDING • ACT ${endingAct}`;
       badge.className = `ending-badge ${state.ending.type === "true_ending" ? "true" : "bad"}`;
       $("ending-title").textContent = state.ending.title;
       $("ending-summary").textContent = state.ending.summary;
+
+      const canAdvanceB =
+        state.ending.id === "act_a_complete" || state.ending.id === "act_a_combat_clear";
+      const nextActBtn = $("ending-next-act-btn");
+      const resetBtn = $("ending-reset-btn");
+      const restartABtn = $("ending-restart-a-btn");
+      nextActBtn?.classList.toggle("hidden", !canAdvanceB);
+      restartABtn?.classList.toggle("hidden", endingAct !== "B");
+      if (resetBtn) {
+        resetBtn.textContent = `เล่น ACT ${endingAct} ใหม่อีกครั้ง`;
+        resetBtn.className = canAdvanceB ? "btn btn-secondary" : "btn btn-primary";
+      }
     } else {
       endingOverlay.classList.add("hidden");
     }
@@ -461,6 +598,7 @@
     });
 
     // Board Map
+    renderBoardRoutes(act);
     const nodesLayer = $("board-nodes-layer");
     nodesLayer.innerHTML = "";
     let activeNodeName = state.board_node;
@@ -512,18 +650,18 @@
     }
 
     // Clues, Items, Trust
-    const trustVal = state.npc_trust?.["ประเสริฐ"] ?? 0;
-    const trustPct = ((trustVal + 3) / 8) * 100;
-    $("trust-value-label").textContent =
-      trustVal > 0 ? `เชื่อใจ (+${trustVal})` : trustVal < 0 ? `ระแวง (${trustVal})` : "ปกติ (0)";
-    $("trust-fill").style.width = `${Math.max(5, Math.min(100, trustPct))}%`;
+    renderNpcTrustList(act, state.npc_trust);
 
     const clues = state.clues_found || [];
     $("clues-count").textContent = String(clues.length);
     const cluesList = $("clues-list");
+    const emptyCluesHint =
+      act === "B"
+        ? "ยังไม่มีเบาะแส — สอบถามวิชัย/ต้น หรือตรวจแผนที่และผนังภาพเก่า"
+        : "ยังไม่มีเบาะแส — ลองสอบถามประเสริฐหรือสังเกตพื้นที่";
     cluesList.innerHTML = clues.length
       ? ""
-      : `<li class="empty-note">ยังไม่มีเบาะแส — ลองสอบถามประเสริฐหรือสังเกตพื้นที่</li>`;
+      : `<li class="empty-note">${emptyCluesHint}</li>`;
     clues.forEach((c) => {
       const li = document.createElement("li");
       li.innerHTML = `<strong></strong><span></span>`;
@@ -678,13 +816,12 @@
 
   function setSpeakingVisual(speaker, active) {
     $("audio-wave").classList.toggle("hidden", !active);
-    const prasertWrap = $("npc-card-prasert");
-    if (prasertWrap) {
-      prasertWrap.classList.toggle("speaking", active && speaker === "ประเสริฐ");
-    }
+    document.querySelectorAll("#npc-layer .npc-sprite-wrap").forEach((el) => {
+      el.classList.toggle("speaking", Boolean(active && el.dataset.speaker === speaker));
+    });
     const ghostWrap = $("ghost-sprite-wrap");
     if (ghostWrap) {
-      ghostWrap.classList.toggle("speaking", active && speaker === "ผีเงาจมน้ำ");
+      ghostWrap.classList.toggle("speaking", Boolean(active && speaker === "ผีเงาจมน้ำ"));
     }
     audioFX?.setDucking(active);
   }
@@ -746,11 +883,9 @@
 
     const avatarEl = $("subtitle-avatar");
     if (avatarEl) {
-      if (speaker === "ประเสริฐ") {
-        avatarEl.src = "/assets/characters/prasert.png";
-        avatarEl.classList.remove("hidden");
-      } else if (speaker === "ผีเงาจมน้ำ") {
-        avatarEl.src = "/assets/characters/drowned_echo.png";
+      const avatarUrl = SPEAKER_AVATARS[speaker];
+      if (avatarUrl) {
+        avatarEl.src = avatarUrl;
         avatarEl.classList.remove("hidden");
       } else {
         avatarEl.classList.add("hidden");
@@ -1096,7 +1231,7 @@
     stopListeningNow();
   }
 
-  function connectAndJoin(playerName, roomCode, roleId) {
+  function connectAndJoin(playerName, roomCode, roleId, startAct = selectedStartAct) {
     if (socket) socket.disconnect();
     const normCode = normalizeRoomCode(roomCode);
     const savedToken = localStorage.getItem(tokenStorageKey(normCode));
@@ -1114,6 +1249,7 @@
         room_code: normCode,
         role_id: roleId,
         player_token: savedToken || null,
+        start_act: startAct || "A",
       });
     });
 
@@ -1145,6 +1281,15 @@
       (payload.history || []).forEach((h) => {
         appendTranscriptLog(h.speaker, h.text, h.kind);
       });
+      if (!payload.state?.started) {
+        const joinedAct =
+          payload.state?.act || (String(payload.state?.current_scene || "").startsWith("B") ? "B" : "A");
+        $("subtitle-speaker").textContent = "ระบบ";
+        $("subtitle-text").textContent =
+          joinedAct === "B"
+            ? "ยินดีต้อนรับสู่แฟ้มคดี ACT B: บ้านผู้ใหญ่บ้าน กด 'เริ่มบท ACT B' เพื่อเริ่มฟังเสียงบรรยาย"
+            : "ยินดีต้อนรับสู่แฟ้มคดีบ้านหนองตาล กด 'เริ่มบทนำ ACT A' เพื่อเริ่มฟังเสียงบรรยายจากผู้ดำเนินเกม";
+      }
       renderState(payload.state);
     });
 
@@ -1234,17 +1379,38 @@
       if (data?.sfx) audioFX?.playSfx(data.sfx);
     });
 
-    socket.on("room:reset_done", (payload) => {
+    socket.on("room:act_changed", (payload) => {
       clearAudioQueue();
       $("dice-result-banner").classList.add("hidden");
+      renderedNpcSignature = "";
+      renderedBoardAct = "";
+      document.querySelector('.stage-tab[data-view="scene"]')?.click();
+      const actLabel = payload?.act || "B";
+      appendTranscriptLog(
+        "ระบบ",
+        `เข้าสู่บทที่ 2 (ACT ${actLabel}): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่`,
+        "system"
+      );
+      showToast(`เข้าสู่ช่วง ACT ${actLabel}: บ้านผู้ใหญ่บ้านแล้ว`);
+    });
+
+    socket.on("room:reset_done", (payload) => {
+      clearAudioQueue();
+      renderedNpcSignature = "";
+      renderedBoardAct = "";
+      const actLabel = payload?.act || "A";
+      $("dice-result-banner").classList.add("hidden");
       $("subtitle-speaker").textContent = "ระบบ";
-      $("subtitle-text").textContent = "เริ่มห้องใหม่แล้ว กด 'เริ่มบทนำ ACT A' เพื่อเริ่มต้น";
+      $("subtitle-text").textContent =
+        actLabel === "B"
+          ? "เริ่มบท ACT B ใหม่แล้ว กด 'เริ่มบท ACT B' เพื่อเข้าสู่ห้องรับแขกบ้านผู้ใหญ่"
+          : "เริ่มห้องใหม่แล้ว กด 'เริ่มบทนำ ACT A' เพื่อเริ่มต้น";
       const logEl = $("transcript-log");
       logEl.innerHTML = "";
       (payload.history || []).forEach((h) => {
         appendTranscriptLog(h.speaker, h.text, h.kind);
       });
-      showToast("รีเซ็ตห้องเพื่อเริ่ม ACT A ใหม่แล้ว");
+      showToast(`รีเซ็ตห้องเพื่อเริ่ม ACT ${actLabel} ใหม่แล้ว`);
     });
 
     socket.on("dm:error", (err) => {
@@ -1301,12 +1467,21 @@
       roomLookupTimer = setTimeout(() => refreshRoomRoles(e.target.value), 250);
     });
 
+    document.querySelectorAll(".act-toggle-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectedStartAct = btn.dataset.act === "B" ? "B" : "A";
+        document.querySelectorAll(".act-toggle-btn").forEach((b) => {
+          b.classList.toggle("selected", b === btn);
+        });
+      });
+    });
+
     $("join-form").addEventListener("submit", (e) => {
       e.preventDefault();
       unlockBrowserAudio();
       const playerName = $("player-name").value.trim() || "ผู้สืบสวน";
       const roomCode = $("room-code").value.trim() || "BANANA01";
-      connectAndJoin(playerName, roomCode, selectedRoleId);
+      connectAndJoin(playerName, roomCode, selectedRoleId, selectedStartAct);
     });
 
     $("copy-room-btn").addEventListener("click", async () => {
@@ -1370,8 +1545,19 @@
       socket?.emit("room:reset", {});
     });
 
+    $("ending-next-act-btn")?.addEventListener("click", () => {
+      unlockBrowserAudio();
+      document.querySelector('.stage-tab[data-view="scene"]')?.click();
+      socket?.emit("room:advance_act_b", {});
+    });
+
     $("ending-reset-btn").addEventListener("click", () => {
-      socket?.emit("room:reset", {});
+      const curAct = currentState?.act || "A";
+      socket?.emit("room:reset", { act: curAct });
+    });
+
+    $("ending-restart-a-btn")?.addEventListener("click", () => {
+      socket?.emit("room:reset", { act: "A" });
     });
 
     $("roll-dice-btn").addEventListener("click", () => {

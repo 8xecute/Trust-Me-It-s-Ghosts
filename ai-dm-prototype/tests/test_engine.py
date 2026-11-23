@@ -652,3 +652,147 @@ def test_gemini_503_transient_retry_and_failover(monkeypatch: pytest.MonkeyPatch
 
     assert engine._run_with_gemini_failover(persistent_primary_503) == "paid_rescued"
     assert calls2 == ["primary", "primary", "primary", "paid"]
+
+
+def test_act_b_data_integrity_and_unique_voices() -> None:
+    repo = ScenarioRepository()
+    assert len(repo.dialogues) == 87
+    for scene_id in ("A1", "A2", "A3", "B1", "B2", "B3"):
+        assert scene_id in repo.scenes
+    for check_id in ("B2_WICHAI_TELL", "B3_TON_DISCLOSURE", "B4_FLOOD_PHOTO"):
+        assert check_id in repo.dice_checks
+    assert "act_b_complete" in repo.endings
+    assert "filler_wichai_calm" in repo.fillers_by_id
+    assert "filler_ton_nervous" in repo.fillers_by_id
+    act_b_fillers = repo.get_fillers_for_act("B")
+    assert all(f["speaker"] in {"DM", "วิชัย", "ต้น"} for f in act_b_fillers)
+
+
+def test_act_b_flow_checks_guardrails_and_ending() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    room, _, _ = mgr.add_player("ACTB01", "sid_1", "เอม", "investigator", start_act="B")
+
+    assert room.current_scene == "B1"
+    assert room.board_node == "headman_living_room"
+    snap0 = mgr.serialize_public_state(room)
+    assert snap0["act"] == "B"
+    assert [n["id"] for n in snap0["board_nodes"]] == [
+        "headman_living_room",
+        "headman_porch",
+        "headman_archive_wall",
+        "road_to_don_house",
+    ]
+    assert snap0["board_nodes"][-1]["unlocked"] is False
+
+    # In Act A room, Act B ending b_ending_to_act_c must NOT be eligible even if clues were injected
+    room_a, _, _ = mgr.add_player("ACTAONLY", "sid_a", "บี", "investigator", start_act="A")
+    room_a.clues_found.append("don_house_location")
+    assert all(d["id"] != "b_ending_to_act_c" for d in mgr.get_eligible_dialogues(room_a))
+
+    _, intro_events = mgr.start_game("ACTB01")
+    assert [ev["dialogue_id"] for ev in intro_events] == ["b1_intro_dm", "b1_wichai_greet"]
+
+    # Guardrail 1: Prasert must NEVER speak in Act B (even if LLM hallucinates character="ประเสริฐ" or filler)
+    bad_prasert = DMDecision(
+        mode="improvise",
+        character="ประเสริฐ",
+        filler_audio_id="filler_prasert_hmm",
+        improvised_text="สวัสดีครับ",
+    )
+    out_guard = mgr.validate_and_apply_decision(room, bad_prasert, "เอม")
+    assert out_guard["live_tts_speaker"] == "วิชัย"
+    assert out_guard["primary_event"]["character"] == "วิชัย"
+
+    # Guardrail 2: b1_qa_wichai_flood_kaew must be rejected before flood_photo_seen is unlocked
+    early_flood = DMDecision(mode="script", character="วิชัย", selected_audio_id="b1_qa_wichai_flood_kaew")
+    out_early = mgr.validate_and_apply_decision(room, early_flood, "เอม")
+    assert out_early["needs_live_tts"] is True
+    assert "wichai_flood_survivor" not in room.clues_found
+
+    # Guardrail 3: Inspecting files in B1 unlocks don_house_location, map_two_layers, village_map_copy & road_to_don_house node
+    files_res = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(mode="script", character="DM", selected_audio_id="b1_inspect_files_free"),
+        "เอม",
+    )
+    assert files_res["needs_live_tts"] is False
+    assert "don_house_location" in room.clues_found
+    assert "map_two_layers" in room.clues_found
+    assert "village_map_copy" in room.inventory
+
+    # Trigger and resolve B2_WICHAI_TELL in B1
+    pending_b2 = mgr.trigger_check(room, "B2_WICHAI_TELL", "เอม")
+    assert pending_b2 is not None
+    res_b2 = mgr.resolve_dice_roll("ACTB01", "sid_1")
+    assert res_b2["roll"]["check_id"] == "B2_WICHAI_TELL"
+
+    # Cross-act board movement is rejected
+    with pytest.raises(ValueError, match="คนละช่วงเนื้อเรื่อง"):
+        mgr.move_board_node("ACTB01", "sala", "เอม")
+
+    # Move to B2 porch via board map -> plays b2_intro_dm and Ton can talk + gain/lose trust
+    move_b2 = mgr.move_board_node("ACTB01", "headman_porch", "เอม")
+    assert room.current_scene == "B2"
+    assert [ev["dialogue_id"] for ev in move_b2["events"]] == ["b2_intro_dm"]
+    mgr.trigger_check(room, "B3_TON_DISCLOSURE", "เอม")
+    mgr.resolve_dice_roll("ACTB01", "sid_1")
+    assert "B3_TON_DISCLOSURE" in room.resolved_checks
+
+    # Move to B3 archive wall via DM scene update -> plays b3_intro_dm & unlocks flood_photo_seen
+    move_b3 = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(
+            mode="improvise",
+            character="DM",
+            improvised_text="คุณเดินกลับเข้าห้องรับแขกไปดูผนังภาพถ่ายเก่าปี 2534",
+            state_updates=StateUpdates(current_scene="B3"),
+        ),
+        "เอม",
+    )
+    assert room.current_scene == "B3"
+    assert room.board_node == "headman_archive_wall"
+    assert any(ev["dialogue_id"] == "b3_intro_dm" for ev in move_b3["queued_events"])
+    assert "flood_photo_seen" in room.clues_found
+
+    # Return to B1 -> now b1_qa_wichai_flood_kaew IS eligible!
+    mgr.move_board_node("ACTB01", "headman_living_room", "เอม")
+    assert room.current_scene == "B1"
+    out_flood_ok = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(mode="script", character="วิชัย", selected_audio_id="b1_qa_wichai_flood_kaew"),
+        "เอม",
+    )
+    assert out_flood_ok["needs_live_tts"] is False
+    assert "wichai_flood_survivor" in room.clues_found
+
+    # Depart to Don's house via board map -> triggers act_b_complete & plays b_ending_to_act_c
+    end_res = mgr.move_board_node("ACTB01", "road_to_don_house", "เอม")
+    assert room.ending_triggered == "act_b_complete"
+    assert room.board_node == "road_to_don_house"
+    assert any(ev["dialogue_id"] == "b_ending_to_act_c" for ev in end_res["events"])
+
+
+def test_seamless_act_a_to_act_b_transition() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    room, p1, _ = mgr.add_player("AB01", "sid_1", "ฟรังก์", "investigator", start_act="A")
+    mgr.start_game("AB01")
+    mgr.validate_and_apply_decision(
+        room, DMDecision(mode="script", character="DM", selected_audio_id="a1_open_folder_to_a2"), "ฟรังก์"
+    )
+    mgr.validate_and_apply_decision(
+        room, DMDecision(mode="script", character="ประเสริฐ", selected_audio_id="a2_move_to_a3"), "ฟรังก์"
+    )
+    mgr.move_board_node("AB01", "headman_house", "ฟรังก์")
+    assert room.ending_triggered == "act_a_complete"
+    prev_clues = list(room.clues_found)
+    assert len(prev_clues) > 0
+
+    _, b_events = mgr.advance_to_act_b("AB01")
+    assert room.current_scene == "B1"
+    assert room.board_node == "headman_living_room"
+    assert room.ending_triggered is None
+    assert p1.player_token in room.players
+    assert all(c in room.clues_found for c in prev_clues)
+    assert [ev["dialogue_id"] for ev in b_events] == ["b1_intro_dm", "b1_wichai_greet"]

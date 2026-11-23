@@ -12,7 +12,7 @@ class StateUpdates(BaseModel):
 
     current_scene: Optional[str] = Field(
         default=None,
-        description="รหัสฉากถัดไป (เช่น 'A2' หรือ 'A3') เฉพาะเมื่อเงื่อนไขเนื้อเรื่องถึงจุดเปลี่ยนฉากจริงเท่านั้น",
+        description="รหัสฉากถัดไป (เช่น 'A2', 'A3' หรือ 'B1', 'B2', 'B3') เฉพาะเมื่อผู้เล่นขยับจุดหรือเงื่อนไขเนื้อเรื่องถึงจุดเปลี่ยนฉากจริงเท่านั้น",
     )
     add_inventory: list[str] = Field(
         default_factory=list,
@@ -24,15 +24,19 @@ class StateUpdates(BaseModel):
     )
     npc_trust_delta: int = Field(
         default=0,
-        description="การเปลี่ยนแปลงความไว้วางใจของประเสริฐ (-1, 0, หรือ +1)",
+        description="การเปลี่ยนแปลงความไว้วางใจของ NPC (-1, 0, หรือ +1)",
+    )
+    npc_trust_target: Optional[str] = Field(
+        default=None,
+        description="ชื่อ NPC ที่ได้รับผล npc_trust_delta (เช่น 'ประเสริฐ', 'วิชัย', 'ต้น')",
     )
     board_node: Optional[str] = Field(
         default=None,
         description="รหัสจุดบนกระดานแผนที่หากทีมย้ายตำแหน่งในเทิร์นนี้",
     )
-    ending_triggered: Optional[Literal["act_a_complete", "act_a_combat_clear", "lost_in_grove"]] = Field(
+    ending_triggered: Optional[Literal["act_a_complete", "act_a_combat_clear", "lost_in_grove", "act_b_complete"]] = Field(
         default=None,
-        description="รหัสตอนจบหากเงื่อนไขจบช่วง ACT A ครบถ้วนแล้ว",
+        description="รหัสตอนจบหากเงื่อนไขจบบท (ACT A หรือ ACT B) ครบถ้วนแล้ว",
     )
 
 
@@ -43,7 +47,7 @@ class DMDecision(BaseModel):
         description="ใช้ 'script' เมื่อมีบทใน dialogues.json ที่ตรงกับคำถาม/การกระทำ หรือ 'improvise' เฉพาะเมื่อผู้เล่นถามนอกบท"
     )
     character: str = Field(
-        description="ชื่อตัวละครที่พูดในเทิร์นนี้ เช่น 'DM', 'ประเสริฐ', หรือ 'เสียงวิทยุ'"
+        description="ชื่อตัวละครที่พูดในเทิร์นนี้ เช่น 'DM', 'ประเสริฐ' (เฉพาะ ACT A), 'วิชัย' (ACT B), 'ต้น' (ACT B), หรือ 'เสียงวิทยุ'"
     )
     selected_audio_id: Optional[str] = Field(
         default=None,

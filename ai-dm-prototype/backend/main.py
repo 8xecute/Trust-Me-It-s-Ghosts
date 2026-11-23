@@ -164,9 +164,15 @@ async def _idle_watcher_loop() -> None:
                 and (now - room.last_activity_at) > 120
             ):
                 room.idle_prompted = True
+                act = room_manager.act_for_scene(room.current_scene)
                 prompt_text = (
-                    "ลมฝนพัดผ่านศาลาริมทางจนเสียงใบกล้วยไหวกรอบแกรบ... "
-                    "พวกคุณจะสอบถามประเสริฐ ตรวจเบาะแส หรือลองดูแผนที่ต่อดี?"
+                    "เสียงลมเย็นพัดผ่านบานประตูไม้บ้านผู้ใหญ่บ้าน... "
+                    "พวกคุณจะซักถามวิชัย ออกไปคุยกับต้น ตรวจผนังภาพเก่า หรือดูแผนที่ต่อดี?"
+                    if act == "B"
+                    else (
+                        "ลมฝนพัดผ่านศาลาริมทางจนเสียงใบกล้วยไหวกรอบแกรบ... "
+                        "พวกคุณจะสอบถามประเสริฐ ตรวจเบาะแส หรือลองดูแผนที่ต่อดี?"
+                    )
                 )
                 room_manager.append_log(room, "DM", prompt_text, kind="hint")
                 await sio.emit(
@@ -203,7 +209,7 @@ async def lifespan(_app: FastAPI):
             pass
 
 
-app = FastAPI(title="AI TRPG Game Master (CASE001 Act A)", lifespan=lifespan)
+app = FastAPI(title="AI TRPG Game Master (CASE001 Act A & B)", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -544,6 +550,8 @@ async def on_room_join(sid: str, data: dict[str, Any]) -> None:
     player_name = str(data.get("player_name") or "ผู้สืบสวน")
     role_id = str(data.get("role_id") or "investigator")
     player_token = data.get("player_token")
+    raw_act = str(data.get("start_act") or "A").strip().upper()
+    start_act = "B" if raw_act == "B" else "A"
 
     try:
         room, player, reconnected = room_manager.add_player(
@@ -552,6 +560,7 @@ async def on_room_join(sid: str, data: dict[str, Any]) -> None:
             player_name,
             role_id,
             player_token=str(player_token) if player_token else None,
+            start_act=start_act,
         )
     except ValueError as exc:
         await sio.emit(
@@ -719,9 +728,10 @@ async def on_mic_transcribe(sid: str, data: dict[str, Any]) -> None:
         return
 
     if room.ending_triggered:
+        ending_act = room_manager.act_for_scene(room.current_scene)
         await sio.emit(
             "mic:transcript",
-            {"ok": False, "error": "บทนำ ACT A จบลงแล้ว กรุณากด 'เริ่มคดีใหม่' เพื่อเล่นซ้ำ"},
+            {"ok": False, "error": f"บท ACT {ending_act} จบลงแล้ว กรุณากดปุ่มในหน้าสรุปเพื่อดำเนินการต่อหรือเล่นซ้ำ"},
             to=sid,
         )
         return
@@ -792,10 +802,11 @@ async def on_mic_audio(sid: str, data: dict[str, Any]) -> None:
         return
 
     if room.ending_triggered:
+        ending_act = room_manager.act_for_scene(room.current_scene)
         await _emit_room_state(room)
         await sio.emit(
             "dm:error",
-            {"message": "บทนำ ACT A จบลงแล้ว กรุณากดเริ่มใหม่หากต้องการเล่นซ้ำ"},
+            {"message": f"บท ACT {ending_act} จบลงแล้ว กรุณากดปุ่มในหน้าสรุปเพื่อดำเนินการต่อหรือเล่นซ้ำ"},
             to=sid,
         )
         return
@@ -876,9 +887,10 @@ async def on_chat_message(sid: str, data: dict[str, Any]) -> None:
         )
         return
     if room.ending_triggered:
+        ending_act = room_manager.act_for_scene(room.current_scene)
         await sio.emit(
             "dm:error",
-            {"message": "บทนำ ACT A จบลงแล้ว กรุณากด 'เริ่มคดีใหม่' เพื่อเล่นซ้ำ"},
+            {"message": f"บท ACT {ending_act} จบลงแล้ว กรุณากดปุ่มในหน้าสรุปเพื่อดำเนินการต่อหรือเล่นซ้ำ"},
             to=sid,
         )
         return
@@ -989,12 +1001,37 @@ async def on_combat_action(sid: str, data: dict[str, Any]) -> None:
     await _execute_combat_action(room, sid, action_id)
 
 
+@sio.on("room:advance_act_b")
+async def on_room_advance_act_b(sid: str, _data: dict[str, Any] | None = None) -> None:
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    _, events = room_manager.advance_to_act_b(room.room_code)
+    room_manager.append_log(
+        room,
+        "ระบบ",
+        "เข้าสู่บทที่ 2 (ACT B): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่",
+        kind="system",
+    )
+    await sio.emit(
+        "room:act_changed",
+        {"act": "B", "scene": "B1", "history": room.transcript_log},
+        room=room.room_code,
+    )
+    await _emit_room_state(room)
+    for ev in events:
+        await sio.emit("dm:audio", ev, room=room.room_code)
+
+
 @sio.on("room:reset")
-async def on_room_reset(sid: str, _data: dict[str, Any] | None = None) -> None:
+async def on_room_reset(sid: str, data: dict[str, Any] | None = None) -> None:
     room = room_manager.get_room_by_sid(sid)
     if not room:
         return
     code = room.room_code
+    raw_act = str((data or {}).get("act") or room_manager.act_for_scene(room.current_scene)).strip().upper()
+    act = "B" if raw_act == "B" else "A"
+
     preserved_players = dict(room.players)
     for p in preserved_players.values():
         p.hp = p.max_hp
@@ -1005,10 +1042,16 @@ async def on_room_reset(sid: str, _data: dict[str, Any] | None = None) -> None:
         p.damage_reduction = 0
         p.acted_this_round = False
 
-    fresh = RoomState(room_code=code, players=preserved_players)
+    fresh = RoomState(
+        room_code=code,
+        current_scene="B1" if act == "B" else "A1",
+        board_node="headman_living_room" if act == "B" else "sala",
+        players=preserved_players,
+    )
     room_manager.rooms[code] = fresh
-    room_manager.append_log(fresh, "ระบบ", "รีเซ็ตห้องเพื่อเริ่มบทนำ ACT A ใหม่อีกครั้ง", kind="system")
-    await sio.emit("room:reset_done", {"history": fresh.transcript_log}, room=code)
+    label = "ACT B (บ้านผู้ใหญ่บ้าน)" if act == "B" else "บทนำ ACT A"
+    room_manager.append_log(fresh, "ระบบ", f"รีเซ็ตห้องเพื่อเริ่ม {label} ใหม่อีกครั้ง", kind="system")
+    await sio.emit("room:reset_done", {"history": fresh.transcript_log, "act": act}, room=code)
     await _emit_room_state(fresh)
 
 

@@ -84,7 +84,9 @@
       "text": "ผมประเสริฐ ผู้ใหญ่บ้านครับ ขอบคุณที่รับงานนี้ คนหายไปสามคนแล้ว... ดล นิด แล้วก็เพิ่ม หายกันคนละคืน ผมอยากให้พวกคุณช่วยพากลับบ้านให้ได้",
       "is_filler": false,
       "unlocks": {
-        "clues": ["missing_names"],
+        "clues": [
+          "missing_names"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -106,7 +108,9 @@
       "text": "ดลหายก่อนครับ แล้วก็นิด ตามด้วยเพิ่ม หายกันคนละคืนเลย",
       "is_filler": false,
       "unlocks": {
-        "clues": ["missing_names"],
+        "clues": [
+          "missing_names"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -128,7 +132,10 @@
       "text": "เท่าที่มีคนเล่ากันก็แถวทางสวนกล้วยครับ แต่จุดที่เห็นแต่ละคนเป็นครั้งสุดท้ายต้องดูในแฟ้มที่บ้านผมอีกที",
       "is_filler": false,
       "unlocks": {
-        "clues": ["banana_grove_area", "headman_files_exist"],
+        "clues": [
+          "banana_grove_area",
+          "headman_files_exist"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -216,7 +223,9 @@
       "text": "มีคนเล่าให้ผมฟังอยู่ครับ... พอพูดถึงผู้หญิงชุดเขียว ผมก็นึกถึงแก้ว แต่เธอตายไปนานแล้ว ผมยังบอกไม่ได้ว่าเรื่องนี้เกี่ยวกับเธอไหม",
       "is_filler": false,
       "unlocks": {
-        "clues": ["kaew_mention"],
+        "clues": [
+          "kaew_mention"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -241,7 +250,9 @@
         "clues": [],
         "items": [],
         "next_scene": null,
-        "trust_delta": {"ประเสริฐ": -1}
+        "trust_delta": {
+          "ประเสริฐ": -1
+        }
       }
     },
     {
@@ -260,8 +271,13 @@
       "text": "ประเสริฐยื่นสำเนาใบรับแจ้งความให้คุณดู ในกระดาษระบุรายชื่อ ดล นิด และเพิ่ม พร้อมเวลาที่พบครั้งสุดท้ายคร่าว ๆ แต่แผนที่และแฟ้มรายละเอียดเพิ่มเติมยังเก็บอยู่ที่บ้านผู้ใหญ่",
       "is_filler": false,
       "unlocks": {
-        "clues": ["missing_names", "headman_files_exist"],
-        "items": ["missing_report_copy"],
+        "clues": [
+          "missing_names",
+          "headman_files_exist"
+        ],
+        "items": [
+          "missing_report_copy"
+        ],
         "next_scene": null,
         "trust_delta": {}
       }
@@ -282,7 +298,9 @@
       "text": "ขณะที่ประเสริฐกำลังคลี่แฟ้มในมือให้ดูใกล้แสงไฟจากรถตู้ซึ่งประตูข้างยังเปิดค้างอยู่ จู่ ๆ ก็มีเสียงซ่าดังลอดออกมาจากวิทยุสื่อสารในรถ!",
       "is_filler": false,
       "unlocks": {
-        "clues": ["headman_files_exist"],
+        "clues": [
+          "headman_files_exist"
+        ],
         "items": [],
         "next_scene": "A2",
         "trust_delta": {}
@@ -304,7 +322,9 @@
       "text": "สายตาของคุณกวาดมองรอบศาลา ข้าวของหน้าบ้านหลายหลังถูกมัดเตรียมไว้เหมือนคนพร้อมจะย้ายหนีได้ทุกเมื่อ ส่วนประเสริฐมักหลบตาทุกครั้งที่พูดถึงแนวสวนกล้วย คล้ายเขากังวลบางอย่างมากกว่าที่เล่า",
       "is_filler": false,
       "unlocks": {
-        "clues": ["prasert_nervous_clue"],
+        "clues": [
+          "prasert_nervous_clue"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -370,8 +390,13 @@
       "text": "คุณไล่ตรวจวันที่ในสำเนาใบรับแจ้งอย่างละเอียด พบว่าทั้งสามคนหายไปห่างกันคืนละหนึ่งวันตามลำดับ และช่องบันทึกตำแหน่งสุดท้ายยังเว้นรายละเอียดสำคัญไว้ ซึ่งตรงกับที่ต้องไปตรวจในแฟ้มที่บ้านผู้ใหญ่",
       "is_filler": false,
       "unlocks": {
-        "clues": ["report_timeline_gap", "headman_files_exist"],
-        "items": ["missing_report_copy"],
+        "clues": [
+          "report_timeline_gap",
+          "headman_files_exist"
+        ],
+        "items": [
+          "missing_report_copy"
+        ],
         "next_scene": null,
         "trust_delta": {}
       }
@@ -392,8 +417,12 @@
       "text": "เอกสารเป็นสำเนาใบรับแจ้งจริง มีชื่อ ดล นิด และเพิ่มครบถ้วน แต่ข้อมูลพิกัดละเอียดและแผนที่ไม่ได้แนบมากับใบนี้",
       "is_filler": false,
       "unlocks": {
-        "clues": ["headman_files_exist"],
-        "items": ["missing_report_copy"],
+        "clues": [
+          "headman_files_exist"
+        ],
+        "items": [
+          "missing_report_copy"
+        ],
         "next_scene": null,
         "trust_delta": {}
       }
@@ -415,7 +444,9 @@
       "is_filler": false,
       "unlocks": {
         "clues": [],
-        "items": ["missing_report_copy"],
+        "items": [
+          "missing_report_copy"
+        ],
         "next_scene": null,
         "trust_delta": {}
       }
@@ -436,7 +467,9 @@
       "text": "ประเสริฐเหลือบมองนาฬิกาก่อนรีบคลี่แฟ้มข้างประตูรถตู้ที่ยังเปิดค้างไว้... ทันใดนั้น วิทยุสื่อสารในรถก็ส่งเสียงซ่าดังแทรกความเงียบขึ้นมาเอง!",
       "is_filler": false,
       "unlocks": {
-        "clues": ["headman_files_exist"],
+        "clues": [
+          "headman_files_exist"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -480,7 +513,9 @@
       "text": "น้ำ... น้ำมาแล้ว... ข้าจะช่วยเอ็ง... ดึงมือข้าไว้...! ...ยังมีคนอยู่...",
       "is_filler": false,
       "unlocks": {
-        "clues": ["radio_still_alive"],
+        "clues": [
+          "radio_still_alive"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -524,7 +559,9 @@
       "text": "เมื่อลองเปิดบันทึกย้อนหลังหรือตรวจเครื่องวิทยุธรรมดา กลับได้ยินเพียงเสียงซ่าเท่านั้น ไม่มีเสียงพูดติดไว้ในเทปเลย แม้ทุกคนที่ยืนอยู่ข้างรถจะได้ยินชัดเจนเหมือนกันก็ตาม",
       "is_filler": false,
       "unlocks": {
-        "clues": ["radio_no_recording"],
+        "clues": [
+          "radio_no_recording"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -590,7 +627,9 @@
       "text": "คลื่นเย็นวาบไหลผ่านปลายนิ้ว ภาพผิวน้ำเชี่ยวซ้อนขึ้นมาแวบเดียว คุณแยกได้ว่าเสียงนี้เป็นร่องรอยความทรงจำที่ถูกรบกวน ไม่ใช่ผู้พูดผ่านวิทยุสด ๆ",
       "is_filler": false,
       "unlocks": {
-        "clues": ["radio_memory_echo"],
+        "clues": [
+          "radio_memory_echo"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -612,7 +651,9 @@
       "text": "เสียงซ่าเบาลงวูบหนึ่ง มือที่จับวิทยุเย็นชาจนต้องคลายออก มีลมชื้นเย็นลอดผ่านซอกนิ้ว ทั้งที่กระจกรถยังปิดสนิท คุณจับที่มาของเสียงนั้นไม่ได้",
       "is_filler": false,
       "unlocks": {
-        "clues": ["radio_supernatural_chill"],
+        "clues": [
+          "radio_supernatural_chill"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -656,7 +697,9 @@
       "text": "ไปดูข้อมูลที่บ้านผมกันก่อนเถอะครับ ขืนยืนอยู่ตรงนี้อาจไม่ช่วยอะไร แฟ้มกับแผนที่รออยู่ที่บ้านแล้ว",
       "is_filler": false,
       "unlocks": {
-        "clues": ["location_headman_house"],
+        "clues": [
+          "location_headman_house"
+        ],
         "items": [],
         "next_scene": "A3",
         "trust_delta": {}
@@ -678,7 +721,9 @@
       "text": "ไฟสถานะวิทยุกลับมานิ่งสนิทแล้ว ประเสริฐรีบชี้ไปยังถนนด้านใน... ไปดูแฟ้มกับแผนที่ที่บ้านผมกันเถอะครับ จะได้รู้ว่าควรเริ่มตามจากตรงไหน",
       "is_filler": false,
       "unlocks": {
-        "clues": ["location_headman_house"],
+        "clues": [
+          "location_headman_house"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -700,7 +745,9 @@
       "text": "บ้านผมอยู่ทางนั้นครับ แฟ้มคนหายกับแผนที่อยู่ที่บ้าน ไปดูกันก่อน จะได้รู้ว่าเราควรเริ่มตามจากตรงไหน",
       "is_filler": false,
       "unlocks": {
-        "clues": ["location_headman_house"],
+        "clues": [
+          "location_headman_house"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -722,7 +769,9 @@
       "text": "มีวิชัย ผู้ช่วยผม เขาช่วยเตรียมแผนที่อยู่ ส่วนต้นเป็นอาสาที่เคยเห็นคนเข้าออกแถวทางสวน ผมเรียกเขามาคุยกับพวกคุณครับ",
       "is_filler": false,
       "unlocks": {
-        "clues": ["witnesses_at_house"],
+        "clues": [
+          "witnesses_at_house"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -788,7 +837,9 @@
       "text": "ฝนเริ่มหนักขึ้นแล้วครับ แสงตะเกียงในบ้านผมเปิดรออยู่ เข้าไปดูแฟ้มกับแผนที่ข้างในกันเลยดีกว่าครับ",
       "is_filler": false,
       "unlocks": {
-        "clues": ["location_headman_house"],
+        "clues": [
+          "location_headman_house"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -810,7 +861,9 @@
       "text": "ประเสริฐเดินนำทีมไปตามถนนเงียบ ๆ ถึงบ้านไม้ที่ยังเปิดไฟอยู่ ภายในมีแสงตะเกียงจากห้องรับแขกและเสียงขยับกระดาษเบา ๆ เหมือนมีใครกำลังรอฟังอยู่... จบบทนำ ACT A เตรียมก้าวเข้าสู่บ้านผู้ใหญ่ใน ACT B",
       "is_filler": false,
       "unlocks": {
-        "clues": ["location_headman_house"],
+        "clues": [
+          "location_headman_house"
+        ],
         "items": [],
         "next_scene": null,
         "trust_delta": {}
@@ -941,7 +994,12 @@
       },
       "text": "เสียงน้ำไหลเชี่ยวโอบล้อมดงกล้วย เงาดำเปียกโชกผุดขึ้นจากแอ่งโคลน! กลิ่นดินโคลนเน่าคละคลุ้งพร้อมเสียงสำลักน้ำที่คุ้นเคย ทุกคนเตรียมตั้งหลักรับมือ!",
       "is_filler": false,
-      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "ghost_move_wet_claw",
@@ -958,7 +1016,12 @@
       },
       "text": "อย่าหนี... เข้ามาในน้ำด้วยกัน...!",
       "is_filler": false,
-      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "ghost_move_underfloor_hand",
@@ -975,7 +1038,12 @@
       },
       "text": "ขาของเจ้า... จมลงมาในโคลนเสียเถอะ...",
       "is_filler": false,
-      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "ghost_move_drowned_whisper",
@@ -992,7 +1060,12 @@
       },
       "text": "อยู่เป็นเพื่อนข้า... น้ำท่วมแล้ว... ไม่มีใครรอดหรอก...",
       "is_filler": false,
-      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "combat_win_disperse",
@@ -1009,7 +1082,14 @@
       },
       "text": "แสงและแรงปะทะทำให้เงาเปียกโชกสลายกลายเป็นละอองน้ำ ทีมสืบสวนรอดจากปากทางสวนกล้วยและมุ่งหน้ากลับสู่บ้านผู้ใหญ่ได้สำเร็จ!",
       "is_filler": false,
-      "unlocks": { "clues": ["location_headman_house"], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [
+          "location_headman_house"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "combat_win_soothe",
@@ -1026,7 +1106,14 @@
       },
       "text": "เสียงปลอบโยนทำให้คลื่นอาฆาตสงบลงชั่วคราว เงาจมน้ำค่อย ๆ จางหายไปในความมืด ทีมสืบสวนปลอดภัยและพร้อมเข้าบ้านผู้ใหญ่!",
       "is_filler": false,
-      "unlocks": { "clues": ["location_headman_house"], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [
+          "location_headman_house"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "combat_escape",
@@ -1043,7 +1130,14 @@
       },
       "text": "ทีมช่วยกันเปิดทางถอยกลับออกมาถึงแนวถนนอย่างหวุดหวิด ประเสริฐรีบกวักมือเรียกให้เข้าไปดูแฟ้มในบ้านผู้ใหญ่ทันที",
       "is_filler": false,
-      "unlocks": { "clues": ["location_headman_house"], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [
+          "location_headman_house"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "combat_defeat_bad",
@@ -1060,7 +1154,12 @@
       },
       "text": "ทีมสืบสวนอ่อนแรงและเสียขวัญท่ามกลางดงกล้วยมืดมิด เสียงน้ำไหลโอบล้อมจนต้องถอยร่นออกมาตั้งหลักใหม่...",
       "is_filler": false,
-      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     },
     {
       "id": "filler_ghost_choke",
@@ -1077,7 +1176,896 @@
       },
       "text": "แฮ่ก... น้ำ... เย็น...",
       "is_filler": true,
-      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_intro_dm",
+      "scene": "B1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม ลึกลับ ชัดถ้อยชัดคำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "บทเปิดฉาก B1 เมื่อทีมเดินเข้าห้องรับแขกบ้านผู้ใหญ่บ้าน"
+      },
+      "text": "ประเสริฐเปิดไฟห้องรับแขกไม่ทันไร เสียงโทรศัพท์มือถือในกระเป๋าก็ดังขึ้น สายตรวจโทรตามให้แกออกไปช่วยดูจุดตั้งด่านหน้าหมู่บ้าน แกจึงรีบฝากแฟ้มไว้กับชายเสื้อเชิ้ตพับแขนริมโต๊ะ ข้างประตูมีหนุ่มอาสานั่งกำพวงกุญแจเงียบ ๆ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_wichai_greet",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ สุขุม สุภาพ เป็นทางการ แต่แฝงความระแวดระวัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "วิชัยแนะนำตัวและเชิญทีมตรวจแฟ้มกับแผนที่"
+      },
+      "text": "สวัสดีครับ ผมวิชัย ผู้ช่วยผู้ใหญ่ ผมจัดแฟ้มคนหายกับแผนที่ไว้ให้แล้วครับ อยากเริ่มดูตรงไหน บอกได้เลย",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_inspect_files_free",
+      "scene": "B1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ จับรายละเอียดเฉียบคม ชวนสงสัย",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นขอดูแฟ้มคนหาย แผนที่ หรือสังเกตมือของวิชัยบนโต๊ะ"
+      },
+      "text": "วิชัยยื่นมือเลื่อนแผนที่ใต้แสงไฟ เผยให้เห็นรอยข่วนกับรอยช้ำบนหลังมือก่อนเขาจะดึงแขนเสื้อลง บนแผนที่มีหมุดแดงคนหายทับวงที่ดินสีน้ำเงินของวิชัย พร้อมโน้ตว่าดลหายคนแรกและชอบจดเรื่องที่สงสัยไว้ที่บ้าน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "don_house_location",
+          "map_two_layers"
+        ],
+        "items": [
+          "village_map_copy"
+        ],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_where_prasert",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ตอบเรียบ ๆ เป็นทางการ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าผู้ใหญ่ประเสริฐไปไหน หรือทำไมวิชัยมารออยู่ด้วย"
+      },
+      "text": "สายตรวจโทรตามผู้ใหญ่ให้ออกไปช่วยดูจุดตั้งด่านหน้าหมู่บ้านครับ แกเลยฝากผมช่วยดูแลเรื่องแผนที่กับพยานแทน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_wichai_hand",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ตอบไวอย่างเป็นธรรมชาติเหมือนเตรียมคำตอบไว้แล้ว",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามเรื่องรอยข่วนหรือรอยช้ำที่หลังมือของวิชัย"
+      },
+      "text": "อ๋อ รอยนี่เหรอครับ... โดนลวดหนามริมสวนเกี่ยวน่ะครับ ตอนผมเดินเข้าไปช่วยตรวจแถวปากทางสวน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "wichai_hand_scratch"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_wichai_land",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ สุขุม หนักแน่น พยายามอธิบายให้ดูปกติ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามเรื่องวงสีน้ำเงิน การซื้อขายที่ดิน มีใครบังคับขายไหม หรือได้ประโยชน์อะไร"
+      },
+      "text": "หมู่บ้านมีแผนที่แผ่นใหญ่ชุดเดียวครับ ผมแค่ช่วยประสานเรื่องที่ดินให้ชาวบ้าน ไม่เคยบังคับใครขายหรอกครับ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "wichai_land_role"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_wichai_night_grove",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ตอบคล่อง แต่ปลายเสียงเลี่ยงการระบุวันชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าวิชัยเคยเข้าสวนกล้วยตอนกลางคืนไหม หรือไปคืนไหนบ้าง"
+      },
+      "text": "เคยครับ มีคนแจ้งเรื่องแปลกผมก็ออกไปดูหลายหน... แต่จำวันเป๊ะ ๆ ไม่ได้หรอกครับ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_wichai_ghost_rumor",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ กดเสียงต่ำลงเล็กน้อย เหมือนกำลังเล่าข่าวลือชวนขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามเรื่องผี ข่าวลือแถวสวนกล้วย หรือถามเรื่องแก้วโดยที่ยังไม่พบภาพน้ำท่วมปี 2534"
+      },
+      "text": "ชาวบ้านเขาลือกันหนาหูครับว่ามีอะไรแปลก ๆ แถวสวน ผมเองก็ไม่อยากลบหลู่ แต่คนแถวนี้กลัวจนแทบจะย้ายหนีกันหมดแล้ว",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_wichai_don",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ตอบเรียบเฉย ทำเป็นไม่รู้ไม่เห็น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าดลเป็นคนยังไง หรือดลหายไปได้อย่างไร"
+      },
+      "text": "ผมก็ไม่รู้เหมือนกันครับว่าดลหายไปไหน รู้แค่ช่วงหลังแกชอบเดินออกไปจดอะไรแปลก ๆ ของแกคนเดียว",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_wichai_flood_kaew",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ชะงักเล็กน้อยก่อนปรับโทนเสียงให้เย็นชาและตั้งรับ",
+      "trigger_condition": {
+        "requires_clues": [
+          "flood_photo_seen"
+        ],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ใช้เฉพาะเมื่อผู้เล่นเห็นภาพปี 2534 แล้วถามวิชัยเรื่องน้ำท่วมปี 2534 หรือแม่แก้วโดยตรง"
+      },
+      "text": "...ผมเคยรอดจากน้ำท่วมปีนั้นจริงครับ แต่นั่นมันเรื่องเก่าตั้งหลายสิบปี มันเกี่ยวอะไรกับคนหายตอนนี้ล่ะครับ?",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "wichai_flood_survivor"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_qa_accuse_wichai",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ เย็นชา แข็งกร้าว กดดันกลับด้วยมาดเจ้าหน้าที่",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นกล่าวหาว่าวิชัยเป็นคนร้ายหรือพยายามควบคุมตัววิชัยในบ้านผู้ใหญ่"
+      },
+      "text": "คิดจะปรักปรำกันง่าย ๆ แบบนี้เลยเหรอครับ? พวกคุณยังไม่มีหลักฐานอะไรสักชิ้น ผมว่าเอาเวลาไปช่วยคนหายดีกว่านะ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {
+          "วิชัย": -2
+        }
+      }
+    },
+    {
+      "id": "b1_ton_short_greet",
+      "scene": "B1",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น พูดตะกุกตะกัก รีบหาข้ออ้างเลี่ยงออกไปข้างนอก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นทักต้นหรือชวนต้นคุยต่อหน้าวิชัยในห้องรับแขก"
+      },
+      "text": "อ่า... ผมต้นครับ อาสาที่ผู้ใหญ่เรียกมา... ขอตัวออกไปเช็กมอเตอร์ไซค์หน้าบ้านแป๊บนะครับ เผื่อเมื่อกี้ฝนสาด",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_warn_skip_to_grove",
+      "scene": "B1",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ สุขุม ปรามอย่างมีเหตุผล",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นขอให้วิชัยพาเข้าสวนกล้วยเลยโดยไม่ไปบ้านดล"
+      },
+      "text": "สวนมันมืดและมีหลายทางครับ ผมช่วยชี้แผนที่ได้ แต่คืนนี้ผู้ใหญ่กำชับให้เริ่มเช็กบ้านดลก่อน จะได้ไม่เดินเดาสุ่ม",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_check_per_full",
+      "scene": "B1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน กดดัน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B2_WICHAI_TELL สำเร็จเต็ม"
+      },
+      "text": "วิชัยตอบคล่องเกินไป แต่พอคุณจี้ถามคืนที่เข้าสวน เขาชะงักไปเสี้ยววินาที ก่อนตวัดสายตาคมไปทางประตูที่ต้นอยู่ทันที",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "wichai_suspected_tell"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_check_per_partial",
+      "scene": "B1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B2_WICHAI_TELL สำเร็จบางส่วน"
+      },
+      "text": "ทันทีที่แตะเรื่องคืนเกิดเหตุ วิชัยรีบเปลี่ยนเรื่องไปพูดถึงชาวบ้านกลัวผี ดูตั้งใจเบี่ยงประเด็น แต่ยังจับคำโกหกชัด ๆ ไม่ได้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "wichai_evasive_clue"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_check_per_fail",
+      "scene": "B1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เรียบนิ่ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B2_WICHAI_TELL ล้มเหลว"
+      },
+      "text": "วิชัยตอบทุกคำถามได้เรียบนิ่ง คุมสีหน้าและน้ำเสียงไว้ได้สนิทจนคุณยังจับพิรุธอะไรไม่ได้เลย",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b1_antistall_hint",
+      "scene": "B1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชี้นำจังหวะอย่างเป็นธรรมชาติ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "Anti-stall สำหรับฉาก B1 เมื่อคุยอยู่หน้าโต๊ะแผนที่นานเกินกำหนด"
+      },
+      "text": "ลมเย็นพัดบานประตูไม้ลั่น ต้นรีบลุกอ้างว่าจะออกไปเช็กมอเตอร์ไซค์ตรงชานบ้าน ส่วนแสงตะเกียงสาดไปกระทบกรอบภาพเก่าปี 2534 บนผนังพอดี",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_intro_dm",
+      "scene": "B2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ บรรยากาศอึมครึม ชวนระแวง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "บทเปิดฉาก B2 เมื่อทีมเดินเลี่ยงออกมาคุยกับต้นตรงชานบ้านหน้าประตู"
+      },
+      "text": "คุณเดินเลี่ยงออกมายังชานบ้านหน้าประตู ฝนที่เพิ่งเทลงมาหยุดซาไปอย่างประหลาด เหลือแค่ลมชื้นกับกลิ่นดิน ต้นยืนพิงรถมอเตอร์ไซค์กำพวงกุญแจแน่น คอยชำเลืองมองหน้าต่างห้องรับแขกที่มีเงาวิชัยปรายตามองมาเป็นระยะ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_ton_baseline",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น พูดตรง ๆ แต่กดเสียงต่ำอย่างระมัดระวัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามต้นว่าคืนนั้นเห็นอะไรแถวทางเข้าสวนกล้วย (ข้อมูลพื้นฐานฟรี)"
+      },
+      "text": "เอาจริง ๆ นะพี่ คืนนั้นผมเห็นคนเดินป้วนเปี้ยนอยู่แถวปากทางสวน แต่มันมืดตึ๊ดตื๋อเลย ผมมองไม่เห็นหน้าหรอก",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "ton_saw_person_at_grove"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_qa_ton_why_scared",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น เครียด ระแวง กระซิบเบาลง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามต้นว่าทำไมดูกลัวหรือระแวงพี่วิชัย ทำไมถึงมาอยู่ที่บ้านผู้ใหญ่"
+      },
+      "text": "ผู้ใหญ่เรียกผมมาช่วยเล่า ผมก็นึกว่ามีแค่แกกับพวกพี่ ไม่นึกว่าพี่วิชัยจะมานั่งคุมเชิงอยู่ด้วย... ผมไม่อยากซวยนะพี่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_qa_ton_ghost",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น จริงจัง ปนขนลุกเล็กน้อย",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามต้นว่าเคยเห็นผี ผีเปียกน้ำ หรือหญิงชุดเขียวจับคนไปไหม"
+      },
+      "text": "ผีเปียกน้ำเหรอพี่... ผมไม่เคยเห็นผีมาลากใครนะ คืนนั้นผมเห็นเป็นคนจริง ๆ นี่แหละ แต่บรรยากาศแถวนั้นมันหลอนจริง",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "ton_saw_person_at_grove"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_qa_ton_bundle_detail",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น ยืนยันตามตรงอย่างตึงเครียด",
+      "trigger_condition": {
+        "requires_clues": [
+          "ton_black_bundle_clue"
+        ],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามย้ำว่าเห็นหน้าคนเข็นรถชัดไหม หรือในห่อผ้าสีดำมีคนอยู่หรือเปล่า"
+      },
+      "text": "ไม่เห็นหน้าจริง ๆ พี่ มืดจนแทบไม่เห็นนิ้วตัวเอง ผมเห็นแค่ห่อผ้าดำใบเบ้อเริ่มบนรถเข็น ไม่รู้หรอกว่าข้างในมันคืออะไร",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_qa_ton_threaten",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น ฉุนเฉียว ห้าวขึ้นเพราะถูกกดดัน แล้วปิดปากเงียบ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นข่มขู่ ตะคอก หรือกดดันต้นอย่างรุนแรง"
+      },
+      "text": "เฮ้ย ถ้าพวกพี่จะมาขู่กันแบบนี้ก็พอเหอะ! ผมไม่พูดอะไรแล้ว จะทำอะไรก็เชิญ!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {
+          "ต้น": -2
+        }
+      }
+    },
+    {
+      "id": "b2_check_soc_full",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น กระซิบรัว ตื่นเต้น หวาดระแวงแต่ยอมคายความลับ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B3_TON_DISCLOSURE สำเร็จเต็ม"
+      },
+      "text": "เบา ๆ นะพี่... คืนนั้นคนเสื้อเชิ้ตเข็นรถห่อผ้าดำเข้าสวน วันนี้มาเจอเสื้อแบบเดิม โคลนแห้งตรงขากางเกง แถมพี่วิชัยยังซ่อนรอยข่วนที่มืออีก ผมว่าใช่แกชัวร์ แต่อย่าให้แกรู้นะว่าผมบอก!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "ton_black_bundle_clue",
+          "wichai_cart_suspect"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {
+          "ต้น": 2
+        }
+      }
+    },
+    {
+      "id": "b2_check_soc_partial",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น ลังเล อ้ำอึ้ง พูดเบา ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B3_TON_DISCLOSURE สำเร็จบางส่วน"
+      },
+      "text": "เอ่อ... คืนนั้นผมเห็นคนเข็นห่อผ้าดำเข้าสวนไปครับ หุ่นกับเสื้อเชิ้ตมันคุ้น ๆ เหมือนคนในบ้านนี้แหละ แต่ผมไม่กล้าฟันธงชื่อหรอกนะพี่ กลัวพูดผิด",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "ton_black_bundle_clue"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b2_check_soc_fail",
+      "scene": "B2",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น เสียงสั่น ถอยหนี ตัดบทไม่อยากยุ่ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B3_TON_DISCLOSURE ล้มเหลว"
+      },
+      "text": "พอแล้วพี่ ผมพูดได้แค่นี้จริง ๆ ผมไม่อยากเดือดร้อนทีหลัง ขอโทษด้วยแล้วกันนะ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {
+          "ต้น": -1
+        }
+      }
+    },
+    {
+      "id": "b2_antistall_hint",
+      "scene": "B2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชี้นำจังหวะกลับเข้าเรื่องหลัก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "Anti-stall สำหรับฉาก B2 เมื่ออยู่ชานบ้านนานเกินกำหนด"
+      },
+      "text": "ต้นหันหน้าหนีไม่ยอมเล่าอะไรเพิ่มอีก ข้างในบ้านยังมีกรอบภาพเก่าปี 2534 และแผนที่ทางไปบ้านดลรอให้ทีมตัดสินใจต่อ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_intro_dm",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ขลัง ลึกลับ ชวนสำรวจ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "บทเปิดฉาก B3 เมื่อทีมเดินมาสำรวจผนังภาพเก่าและตู้แฟ้ม"
+      },
+      "text": "คุณผละจากโต๊ะแผนที่เดินมาหยุดหน้าผนัง ภาพถ่ายเก่าสีซีดแสดงชาวบ้านยืนข้างประตูน้ำ ใต้กรอบลงปี 2534 ชายหนุ่มในรูปหน้าคล้ายผู้ใหญ่ประเสริฐมาก ใต้ภาพมีตู้วางกองแฟ้มเอกสารเก่าของหมู่บ้านปนกันอยู่หลายเล่ม",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "flood_photo_seen"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_inspect_frame_droplet",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เย็นเยือก ชวนขนหัวลุก เว้นจังหวะระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นลองยก แตะ หรือตรวจกรอบรูปปี 2534 อย่างใกล้ชิด"
+      },
+      "text": "ทันทีที่คุณยกกรอบรูปขึ้น หยดน้ำใสไหลวูบลงมาด้านในกระจกต่อหน้าต่อตา ทั้งที่ด้านหลังกรอบแห้งสนิท พอเพ่งมองอีกที หยดนั้นกลับหยุดนิ่งราวกับถูกแช่แข็ง",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "photo_water_anomaly"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_open_old_folder_free",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน จริงจัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นรื้อค้นกองแฟ้มเอกสารเก่าบนตู้ใต้ภาพถ่าย"
+      },
+      "text": "คุณลองรื้อกองแฟ้มเอกสารเก่าปี 2530 ถึง 2535 จนเจอสำเนาบันทึกเวรประตูน้ำปี 2534 ซุกอยู่ ระบุเวลาเปิดผันน้ำชัด แต่ไม่มีชื่อผู้สั่งการสูงสุด",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [
+          "floodgate_duty_log_copy"
+        ],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_qa_photo_prasert",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม เป็นกลาง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าคนในรูปคือประเสริฐใช่ไหม ประตูน้ำเปิดก่อนอพยพครบหรือเปล่า หรือเก็บแฟ้มไว้ทำไม"
+      },
+      "text": "ชายในรูปหน้าคล้ายประเสริฐจริง แต่ดูจากรูปกับแฟ้มแถวนี้ยังบอกไม่ได้ว่าตอนนั้นอพยพคนครบหรือยัง ต้องหาบันทึกจากศูนย์อพยพมาเทียบดูอีกที",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_check_int_full",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เฉียบคม ชวนติดตาม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B4_FLOOD_PHOTO สำเร็จเต็ม"
+      },
+      "text": "เมื่อเทียบภาพกับแผนที่ แนวคันดินตรงกับทางน้ำเก่าที่ไหลเข้าสวนกล้วยพอดี ชวนให้สงสัยว่าคืนนั้นน้ำถูกผันไปทางสวน แต่ยังต้องหาเอกสารมายืนยัน",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "flood_waterway_clue"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_check_int_partial",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B4_FLOOD_PHOTO สำเร็จบางส่วน"
+      },
+      "text": "คุณดูออกว่าประตูน้ำในภาพอยู่ใกล้แนวสวนกล้วยเดิมมาก แต่รายละเอียดในรูปยังไม่พอจะเชื่อมเข้ากับเหตุการณ์คืนนั้นได้ทั้งหมด",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "flood_near_grove_clue"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_check_int_fail",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เรียบนิ่ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย B4_FLOOD_PHOTO ล้มเหลว"
+      },
+      "text": "ภาพเก่าเลือนและมีรายละเอียดน้อยเกินไป คุณเห็นได้เพียงประตูน้ำ ปี 2534 และใบหน้าคล้ายประเสริฐ ยังต่อภาพรวมไม่ได้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_antistall_hint",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เร่งจังหวะออกเดินทาง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "Anti-stall สำหรับฉาก B3 เมื่อตรวจผนังภาพเก่านานเกินกำหนด"
+      },
+      "text": "เปลวตะเกียงไหววูบในความเงียบ ข้อมูลในบ้านผู้ใหญ่ครบเท่าที่หาได้แล้ว แผนที่ชี้ชัดไปที่บ้านดล เหลือเพียงตัดสินใจออกเดินทางต่อ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b_ending_to_act_c",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ กดดัน เหมือนปิดบทอย่างชวนขนลุก",
+      "trigger_condition": {
+        "requires_clues": [
+          "don_house_location"
+        ],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "จบ ACT B เมื่อทีมได้พิกัดบ้านดลแล้วและยืนยันออกเดินทางไปบ้านดล (ACT C)"
+      },
+      "text": "ทีมเก็บแผนที่แล้วก้าวออกจากบ้านผู้ใหญ่ มุ่งหน้าสู่บ้านดลท่ามกลางถนนเงียบสงัด ทันทีที่ประตูไม้ปิดลง เสียงพลิกกระดาษด้านในก็เงียบกริบลงอย่างประหลาด... จบ ACT B เตรียมเข้าสู่บ้านดลใน ACT C",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "filler_wichai_calm",
+      "scene": "*",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ สุขุม นิ่ง เหมือนกำลังนึกคำตอบสั้น ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับวิชัย"
+      },
+      "text": "อืม... ขอผมดูรายละเอียดในแฟ้มสักครู่นะครับ...",
+      "is_filler": true,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "filler_ton_nervous",
+      "scene": "*",
+      "speaker": "ต้น",
+      "voice": "Fenrir",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น อึกอัก ประหม่าสั้น ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เสียงคั่นเวลาสำหรับต้น"
+      },
+      "text": "เอ่อ... เดี๋ยวนะพี่... ขอผมนึกก่อน...",
+      "is_filler": true,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
     }
   ]
 }

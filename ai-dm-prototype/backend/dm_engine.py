@@ -14,31 +14,55 @@ from typing import Any, Callable, Optional, TypeVar
 from backend.schemas import DMDecision, GhostTurnDecision, StateUpdates
 from backend.state_manager import RoomManager, RoomState, ScenarioRepository
 
-WORLD_LORE_SUMMARY = (
-    "ฉากหลัง: หมู่บ้านหนองตาล ชนบทไทยปี พ.ศ. 2534 (1991) เวลาหัวค่ำราวสองทุ่มเศษ ฝนตกพรำต่อเนื่อง บรรยากาศเงียบวังเวง "
-    "ชาวบ้านส่วนใหญ่ปิดไฟปิดหน้าต่างเงียบ และหลายหลังมัดสัมภาระวางไว้หน้าชานคล้ายเตรียมย้ายหนี\n"
-    "ทีมผู้เล่น: พนักงานจากบริษัทรับจ้างสืบสวนลี้ลับ เดินทางมาด้วยรถตู้บริษัท (จอดเปิดไฟหน้าอยู่ริมถนนข้างศาลา "
-    "ในรถมีอุปกรณ์ภาคสนามพื้นฐาน เช่น ไฟฉาย วิทยุสื่อสาร ปฐมพยาบาล และเครื่องสแกนคลื่นของนักศึกษาฝึกงาน)\n"
-    "ตัวละครผู้ใหญ่ประเสริฐ: ชายวัย 50+ เป็นผู้ใหญ่บ้านที่เคร่งเครียด เหนื่อยล้า แต่พยายามคุมสติและสุภาพกับทีม "
-    "เขายืนรออยู่ที่ศาลาพร้อมไฟฉายและสำเนาใบรับแจ้งคนหาย (ส่วนแผนที่ละเอียดและแฟ้มเต็มอยู่ที่บ้านของเขา) "
-    "เขาหวั่นใจทุกครั้งที่พูดถึงแนวสวนกล้วยและอดีตของ 'แก้ว'\n"
-    "การใช้ดุลยพินิจตอบคำถามทั่วไป: สามารถบรรยายรายละเอียดสภาพอากาศ สิ่งของรอบตัว บรรยากาศหมู่บ้านยุค 2534 "
-    "ท่าทีตัวละคร หรือคำถามเล่นบทบาทสมมติทั่วไปของประเสริฐ/DM ได้อย่างเป็นธรรมชาติ โดยไม่ขัดกฎห้ามสปอยล์ด้านล่าง"
-)
+WORLD_LORE_BY_ACT = {
+    "A": (
+        "ฉากหลัง: หมู่บ้านหนองตาล ชนบทไทยปี พ.ศ. 2534 (1991) เวลาหัวค่ำราวสองทุ่มเศษ ฝนตกพรำต่อเนื่อง บรรยากาศเงียบวังเวง "
+        "ชาวบ้านส่วนใหญ่ปิดไฟปิดหน้าต่างเงียบ และหลายหลังมัดสัมภาระวางไว้หน้าชานคล้ายเตรียมย้ายหนี\n"
+        "ทีมผู้เล่น: พนักงานจากบริษัทรับจ้างสืบสวนลี้ลับ เดินทางมาด้วยรถตู้บริษัท (จอดเปิดไฟหน้าอยู่ริมถนนข้างศาลา "
+        "ในรถมีอุปกรณ์ภาคสนามพื้นฐาน เช่น ไฟฉาย วิทยุสื่อสาร ปฐมพยาบาล และเครื่องสแกนคลื่นของนักศึกษาฝึกงาน)\n"
+        "ตัวละครผู้ใหญ่ประเสริฐ: ชายวัย 50+ เป็นผู้ใหญ่บ้านที่เคร่งเครียด เหนื่อยล้า แต่พยายามคุมสติและสุภาพกับทีม "
+        "เขายืนรออยู่ที่ศาลาพร้อมไฟฉายและสำเนาใบรับแจ้งคนหาย (ส่วนแผนที่ละเอียดและแฟ้มเต็มอยู่ที่บ้านของเขา) "
+        "เขาหวั่นใจทุกครั้งที่พูดถึงแนวสวนกล้วยและอดีตของ 'แก้ว'\n"
+        "การใช้ดุลยพินิจตอบคำถามทั่วไป: สามารถบรรยายรายละเอียดสภาพอากาศ สิ่งของรอบตัว บรรยากาศหมู่บ้านยุค 2534 "
+        "ท่าทีตัวละคร หรือคำถามเล่นบทบาทสมมติทั่วไปของประเสริฐ/DM ได้อย่างเป็นธรรมชาติ โดยไม่ขัดกฎห้ามสปอยล์ด้านล่าง"
+    ),
+    "B": (
+        "ฉากหลัง: ภายในและชานบ้านไม้สองชั้นของผู้ใหญ่ประเสริฐ บ้านหนองตาล ปี พ.ศ. 2534 ฝนเริ่มซาลงเหลือลมชื้นกับกลิ่นดิน\n"
+        "สถานะผู้ใหญ่ประเสริฐ (สำคัญมาก): สายตรวจโทรตามประเสริฐออกไปช่วยดูจุดตั้งด่านหน้าหมู่บ้านทันทีตั้งแต่เริ่มฉาก B1 "
+        "ดังนั้น **ประเสริฐไม่อยู่ในฉาก และห้ามให้ประเสริฐมีบทพูดใน ACT B เด็ดขาด**\n"
+        "ตัวละครในฉาก B1 (ห้องรับแขกและโต๊ะแผนที่): วิชัย ผู้ช่วยผู้ใหญ่วัย 40 ปลาย ๆ สวมเสื้อเชิ้ตพับแขน สุขุม สุภาพ เป็นทางการ "
+        "ระแวดระวัง คอยดูแลแฟ้มคนหายและแผนที่สองชั้น (หมุดแดงคนหายทับวงที่ดินสีน้ำเงิน) ส่วน ต้น อาสาสมัครวัยรุ่นนั่งกำพวงกุญแจเงียบ ๆ ข้างประตู "
+        "และจะไม่ยอมเล่าเรื่องลึกต่อหน้าวิชัย\n"
+        "ตัวละครในฉาก B2 (ชานบ้านหน้าประตู): แยกคุยกับ ต้น เพียงลำพังริมรถมอเตอร์ไซค์ พูดจาตรงไปตรงมาแบบวัยรุ่นเจ้าถิ่น "
+        "ระแวงสายตาวิชัยที่มองลอดหน้าต่าง\n"
+        "ฉาก B3 (ผนังภาพเก่าปี 2534 และตู้แฟ้ม): ไม่มี NPC อยู่ใกล้ ๆ — DM เป็นผู้บรรยายเท่านั้น "
+        "มีภาพถ่ายเก่าปี 2534 (ชาวบ้านยืนข้างประตูน้ำ) และตู้วางกองแฟ้มเอกสารเก่า\n"
+        "การเดินสำรวจและการจบบท: ผู้เล่นสามารถสลับไปมาระหว่าง B1 (โต๊ะแผนที่/วิชัย), B2 (ชานบ้าน/ต้น) และ B3 (ผนังภาพเก่า) ได้อิสระ "
+        "และเมื่อพบพิกัดบ้านดล (don_house_location) แล้วตัดสินใจออกเดินทางไปบ้านดล จะจบบท ACT B เข้าสู่ ACT C"
+    ),
+}
+WORLD_LORE_SUMMARY = WORLD_LORE_BY_ACT["A"]
 
 SCENE_ENVIRONMENT_NOTES = {
     "A1": "ศาลาริมทางไม้เก่าหน้าทางเข้าหมู่บ้าน ฝนโปรยปราย มีแสงไฟหน้ารถตู้ส่องไปตามบ้านเรือนที่ปิดเงียบ ประเสริฐยืนคุยอยู่หน้าศาลา",
     "A2": "ข้างประตูรถตู้บริษัทที่เปิดค้างไว้ วิทยุสื่อสารในรถเพิ่งส่งเสียงซ่าและเสียงผู้หญิงสำลักน้ำ ประเสริฐยืนหน้าซีดอยู่ใกล้ ๆ",
     "A3": "หน้าบ้านไม้สองชั้นของประเสริฐที่ยังเปิดไฟสว่างในห้องรับแขก ส่วนด้านขวามือเป็นซอยมืดทอดไปสู่ปากทางสวนกล้วย",
+    "B1": "ห้องรับแขกบ้านผู้ใหญ่บ้าน บนโต๊ะไม้กลางห้องมีแฟ้มคนหายและแผนที่หมู่บ้านสองชั้นกางอยู่ใต้แสงไฟ วิชัยยืนดูแลแฟ้มอยู่ริมโต๊ะ และต้นนั่งเงียบ ๆ ข้างประตู (ประเสริฐออกไปแล้ว)",
+    "B2": "ชานบ้านไม้หน้าประตูบ้านผู้ใหญ่ ฝนหยุดซาเหลือลมชื้นกับกลิ่นดิน ต้นยืนพิงรถมอเตอร์ไซค์กำพวงกุญแจ คอยชำเลืองหน้าต่างห้องรับแขกที่มีเงาวิชัยมองมาเป็นระยะ",
+    "B3": "มุมผนังด้านในห้องรับแขก แสงตะเกียงส่องกรอบภาพถ่ายเก่าปี 2534 แสดงชาวบ้านยืนข้างประตูน้ำ และมีตู้วางกองแฟ้มเอกสารเก่าอยู่ด้านล่าง (DM บรรยายเท่านั้น ห้ามสวมบทประเสริฐหรือ NPC อื่น)",
 }
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
-THAI_STT_PROMPT = "ประเสริฐ, วิชัย, สวนกล้วย, ผู้หญิงชุดเขียว, ใบรับแจ้งความ, วิทยุสื่อสาร"
+THAI_STT_PROMPT = (
+    "ประเสริฐ, วิชัย, ต้น, สวนกล้วย, บ้านผู้ใหญ่บ้าน, บ้านดล, แผนที่, ประตูน้ำ, "
+    "ห่อผ้าดำ, รอยข่วน, รถเข็น, ภาพถ่าย, ปี 2534, ผู้หญิงชุดเขียว, ใบรับแจ้งความ, วิทยุสื่อสาร"
+)
 
 GEMINI_STT_INSTRUCTION = (
     "ถอดเสียงพูดภาษาไทยของผู้เล่นในคลิปเสียงนี้ให้เป็นข้อความภาษาไทยที่ถูกต้องตรงตามเสียงพูดทุกคำ "
-    "(คำศัพท์ที่อาจพบในเกม: ประเสริฐ, วิชัย, สวนกล้วย, บ้านผู้ใหญ่บ้าน, ใบรับแจ้งความ, วิทยุสื่อสาร, "
+    "(คำศัพท์ที่อาจพบในเกม: ประเสริฐ, วิชัย, ต้น, สวนกล้วย, บ้านผู้ใหญ่บ้าน, บ้านดล, แผนที่, ชานบ้าน, "
+    "ประตูน้ำ, ห่อผ้าดำ, รอยข่วน, รถเข็น, ภาพถ่าย, ปี 2534, ใบรับแจ้งความ, วิทยุสื่อสาร, "
     "ผู้หญิงชุดเขียว, ผีเงาจมน้ำ, ทอยเต๋า, สังเกต, ตรวจสอบ, ค่าจ้าง, ตำรวจ)\n"
     "กฎสำคัญ:\n"
     "- ตอบกลับมาเฉพาะข้อความที่ผู้เล่นพูดเท่านั้น ห้ามใส่เครื่องหมายคำพูด คำอธิบาย หรือคำนำ\n"
@@ -286,6 +310,7 @@ class AIDMEngine:
         transcript: str,
     ) -> str:
         repo = room_manager.repo
+        act = room_manager.act_for_scene(room.current_scene)
         scene_cfg = repo.get_scene(room.current_scene) or {}
         eligible_dialogues = room_manager.get_eligible_dialogues(room)
         available_checks = room_manager.get_available_checks(room)
@@ -303,7 +328,7 @@ class AIDMEngine:
 
         filler_menu = [
             {"id": f["id"], "speaker": f["speaker"], "text": f["text"]}
-            for f in repo.fillers
+            for f in repo.get_fillers_for_act(act)
         ]
 
         check_menu = [
@@ -332,6 +357,7 @@ class AIDMEngine:
         ]
 
         game_state_snapshot = {
+            "act": act,
             "current_scene": room.current_scene,
             "scene_turn_count": room.scene_turn_count,
             "clues_found": room.clues_found,
@@ -350,6 +376,7 @@ class AIDMEngine:
             f"{t['speaker']}: {t['text']}" for t in recent_turns
         )
         scene_env = SCENE_ENVIRONMENT_NOTES.get(room.current_scene, "")
+        world_lore = WORLD_LORE_BY_ACT.get(act, WORLD_LORE_BY_ACT["A"])
 
         ending_note = ""
         if room.current_scene == "A3":
@@ -358,8 +385,26 @@ class AIDMEngine:
                 "- ถ้าผู้เล่นตกลงเดินเข้าบ้านผู้ใหญ่บ้านเพื่อดูแฟ้ม/คุยพยาน -> เลือก selected_audio_id='a3_ending_true' และ state_updates.ending_triggered='act_a_complete'\n"
                 "- ถ้าผู้เล่นยืนกรานจะเดินเข้าสวนกล้วยมืดทันทีโดยไม่ดูแผนที่ -> เลือก selected_audio_id='a3_ending_bad' และ state_updates.ending_triggered='lost_in_grove'\n"
             )
+        elif act == "B":
+            ending_note = (
+                "\nกติกาการย้ายจุดและตอนจบของ ACT B (B1 <-> B2 <-> B3):\n"
+                "- ผู้เล่นเดินสลับระหว่าง 3 จุดในบ้านผู้ใหญ่ได้อิสระ โดยตั้งค่า state_updates.current_scene:\n"
+                "  * เดิน/กลับมาห้องรับแขก โต๊ะแผนที่ หรือคุยกับวิชัย -> state_updates.current_scene='B1'\n"
+                "  * เดินออกไปชานบ้านหน้าประตู เพื่อแยกคุยกับต้นพ้นหูวิชัย -> state_updates.current_scene='B2'\n"
+                "  * เดินไปดูผนังภาพเก่าปี 2534 และตู้แฟ้ม -> state_updates.current_scene='B3'\n"
+                "  (เมื่อย้ายฉาก ให้ใช้ mode='improvise' บรรยายจังหวะเดินสั้น 1 ประโยค ระบบจะเล่นบทเปิดฉากใหม่ให้อัตโนมัติ)\n"
+                "- ถ้าปรับความไว้วางใจของวิชัยหรือต้น ให้ระบุทั้ง state_updates.npc_trust_delta และ state_updates.npc_trust_target ('วิชัย' หรือ 'ต้น')\n"
+                "- หากมีเบาะแส 'don_house_location' แล้วและทีมตกลงออกเดินทางไปบ้านดล -> เลือก selected_audio_id='b_ending_to_act_c' และ state_updates.ending_triggered='act_b_complete'\n"
+                "- ข้อห้ามสำคัญ: ห้ามเลือก character='ประเสริฐ' ใน ACT B เด็ดขาด และในฉาก B3 ให้ใช้ character='DM' เท่านั้น\n"
+            )
 
-        return f"""คุณคือ AI Game Master (DM) และผู้สวมบท NPC สำหรับเกมสืบสวนสยองขวัญภาษาไทย 'CASE 001: เสียงร้องจากสวนกล้วย' (ช่วง ACT A)
+        improv_speaker_hint = (
+            "'DM' เท่านั้น"
+            if room.current_scene == "B3"
+            else ("'วิชัย', 'ต้น', หรือ 'DM'" if act == "B" else "'ประเสริฐ' หรือ 'DM'")
+        )
+
+        return f"""คุณคือ AI Game Master (DM) และผู้สวมบท NPC สำหรับเกมสืบสวนสยองขวัญภาษาไทย 'CASE 001: เสียงร้องจากสวนกล้วย' (ช่วง ACT {act})
 
 ## ฉากปัจจุบันและสภาพแวดล้อม
 - Scene: {room.current_scene} ({scene_cfg.get('title', '')})
@@ -367,17 +412,17 @@ class AIDMEngine:
 - สภาพแวดล้อม: {scene_env}
 
 ## ข้อมูลโลกและบริบทฉาก (ใช้ตอบคำถามทั่วไปและบทบาทสมมติได้อิสระ)
-{WORLD_LORE_SUMMARY}
+{world_lore}
 
 ## ทีมผู้สืบสวนในห้องตอนนี้
 {json.dumps(party_summary, ensure_ascii=False)}
 
 ## กฎการตัดสินใจและข้อห้ามสปอยล์ (ห้ามละเมิดข้อห้ามสปอยล์เด็ดขาด)
 {guardrails}
-- ห้ามเสกเบาะแสหรือไอเท็มนอกเหนือจากฉากปัจจุบัน และห้ามข้ามฉากเองหากผู้เล่นยังไม่ตัดสินใจ
-- เลือก mode='script' และ selected_audio_id จาก dialogue_menu เฉพาะเมื่อคำถามตรงกับ topic_hint ของบทที่ already_played=false เท่านั้น
+- ห้ามเสกเบาะแสหรือไอเท็มนอกเหนือจากฉากปัจจุบัน และห้ามเปลี่ยนไปฉากที่ไม่อยู่ใน allowed_next_scenes ของฉากนี้
+- เลือก mode='script' และ selected_audio_id จาก dialogue_menu เฉพาะเมื่อคำถามตรงกับ topic_hint ของบทนั้น (ให้ความสำคัญกับบทที่ already_played=false ก่อน)
 - ห้ามเลือกบทที่ already_played=true ซ้ำ ยกเว้นผู้เล่นขอให้พูดซ้ำหรือทบทวนโดยตรง — หากผู้เล่นถามต่อยอดหรือถามซ้ำ ให้ใช้ mode='improvise' ตอบขยายความหรือรับมุกอย่างเป็นธรรมชาติแทน
-- เมื่อผู้เล่นถามคำถามทั่วไป สำรวจสิ่งของ/สภาพแวดล้อม (เช่น รถตู้ สภาพอากาศ เสื้อผ้า อาชีพเพื่อน) หรือชวนคุยเล่นในบทบาท -> ใช้ mode='improvise' (ตั้ง selected_audio_id=null) แล้วให้ character='ประเสริฐ' หรือ 'DM' ตอบตรงคำถาม 1-3 ประโยคภาษาไทยที่เป็นธรรมชาติ พร้อมเลือก filler_audio_id ที่ตรงกับผู้พูด
+- เมื่อผู้เล่นถามคำถามทั่วไป สำรวจสิ่งของ/สภาพแวดล้อม (เช่น รถตู้ เฟอร์นิเจอร์ สภาพอากาศ เสื้อผ้า อาชีพเพื่อน) หรือชวนคุยเล่นในบทบาท -> ใช้ mode='improvise' (ตั้ง selected_audio_id=null) แล้วให้ character เป็น {improv_speaker_hint} ตอบตรงคำถาม 1-3 ประโยคภาษาไทยที่เป็นธรรมชาติ พร้อมเลือก filler_audio_id ที่ตรงกับผู้พูด
 - ถ้าผู้เล่นขอทำแอ็กชันที่ตรงกับ trigger_hint ใน available_checks และยังไม่ได้ทอย -> ให้ตั้งค่า requested_check_id เป็น id ของ check นั้น และใช้ mode='improvise' (selected_audio_id=null) อธิบายสั้น ๆ ใน improvised_text ให้ผู้เล่นกดทอยเต๋า
 {ending_note}
 
@@ -528,13 +573,123 @@ class AIDMEngine:
             if any(k in text for k in ("ทำไมไม่", "พาเข้าสวน")) and "a3_qa_why_not_grove" in eligible_ids:
                 return pick_script("a3_qa_why_not_grove", "ประเสริฐ")
 
-        default_speaker = "ประเสริฐ" if scene in {"A1", "A3"} else "DM"
-        default_filler = "filler_prasert_hmm" if default_speaker == "ประเสริฐ" else "filler_dm_think"
-        default_text = (
-            "ผมอยากให้เราตรวจดูข้อมูลคนหายและแฟ้มที่บ้านผมให้แน่ใจก่อนนะครับ มีอะไรอยากถามเพิ่มไหม?"
-            if default_speaker == "ประเสริฐ"
-            else "บรรยากาศรอบศาลาเงียบสงัด มีเพียงเสียงฝนโปรย — พวกคุณจะสอบถามอะไรเพิ่มหรือสำรวจจุดใดต่อ?"
-        )
+        elif scene in {"B1", "B2", "B3"}:
+            if any(k in text for k in ("บ้านดล", "ไปบ้านดล", "ออกเดินทาง", "ข้อมูลพอแล้ว")) and "b_ending_to_act_c" in eligible_ids:
+                return pick_script("b_ending_to_act_c", "DM", ending="act_b_complete")
+
+            if scene != "B2" and any(k in text for k in ("ชานบ้าน", "ออกไปคุยกับต้น", "แยกคุย", "ตามต้นออกไป", "หน้าประตู")):
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณเดินเลี่ยงออกจากห้องรับแขกไปที่ชานบ้านหน้าประตูเพื่อคุยกับต้นให้พ้นสายตาวิชัย",
+                    state_updates=StateUpdates(current_scene="B2"),
+                    reason="local_fallback_move_b2",
+                )
+            if scene != "B3" and any(k in text for k in ("ผนัง", "ภาพเก่า", "ภาพถ่าย", "กรอบรูป", "2534", "ตู้แฟ้ม")) and not (
+                scene == "B1" and any(k in text for k in ("ถามวิชัย", "วิชัย")) and "b1_qa_wichai_flood_kaew" in eligible_ids
+            ):
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณเดินไปสำรวจผนังภาพถ่ายเก่าปี 2534 และตู้แฟ้มด้านในห้องรับแขก",
+                    state_updates=StateUpdates(current_scene="B3"),
+                    reason="local_fallback_move_b3",
+                )
+            if scene != "B1" and any(k in text for k in ("ห้องรับแขก", "กลับเข้าบ้าน", "โต๊ะแผนที่", "ไปหาวิชัย")):
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณเดินกลับเข้ามาที่โต๊ะแผนที่ในห้องรับแขกบ้านผู้ใหญ่",
+                    state_updates=StateUpdates(current_scene="B1"),
+                    reason="local_fallback_move_b1",
+                )
+
+            if scene == "B1":
+                if any(k in text for k in ("สังเกต", "พิรุธ", "ท่าที", "แววตา", "สีหน้า", "per")) and "B2_WICHAI_TELL" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณเพ่งสังเกตสีหน้า จังหวะคำพูด และแววตาของวิชัยอย่างละเอียด — กรุณากดทอยเต๋า PER",
+                        requested_check_id="B2_WICHAI_TELL",
+                        reason="local_fallback_check_b2_per",
+                    )
+                if any(k in text for k in ("แฟ้ม", "แผนที่", "โต๊ะ", "ตรวจดู", "ขอดู")) and "b1_inspect_files_free" in eligible_ids:
+                    return pick_script("b1_inspect_files_free", "DM")
+                if any(k in text for k in ("น้ำท่วม", "2534", "แม่แก้ว", "แก้ว")) and "b1_qa_wichai_flood_kaew" in eligible_ids:
+                    return pick_script("b1_qa_wichai_flood_kaew", "วิชัย")
+                if any(k in text for k in ("รอยข่วน", "รอยช้ำ", "หลังมือ", "มือของวิชัย", "แผล")) and "b1_qa_wichai_hand" in eligible_ids:
+                    return pick_script("b1_qa_wichai_hand", "วิชัย")
+                if any(k in text for k in ("วงสีน้ำเงิน", "ที่ดิน", "ซื้อขาย", "บังคับขาย")) and "b1_qa_wichai_land" in eligible_ids:
+                    return pick_script("b1_qa_wichai_land", "วิชัย")
+                if any(k in text for k in ("กลางคืน", "เคยเข้าสวน", "คืนเกิดเหตุ")) and "b1_qa_wichai_night_grove" in eligible_ids:
+                    return pick_script("b1_qa_wichai_night_grove", "วิชัย")
+                if any(k in text for k in ("ผี", "ข่าวลือ", "แก้ว")) and "b1_qa_wichai_ghost_rumor" in eligible_ids:
+                    return pick_script("b1_qa_wichai_ghost_rumor", "วิชัย")
+                if any(k in text for k in ("ดล", "นิสัยดล")) and "b1_qa_wichai_don" in eligible_ids:
+                    return pick_script("b1_qa_wichai_don", "วิชัย")
+                if any(k in text for k in ("ประเสริฐ", "ผู้ใหญ่ไปไหน", "ผู้ใหญ่หาย")) and "b1_qa_where_prasert" in eligible_ids:
+                    return pick_script("b1_qa_where_prasert", "วิชัย")
+                if any(k in text for k in ("จับ", "คนร้าย", "ปรักปรำ", "คุมตัว", "โกหก")) and "b1_qa_accuse_wichai" in eligible_ids:
+                    return pick_script("b1_qa_accuse_wichai", "วิชัย")
+                if any(k in text for k in ("เข้าสวน", "พาทัวร์สวน")) and "b1_warn_skip_to_grove" in eligible_ids:
+                    return pick_script("b1_warn_skip_to_grove", "วิชัย")
+                if any(k in text for k in ("ต้น", "ทักต้น", "อาสา")) and "b1_ton_short_greet" in eligible_ids:
+                    return pick_script("b1_ton_short_greet", "ต้น")
+
+            elif scene == "B2":
+                if any(k in text for k in ("ปลอบ", "มั่นใจ", "เล่ามาให้หมด", "ปลอดภัย", "เกลี้ยกล่อม", "ความจริง", "soc")) and "B3_TON_DISCLOSURE" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_ton_nervous",
+                        improvised_text="คุณหันไปยืนยันกับต้นว่าตรงนี้พ้นหูวิชัยแล้ว — กรุณากดทอยเต๋า SOC เพื่อกล่อมให้ต้นยอมเล่าสิ่งที่เห็น",
+                        requested_check_id="B3_TON_DISCLOSURE",
+                        reason="local_fallback_check_b3_soc",
+                    )
+                if any(k in text for k in ("ขู่", "บังคับ", "ตะคอก", "สารภาพ")) and "b2_qa_ton_threaten" in eligible_ids:
+                    return pick_script("b2_qa_ton_threaten", "ต้น")
+                if any(k in text for k in ("ห่อผ้า", "รถเข็น", "เห็นหน้า")) and "b2_qa_ton_bundle_detail" in eligible_ids:
+                    return pick_script("b2_qa_ton_bundle_detail", "ต้น")
+                if any(k in text for k in ("กลัว", "ระแวง", "ทำไมมา", "ไม่อยากซวย")) and "b2_qa_ton_why_scared" in eligible_ids:
+                    return pick_script("b2_qa_ton_why_scared", "ต้น")
+                if any(k in text for k in ("ผี", "เปียกน้ำ", "ชุดเขียว")) and "b2_qa_ton_ghost" in eligible_ids:
+                    return pick_script("b2_qa_ton_ghost", "ต้น")
+                if any(k in text for k in ("เห็นอะไร", "คืนนั้น", "ทางเข้าสวน", "เล่า")) and "b2_ton_baseline" in eligible_ids:
+                    return pick_script("b2_ton_baseline", "ต้น")
+
+            elif scene == "B3":
+                if any(k in text for k in ("เทียบ", "แผนที่", "เชื่อมโยง", "ทางน้ำ", "แนวคันดิน", "int")) and "B4_FLOOD_PHOTO" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณยกภาพถ่ายประตูน้ำปี 2534 ขึ้นมาเทียบแนวคันดินกับแผนที่หมู่บ้าน — กรุณากดทอยเต๋า INT",
+                        requested_check_id="B4_FLOOD_PHOTO",
+                        reason="local_fallback_check_b4_int",
+                    )
+                if any(k in text for k in ("ยกกรอบ", "แตะกรอบ", "ดูใกล้", "หยดน้ำ", "กระจก")) and "b3_inspect_frame_droplet" in eligible_ids:
+                    return pick_script("b3_inspect_frame_droplet", "DM")
+                if any(k in text for k in ("รื้อ", "ตู้แฟ้ม", "เอกสารเก่า", "บันทึกเวร")) and "b3_open_old_folder_free" in eligible_ids:
+                    return pick_script("b3_open_old_folder_free", "DM")
+                if any(k in text for k in ("ใครในรูป", "ประเสริฐ", "อพยพ", "เก็บแฟ้ม")) and "b3_qa_photo_prasert" in eligible_ids:
+                    return pick_script("b3_qa_photo_prasert", "DM")
+
+        default_speaker = room_manager.default_speaker_for_scene(scene)
+        default_filler = room_manager.repo.default_filler_for_speaker(default_speaker)["id"]
+        if default_speaker == "ประเสริฐ":
+            default_text = "ผมอยากให้เราตรวจดูข้อมูลคนหายและแฟ้มที่บ้านผมให้แน่ใจก่อนนะครับ มีอะไรอยากถามเพิ่มไหม?"
+        elif default_speaker == "วิชัย":
+            default_text = "ข้อมูลคนหายกับแผนที่อยู่ที่โต๊ะนี้ทั้งหมดแล้วครับ อยากตรวจสอบหรือซักถามเรื่องไหนต่อบอกได้เลย"
+        elif default_speaker == "ต้น":
+            default_text = "ตรงนี้ไม่มีใครได้ยินหรอกพี่... อยากรู้อะไรก็รีบถามแล้วกันนะ เดี๋ยวพี่วิชัยจะสงสัย"
+        elif scene == "B3":
+            default_text = "ภาพถ่ายเก่าปี 2534 และกองแฟ้มใต้ผนังยังรอให้คุณตรวจสอบละเอียด หรือเทียบกับแผนที่หมู่บ้าน"
+        else:
+            default_text = "บรรยากาศรอบศาลาเงียบสงัด มีเพียงเสียงฝนโปรย — พวกคุณจะสอบถามอะไรเพิ่มหรือสำรวจจุดใดต่อ?"
         return DMDecision(
             mode="improvise",
             character=default_speaker,

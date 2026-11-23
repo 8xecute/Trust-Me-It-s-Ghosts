@@ -29,7 +29,7 @@
 
       <h1 class="lobby-title">เสียงร้องจากสวนกล้วย</h1>
       <p class="lobby-subtitle">
-        ช่วงเปิดคดี ACT A — ศาลาริมทาง รถตู้บริษัท และบ้านผู้ใหญ่บ้าน
+        คดีที่ 001: ACT A (ศาลาริมทางและรถตู้) & ACT B (บ้านผู้ใหญ่บ้าน)
         <br />
         สนทนาวางแผนร่วมกันแล้วพูดหรือพิมพ์ส่งคำสั่งให้ผู้ดำเนินเกม (หนึ่งอาชีพต่อหนึ่งผู้เล่น)
       </p>
@@ -48,6 +48,20 @@
               <input id="room-code" type="text" maxlength="16" value="BANANA01" required />
               <button type="button" id="random-room-btn" class="btn btn-ghost">สุ่มรหัส</button>
             </div>
+          </div>
+        </div>
+
+        <div class="act-selector">
+          <div class="act-selector-label">ช่วงเริ่มต้นเมื่อสร้างห้องใหม่</div>
+          <div class="act-toggle-group" role="group" aria-label="เลือกบทเริ่มต้น">
+            <button type="button" class="act-toggle-btn selected" data-act="A">
+              <strong>ACT A · ศาลาริมทาง</strong>
+              <span>พบผู้ใหญ่ประเสริฐและเหตุวิทยุรถตู้ (A1–A3)</span>
+            </button>
+            <button type="button" class="act-toggle-btn" data-act="B">
+              <strong>ACT B · บ้านผู้ใหญ่บ้าน</strong>
+              <span>สอบวิชัย แยกคุยต้น และภาพเก่าปี 2534 (B1–B3)</span>
+            </button>
           </div>
         </div>
 
@@ -74,9 +88,9 @@
             <summary>คำอธิบายค่าสถานะและค่าพลัง</summary>
             <div class="stat-legend-grid">
               <div><b>BODY (ร่างกาย)</b> โจมตีกายภาพและป้องกันแรงปะทะ (PDEF)</div>
-              <div><b>PER (การสังเกต)</b> สังเกตพิรุธและรายละเอียดฉาก (ทอยใน A1)</div>
-              <div><b>INT (เชาวน์ปัญญา)</b> วิเคราะห์เอกสารและหลักฐาน (ทอยใน A1)</div>
-              <div><b>SOC (การเข้าสังคม)</b> เจรจา ซักถามพยาน และกล่อมวิญญาณ</div>
+              <div><b>PER (การสังเกต)</b> สังเกตพิรุธและรายละเอียดฉาก (ทอยใน A1, B1)</div>
+              <div><b>INT (เชาวน์ปัญญา)</b> วิเคราะห์เอกสารและหลักฐาน (ทอยใน A1, B3)</div>
+              <div><b>SOC (การเข้าสังคม)</b> เจรจา ซักถามพยาน (B2) และกล่อมวิญญาณ</div>
               <div><b>SPI (จิตวิญญาณ)</b> สัมผัสคลื่นผีและต้านพลังหลอน (MDEF, ทอยใน A2)</div>
               <div><b>RES (ความต้านทาน)</b> ต้านทานความเสียหายทั้งร่างกายและจิตใจ</div>
               <div><b>พลังชีวิต (HP)</b> สูงสุด 15 — หากเหลือ 0 จะหมดสติในฉากต่อสู้</div>
@@ -156,12 +170,7 @@
             <div class="scene-vignette"></div>
             <div class="scene-ornament-frame" aria-hidden="true"></div>
 
-            <div id="npc-layer" class="npc-layer">
-              <div id="npc-card-prasert" class="npc-sprite-wrap" data-speaker="ประเสริฐ">
-                <img src="/assets/characters/prasert.png" alt="ผู้ใหญ่ประเสริฐ" class="npc-sprite" />
-                <span class="npc-label">ผู้ใหญ่ประเสริฐ</span>
-              </div>
-            </div>
+            <div id="npc-layer" class="npc-layer"></div>
 
             <!-- TURN-BASED COMBAT OVERLAY STAGE -->
             <div id="combat-stage" class="combat-stage hidden">
@@ -202,9 +211,9 @@
             <!-- START OVERLAY -->
             <div id="start-overlay" class="stage-overlay">
               <div class="overlay-card">
-                <div class="overlay-crest">บทนำ ACT A</div>
-                <h2>พร้อมเข้าสู่หมู่บ้านหนองตาล</h2>
-                <p>เมื่อสมาชิกเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดคดี A1</p>
+                <div id="start-overlay-crest" class="overlay-crest">บทนำ ACT A</div>
+                <h2 id="start-overlay-title">พร้อมเข้าสู่หมู่บ้านหนองตาล</h2>
+                <p id="start-overlay-desc">เมื่อสมาชิกเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดคดี A1</p>
                 <button id="start-game-btn" class="btn btn-primary btn-lg" type="button">เริ่มบทนำ ACT A</button>
               </div>
             </div>
@@ -213,9 +222,13 @@
             <div id="ending-overlay" class="stage-overlay hidden">
               <div class="overlay-card ending-card">
                 <div id="ending-badge" class="ending-badge">สรุปผล ACT A</div>
-                <h2 id="ending-title">จบบทนำ</h2>
+                <h2 id="ending-title">จบบท</h2>
                 <p id="ending-summary"></p>
-                <button id="ending-reset-btn" class="btn btn-primary" type="button">เล่น ACT A ใหม่อีกครั้ง</button>
+                <div class="ending-actions">
+                  <button id="ending-next-act-btn" class="btn btn-primary hidden" type="button">ไปต่อ ACT B: เข้าบ้านผู้ใหญ่บ้าน</button>
+                  <button id="ending-reset-btn" class="btn btn-primary" type="button">เล่น ACT A ใหม่อีกครั้ง</button>
+                  <button id="ending-restart-a-btn" class="btn btn-ghost hidden" type="button">เริ่มใหม่ตั้งแต่ ACT A</button>
+                </div>
               </div>
             </div>
           </div>
@@ -242,9 +255,7 @@
                   <polygon points="0,-6 1.2,-1.5 -1.2,-1.5" fill="rgba(212,168,83,0.65)" />
                 </g>
                 <text x="89" y="22.5" text-anchor="middle" fill="rgba(212,168,83,0.6)" font-size="3">เหนือ</text>
-                <line x1="22" y1="62" x2="45" y2="46" class="map-road" />
-                <line x1="45" y1="46" x2="76" y2="30" class="map-road" />
-                <line x1="45" y1="46" x2="70" y2="72" class="map-road map-road-danger" />
+                <g id="board-routes-layer"></g>
               </svg>
               <div id="board-nodes-layer" class="board-nodes-layer"></div>
             </div>
@@ -351,14 +362,9 @@
 
         <div class="journal-body">
           <div id="tab-clues" class="journal-pane active">
-            <div class="journal-card">
-              <h3>ท่าทีผู้ใหญ่ประเสริฐ</h3>
-              <div class="trust-bar-wrap">
-                <div id="trust-value-label" class="trust-label">ปกติ (0)</div>
-                <div class="trust-track">
-                  <div id="trust-fill" class="trust-fill" style="width: 37.5%"></div>
-                </div>
-              </div>
+            <div id="npc-trust-card" class="journal-card">
+              <h3 id="trust-card-title">ท่าทีตัวละคร</h3>
+              <div id="npc-trust-list" class="npc-trust-list"></div>
             </div>
 
             <div class="journal-card">

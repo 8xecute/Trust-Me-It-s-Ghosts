@@ -111,10 +111,20 @@ class ScenarioRepository:
             "ประเสริฐ": "filler_prasert_hmm",
             "เสียงวิทยุ": "filler_radio_static",
             "ผีเงาจมน้ำ": "filler_ghost_choke",
+            "วิชัย": "filler_wichai_calm",
+            "ต้น": "filler_ton_nervous",
         }.get(speaker, "filler_dm_think")
         if preferred in self.fillers_by_id:
             return self.fillers_by_id[preferred]
         return self.fillers[0]
+
+    def get_fillers_for_act(self, act: str) -> list[dict[str, Any]]:
+        allowed_speakers = (
+            {"DM", "วิชัย", "ต้น"}
+            if act == "B"
+            else {"DM", "ประเสริฐ", "เสียงวิทยุ", "ผีเงาจมน้ำ"}
+        )
+        return [f for f in self.fillers if f.get("speaker") in allowed_speakers]
 
 
 @dataclass
@@ -177,7 +187,9 @@ class RoomState:
     total_turn_count: int = 0
     inventory: list[str] = field(default_factory=list)
     clues_found: list[str] = field(default_factory=list)
-    npc_trust: dict[str, int] = field(default_factory=lambda: {"ประเสริฐ": 0})
+    npc_trust: dict[str, int] = field(
+        default_factory=lambda: {"ประเสริฐ": 0, "วิชัย": 0, "ต้น": 0}
+    )
     played_audio_ids: list[str] = field(default_factory=list)
     resolved_checks: dict[str, dict[str, Any]] = field(default_factory=dict)
     pending_check: Optional[dict[str, Any]] = None
@@ -218,14 +230,33 @@ class RoomManager:
         self.empty_room_ttl_seconds: float = max(5.0, ttl)
 
     @staticmethod
+    def act_for_scene(scene_id: str) -> str:
+        return "B" if str(scene_id or "").startswith("B") else "A"
+
+    @staticmethod
+    def default_speaker_for_scene(scene_id: str) -> str:
+        if scene_id in {"A1", "A3"}:
+            return "ประเสริฐ"
+        if scene_id == "B1":
+            return "วิชัย"
+        if scene_id == "B2":
+            return "ต้น"
+        return "DM"
+
+    @staticmethod
     def normalize_room_code(room_code: str) -> str:
         cleaned = "".join(ch for ch in room_code.strip().upper() if ch.isalnum() or ch in "-_")
         return cleaned[:16] or "ROOM01"
 
-    def get_or_create_room(self, room_code: str) -> RoomState:
+    def get_or_create_room(self, room_code: str, start_act: str = "A") -> RoomState:
         code = self.normalize_room_code(room_code)
         if code not in self.rooms:
-            self.rooms[code] = RoomState(room_code=code)
+            norm_act = "B" if str(start_act or "A").strip().upper() == "B" else "A"
+            self.rooms[code] = RoomState(
+                room_code=code,
+                current_scene="B1" if norm_act == "B" else "A1",
+                board_node="headman_living_room" if norm_act == "B" else "sala",
+            )
         return self.rooms[code]
 
     def get_room_by_sid(self, sid: str) -> Optional[RoomState]:
@@ -293,6 +324,7 @@ class RoomManager:
             summaries.append(
                 {
                     "room_code": room.room_code,
+                    "act": self.act_for_scene(room.current_scene),
                     "scene_id": room.current_scene,
                     "scene_title": scene_cfg.get("title", room.current_scene),
                     "player_count": len(room.players),
@@ -314,9 +346,10 @@ class RoomManager:
         name: str,
         role_id: str,
         player_token: Optional[str] = None,
+        start_act: str = "A",
     ) -> tuple[RoomState, PlayerInfo, bool]:
         """Join or reconnect to a room, enforcing unique investigator roles."""
-        room = self.get_or_create_room(room_code)
+        room = self.get_or_create_room(room_code, start_act=start_act)
         clean_name = name.strip()[:32] or "ผู้สืบสวน"
 
         # 1) Reconnect existing player by token
@@ -511,18 +544,29 @@ class RoomManager:
             if item_id not in room.inventory:
                 return False
         min_trust = cond.get("min_trust")
-        if min_trust is not None and room.npc_trust.get("ประเสริฐ", 0) < min_trust:
-            return False
+        if min_trust is not None:
+            speaker = entry.get("speaker")
+            trust_npc = speaker if speaker in room.npc_trust else "ประเสริฐ"
+            if room.npc_trust.get(trust_npc, 0) < min_trust:
+                return False
         return True
 
     def get_eligible_dialogues(self, room: RoomState, include_endings: bool = True) -> list[dict[str, Any]]:
         eligible: list[dict[str, Any]] = []
         ending_audio_ids = {e.get("audio_id") for e in self.repo.endings.values()}
+        current_act = self.act_for_scene(room.current_scene)
         for entry in self.repo.dialogues:
             did = entry["id"]
             if entry.get("is_filler"):
                 continue
-            if entry.get("scene") != room.current_scene:
+            entry_scene = entry.get("scene")
+            if entry_scene == "*":
+                if not (
+                    (current_act == "B" and did.startswith("b_"))
+                    or (current_act == "A" and did.startswith("a_"))
+                ):
+                    continue
+            elif entry_scene != room.current_scene:
                 continue
             if did in self.repo.reserved_check_audio_ids:
                 continue
@@ -607,10 +651,16 @@ class RoomManager:
         room.current_scene = next_scene
         room.scene_turn_count = 0
         room.pending_check = None
-        if next_scene == "A2":
-            room.board_node = "company_van"
-        elif next_scene == "A3":
-            room.board_node = "sala"
+        node_by_scene = {
+            "A1": "sala",
+            "A2": "company_van",
+            "A3": "sala",
+            "B1": "headman_living_room",
+            "B2": "headman_porch",
+            "B3": "headman_archive_wall",
+        }
+        if next_scene in node_by_scene:
+            room.board_node = node_by_scene[next_scene]
 
         scene_cfg = self.repo.get_scene(next_scene) or {}
         for intro_id in scene_cfg.get("intro_audio_ids", []):
@@ -642,6 +692,46 @@ class RoomManager:
         events: list[dict[str, Any]] = []
         scene_cfg = self.repo.get_scene(room.current_scene) or {}
         for intro_id in scene_cfg.get("intro_audio_ids", []):
+            entry = self.repo.get_dialogue(intro_id)
+            if not entry:
+                continue
+            self._apply_dialogue_unlocks(room, entry)
+            self.append_log(room, entry["speaker"], entry["text"], kind="narration")
+            events.append(
+                self._build_audio_payload(
+                    dialogue_id=entry["id"],
+                    speaker=entry["speaker"],
+                    text=entry["text"],
+                    mode="script",
+                )
+            )
+        return room, events
+
+    def advance_to_act_b(self, room_code: str) -> tuple[RoomState, list[dict[str, Any]]]:
+        """Transition an existing room into Act B (headman's house B1), preserving players & Act A clue/item progress."""
+        room = self.get_or_create_room(room_code, start_act="B")
+        room.started = True
+        room.ending_triggered = None
+        room.pending_check = None
+        room.combat = None
+        room.scene_turn_count = 0
+        room.idle_prompted = False
+        room.last_activity_at = time.time()
+        setattr(room, "_usage_ending_logged", None)
+        self.clear_turn_queue(room)
+        if room.active_speaker_sid:
+            self.release_mic(room.room_code, room.active_speaker_sid, force=True)
+
+        room.current_scene = "B1"
+        room.board_node = "headman_living_room"
+        for npc_name in ("ประเสริฐ", "วิชัย", "ต้น"):
+            room.npc_trust.setdefault(npc_name, 0)
+
+        events: list[dict[str, Any]] = []
+        scene_cfg = self.repo.get_scene("B1") or {}
+        for intro_id in scene_cfg.get("intro_audio_ids", []):
+            if intro_id in room.played_audio_ids:
+                continue
             entry = self.repo.get_dialogue(intro_id)
             if not entry:
                 continue
@@ -1131,6 +1221,23 @@ class RoomManager:
         room.idle_prompted = False
 
         scene_before = room.current_scene
+        act_before = self.act_for_scene(scene_before)
+        default_speaker = self.default_speaker_for_scene(scene_before)
+        allowed_speakers_by_scene = {
+            "A1": {"DM", "ประเสริฐ"},
+            "A2": {"DM", "ประเสริฐ", "เสียงวิทยุ"},
+            "A3": {"DM", "ประเสริฐ"},
+            "B1": {"DM", "วิชัย", "ต้น"},
+            "B2": {"DM", "ต้น"},
+            "B3": {"DM"},
+        }
+        allowed_speakers = allowed_speakers_by_scene.get(scene_before, {"DM", default_speaker})
+
+        def _safe_speaker(proposed: Optional[str]) -> str:
+            if proposed and proposed in self.repo.voice_profiles and proposed in allowed_speakers:
+                return proposed
+            return default_speaker
+
         scene_cfg = self.repo.get_scene(scene_before) or {}
         eligible_by_id = {d["id"]: d for d in self.get_eligible_dialogues(room)}
         was_ended = room.ending_triggered is not None
@@ -1174,14 +1281,12 @@ class RoomManager:
             )
             if entry["id"] == "a3_ending_true" and room.ending_triggered is None:
                 room.ending_triggered = "act_a_complete"
+            elif entry["id"] == "b_ending_to_act_c" and room.ending_triggered is None:
+                room.ending_triggered = "act_b_complete"
         else:
             raw_improv = (decision.improvised_text or "").strip()[:450]
             if decision.mode == "script" and decision.selected_audio_id is None and raw_improv:
-                speaker = (
-                    decision.character
-                    if decision.character in self.repo.voice_profiles
-                    else ("ประเสริฐ" if room.current_scene in {"A1", "A3"} else "DM")
-                )
+                speaker = _safe_speaker(decision.character)
                 safe_text = raw_improv
             elif decision.mode == "script" and decision.selected_audio_id is None and room.pending_check is not None:
                 speaker = "DM"
@@ -1190,22 +1295,23 @@ class RoomManager:
                     f"กดปุ่มทอยเต๋า {room.pending_check['stat']} (เป้าหมาย DC {room.pending_check['dc']}) เพื่อดูผลลัพธ์ได้เลย"
                 )
             elif decision.mode == "script" and decision.selected_audio_id not in eligible_by_id:
-                speaker = "ประเสริฐ" if room.current_scene in {"A1", "A3"} else "DM"
-                safe_text = (
-                    "เอ่อ... เรื่องนั้นผมยังบอกอะไรไม่ได้ครับ ตอนนี้ลองดูข้อมูลที่เรามีอยู่ตรงหน้าก่อนนะครับ"
-                    if speaker == "ประเสริฐ"
-                    else "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองสอบถามประเสริฐหรือสำรวจรอบ ๆ ต่อได้"
-                )
+                speaker = default_speaker
+                if speaker == "ประเสริฐ":
+                    safe_text = "เอ่อ... เรื่องนั้นผมยังบอกอะไรไม่ได้ครับ ตอนนี้ลองดูข้อมูลที่เรามีอยู่ตรงหน้าก่อนนะครับ"
+                elif speaker == "วิชัย":
+                    safe_text = "เรื่องนั้นผมยังตอบชัด ๆ ไม่ได้ครับ ตอนนี้ลองดูแฟ้มกับแผนที่ตรงหน้าก่อนนะครับ"
+                elif speaker == "ต้น":
+                    safe_text = "เอ่อ... เรื่องนั้นผมไม่รู้จริง ๆ ครับพี่ เอาเท่าที่ผมเห็นก่อนนะ"
+                elif act_before == "B":
+                    safe_text = "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองตรวจดูแฟ้ม ภาพเก่า หรือเปิดแผนที่เลือกจุดหมายต่อได้"
+                else:
+                    safe_text = "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองสอบถามประเสริฐหรือสำรวจรอบ ๆ ต่อได้"
             else:
-                speaker = (
-                    decision.character
-                    if decision.character in self.repo.voice_profiles
-                    else ("ประเสริฐ" if room.current_scene in {"A1", "A3"} else "DM")
-                )
+                speaker = _safe_speaker(decision.character)
                 safe_text = raw_improv or "อืม... ลองตรวจดูรายละเอียดรอบ ๆ อีกครั้งนะครับ"
 
             filler = self.repo.fillers_by_id.get(decision.filler_audio_id or "")
-            if not filler:
+            if not filler or filler.get("speaker") not in allowed_speakers:
                 filler = self.repo.default_filler_for_speaker(speaker)
 
             filler_event = self._build_audio_payload(
@@ -1240,12 +1346,26 @@ class RoomManager:
 
         if updates.npc_trust_delta:
             delta = max(-1, min(1, int(updates.npc_trust_delta)))
-            cur = room.npc_trust.get("ประเสริฐ", 0)
-            room.npc_trust["ประเสริฐ"] = max(-3, min(5, cur + delta))
+            allowed_trust_npcs = {"วิชัย", "ต้น"} if act_before == "B" else {"ประเสริฐ"}
+            target_npc = updates.npc_trust_target if updates.npc_trust_target in allowed_trust_npcs else None
+            if target_npc is None:
+                if act_before == "A":
+                    target_npc = "ประเสริฐ"
+                elif scene_before == "B1":
+                    target_npc = "วิชัย"
+                elif scene_before == "B2":
+                    target_npc = "ต้น"
+            if target_npc:
+                cur = room.npc_trust.get(target_npc, 0)
+                room.npc_trust[target_npc] = max(-3, min(5, cur + delta))
 
         if updates.board_node and updates.board_node in self.repo.board_nodes_by_id:
             node = self.repo.board_nodes_by_id[updates.board_node]
-            if self._is_board_node_unlocked(room, node) and node["scene"] == room.current_scene:
+            if (
+                node.get("act", "A") == act_before
+                and self._is_board_node_unlocked(room, node)
+                and node["scene"] == room.current_scene
+            ):
                 room.board_node = updates.board_node
 
         target_next_scene = proposed_next_scene
@@ -1258,9 +1378,16 @@ class RoomManager:
             and room.ending_triggered is None
         ):
             room.ending_triggered = "act_a_complete"
+        elif (
+            act_before == "B"
+            and updates.ending_triggered == "act_b_complete"
+            and "don_house_location" in room.clues_found
+            and room.ending_triggered is None
+        ):
+            room.ending_triggered = "act_b_complete"
 
         room.total_turn_count += 1
-        if target_next_scene and target_next_scene != scene_before:
+        if target_next_scene and target_next_scene != scene_before and not room.ending_triggered:
             queued_events.extend(self._advance_scene(room, target_next_scene))
         else:
             room.scene_turn_count += 1
@@ -1310,6 +1437,8 @@ class RoomManager:
                         )
                 if room.ending_triggered == "act_a_complete":
                     room.board_node = "headman_house"
+                elif room.ending_triggered == "act_b_complete":
+                    room.board_node = "road_to_don_house"
 
         return {
             "primary_event": primary_event,
@@ -1335,6 +1464,9 @@ class RoomManager:
         node = self.repo.board_nodes_by_id.get(node_id)
         if not node:
             raise ValueError("ไม่พบจุดแผนที่ที่เลือก")
+        current_act = self.act_for_scene(room.current_scene)
+        if node.get("act", "A") != current_act:
+            raise ValueError("สถานที่นี้อยู่คนละช่วงเนื้อเรื่องกับฉากปัจจุบัน")
         if not self._is_board_node_unlocked(room, node):
             raise ValueError("ยังไม่มีข้อมูลตำแหน่งนี้ กรุณาสอบถามหรือตรวจแฟ้มก่อน")
 
@@ -1363,6 +1495,7 @@ class RoomManager:
             if room.current_scene != "A3":
                 events.extend(self._advance_scene(room, "A3"))
             room.ending_triggered = "act_a_complete"
+            room.board_node = "headman_house"
             end_entry = self.repo.get_dialogue("a3_ending_true")
             if end_entry:
                 self._apply_dialogue_unlocks(room, end_entry)
@@ -1389,16 +1522,42 @@ class RoomManager:
                     )
                 )
                 events.extend(self._advance_scene(room, "A2"))
+        elif node_id == "headman_living_room":
+            if room.current_scene != "B1":
+                events.extend(self._advance_scene(room, "B1"))
+        elif node_id == "headman_porch":
+            if room.current_scene != "B2":
+                events.extend(self._advance_scene(room, "B2"))
+        elif node_id == "headman_archive_wall":
+            if room.current_scene != "B3":
+                events.extend(self._advance_scene(room, "B3"))
+        elif node_id == "road_to_don_house" and not room.ending_triggered:
+            room.ending_triggered = "act_b_complete"
+            room.board_node = "road_to_don_house"
+            end_entry = self.repo.get_dialogue("b_ending_to_act_c")
+            if end_entry:
+                self._apply_dialogue_unlocks(room, end_entry)
+                self.append_log(room, end_entry["speaker"], end_entry["text"], kind="ending")
+                events.append(
+                    self._build_audio_payload(
+                        dialogue_id=end_entry["id"],
+                        speaker=end_entry["speaker"],
+                        text=end_entry["text"],
+                        mode="script",
+                    )
+                )
 
         return {"board_node": room.board_node, "events": events}
 
     def serialize_public_state(self, room: RoomState) -> dict[str, Any]:
         """Return strictly spoiler-free room snapshot for clients (never leaks other players' tokens)."""
         self._expire_stale_mic_lock(room)
+        current_act = self.act_for_scene(room.current_scene)
         scene_cfg = self.repo.get_scene(room.current_scene) or {}
         board_nodes = [
             {
                 "id": n["id"],
+                "act": n.get("act", "A"),
                 "name": n["name"],
                 "subtitle": n["subtitle"],
                 "scene": n["scene"],
@@ -1407,6 +1566,7 @@ class RoomManager:
                 "unlocked": self._is_board_node_unlocked(room, n),
             }
             for n in self.repo.board_nodes
+            if n.get("act", "A") == current_act
         ]
         clues = [
             {
@@ -1452,6 +1612,7 @@ class RoomManager:
 
         return {
             "room_code": room.room_code,
+            "act": current_act,
             "started": room.started,
             "case_title": self.repo.case_title,
             "current_scene": room.current_scene,
