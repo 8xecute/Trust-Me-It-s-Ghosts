@@ -2326,7 +2326,8 @@
 
     document.querySelectorAll(".act-toggle-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        selectedStartAct = btn.dataset.act === "B" ? "B" : "A";
+        const actVal = String(btn.dataset.act || "A").toUpperCase();
+        selectedStartAct = ["A", "B", "C", "D", "E", "F"].includes(actVal) ? actVal : "A";
         document.querySelectorAll(".act-toggle-btn").forEach((b) => {
           b.classList.toggle("selected", b === btn);
         });
