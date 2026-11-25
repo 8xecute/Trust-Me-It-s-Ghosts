@@ -1,0 +1,355 @@
+{
+  "dialogues": [
+    {
+      "id": "e1_intro_dm",
+      "scene": "E1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ระทึก",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก E1 หน้าเรือนไม้ร้าง" },
+      "text": "รอยล้อหนักจากหลังศาลมาสิ้นสุดลงข้างเรือนไม้ยกพื้นหลังเก่า เศษกระสอบข้าวแบบเดียวกับที่ติดกิ่งกล้วยวางซ้อนบังประตูไม้ใต้ถุนไว้ ข้างบนชั้นสองมีแสงเทียนสีส้มลอดตามรอยฝา บันไดทางขึ้นทอดอยู่ด้านข้าง... ก่อนที่พวกคุณจะทันก้าว เสียงเคาะไม้เบา ๆ ก็ดังลอดออกมาจากหลังประตูใต้ถุน",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e1_open_cellar_to_e2",
+      "scene": "E1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นย้ายกระสอบและเปิดประตูห้องใต้ถุนเข้าช่วยคน (E2)" },
+      "text": "พวกคุณช่วยกันรื้อกระสอบข้าวที่บังประตูออกแล้วกระชากกลอนเหล็กเปิดประตูไม้ใต้ถุนเข้าไปทันที...",
+      "is_filler": false,
+      "unlocks": { "clues": ["hostages_found"], "items": [], "next_scene": "E2", "trust_delta": {} }
+    },
+    {
+      "id": "e2_intro_dm",
+      "scene": "E2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สลดและเร่งด่วน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก E2 พบตัวประกันทั้งสามในห้องใต้ถุน" },
+      "text": "ทันทีที่เปิดประตูเข้าไป กลิ่นอับชื้นปนกลิ่นดินก็ตีขึ้นมา ข้างในมีคนทั้งสามถูกมัดมือและปิดปากอยู่... ดลพิงผนัง ขมับมีคราบเลือดแห้ง พยายามยันตัวลุกแต่เข่าทรุด นิดนั่งตัวสั่นกอดเข่าอยู่มุมห้อง มือมีรอยเล็บฉีกและยังกำเศษผ้าเชิ้ตสีเข้มชิ้นเล็ก ๆ ไว้แน่นไม่ยอมปล่อย ส่วนตาเพิ่มนอนขดอยู่ด้านในสุด หายใจแผ่วสั้น ที่ข้อเท้ามีเส้นด้ายดำพันทบหนากว่าอีกสองคน ทั้งสามยังมีชีวิตอยู่",
+      "is_filler": false,
+      "unlocks": { "clues": ["hostages_found"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e2_untie_to_e3",
+      "scene": "E2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ โล่งใจ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นแก้มัดเชือกและแก้ผ้าปิดปากให้ดล นิด และเพิ่ม (เข้าสู่ E3)" },
+      "text": "พวกคุณรีบแก้มัดเชือกและดึงผ้าปิดปากออกให้ทั้งสามคน (เว้นด้ายดำที่ข้อเท้าตาเพิ่มซึ่งยังตึงติดอาคมอยู่) ดลไอหอบก่อนจะพยายามขยับริมฝีปากพูด ส่วนนิดจับแขนผู้ช่วยแน่นและตาเพิ่มชี้มือสั่นขึ้นไปบนเพดาน...",
+      "is_filler": false,
+      "unlocks": { "clues": ["hostages_found"], "items": [], "next_scene": "E3", "trust_delta": {} }
+    },
+    {
+      "id": "e2_check_body_full",
+      "scene": "E2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E2_DOOR_BREAK สำเร็จเต็ม" },
+      "text": "แรงกระแทกทำให้กลอนเหล็กเก่าหลุดกระเด็น บานประตูไม้เปิดกว้างออก พวกคุณรีบเข้าไปแก้มัดให้ตัวประกันทั้งสามได้ทันที",
+      "is_filler": false,
+      "unlocks": { "clues": ["hostages_found"], "items": [], "next_scene": "E3", "trust_delta": {} }
+    },
+    {
+      "id": "e2_check_body_partial",
+      "scene": "E2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E2_DOOR_BREAK สำเร็จบางส่วน" },
+      "text": "กลอนเหล็กคลายตัวจนประตูแง้มออกพอสอดเครื่องมือหรือให้เพื่อนช่วยกันดันเปิดออกได้โดยไม่ยาก",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e2_check_body_fail",
+      "scene": "E2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E2_DOOR_BREAK ล้มเหลว" },
+      "text": "กลอนเหล็กยังคงติดแน่นจากการกระแทกครั้งแรก แต่คุณเห็นจุดงัดที่สามารถใช้อุปกรณ์หรือช่วยกันปลดกลอนได้",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e3_intro_dm",
+      "scene": "E3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ระทึก",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก E3 คำยืนยันของดล" },
+      "text": "ดลหลับตาแน่นพิงผนัง นิดคว้าแขนคนใกล้ตัวไว้ไม่ยอมห่าง ขณะที่ตาเพิ่มค่อย ๆ ยกมือสั่นชี้ขึ้นไปทางเสียงไม้ลั่นเหนือเพดาน",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e3_don_confirm",
+      "scene": "E3",
+      "speaker": "ดล",
+      "voice": "Puck",
+      "style": "เสียงชายหนุ่ม 20 ต้น ๆ อ่อนแรงแต่เร่งเร้า",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ดลยืนยันตัววิชัยและเสียงพิธีชั้นบน" },
+      "text": "วิชัย... เขาเป็นคนพามาขังไว้... ทุกคืนที่วิชัยขึ้นไปข้างบน จะมีเสียงเหมือนผู้หญิงร้องไห้ดังลงมา ผมไม่รู้มันทำพิธีอะไรอยู่บนนั้น... แต่อย่าปล่อยให้มันทำต่อเลยครับ!",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_kidnapper_confirmed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e3_check_soc_full",
+      "scene": "E3",
+      "speaker": "ดล",
+      "voice": "Puck",
+      "style": "เสียงชายหนุ่ม ตั้งสติตอบชัดขึ้น",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E3_HOSTAGES_ORDER สำเร็จเต็ม" },
+      "text": "ผมถูกจับมาคืนแรก... นิดตามมาแล้วก็โดนจับคืนต่อมา ส่วนตาเพิ่มเห็นคนลากรถเข็นเลยถูกขังเป็นรายสุดท้าย วิชัยมันนั่นแหละที่คุมทุกอย่างอยู่ข้างบน!",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_kidnapper_confirmed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e3_check_soc_partial",
+      "scene": "E3",
+      "speaker": "ดล",
+      "voice": "Puck",
+      "style": "เสียงชายหนุ่ม เหนื่อยหอบ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E3_HOSTAGES_ORDER สำเร็จบางส่วน" },
+      "text": "จำวันชัดเจนไม่ค่อยไหวแล้วครับ... รู้แค่ว่าวิชัยจับพวกเรามาขังทีละคน แล้วก็ขึ้นไปทำอะไรบางอย่างบนชั้นสอง",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_kidnapper_confirmed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e3_check_soc_fail",
+      "scene": "E3",
+      "speaker": "ดล",
+      "voice": "Puck",
+      "style": "เสียงชายหนุ่ม สั่นกลัว",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E3_HOSTAGES_ORDER ล้มเหลว" },
+      "text": "ข้างบนนั่นมีเสียงไม้ลั่นอีกแล้ว... วิชัย... ช่วยพาพวกเราออกไปจากที่นี่ด้วยนะครับ",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_kidnapper_confirmed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e3_upstairs_to_e4",
+      "scene": "E3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนระทึก",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นจัดจุดพักให้ตัวประกันแล้วเดินขึ้นบันไดไปห้องพิธีชั้นสอง (E4)" },
+      "text": "หลังจัดจุดพักและคนคุ้มกันให้ดล นิด และตาเพิ่มเรียบร้อย พวกคุณก็ค่อย ๆ ก้าวขึ้นบันไดไม้ที่ลั่นเอี๊ยดอ๊าดมุ่งหน้าสู่ห้องที่มีแสงเทียนชั้นบน...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "E4", "trust_delta": {} }
+    },
+    {
+      "id": "e4_intro_dm",
+      "scene": "E4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับขลัง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก E4 ห้องพิธีชั้นสอง" },
+      "text": "ขึ้นมาบนห้องชั้นสอง เส้นด้ายดำจากขื่อคานโยงมารวมกันเหนือโต๊ะไม้กลางห้อง บนโต๊ะมีกล่องไม้เปิดแง้มอยู่ ด้านในเป็นกำไลทองเหลืองเก่าสลักชื่อ 'แก้ว' ข้างกันมีตำราเก่าเปิดค้างไว้ข้างเปลวเทียน ส่วนใต้โต๊ะมีผ้าสีหม่นคลุมข้าวของบางอย่างไว้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["ritual_bracelet_core"],
+        "items": ["brass_bracelet_kaew", "ritual_grimoire"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "e4_search_under_table",
+      "scene": "E4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นค้นใต้ผ้าคลุมโต๊ะและเปิดดูแฟ้มหลักฐานของวิชัย" },
+      "text": "ใต้ผ้าคลุมโต๊ะพบกระเป๋าเดินทางที่แพ็กไว้ครึ่งหนึ่ง คู่กับหนังสือทวงหนี้ สัญญาซื้อขายที่ดินขอบสวน บันทึกเก่าปี 2534 และโน้ตสั้น ๆ เขียนว่า 'ดล—สมุด / นิด—ตามหา / เพิ่ม—รอยขน' ชัดเจนว่าวิชัยวางแผนเร่งขายที่ดินใช้หนี้และเตรียมหนีออกจากหมู่บ้านคืนนี้",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["wichai_debt_evidence"],
+        "items": ["wichai_debt_docs"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "e4_check_int_full",
+      "scene": "E4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E4_BRACELET_DECODE สำเร็จเต็ม" },
+      "text": "เมื่อเทียบภาพในตำรากับปมด้ายบนกำไล คุณถอดลำดับการปลดแกนได้อย่างปลอดภัยครบ 3 ขั้น: 1) คุมแรงสะท้อน -> 2) แยกสายคำสั่ง -> 3) คลายปมเกราะ ก่อนปลดกำไลขั้นสุดท้ายโดยไม่ทำร้ายวิญญาณแม่แก้ว ตำราเตือนด้วยว่าเมื่อเริ่มคลายแกน วงป้องกันจะดึงร่างแม่แก้วกลับมาขัดขวางชั่วคราว",
+      "is_filler": false,
+      "unlocks": { "clues": ["ritual_plan_prepared"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e4_check_int_partial",
+      "scene": "E4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E4_BRACELET_DECODE สำเร็จบางส่วน" },
+      "text": "คุณเห็นจุดเชื่อมต่อระหว่างด้ายดำกับกำไลและคำเตือนว่าห้ามตัดมั่ว แต่ยังอ่านขั้นตอนรับแรงสะท้อนของวงป้องกันทั้ง 3 ขั้นได้ไม่ครบถ้วน",
+      "is_filler": false,
+      "unlocks": { "clues": ["ritual_bracelet_core"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e4_check_int_fail",
+      "scene": "E4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E4_BRACELET_DECODE ล้มเหลว" },
+      "text": "ลายมือในตำราซับซ้อนเกินไป คุณรู้ชัดว่ากำไลทองเหลืองเป็นแกนพิธี แต่ยังไม่มั่นใจลำดับที่ปลอดภัยในการคลายวงป้องกัน",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "h1_check_int_full",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ จริงจัง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย H1_FLOOD_TIMELINE สำเร็จเต็ม (ACT E)" },
+      "text": "คุณวางบันทึกเปิดประตูน้ำปี 2534 เทียบกับตารางผู้มาถึงศูนย์อพยพในสมุดยายบุญมีจนตรงกัน จึงยืนยันได้ชัดว่ามีการเปิดประตูผันน้ำก่อนที่คนในสวนจะอพยพครบถ้วน แม้ยังไม่ชี้ตัวผู้สั่งสูงสุด แต่เป็นหลักฐานสำคัญสำหรับยื่นต่อผู้ใหญ่ประเสริฐหลังจบศึก",
+      "is_filler": false,
+      "unlocks": { "clues": ["flood_timeline_confirmed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "h1_check_int_partial",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย H1_FLOOD_TIMELINE สำเร็จบางส่วน (ACT E)" },
+      "text": "เวลาในเอกสารทั้งสองชุดมีจุดไม่สอดคล้องกันอย่างชัดเจน แต่ยังสรุปผู้ร่วมตัดสินใจในคืนนั้นไม่ได้ทั้งหมด ทีมเก็บเอกสารทั้งหมดไว้เป็นหลักฐานต่อ",
+      "is_filler": false,
+      "unlocks": { "clues": ["flood_timeline_confirmed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "h1_check_int_fail",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย H1_FLOOD_TIMELINE ล้มเหลว (ACT E)" },
+      "text": "สำเนาเก่าลบเลือนจนยังเรียงเส้นเวลาละเอียดไม่ได้ในตอนนี้ แต่ทีมยังคงถือหลักฐานทั้งสองฉบับไว้ตรวจสอบต่อได้หลังจบพิธี",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e4_wichai_arrives_to_e5",
+      "scene": "E4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตึงเครียด",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เสียงฝีเท้าวิชัยเดินขึ้นบันไดมาถึงห้องพิธี (เข้าสู่ E5)" },
+      "text": "เสียงฝีเท้าหนักดังไล่ขึ้นมาตามขั้นบันไดด้านนอก... วิชัยเดินถือไฟฉายขึ้นมาถึงกรอบประตูห้องพิธีเพื่อจะเก็บกระเป๋าและกำไลหนี!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "E5", "trust_delta": {} }
+    },
+    {
+      "id": "e5_intro_dm",
+      "scene": "E5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ กดดัน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก E5 วิชัยชะงักหน้าประตู" },
+      "text": "วิชัยชะงักค้างอยู่ตรงกรอบประตู ดวงตาหลังแว่นเบิกกว้างเมื่อเห็นพวกคุณอยู่หน้าโต๊ะพิธีและเอกสารที่ถูกเปิดออก สีหน้าสุขุมที่เคยเห็นในบ้านผู้ใหญ่หายไปจนหมด",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e5_wichai_cornered",
+      "scene": "E5",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ตื่นตระหนกพยายามคุมสติต่อรอง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "คำพูดแรกของวิชัยใน E5" },
+      "text": "พวกคุณ... อ่านไปถึงไหนแล้ว? วางของพวกนั้นลงก่อน... เรื่องนี้เรายังคุยกันได้นะ",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e5_qa_confess_motive",
+      "scene": "E5",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ อับจนถ้อยคำ ยอมรับ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": false, "topic_hint": "ทีมยื่นหลักฐานจี้ถามว่าทำไมจับคนหายและหลอกแม่แก้ว" },
+      "text": "ผมเป็นหนี้... ผมคิดว่าแค่ทำให้คนกลัวแล้วรีบขายที่ได้ก็จบ ดลมันขุดเรื่องที่ดิน นิดออกมาตามดล แล้วเพิ่มก็ไล่ตามรอยรถเข็น... ผมแค่ไม่อยากให้พวกมันเปิดปาก! ผมไม่ได้ตั้งใจจะฆ่าใครเลยนะ!",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_confronted"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e5_check_soc_full",
+      "scene": "E5",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ สั่นกลัว ยอมจำนน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E5_WICHAI_NEGOTIATE สำเร็จเต็ม" },
+      "text": "ยอมแล้ว... ผมจะไม่แตะกำไล พวกคุณคุมตัวผมไว้ได้เลย แค่ช่วยหยุดด้ายกับกำไลนั่นก่อนที่เธอจะหลุดออกมา!",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_confronted"], "items": [], "next_scene": "E6", "trust_delta": {} }
+    },
+    {
+      "id": "e5_check_soc_partial",
+      "scene": "E5",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ต่อรอง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E5_WICHAI_NEGOTIATE สำเร็จบางส่วน" },
+      "text": "คุยกันได้... แต่พวกคุณต้องรับปากเรื่องข้อแลกเปลี่ยน ผมยอมถอยห่างจากโต๊ะให้ก็ได้",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_confronted"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e5_check_soc_fail",
+      "scene": "E5",
+      "speaker": "วิชัย",
+      "voice": "Orus",
+      "style": "เสียงชายวัย 40 ปลาย ๆ ดิ้นรนปฏิเสธ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย E5_WICHAI_NEGOTIATE ล้มเหลว" },
+      "text": "ไม่... ผมไม่ยอมให้พวกคุณเอาของนี่ไป ผมจะไม่อยู่รอให้พวกคุณโยนผมให้ผีหรอก!",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_confronted"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e5_capture_to_e6",
+      "scene": "E5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ทีมคุมตัววิชัยไว้ได้สำเร็จหรือกั้นเขาออกจากโต๊ะพิธี (เข้าสู่ E6)" },
+      "text": "พวกคุณช่วยกันสกัดและคุมตัววิชัยให้อยู่ห่างจากโต๊ะพิธีได้สำเร็จ ตอนนี้เหลือเพียงกำไลทองเหลืองและเส้นด้ายดำตรงหน้า...",
+      "is_filler": false,
+      "unlocks": { "clues": ["wichai_confronted"], "items": [], "next_scene": "E6", "trust_delta": {} }
+    },
+    {
+      "id": "e6_intro_dm",
+      "scene": "E6",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตึงเครียดเตรียมศึกสุดท้าย",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก E6 ก่อนปลดกำไล" },
+      "text": "วิชัยถูกกันตัวออกห่างจากแกนพิธีแล้ว วงด้ายดำเหนือโต๊ะยังส่งแรงสั่นสะเทือนเบา ๆ ตำราเตือนไว้ชัดเจนว่าทันทีที่เอื้อมมือคลายกำไล วงป้องกันจะดึงแม่แก้วกลับร่างเพื่อต้านทาน — หากพร้อมแล้ว คุณสามารถลงมือปลดกำไลทองเหลืองได้เลย",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "e_ending_to_act_f",
+      "scene": "E6",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ดุดันสยองขวัญ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นวางมือลงมือปลดกำไลทองเหลืองจริง (จบ ACT E -> เปิด FINAL ACT F)" },
+      "text": "ทันทีที่มือพวกคุณแตะวงด้ายเพื่อเริ่มคลายกำไล เสียงด้ายดำเหนือคานก็กระตุกตึงพร้อมกันทั้งห้อง! เงาชุดเขียวถูกกระชากกลับมาก่อร่างกลางแสงเทียนอย่างฝืนใจ รากกล้วยดันแผ่นพื้นดังลั่น—วงป้องกันพิธีของแม่แก้วเปิดฉากต้านทานแล้ว!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    }
+  ]
+}

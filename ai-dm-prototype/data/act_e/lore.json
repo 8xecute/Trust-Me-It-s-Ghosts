@@ -1,0 +1,394 @@
+{
+  "act": "E",
+  "title": "ACT E & H1 — เรือนไม้ร้าง ตัวประกัน กำไล วิชัย และคืนปี 2534 (E1–E6, H1)",
+  "clues_catalog": {
+    "hostages_found": {
+      "label": "พบตัวประกันทั้ง 3 คนยังมีชีวิตในห้องใต้ถุน",
+      "detail": "พบดล นิด และตาเพิ่มถูกมัดมือและปิดปากอยู่ใต้ถุนเรือนไม้ ทั้งสามยังมีชีวิต แต่เพิ่มอ่อนแรงและมีเส้นด้ายดำพันข้อเท้า"
+    },
+    "wichai_kidnapper_confirmed": {
+      "label": "ดลยืนยันว่าวิชัยเป็นคนลักพาตัว",
+      "detail": "หลังแก้มัดและแก้ผ้าปิดปาก ดลยืนยันชัดเจนว่าวิชัยเป็นผู้จับทั้งสามคนมาขังไว้ และวิชัยมักขึ้นไปทำพิธีบนชั้นสองทุกคืน"
+    },
+    "ritual_bracelet_core": {
+      "label": "พบกำไลทองเหลือง 'แก้ว' และตำราพิธีชั้นสอง",
+      "detail": "กำไลทองเหลืองสลักชื่อ 'แก้ว' ในกล่องไม้คือแกนควบคุมพิธีกรรมทั้งหมด ส่วนตำราเตือนว่าห้ามย้อนสายเข้าแกนขณะคลาย เพราะมีวงป้องกันคืนร่างแม่แก้ว"
+    },
+    "ritual_plan_prepared": {
+      "label": "ลำดับคลายเกราะกำไล 3 ขั้น (Prepared)",
+      "detail": "ถอดลำดับจากตำราได้ครบ: 1) คุมแรงสะท้อน -> 2) แยกสายคำสั่ง -> 3) คลายปมเกราะ แล้วจึงปลดกำไลขั้นสุดท้ายอย่างปลอดภัย"
+    },
+    "wichai_debt_evidence": {
+      "label": "หลักฐานหนี้สินและสัญญาซื้อขายที่ดินของวิชัย",
+      "detail": "ใต้ผ้าคลุมโต๊ะชั้นสองพบกระเป๋าเดินทางแพ็กครึ่งหนึ่ง หนังสือทวงหนี้ สัญญาซื้อขายที่ดินขอบสวน และโน้ต 'ดล—สมุด / นิด—ตามหา / เพิ่ม—รอยขน'"
+    },
+    "wichai_confronted": {
+      "label": "วิชัยจนตรอกและยอมรับแรงจูงใจ",
+      "detail": "เมื่อถูกจี้ด้วยหลักฐานที่ดินและหนี้สิน วิชัยยอมรับว่าติดหนี้จึงหลอกใช้แม่แก้วและขังทั้งสามคนไว้เพื่อเร่งบีบซื้อที่ดิน"
+    },
+    "flood_timeline_confirmed": {
+      "label": "สังเคราะห์เส้นเวลาประตูน้ำปี 2534 (H1)",
+      "detail": "การเทียบเอกสารเวรประตูน้ำกับสมุดอพยพยายบุญมียืนยันว่าประตูผันน้ำถูกเปิดก่อนการตรวจเช็กผู้อพยพครบถ้วน ใช้ยื่นถามความจริงกับประเสริฐหลังจบศึก"
+    }
+  },
+  "items_catalog": {
+    "brass_bracelet_kaew": {
+      "label": "กำไลทองเหลืองสลักชื่อ 'แก้ว' (แกนพิธี)",
+      "detail": "แกนควบคุมด้ายดำทั้งหมดบนโต๊ะชั้นสอง ต้องปลดวงป้องกัน 3 ขั้นแล้วทำ Controlled Release เพื่อหยุดพิธี"
+    },
+    "ritual_grimoire": {
+      "label": "ตำราพิธีและโน้ตวงป้องกันกำไล",
+      "detail": "บันทึกแผนหลอกแม่แก้วด้วยแฟ้ม 2534 ลำดับผูกชื่อ ดล->นิด->เพิ่ม และคำเตือนเรื่องวงป้องกันสะท้อนกลับ"
+    },
+    "wichai_debt_docs": {
+      "label": "แฟ้มหนี้สินและแผนซื้อขายที่ดินของวิชัย",
+      "detail": "หลักฐานเอาผิดทางคดีมนุษย์จากใต้โต๊ะชั้นสอง ประกอบด้วยหนังสือทวงหนี้ สัญญาที่ดิน และบันทึกปี 2534"
+    }
+  },
+  "board_nodes": [
+    {
+      "id": "stilt_house_yard",
+      "name": "ลานหน้าเรือนไม้ร้าง",
+      "subtitle": "รอยล้อสิ้นสุด เสียงเคาะใต้ถุน แสงเทียนชั้นบน",
+      "scene": "E1",
+      "x": 20,
+      "y": 54,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "E"
+    },
+    {
+      "id": "cellar_room",
+      "name": "ห้องใต้ถุน (ตัวประกัน 3 คน)",
+      "subtitle": "ช่วยดล นิด เพิ่ม และฟังคำให้การ",
+      "scene": "E2",
+      "x": 45,
+      "y": 68,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "E"
+    },
+    {
+      "id": "ritual_upstairs",
+      "name": "ห้องพิธีชั้นสอง",
+      "subtitle": "กำไลทองเหลือง ตำรา หลักฐานวิชัย & จุดปะทะ",
+      "scene": "E4",
+      "x": 66,
+      "y": 36,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "E"
+    },
+    {
+      "id": "e_to_act_f_ritual",
+      "name": "เริ่มคลายกำไล (เข้าสู่ FINAL F)",
+      "subtitle": "ลงมือปลดแกนกำไล — เปิดวงป้องกันแม่แก้ว",
+      "scene": "E6",
+      "x": 86,
+      "y": 54,
+      "unlocked_by_default": false,
+      "requires_clues": [
+        "ritual_bracelet_core"
+      ],
+      "act": "E"
+    }
+  ],
+  "scenes": {
+    "E1": {
+      "id": "E1",
+      "title": "E1: เรือนไม้ร้าง — ใต้ถุนและชั้นสอง",
+      "subtitle": "เสียงเคาะเบา ๆ จากหลังประตูใต้ถุนที่มีกระสอบกั้น และแสงเทียนสีส้มจากชั้นสอง",
+      "background_image": "/assets/scenes/a3_headman_house.png",
+      "npcs": [],
+      "intro_audio_ids": [
+        "e1_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "E2",
+        "E4"
+      ],
+      "allowed_clues": [],
+      "allowed_items": [],
+      "available_checks": [],
+      "quick_prompts": [
+        "ย้ายกระสอบข้าวแล้วเปิดประตูใต้ถุนลงไปช่วยคน (E2)",
+        "เดินขึ้นบันไดไปดูห้องชั้นสองที่มีแสงเทียนก่อน (E4)",
+        "ตรวจรอบเรือนไม้และจุดจอดรถเข็น"
+      ],
+      "spoiler_guardrails": [
+        "ห้ามเฉลยจำนวนคนหายใต้ถุนหรือเนื้อหาตำราชั้นบนก่อนผู้เล่นเข้าไปจริง",
+        "วิชัยยังไม่ปรากฏตัวจนกว่าทีมจะขึ้นค้นห้องพิธี E4 จริง"
+      ]
+    },
+    "E2": {
+      "id": "E2",
+      "title": "E2: ห้องใต้ถุน — ช่วยดล นิด และเพิ่ม",
+      "subtitle": "พบตัวประกันทั้งสามยังมีชีวิต แต่เพิ่มอ่อนแรงและมีด้ายดำพันข้อเท้า",
+      "background_image": "/assets/scenes/b3_archive_wall.png",
+      "npcs": [
+        {
+          "name": "ดล",
+          "sprite": "/assets/characters/ton.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "e2_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "E1",
+        "E3",
+        "E4"
+      ],
+      "allowed_clues": [
+        "hostages_found",
+        "wichai_kidnapper_confirmed"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "E2_DOOR_BREAK"
+      ],
+      "quick_prompts": [
+        "คลายเชือกและแก้ผ้าปิดปากให้ดล นิด และเพิ่ม (เข้าสู่ E3)",
+        "ใช้กำลังพังกลอนประตูที่ฝืดติดอยู่ (ทอย BODY)",
+        "จัดคนช่วยพยุงตัวประกันแล้วเตรียมขึ้นไปดูชั้นสอง (E4)"
+      ],
+      "spoiler_guardrails": [
+        "นิดหวาดกลัวไม่พูด และเพิ่มอ่อนแรงใช้ได้แค่ท่าทาง มีเฉพาะดลที่พูดสั้น ๆ ได้หลังแก้ผ้าปิดปาก",
+        "ไม่มีการตายจากเวลาผ่านไป; พบคนหาย (FOUND) ยังไม่เท่ากับปลอดภัยถาวร (SAFE)"
+      ]
+    },
+    "E3": {
+      "id": "E3",
+      "title": "E3: คำยืนยันของดลและเบาะแสชั้นบน",
+      "subtitle": "ดลยืนยันชื่อวิชัยและชี้ว่ามีเสียงพิธีดังลงมาจากชั้นบนทุกคืน",
+      "background_image": "/assets/scenes/b3_archive_wall.png",
+      "npcs": [
+        {
+          "name": "ดล",
+          "sprite": "/assets/characters/ton.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "e3_intro_dm",
+        "e3_don_confirm"
+      ],
+      "allowed_next_scenes": [
+        "E2",
+        "E4"
+      ],
+      "allowed_clues": [
+        "hostages_found",
+        "wichai_kidnapper_confirmed"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "E3_HOSTAGES_ORDER"
+      ],
+      "quick_prompts": [
+        "ช่วยตั้งสติและเรียบเรียงลำดับเหตุการณ์กับดล (ทอย SOC)",
+        "เอาสมุดปกดำจากบ้านดลให้ดลดูและถามเรื่องชั้นบน",
+        "พาตัวประกันไปยังจุดพักคุ้มกันแล้วขึ้นไปห้องพิธีชั้นสอง (E4)"
+      ],
+      "spoiler_guardrails": [
+        "ห้ามสร้างบทพูดให้นิดหรือเพิ่ม ดลรู้เพียงว่าวิชัยขังไว้และมีเสียงผู้หญิงร้องข้างบน ไม่รู้เนื้อหาตำรา E4"
+      ]
+    },
+    "E4": {
+      "id": "E4",
+      "title": "E4: ห้องพิธีชั้นสอง — กำไล ตำรา และหลักฐานวิชัย",
+      "subtitle": "กล่องไม้ใส่กำไลทองเหลือง 'แก้ว' ตำราอาคม และกระเป๋าเอกสารใต้โต๊ะ",
+      "background_image": "/assets/scenes/b1_living_room.png",
+      "npcs": [],
+      "intro_audio_ids": [
+        "e4_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "E2",
+        "E3",
+        "E5",
+        "E6"
+      ],
+      "allowed_clues": [
+        "ritual_bracelet_core",
+        "ritual_plan_prepared",
+        "wichai_debt_evidence",
+        "flood_timeline_confirmed"
+      ],
+      "allowed_items": [
+        "brass_bracelet_kaew",
+        "ritual_grimoire",
+        "wichai_debt_docs"
+      ],
+      "available_checks": [
+        "E4_BRACELET_DECODE",
+        "H1_FLOOD_TIMELINE"
+      ],
+      "quick_prompts": [
+        "เปิดอ่านตำราข้างกล่องและถอดลำดับการคลายกำไล (ทอย INT)",
+        "ค้นใต้ผ้าคลุมโต๊ะและเปิดดูแฟ้มหลักฐานหนี้สินของวิชัย",
+        "เทียบเวลาเวรประตูน้ำปี 2534 กับสมุดยายบุญมี (ทอย INT · H1)",
+        "เตรียมรับมือเสียงฝีเท้าที่กำลังเดินขึ้นมา (วิชัย E5)"
+      ],
+      "spoiler_guardrails": [
+        "เพียงอ่านตำราหรือเห็นกำไลยังไม่หยุดพิธี และยังไม่เปิด F1 จนกว่าทีมจะเริ่มลงมือปลดกำไลจริง",
+        "ห้ามให้ประเสริฐมาปรากฏตัวหรือสารภาพใน E4/H1 (เก็บไว้พูดหลัง FINAL)"
+      ]
+    },
+    "E5": {
+      "id": "E5",
+      "title": "E5: วิชัยจนตรอกในห้องพิธี",
+      "subtitle": "วิชัยโผล่ขึ้นมาเพื่อเก็บหลักฐานหนีและชะงักเมื่อเห็นทีมอยู่หน้าโต๊ะพิธี",
+      "background_image": "/assets/scenes/b1_living_room.png",
+      "npcs": [
+        {
+          "name": "วิชัย",
+          "sprite": "/assets/characters/wichai.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "e5_intro_dm",
+        "e5_wichai_cornered"
+      ],
+      "allowed_next_scenes": [
+        "E4",
+        "E6"
+      ],
+      "allowed_clues": [
+        "wichai_confronted",
+        "flood_timeline_confirmed"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "E5_WICHAI_NEGOTIATE",
+        "H1_FLOOD_TIMELINE"
+      ],
+      "quick_prompts": [
+        "ยื่นสมุดดลกับแฟ้มหนี้สินจี้ถาม: ทำไมถึงจับคนหายและหลอกแม่แก้ว?",
+        "เจรจากดดันให้วิชัยยอมจำนนและเปิดทางคุมตัว (ทอย SOC)",
+        "จับกุมคุมตัววิชัยไว้ให้พ้นระยะกำไล แล้วเตรียมคลายพิธี (E6)"
+      ],
+      "spoiler_guardrails": [
+        "วิชัยไม่มีมีดและไม่ฆ่าตัวประกันโดยอัตโนมัติจากการทอยพลาด",
+        "เมื่อวิชัยถูกคุมตัวหรือแยกห่างแล้ว เตรียมเข้า E6 เพื่อลงมือปลดกำไลเข้าสู่ ACT F"
+      ]
+    },
+    "E6": {
+      "id": "E6",
+      "title": "E6: ก่อนปลดกำไล — วงป้องกันเตรียมตอบโต้",
+      "subtitle": "ทุกอย่างพร้อมแล้ว: ทันทีที่เริ่มปลดกำไล วงป้องกันจะดึงแม่แก้วกลับร่างเพื่อเข้าสู่ศึกสุดท้าย",
+      "background_image": "/assets/scenes/b1_living_room.png",
+      "npcs": [
+        {
+          "name": "วิชัย",
+          "sprite": "/assets/characters/wichai.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "e6_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "E4",
+        "E5"
+      ],
+      "allowed_clues": [
+        "flood_timeline_confirmed"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "H1_FLOOD_TIMELINE"
+      ],
+      "quick_prompts": [
+        "เทียบหลักฐานปี 2534 ให้ครบก่อนเริ่มปลดกำไล (ทอย INT · H1)",
+        "วางมือลงบนวงด้ายและเริ่มปลดกำไลทองเหลืองเลย (เข้าสู่ FINAL ACT F!)"
+      ],
+      "spoiler_guardrails": [
+        "อย่าเข้าฉาก F จนกว่าผู้เล่นจะประกาศลงมือปลดกำไลจริง"
+      ]
+    }
+  },
+  "dice_checks": {
+    "E2_DOOR_BREAK": {
+      "id": "E2_DOOR_BREAK",
+      "scene_id": "E2",
+      "title": "ใช้แรงพังประตูห้องขังใต้ถุนที่ติดกลอนฝืด",
+      "stat": "BODY",
+      "dc": 14,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นเลือกถีบ กระแทก หรือใช้แรงพังประตูใต้ถุนที่ติดกลอนฝืด",
+      "audio_ids": {
+        "full": "e2_check_body_full",
+        "partial": "e2_check_body_partial",
+        "failure": "e2_check_body_fail"
+      }
+    },
+    "E3_HOSTAGES_ORDER": {
+      "id": "E3_HOSTAGES_ORDER",
+      "scene_id": "E3",
+      "title": "ช่วยดลตั้งสติและเรียบเรียงลำดับการถูกลักพาตัว",
+      "stat": "SOC",
+      "dc": 11,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นปลอบให้ดลตั้งสติและช่วยเรียงลำดับวันเวลาที่ทุกคนถูกจับ",
+      "audio_ids": {
+        "full": "e3_check_soc_full",
+        "partial": "e3_check_soc_partial",
+        "failure": "e3_check_soc_fail"
+      }
+    },
+    "E4_BRACELET_DECODE": {
+      "id": "E4_BRACELET_DECODE",
+      "scene_id": "E4",
+      "title": "ถอดลำดับการปลดแกนกำไลอย่างปลอดภัย",
+      "stat": "INT",
+      "dc": 14,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นอ่านตำราเพื่อถอดลำดับคลายเกราะและปลดกำไลทองเหลือง",
+      "audio_ids": {
+        "full": "e4_check_int_full",
+        "partial": "e4_check_int_partial",
+        "failure": "e4_check_int_fail"
+      }
+    },
+    "E5_WICHAI_NEGOTIATE": {
+      "id": "E5_WICHAI_NEGOTIATE",
+      "scene_id": "E5",
+      "title": "เจรจาให้วิชัยยอมจำนนและเปิดทางคุมตัว",
+      "stat": "SOC",
+      "dc": 17,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นใช้หลักฐานเจรจากดดันให้วิชัยเลิกขัดขืนและยอมมอบตัว",
+      "audio_ids": {
+        "full": "e5_check_soc_full",
+        "partial": "e5_check_soc_partial",
+        "failure": "e5_check_soc_fail"
+      }
+    },
+    "H1_FLOOD_TIMELINE": {
+      "id": "H1_FLOOD_TIMELINE",
+      "scene_id": "E4",
+      "title": "สังเคราะห์หลักฐานเวลาเปิดประตูน้ำปี 2534",
+      "stat": "INT",
+      "dc": 17,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นนำบันทึกเวรประตูน้ำปี 2534 มาเทียบกับสมุดศูนย์อพยพของยายบุญมี",
+      "audio_ids": {
+        "full": "h1_check_int_full",
+        "partial": "h1_check_int_partial",
+        "failure": "h1_check_int_fail"
+      }
+    }
+  },
+  "endings": {
+    "act_e_complete": {
+      "id": "act_e_complete",
+      "type": "true_ending",
+      "title": "เข้าสู่ FINAL (ACT F): ปลุกวงป้องกันกำไลแม่แก้ว",
+      "summary": "ทีมสืบสวนช่วยตัวประกัน รวบรวมหลักฐานเอาผิดวิชัย และลงมือคลายกำไลทองเหลืองจนวงป้องกันพิธีทำงาน — เตรียมเผชิญหน้าครั้งสุดท้ายกับแม่แก้วใน ACT F",
+      "audio_id": "e_ending_to_act_f"
+    }
+  }
+}

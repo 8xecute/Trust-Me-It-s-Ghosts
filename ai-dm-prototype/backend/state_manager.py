@@ -24,6 +24,10 @@ def _dialogue_act_from_id(did: str) -> Optional[str]:
     """Extract Act code ('A'..'F') from IDs like 'b_ending_to_act_c' or 'b3_wichai_stay_behind'."""
     if not did:
         return None
+    if did.startswith("h1_"):
+        return "E"
+    if did.startswith("ending_"):
+        return "F"
     act = did[0].upper()
     if act not in {"A", "B", "C", "D", "E", "F"}:
         return None
@@ -110,6 +114,7 @@ def load_scenario_files(data_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]
             "scenes": scenes,
             "dice_checks": dice_checks,
             "combat_encounter": combat_enc_raw.get("combat_encounter", {}),
+            "combat_encounters": combat_enc_raw.get("encounters", {}),
             "endings": endings,
         }
         return dialogues_raw, lore_raw
@@ -153,6 +158,10 @@ class ScenarioRepository:
         self.scenes: dict[str, dict[str, Any]] = lore_raw.get("scenes", {})
         self.dice_checks: dict[str, dict[str, Any]] = lore_raw.get("dice_checks", {})
         self.combat_encounter: dict[str, Any] = lore_raw.get("combat_encounter", {})
+        raw_encounters = dict(lore_raw.get("combat_encounters") or {})
+        if self.combat_encounter and self.combat_encounter.get("id") not in raw_encounters:
+            raw_encounters[self.combat_encounter.get("id", "DROWNED_ECHO")] = self.combat_encounter
+        self.combat_encounters: dict[str, dict[str, Any]] = raw_encounters
         self.endings: dict[str, dict[str, Any]] = lore_raw.get("endings", {})
 
         self.reserved_check_audio_ids: set[str] = {
@@ -180,6 +189,11 @@ class ScenarioRepository:
 
     def get_role(self, role_id: str) -> Optional[dict[str, Any]]:
         return self.roles_by_id.get(role_id)
+
+    def get_combat_encounter(self, encounter_id: Optional[str] = None) -> dict[str, Any]:
+        if encounter_id and encounter_id in self.combat_encounters:
+            return self.combat_encounters[encounter_id]
+        return self.combat_encounter
 
     def get_voice_profile(self, speaker: str) -> dict[str, str]:
         return self.voice_profiles.get(
@@ -224,7 +238,7 @@ class ScenarioRepository:
     def count_cached_audio(self) -> int:
         return len({p.stem for p in self._iter_audio_files()})
 
-    def default_filler_for_speaker(self, speaker: str) -> dict[str, Any]:
+    def default_filler_for_speaker(self, speaker: str) -> Optional[dict[str, Any]]:
         preferred = {
             "DM": "filler_dm_think",
             "ประเสริฐ": "filler_prasert_hmm",
@@ -232,17 +246,26 @@ class ScenarioRepository:
             "ผีเงาจมน้ำ": "filler_ghost_choke",
             "วิชัย": "filler_wichai_calm",
             "ต้น": "filler_ton_nervous",
-        }.get(speaker, "filler_dm_think")
-        if preferred in self.fillers_by_id:
+        }.get(speaker)
+        if preferred and preferred in self.fillers_by_id:
             return self.fillers_by_id[preferred]
-        return self.fillers[0]
+        # New Act C-F characters use silent subtitle thinking cue before Live TTS
+        if speaker in {"ยายบุญมี", "ดล", "แม่แก้ว (นางตานี)"}:
+            return None
+        if "filler_dm_think" in self.fillers_by_id:
+            return self.fillers_by_id["filler_dm_think"]
+        return self.fillers[0] if self.fillers else None
 
     def get_fillers_for_act(self, act: str) -> list[dict[str, Any]]:
-        allowed_speakers = (
-            {"DM", "วิชัย", "ต้น"}
-            if act == "B"
-            else {"DM", "ประเสริฐ", "เสียงวิทยุ", "ผีเงาจมน้ำ"}
-        )
+        allowed_map = {
+            "A": {"DM", "ประเสริฐ", "เสียงวิทยุ", "ผีเงาจมน้ำ"},
+            "B": {"DM", "วิชัย", "ต้น"},
+            "C": {"DM", "ผีเงาจมน้ำ"},
+            "D": {"DM"},
+            "E": {"DM", "วิชัย"},
+            "F": {"DM", "วิชัย", "ประเสริฐ"},
+        }
+        allowed_speakers = allowed_map.get(act, {"DM"})
         return [f for f in self.fillers if f.get("speaker") in allowed_speakers]
 
 
@@ -282,6 +305,7 @@ class CombatState:
     active: bool = True
     round_number: int = 1
     phase: Literal["players", "ghost"] = "players"
+    encounter_id: str = "DROWNED_ECHO"
     enemy_id: str = "DROWNED_ECHO"
     enemy_name: str = "ผีเงาจมน้ำ"
     enemy_sprite: str = "/assets/characters/drowned_echo.png"
@@ -294,6 +318,10 @@ class CombatState:
     retreat_goal: int = 2
     ghost_exposed: bool = False
     party_shield: int = 0
+    ritual_shield_up: bool = False
+    ritual_step: int = 0
+    ritual_max_steps: int = 0
+    ritual_released: bool = False
     return_scene: str = "A3"
     telegraph: Optional[dict[str, Any]] = None
     environment_features: list[dict[str, str]] = field(default_factory=list)
@@ -335,6 +363,21 @@ class RoomState:
     turn_stage: str = ""
     input_queue: list[dict[str, Any]] = field(default_factory=list)
     transcript_log: list[dict[str, Any]] = field(default_factory=list)
+    case_flags: dict[str, Any] = field(
+        default_factory=lambda: {
+            "hostages_found": False,
+            "hostages_safe": 0,
+            "hostages_dead": 0,
+            "wichai_status": "free",
+            "wichai_death_cause": None,
+            "kaew_d_result": "not_met",
+            "kaew_trust": "neutral",
+            "kaew_final": "hostile",
+            "ritual_status": "active",
+            "ritual_plan": "unknown",
+            "flood_truth_disclosed": False,
+        }
+    )
 
 
 class RoomManager:
@@ -356,17 +399,75 @@ class RoomManager:
 
     @staticmethod
     def act_for_scene(scene_id: str) -> str:
-        return "B" if str(scene_id or "").startswith("B") else "A"
+        ch = str(scene_id or "A1").strip().upper()[:1]
+        return ch if ch in {"A", "B", "C", "D", "E", "F"} else "A"
 
     @staticmethod
     def default_speaker_for_scene(scene_id: str) -> str:
-        if scene_id in {"A1", "A3"}:
+        if scene_id in {"A1", "A3", "F6"}:
             return "ประเสริฐ"
-        if scene_id == "B1":
+        if scene_id in {"B1", "E5"}:
             return "วิชัย"
         if scene_id == "B2":
             return "ต้น"
+        if scene_id == "C5":
+            return "ยายบุญมี"
+        if scene_id in {"D3", "D4", "F1", "F5"}:
+            return "แม่แก้ว (นางตานี)"
+        if scene_id == "E3":
+            return "ดล"
         return "DM"
+
+    @staticmethod
+    def _act_entry_point(act: str) -> tuple[str, str]:
+        return {
+            "A": ("A1", "sala"),
+            "B": ("B1", "headman_living_room"),
+            "C": ("C1", "don_living_room"),
+            "D": ("D1", "banana_path_d1"),
+            "E": ("E1", "stilt_house_yard"),
+            "F": ("F1", "ritual_upstairs_final"),
+        }.get(act, ("A1", "sala"))
+
+    def apply_act_start_preset(self, room: RoomState, start_act: str) -> None:
+        """Seed realistic prior-act clues and items when creating a room directly in Act C–F for playtesting."""
+        norm = str(start_act or "A").strip().upper()
+        preset_clues: list[str] = []
+        preset_items: list[str] = []
+        if norm in {"C", "D", "E", "F"}:
+            preset_clues.extend(["missing_names", "don_house_location", "flood_photo_seen"])
+            preset_items.extend(["village_map_copy", "floodgate_duty_log_copy"])
+        if norm in {"D", "E", "F"}:
+            preset_clues.extend(["don_notebook_found", "knows_wichai_saved", "boonmee_thread_warning"])
+            preset_items.extend(["don_black_notebook", "boonmee_prayer_book"])
+        if norm in {"E", "F"}:
+            preset_clues.extend(["shrine_three_names", "kaew_coerced_truth", "cart_tracks_to_house"])
+            preset_items.append("camera_strap_mud")
+        if norm == "F":
+            preset_clues.extend(
+                [
+                    "hostages_found",
+                    "wichai_kidnapper_confirmed",
+                    "ritual_bracelet_core",
+                    "ritual_plan_prepared",
+                    "wichai_debt_evidence",
+                    "wichai_confronted",
+                ]
+            )
+            preset_items.extend(["brass_bracelet_kaew", "ritual_grimoire", "wichai_debt_docs"])
+            room.case_flags["hostages_found"] = True
+            room.case_flags["hostages_safe"] = 3
+            room.case_flags["wichai_status"] = "captured"
+            room.case_flags["ritual_plan"] = "prepared"
+            room.case_flags["kaew_d_result"] = "talked"
+            room.case_flags["kaew_trust"] = "high"
+
+        for cid in preset_clues:
+            if cid in self.repo.clues_catalog and cid not in room.clues_found:
+                room.clues_found.append(cid)
+        for iid in preset_items:
+            if iid in self.repo.items_catalog and iid not in room.inventory:
+                room.inventory.append(iid)
 
     @staticmethod
     def normalize_room_code(room_code: str) -> str:
@@ -376,12 +477,17 @@ class RoomManager:
     def get_or_create_room(self, room_code: str, start_act: str = "A") -> RoomState:
         code = self.normalize_room_code(room_code)
         if code not in self.rooms:
-            norm_act = "B" if str(start_act or "A").strip().upper() == "B" else "A"
-            self.rooms[code] = RoomState(
+            raw_act = str(start_act or "A").strip().upper()
+            norm_act = raw_act if raw_act in {"A", "B", "C", "D", "E", "F"} else "A"
+            scene_id, node_id = self._act_entry_point(norm_act)
+            new_room = RoomState(
                 room_code=code,
-                current_scene="B1" if norm_act == "B" else "A1",
-                board_node="headman_living_room" if norm_act == "B" else "sala",
+                current_scene=scene_id,
+                board_node=node_id,
             )
+            if norm_act in {"C", "D", "E", "F"}:
+                self.apply_act_start_preset(new_room, norm_act)
+            self.rooms[code] = new_room
         return self.rooms[code]
 
     def get_room_by_sid(self, sid: str) -> Optional[RoomState]:
@@ -737,6 +843,24 @@ class RoomManager:
         for clue_id in unlocks.get("clues", []):
             if clue_id in self.repo.clues_catalog and clue_id not in room.clues_found:
                 room.clues_found.append(clue_id)
+            if clue_id == "hostages_found":
+                room.case_flags["hostages_found"] = True
+                room.case_flags["hostages_safe"] = max(int(room.case_flags.get("hostages_safe", 0)), 3)
+            elif clue_id == "ritual_plan_prepared":
+                room.case_flags["ritual_plan"] = "prepared"
+            elif clue_id == "wichai_confronted":
+                if room.case_flags.get("wichai_status") == "free":
+                    room.case_flags["wichai_status"] = "captured"
+            elif clue_id == "ritual_stopped":
+                room.case_flags["ritual_status"] = "stopped"
+            elif clue_id == "kaew_reconciled":
+                room.case_flags["kaew_final"] = "calm"
+            elif clue_id == "flood_truth_disclosed":
+                room.case_flags["flood_truth_disclosed"] = True
+            elif clue_id == "kaew_coerced_truth":
+                if room.case_flags.get("kaew_d_result") == "not_met":
+                    room.case_flags["kaew_d_result"] = "talked"
+                    room.case_flags["kaew_trust"] = "high"
         for item_id in unlocks.get("items", []):
             if item_id in self.repo.items_catalog and item_id not in room.inventory:
                 room.inventory.append(item_id)
@@ -780,6 +904,25 @@ class RoomManager:
             "B1": "headman_living_room",
             "B2": "headman_porch",
             "B3": "headman_archive_wall",
+            "C1": "don_living_room",
+            "C2": "don_desk",
+            "C3": "don_floor_echo",
+            "C4": "don_floor_echo",
+            "C5": "grove_boonmee_house",
+            "D1": "banana_path_d1",
+            "D2": "banana_shrine_d2",
+            "D3": "kaew_shrine_d3",
+            "D4": "kaew_shrine_d3",
+            "D5": "cart_tracks_d5",
+            "E1": "stilt_house_yard",
+            "E2": "cellar_room",
+            "E3": "cellar_room",
+            "E4": "ritual_upstairs",
+            "E5": "ritual_upstairs",
+            "E6": "ritual_upstairs",
+            "F1": "ritual_upstairs_final",
+            "F5": "reconcile_spot_f5",
+            "F6": "dawn_road_epilogue",
         }
         if next_scene in node_by_scene:
             room.board_node = node_by_scene[next_scene]
@@ -829,9 +972,12 @@ class RoomManager:
             )
         return room, events
 
-    def advance_to_act_b(self, room_code: str) -> tuple[RoomState, list[dict[str, Any]]]:
-        """Transition an existing room into Act B (headman's house B1), preserving players & Act A clue/item progress."""
-        room = self.get_or_create_room(room_code, start_act="B")
+    def advance_to_act(self, room_code: str, target_act: str) -> tuple[RoomState, list[dict[str, Any]]]:
+        """Transition an existing room cleanly to target_act ('B'..'F'), preserving party & clues/items."""
+        norm_act = str(target_act or "B").strip().upper()
+        if norm_act not in {"B", "C", "D", "E", "F"}:
+            norm_act = "B"
+        room = self.get_or_create_room(room_code, start_act=norm_act)
         room.started = True
         room.ending_triggered = None
         room.pending_check = None
@@ -844,13 +990,14 @@ class RoomManager:
         if room.active_speaker_sid:
             self.release_mic(room.room_code, room.active_speaker_sid, force=True)
 
-        room.current_scene = "B1"
-        room.board_node = "headman_living_room"
-        for npc_name in ("ประเสริฐ", "วิชัย", "ต้น"):
+        entry_scene, entry_node = self._act_entry_point(norm_act)
+        room.current_scene = entry_scene
+        room.board_node = entry_node
+        for npc_name in ("ประเสริฐ", "วิชัย", "ต้น", "ยายบุญมี", "แม่แก้ว"):
             room.npc_trust.setdefault(npc_name, 0)
 
         events: list[dict[str, Any]] = []
-        scene_cfg = self.repo.get_scene("B1") or {}
+        scene_cfg = self.repo.get_scene(entry_scene) or {}
         for intro_id in scene_cfg.get("intro_audio_ids", []):
             if intro_id in room.played_audio_ids:
                 continue
@@ -868,6 +1015,10 @@ class RoomManager:
                 )
             )
         return room, events
+
+    def advance_to_act_b(self, room_code: str) -> tuple[RoomState, list[dict[str, Any]]]:
+        """Transition an existing room into Act B (headman's house B1), preserving players & Act A progress."""
+        return self.advance_to_act(room_code, "B")
 
     def trigger_check(self, room: RoomState, check_id: str, requested_by: str) -> Optional[dict[str, Any]]:
         scene_cfg = self.repo.get_scene(room.current_scene) or {}
@@ -1027,25 +1178,68 @@ class RoomManager:
             "counter_tip": counter_tip,
         }
 
-    def start_combat(self, room_code: str, return_scene: Optional[str] = None) -> list[dict[str, Any]]:
+    def start_combat(
+        self,
+        room_code: str,
+        return_scene: Optional[str] = None,
+        encounter_id: str = "DROWNED_ECHO",
+    ) -> list[dict[str, Any]]:
         room = self.get_or_create_room(room_code)
-        enc = self.repo.combat_encounter
+        enc = self.repo.get_combat_encounter(encounter_id)
+        enc_id = enc.get("id", encounter_id or "DROWNED_ECHO")
         party_count = max(2, len(room.players))
         max_hp = int(enc.get("base_hp_for_2", 8)) + max(0, party_count - 2) * int(
             enc.get("hp_per_extra_player", 3)
         )
+        ritual_max = int(enc.get("ritual_max_steps", 0))
+        has_shield = ritual_max > 0
 
         room.started = True
         room.pending_check = None
-        room.board_node = "banana_grove_edge"
+        if enc_id == "DROWNED_ECHO" and self.act_for_scene(room.current_scene) == "A":
+            room.board_node = "banana_grove_edge"
         self.clear_turn_queue(room)
         if room.active_speaker_sid:
             self.release_mic(room.room_code, room.active_speaker_sid, force=True)
+
+        features = (
+            [
+                {
+                    "id": "ritual_threads",
+                    "label": "ด้ายบังคับ 3 ชั้น & สายป้ายชื่อ",
+                    "hint": "ใช้แอ็กชันคลายพิธี: 1) คุมแรงสะท้อน -> 2) แยกสายคำสั่ง -> 3) คลายปมเกราะ",
+                    "sample": "คุมแรงสะท้อนของด้ายบนโต๊ะและเริ่มแยกสายคำสั่งตามตำรา",
+                },
+                {
+                    "id": "kaew_memory",
+                    "label": "ความทรงจำคืนน้ำท่วมปี 2534",
+                    "hint": "กล่อมเรียกสติแม่แก้วด้วยเหตุการณ์คืนช่วยเด็กวิชัย",
+                    "sample": "ตะโกนเตือนสติแม่แก้วว่าพวกเรามาเปิดเผยความจริงปี 2534",
+                },
+                {
+                    "id": "ritual_table",
+                    "label": "โต๊ะไม้และมุมกำบังในห้องพิธี",
+                    "hint": "ช่วยเพื่อนคุ้มกันคนปลดกำไลระหว่างที่รากกล้วยฟาดขึ้นมา",
+                    "sample": "ยืนขวางหน้ารากไม้เพื่อคุ้มกันเพื่อนที่กำลังคลายปมกำไล",
+                },
+            ]
+            if enc_id in {"KAEW_FINAL_BOSS", "KAEW_SHIELDED_SHADOW"}
+            else self._default_combat_features()
+        )
+        start_msg = (
+            f"เริ่มการเผชิญหน้ากับ {enc.get('name', 'ศัตรู')}! "
+            + (
+                "เกราะพิธี 3 ชั้นกำลังปกป้องแม่แก้ว — ต้องคลายพิธี 3 ขั้นแล้วปลดกำไล!"
+                if has_shield
+                else "รอบที่ 1 — ตาของผู้สืบสวน"
+            )
+        )
         room.combat = CombatState(
             active=True,
             round_number=1,
             phase="players",
-            enemy_id=enc.get("id", "DROWNED_ECHO"),
+            encounter_id=enc_id,
+            enemy_id=enc_id,
             enemy_name=enc.get("name", "ผีเงาจมน้ำ"),
             enemy_sprite=enc.get("sprite", "/assets/characters/drowned_echo.png"),
             background_image=enc.get("background_image", "/assets/scenes/a3_grove_entrance.png"),
@@ -1055,12 +1249,14 @@ class RoomManager:
             soothe_goal=int(enc.get("soothe_goal", 3)),
             retreat_progress=0,
             retreat_goal=int(enc.get("retreat_goal", 2)),
+            ritual_shield_up=has_shield,
+            ritual_step=0,
+            ritual_max_steps=ritual_max,
+            ritual_released=False,
             return_scene=return_scene or room.current_scene,
-            environment_features=self._default_combat_features(),
-            chronicle=[
-                {"round": 1, "actor": "ระบบ", "tier": "system", "text": "เริ่มการเผชิญหน้ากับผีเงาจมน้ำบริเวณปากทางสวนกล้วย"}
-            ],
-            combat_log=["เริ่มการเผชิญหน้ากับ ผีเงาจมน้ำ! รอบที่ 1 — ตาของผู้สืบสวน"],
+            environment_features=features,
+            chronicle=[{"round": 1, "actor": "ระบบ", "tier": "system", "text": start_msg}],
+            combat_log=[start_msg],
         )
 
         for p in room.players.values():
@@ -1074,7 +1270,8 @@ class RoomManager:
         self._prepare_round_telegraph(room)
 
         events: list[dict[str, Any]] = []
-        intro = self.repo.get_dialogue("combat_drowned_intro")
+        intro_id = "combat_drowned_intro" if enc_id == "DROWNED_ECHO" else ("f1_intro_dm" if enc_id == "KAEW_FINAL_BOSS" else "d4_intro_dm")
+        intro = self.repo.get_dialogue(intro_id)
         if intro:
             self.append_log(room, intro["speaker"], intro["text"], kind="narration")
             events.append(
@@ -1132,9 +1329,12 @@ class RoomManager:
         if "ROOTED" in player.statuses and action_id == "retreat":
             raise ValueError("ติดสถานะพันธนาการ! ขาถูกจับไว้ ถอยทัพไม่ได้จนกว่าจะล้างสถานะหรือพ้นรอบนี้")
 
-        enc = self.repo.combat_encounter
+        enc = self.repo.get_combat_encounter(combat.encounter_id)
         pdef = int(enc.get("pdef", 12))
         mdef = int(enc.get("mdef", 13))
+        ritual_dc = int(enc.get("ritual_dc", 12))
+        if room.case_flags.get("ritual_plan") == "prepared":
+            ritual_dc = max(10, ritual_dc - 2)
         exposed_bonus = 2 if combat.ghost_exposed else 0
         assist_bonus = int(player.assisted_bonus or 0)
         safe_tactical = max(0, min(2, int(tactical_bonus or 0)))
@@ -1166,37 +1366,55 @@ class RoomManager:
             player.assisted_bonus = 0
 
             if d20 == 20:
-                dmg = 5 + (1 if combat.ghost_exposed else 0)
+                dmg = 0 if combat.ritual_shield_up else (5 + (1 if combat.ghost_exposed else 0))
                 combat.enemy_hp = max(0, combat.enemy_hp - dmg)
                 combat.ghost_exposed = True
                 tier_key = "full"
                 tier_label = "คริติคอล! (NAT 20)"
-                summary = f"{player.name} โจมตีคริติคอลด้วย {stat} (D20:20+{mod}+{bonus_total}={total}) -{dmg} HP ผี + เปิดจุดอ่อน!"
-                narration = _pick_narration(
-                    f"{player.name} ชิงจังหวะแม่นยำพุ่งโจมตีเต็มแรงจนร่างโคลนของผีเงาจมน้ำแตกกระเซ็น (-{dmg} HP และเปิดช่องโหว่ทั้งทีม)!"
-                )
+                if combat.ritual_shield_up:
+                    summary = f"{player.name} โจมตีคริติคอล ({total}) แต่เกราะด้ายดำ 3 ชั้นกันดาเมจไว้! (+2 เปิดจุดอ่อนทีม)"
+                    narration = _pick_narration(
+                        f"{player.name} ฟาดเข้ากลางวงอาคมเต็มแรงจนเกราะสั่นสะเทือน เปิดจุดอ่อนให้ทีม (+2 ทอย) แต่ต้องคลายเกราะ 3 ขั้นก่อนดาเมจจึงจะเข้า!"
+                    )
+                else:
+                    summary = f"{player.name} โจมตีคริติคอลด้วย {stat} (D20:20+{mod}+{bonus_total}={total}) -{dmg} HP ผี + เปิดจุดอ่อน!"
+                    narration = _pick_narration(
+                        f"{player.name} ชิงจังหวะแม่นยำพุ่งโจมตีเต็มแรงจนร่างโคลนของผีเงาจมน้ำแตกกระเซ็น (-{dmg} HP และเปิดช่องโหว่ทั้งทีม)!"
+                    )
                 sfx = "dice_success"
                 visual_fx = "ghost_hit"
             elif total >= pdef:
-                dmg = 3 + (1 if combat.ghost_exposed else 0)
+                dmg = 0 if combat.ritual_shield_up else (3 + (1 if combat.ghost_exposed else 0))
                 combat.enemy_hp = max(0, combat.enemy_hp - dmg)
                 tier_key = "full"
-                tier_label = "สำเร็จเต็ม"
-                summary = f"{player.name} โจมตีด้วย {stat} (D20:{d20}+{mod + bonus_total}={total} ≥ {pdef}) โดนเต็ม! -{dmg} HP ผี"
-                narration = _pick_narration(
-                    f"{player.name} จู่โจมทะลุแนวเงาโคลนเข้ากลางลำตัวผีเงาจมน้ำเต็มแรง (-{dmg} HP)!"
-                )
+                tier_label = "ติดเกราะพิธี!" if combat.ritual_shield_up else "สำเร็จเต็ม"
+                if combat.ritual_shield_up:
+                    summary = f"{player.name} โจมตีโดน ({total} ≥ {pdef}) แต่เกราะด้ายดำ 3 ชั้นกันดาเมจไว้ทั้งหมด (ต้องทำพิธีคลายเกราะก่อน!)"
+                    narration = _pick_narration(
+                        f"การโจมตีของ {player.name} กระแทกโดนเกราะด้ายดำสามชั้นรอบตัวแม่แก้วจนประกายไฟแตกกระจาย แต่ยังทำอันตรายร่างเธอไม่ได้!"
+                    )
+                else:
+                    summary = f"{player.name} โจมตีด้วย {stat} (D20:{d20}+{mod + bonus_total}={total} ≥ {pdef}) โดนเต็ม! -{dmg} HP ผี"
+                    narration = _pick_narration(
+                        f"{player.name} จู่โจมทะลุแนวเงาโคลนเข้ากลางลำตัวเต็มแรง (-{dmg} HP)!"
+                    )
                 sfx = "combat_hit"
                 visual_fx = "ghost_hit"
             elif total >= pdef - 3 and d20 != 1:
-                dmg = 1
+                dmg = 0 if combat.ritual_shield_up else 1
                 combat.enemy_hp = max(0, combat.enemy_hp - dmg)
                 tier_key = "partial"
-                tier_label = "เฉียด (Partial)"
-                summary = f"{player.name} โจมตีเฉี่ยว ({total}/{pdef}) ทำได้ {dmg} HP ผี"
-                narration = _pick_narration(
-                    f"ผีเงาจมน้ำเอนตัวหลบได้หวุดหวิด แต่แรงปะทะยังเฉี่ยวโดนร่างมันไปได้ {dmg} HP"
-                )
+                tier_label = "ติดเกราะพิธี" if combat.ritual_shield_up else "เฉียด (Partial)"
+                if combat.ritual_shield_up:
+                    summary = f"{player.name} โจมตีติดเกราะพิธี 3 ชั้น ({total}/{pdef}) ทำ 0 HP"
+                    narration = _pick_narration(
+                        f"เกราะด้ายดำสามชั้นดีดแรงปะทะของ {player.name} ออกมา ต้องปลดเกราะ 3 ขั้นบนโต๊ะก่อน!"
+                    )
+                else:
+                    summary = f"{player.name} โจมตีเฉี่ยว ({total}/{pdef}) ทำได้ {dmg} HP ผี"
+                    narration = _pick_narration(
+                        f"ศัตรูเอนตัวหลบได้หวุดหวิด แต่แรงปะทะยังเฉี่ยวโดนร่างไปได้ {dmg} HP"
+                    )
                 sfx = "combat_hit"
                 visual_fx = "ghost_hit"
             elif d20 == 1:
@@ -1479,6 +1697,103 @@ class RoomManager:
                 "tier_label": tier_label,
                 "is_ghost": False,
             }
+        elif action_id == "ritual":
+            if combat.ritual_max_steps <= 0:
+                raise ValueError("ฉากต่อสู้นี้ไม่มีเกราะพิธีให้คลาย")
+            best_stat = max(
+                ("INT", int(player.stats.get("INT", 0))),
+                ("SPI", int(player.stats.get("SPI", 0))),
+                ("SOC", int(player.stats.get("SOC", 0))),
+                key=lambda kv: kv[1],
+            )[0]
+            stat = chosen_override or best_stat
+            mod = int(player.stats.get(stat, 0))
+            d20 = secrets.randbelow(20) + 1
+            bonus_total = exposed_bonus + assist_bonus + safe_tactical
+            total = d20 + mod + bonus_total
+            player.assisted_bonus = 0
+
+            step_titles = {
+                1: "ขั้น 1/3: คุมแรงสะท้อน",
+                2: "ขั้น 2/3: แยกสายคำสั่ง (F4 Phase 2!)",
+                3: "ขั้น 3/3: คลายปมเกราะ",
+            }
+            if combat.ritual_step < combat.ritual_max_steps:
+                if total >= ritual_dc:
+                    combat.ritual_step += 1
+                    step_name = step_titles.get(combat.ritual_step, f"ขั้น {combat.ritual_step}/3")
+                    tier_key = "full"
+                    tier_label = f"คลายพิธี ({combat.ritual_step}/{combat.ritual_max_steps})"
+                    if combat.ritual_step == 2:
+                        combat.soothe_progress = min(combat.soothe_goal, combat.soothe_progress + 1)
+                        summary = (
+                            f"{player.name} ทำ {step_name} สำเร็จ ({stat} {total} ≥ {ritual_dc})! "
+                            "ภาพคืนน้ำท่วมปี 2534 ฉายย้อน—แม่แก้วช่วยเด็กวิชัยขึ้นจากน้ำ!"
+                        )
+                    elif combat.ritual_step >= combat.ritual_max_steps:
+                        combat.ritual_shield_up = False
+                        summary = (
+                            f"{player.name} ทำ {step_name} สำเร็จ ({stat} {total} ≥ {ritual_dc})! "
+                            "เกราะด้ายดำ 3 ชั้นสลายแล้ว — ลงมือ 'ปลดกำไลขั้นสุดท้าย' ได้เลย!"
+                        )
+                    else:
+                        summary = f"{player.name} ทำ {step_name} สำเร็จ ({stat} {total} ≥ {ritual_dc})!"
+                    narration = _pick_narration(summary)
+                    sfx = "skill_cast"
+                    visual_fx = "ghost_soothe"
+                elif total >= ritual_dc - 3:
+                    combat.ghost_exposed = True
+                    tier_key = "partial"
+                    tier_label = "ปมคลายบางส่วน (+2 ทอย)"
+                    summary = f"{player.name} แตะวงด้ายเฉียดเป้า ({total}/{ritual_dc}) เปิดช่องให้เพื่อนทำพิธีต่อแม่นขึ้น (+2 ทอย)"
+                    narration = _pick_narration(summary)
+                    sfx = "skill_cast"
+                    visual_fx = "party_buff"
+                else:
+                    tier_key = "failure"
+                    tier_label = "แรงสะท้อนตีกลับ"
+                    if player.sanity > 1:
+                        player.sanity -= 1
+                    summary = f"{player.name} คลายปมผิดจังหวะ ({total}/{ritual_dc}) แรงด้ายสะท้อนกลับ (สติ -1)"
+                    narration = _pick_narration(summary)
+                    sfx = "dice_fail"
+                    visual_fx = "miss"
+            else:
+                # Shield is already DOWN -> Controlled Release Action!
+                release_dc = max(8, ritual_dc - 2)
+                if total >= release_dc or d20 >= 10:
+                    combat.ritual_released = True
+                    tier_key = "full"
+                    tier_label = "ปลดกำไลสำเร็จ!"
+                    summary = f"{player.name} ปลดกำไลทองเหลืองขั้นสุดท้ายสำเร็จ ({stat} {total} ≥ {release_dc})! เส้นด้ายดำทั้งหมดสลายลงแล้ว"
+                    narration = _pick_narration(summary)
+                    sfx = "dice_success"
+                    visual_fx = "ghost_soothe"
+                else:
+                    tier_key = "partial"
+                    tier_label = "กำไลยังไม่หลุด"
+                    combat.ghost_exposed = True
+                    summary = f"{player.name} ง้างกำไลยังไม่หลุด ({total}/{release_dc}) แต่สลักคลายลง (+2 ทอยรอบหน้า)"
+                    narration = _pick_narration(summary)
+                    sfx = "skill_cast"
+                    visual_fx = "party_buff"
+
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "ritual",
+                "action_label": "ปลดกำไลขั้นสุดท้าย" if not combat.ritual_shield_up else "คลายเกราะพิธี 3 ขั้น",
+                "stat": stat,
+                "d20": d20,
+                "modifier": mod,
+                "bonus": bonus_total,
+                "bonus_reason": tactical_reason or ("รู้แผนตำรา E4" if room.case_flags.get("ritual_plan") == "prepared" else None),
+                "total": total,
+                "target_dc": ritual_dc,
+                "dc_label": "DC",
+                "tier": tier_key,
+                "tier_label": tier_label,
+                "is_ghost": False,
+            }
         else:
             raise ValueError("ไม่รู้จักคำสั่งต่อสู้ที่เลือก")
 
@@ -1493,30 +1808,67 @@ class RoomManager:
         self.append_log(room, "ต่อสู้", narration or summary, kind="check")
 
         # Check immediate combat resolution
-        if combat.enemy_hp <= 0:
+        if combat.ritual_released or combat.enemy_hp <= 0 or combat.soothe_progress >= combat.soothe_goal:
+            won_by_soothe = combat.soothe_progress >= combat.soothe_goal
+            won_by_ritual = combat.ritual_released
+            enc_id = combat.encounter_id
+            ret_scene = combat.return_scene
             combat.active = False
             room.combat = None
-            room.ending_triggered = "act_a_combat_clear"
-            win = self.repo.get_dialogue("combat_win_disperse")
-            if win:
-                self._apply_dialogue_unlocks(room, win)
-                self.append_log(room, win["speaker"], win["text"], kind="ending")
-                events.append(self._build_audio_payload(win["id"], win["speaker"], win["text"]))
-            return {
-                "summary": summary,
-                "narration": narration,
-                "roll_detail": roll_detail,
-                "visual_fx": "ghost_hit",
-                "sfx": "dice_success",
-                "ready_for_ghost_turn": False,
-                "events": events,
-            }
 
-        if combat.soothe_progress >= combat.soothe_goal:
-            combat.active = False
-            room.combat = None
+            if enc_id == "KAEW_FINAL_BOSS":
+                room.case_flags["ritual_status"] = "stopped"
+                if "ritual_stopped" not in room.clues_found:
+                    room.clues_found.append("ritual_stopped")
+                if won_by_soothe:
+                    room.case_flags["kaew_final"] = "calm"
+                    if "kaew_reconciled" not in room.clues_found:
+                        room.clues_found.append("kaew_reconciled")
+                events.extend(self._advance_scene(room, "F5"))
+                return {
+                    "summary": summary,
+                    "narration": narration,
+                    "roll_detail": roll_detail,
+                    "visual_fx": "ghost_soothe" if (won_by_ritual or won_by_soothe) else "ghost_hit",
+                    "sfx": "dice_success",
+                    "ready_for_ghost_turn": False,
+                    "events": events,
+                }
+
+            if enc_id == "KAEW_SHIELDED_SHADOW":
+                room.case_flags["kaew_d_result"] = "talked" if won_by_soothe else "won"
+                if won_by_soothe:
+                    room.case_flags["kaew_trust"] = "high"
+                if "kaew_coerced_truth" not in room.clues_found:
+                    room.clues_found.append("kaew_coerced_truth")
+                events.extend(self._advance_scene(room, "D5"))
+                return {
+                    "summary": summary,
+                    "narration": narration,
+                    "roll_detail": roll_detail,
+                    "visual_fx": "ghost_soothe" if won_by_soothe else "ghost_hit",
+                    "sfx": "dice_success",
+                    "ready_for_ghost_turn": False,
+                    "events": events,
+                }
+
+            if self.act_for_scene(ret_scene) == "C":
+                if "spirit_echo_vision" not in room.clues_found:
+                    room.clues_found.append("spirit_echo_vision")
+                events.extend(self._advance_scene(room, "C5"))
+                return {
+                    "summary": summary,
+                    "narration": narration,
+                    "roll_detail": roll_detail,
+                    "visual_fx": "ghost_soothe" if won_by_soothe else "ghost_hit",
+                    "sfx": "dice_success",
+                    "ready_for_ghost_turn": False,
+                    "events": events,
+                }
+
             room.ending_triggered = "act_a_combat_clear"
-            win = self.repo.get_dialogue("combat_win_soothe")
+            win_id = "combat_win_soothe" if won_by_soothe else "combat_win_disperse"
+            win = self.repo.get_dialogue(win_id)
             if win:
                 self._apply_dialogue_unlocks(room, win)
                 self.append_log(room, win["speaker"], win["text"], kind="ending")
@@ -1525,15 +1877,53 @@ class RoomManager:
                 "summary": summary,
                 "narration": narration,
                 "roll_detail": roll_detail,
-                "visual_fx": "ghost_soothe",
+                "visual_fx": "ghost_soothe" if won_by_soothe else "ghost_hit",
                 "sfx": "dice_success",
                 "ready_for_ghost_turn": False,
                 "events": events,
             }
 
         if combat.retreat_progress >= combat.retreat_goal:
+            enc_id = combat.encounter_id
+            ret_scene = combat.return_scene
             combat.active = False
             room.combat = None
+
+            if enc_id == "KAEW_FINAL_BOSS":
+                room.ending_triggered = self.resolve_final_ending(room)
+                return {
+                    "summary": summary,
+                    "narration": narration,
+                    "roll_detail": roll_detail,
+                    "visual_fx": "party_buff",
+                    "sfx": "dice_fail",
+                    "ready_for_ghost_turn": False,
+                    "events": events,
+                }
+            if enc_id == "KAEW_SHIELDED_SHADOW":
+                room.case_flags["kaew_d_result"] = "fled"
+                events.extend(self._advance_scene(room, "D5"))
+                return {
+                    "summary": summary,
+                    "narration": narration,
+                    "roll_detail": roll_detail,
+                    "visual_fx": "party_buff",
+                    "sfx": "dice_success",
+                    "ready_for_ghost_turn": False,
+                    "events": events,
+                }
+            if self.act_for_scene(ret_scene) == "C":
+                events.extend(self._advance_scene(room, "C5"))
+                return {
+                    "summary": summary,
+                    "narration": narration,
+                    "roll_detail": roll_detail,
+                    "visual_fx": "party_buff",
+                    "sfx": "dice_success",
+                    "ready_for_ghost_turn": False,
+                    "events": events,
+                }
+
             room.current_scene = "A3"
             room.board_node = "sala"
             esc = self.repo.get_dialogue("combat_escape")
@@ -1570,15 +1960,16 @@ class RoomManager:
         if not combat or not combat.active:
             raise ValueError("ไม่อยู่ในฉากต่อสู้")
 
-        enc = self.repo.combat_encounter
+        enc = self.repo.get_combat_encounter(combat.encounter_id)
         moves_by_id = {m["id"]: m for m in enc.get("moves", [])}
         move = moves_by_id.get(decision.move_id) or enc["moves"][0]
 
         conscious = [p for p in room.players.values() if p.is_conscious]
         if not conscious:
+            enc_id = combat.encounter_id
             combat.active = False
             room.combat = None
-            room.ending_triggered = "lost_in_grove"
+            room.ending_triggered = "ending_d_fallen" if enc_id == "KAEW_FINAL_BOSS" else "lost_in_grove"
             return {"summary": "ทีมสืบสวนหมดสติทั้งหมดแล้ว", "events": [], "defeated": True, "roll_detail": None, "visual_fx": "miss"}
 
         connected_conscious = [p for p in conscious if p.connected]
@@ -1629,17 +2020,17 @@ class RoomManager:
                 target.statuses.append(cond)
                 cond_label = " + ติดพันธนาการ!" if cond == "ROOTED" else " + ติดหวาดกลัว!"
             summary = (
-                f"ผีเงาจมน้ำใช้ [{move['name_th']}] ใส่ {target.name} "
+                f"{combat.enemy_name} ใช้ [{move['name_th']}] ใส่ {target.name} "
                 f"(ทอย {total} vs {defense}) โดน {dmg_label}{cond_label}{cover_note}"
             )
         else:
             summary = (
-                f"ผีเงาจมน้ำใช้ [{move['name_th']}] ใส่ {target.name} "
+                f"{combat.enemy_name} ใช้ [{move['name_th']}] ใส่ {target.name} "
                 f"(ทอย {total} vs {defense}) แต่หลบพ้นได้อย่างหวุดหวิด!{cover_note}"
             )
 
         ghost_roll = {
-            "actor": "ผีเงาจมน้ำ",
+            "actor": combat.enemy_name,
             "action_id": move["id"],
             "action_label": move["name_th"],
             "stat": "ATK",
@@ -1651,19 +2042,20 @@ class RoomManager:
             "target_dc": defense,
             "dc_label": move.get("target_defense", "DEF"),
             "tier": "failure" if hit else "full",
-            "tier_label": f"ผีโจมตีเข้าเป้า ({target.name})" if hit else f"{target.name} หลบพ้น!",
+            "tier_label": f"ศัตรูโจมตีเข้าเป้า ({target.name})" if hit else f"{target.name} หลบพ้น!",
             "is_ghost": True,
         }
         combat.last_roll = ghost_roll
         combat.chronicle.append(
-            {"round": combat.round_number, "actor": "ผีเงาจมน้ำ", "tier": "ghost", "text": summary}
+            {"round": combat.round_number, "actor": combat.enemy_name, "tier": "ghost", "text": summary}
         )
         combat.chronicle = combat.chronicle[-16:]
         combat.combat_log.append(summary)
-        self.append_log(room, "ผีเงาจมน้ำ", summary, kind="ending")
+        self.append_log(room, combat.enemy_name, summary, kind="ending")
 
         events: list[dict[str, Any]] = []
-        move_entry = self.repo.get_dialogue(move.get("audio_id", ""))
+        move_audio_id = move.get("audio_id") or ""
+        move_entry = self.repo.get_dialogue(move_audio_id) if move_audio_id else None
         if move_entry:
             events.append(
                 self._build_audio_payload(
@@ -1673,12 +2065,22 @@ class RoomManager:
                     mode="script",
                 )
             )
+        elif decision.narration_th.strip():
+            events.append(
+                self._build_audio_payload(
+                    dialogue_id=None,
+                    speaker=combat.enemy_name,
+                    text=decision.narration_th.strip(),
+                    mode="script",
+                )
+            )
 
         # Check defeat
         if all(not p.is_conscious for p in room.players.values()):
+            enc_id = combat.encounter_id
             combat.active = False
             room.combat = None
-            room.ending_triggered = "lost_in_grove"
+            room.ending_triggered = "ending_d_fallen" if enc_id == "KAEW_FINAL_BOSS" else "lost_in_grove"
             defeat_entry = self.repo.get_dialogue("combat_defeat_bad")
             if defeat_entry:
                 self.append_log(room, defeat_entry["speaker"], defeat_entry["text"], kind="ending")
@@ -1764,6 +2166,25 @@ class RoomManager:
             "B1": {"DM", "วิชัย", "ต้น"},
             "B2": {"DM", "ต้น"},
             "B3": {"DM"},
+            "C1": {"DM"},
+            "C2": {"DM"},
+            "C3": {"DM"},
+            "C4": {"DM", "ผีเงาจมน้ำ"},
+            "C5": {"DM", "ยายบุญมี"},
+            "D1": {"DM"},
+            "D2": {"DM"},
+            "D3": {"DM", "แม่แก้ว (นางตานี)"},
+            "D4": {"DM", "แม่แก้ว (นางตานี)"},
+            "D5": {"DM"},
+            "E1": {"DM"},
+            "E2": {"DM", "ดล"},
+            "E3": {"DM", "ดล"},
+            "E4": {"DM"},
+            "E5": {"DM", "วิชัย"},
+            "E6": {"DM", "วิชัย"},
+            "F1": {"DM", "แม่แก้ว (นางตานี)"},
+            "F5": {"DM", "แม่แก้ว (นางตานี)", "วิชัย"},
+            "F6": {"DM", "ประเสริฐ"},
         }
         allowed_speakers = allowed_speakers_by_scene.get(scene_before, {"DM", default_speaker})
 
@@ -1780,6 +2201,9 @@ class RoomManager:
                 "ประเสริฐ": ("ผู้ใหญ่ประเสริฐ", "ผู้ใหญ่บ้าน", "ประเสริฐ"),
                 "วิชัย": ("ผู้ช่วยวิชัย", "คุณวิชัย", "พี่วิชัย", "วิชัย"),
                 "ต้น": ("เด็กหนุ่ม", "อาสาสมัคร", "ต้น"),
+                "ยายบุญมี": ("ยายบุญมี", "ยายมี"),
+                "แม่แก้ว (นางตานี)": ("แม่แก้ว", "นางตานี", "หญิงชุดเขียว"),
+                "ดล": ("นายดล", "ดล"),
             }
             if any(stripped.startswith(prefix) for prefix in self_prefixes.get(speaker_name, ())):
                 return True
@@ -1800,7 +2224,7 @@ class RoomManager:
         eligible_by_id = {d["id"]: d for d in self.get_eligible_dialogues(room)}
         was_ended = room.ending_triggered is not None
 
-        # Special A3 hook: insisting on walking straight into the dark grove launches Drowned Echo combat!
+        # Special A3 / F1 hooks: launch encounter when player initiates fight or ritual confrontation!
         if scene_before == "A3" and not room.combat and not room.ending_triggered and (
             decision.selected_audio_id == "a3_ending_bad"
             or decision.state_updates.ending_triggered == "lost_in_grove"
@@ -1808,6 +2232,30 @@ class RoomManager:
             combat_events = self.start_combat(room.room_code, return_scene="A3")
             primary = combat_events[0] if combat_events else self._build_audio_payload(
                 None, "DM", "เงาดำเปียกโชกผุดขึ้นขวางปากทางสวนกล้วย!", mode="script"
+            )
+            return {
+                "primary_event": primary,
+                "queued_events": combat_events[1:],
+                "needs_live_tts": False,
+                "live_tts_speaker": "DM",
+                "live_tts_text": "",
+            }
+
+        if (
+            scene_before == "F1"
+            and not room.combat
+            and not room.ending_triggered
+            and "ritual_stopped" not in room.clues_found
+            and decision.selected_audio_id not in {"f1_intro_dm", "f1_kaew_forced"}
+            and decision.state_updates.current_scene not in {"F5", "F6"}
+        ):
+            combat_events = self.start_combat(
+                room.room_code,
+                return_scene="F1",
+                encounter_id="KAEW_FINAL_BOSS",
+            )
+            primary = combat_events[0] if combat_events else self._build_audio_payload(
+                None, "DM", "วงด้ายดำสามชั้นแผ่คลุมห้องพิธี เกราะแม่แก้วทำงานแล้ว!", mode="script"
             )
             return {
                 "primary_event": primary,
@@ -1856,6 +2304,14 @@ class RoomManager:
                 )
                 if entry["id"] == "a3_ending_true" and room.ending_triggered is None:
                     room.ending_triggered = "act_a_complete"
+                elif entry["id"] == "c_ending_to_act_d" and room.ending_triggered is None:
+                    room.ending_triggered = "act_c_complete"
+                elif entry["id"] == "d_ending_to_act_e" and room.ending_triggered is None:
+                    room.ending_triggered = "act_d_complete"
+                elif entry["id"] == "e_ending_to_act_f" and room.ending_triggered is None:
+                    room.ending_triggered = "act_e_complete"
+                elif entry["id"] == "ending_a_epilogue" and room.ending_triggered is None:
+                    room.ending_triggered = self.resolve_final_ending(room)
         else:
             raw_improv = (decision.improvised_text or "").strip()[:450]
             if decision.mode == "script" and decision.selected_audio_id is None and raw_improv:
@@ -1875,8 +2331,16 @@ class RoomManager:
                     safe_text = "เรื่องนั้นผมยังตอบชัด ๆ ไม่ได้ครับ ตอนนี้ลองดูแฟ้มกับแผนที่ตรงหน้าก่อนนะครับ"
                 elif speaker == "ต้น":
                     safe_text = "เอ่อ... เรื่องนั้นผมไม่รู้จริง ๆ ครับพี่ เอาเท่าที่ผมเห็นก่อนนะ"
+                elif speaker == "ยายบุญมี":
+                    safe_text = "เรื่องนั้นยายก็ไม่กล้าพูดมั่วหรอกลูก ลองดูสมุดสวดมนต์กับเรื่องคืนน้ำท่วมก่อนดีกว่า"
+                elif speaker == "แม่แก้ว (นางตานี)":
+                    safe_text = "เสียงลมจากต้นกล้วยสั่นระริก — ข้าพูดมากไปกว่านี้ไม่ได้... เส้นด้ายดำยังรั้งคออยู่"
+                elif speaker == "ดล":
+                    safe_text = "ผมจำได้เท่าที่เห็นตอนถูกขังครับพี่ รีบขึ้นไปเช็กกำไลกับหลักฐานข้างบนเถอะ!"
                 elif act_before == "B":
                     safe_text = "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองตรวจดูแฟ้ม ภาพเก่า หรือเปิดแผนที่เลือกจุดหมายต่อได้"
+                elif act_before in {"C", "D", "E", "F"}:
+                    safe_text = "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองเลือกคำถามหรือเปิดแผนที่ย้ายไปยังจุดอื่นต่อได้"
                 else:
                     safe_text = "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองสอบถามประเสริฐหรือสำรวจรอบ ๆ ต่อได้"
             else:
@@ -1890,13 +2354,22 @@ class RoomManager:
             if not filler or filler.get("speaker") != speaker or filler.get("speaker") not in allowed_speakers:
                 filler = self.repo.default_filler_for_speaker(speaker)
 
-            filler_event = self._build_audio_payload(
-                dialogue_id=filler["id"],
-                speaker=filler["speaker"],
-                text=filler["text"],
-                is_filler=True,
-                mode="improvise",
-            )
+            if filler:
+                filler_event = self._build_audio_payload(
+                    dialogue_id=filler["id"],
+                    speaker=filler["speaker"],
+                    text=filler["text"],
+                    is_filler=True,
+                    mode="improvise",
+                )
+            else:
+                filler_event = self._build_audio_payload(
+                    dialogue_id=None,
+                    speaker=speaker,
+                    text="อืม...",
+                    is_filler=True,
+                    mode="improvise",
+                )
             self.append_log(room, speaker, safe_text, kind="improvise")
             primary_event = filler_event
             needs_live_tts = True
@@ -1922,7 +2395,15 @@ class RoomManager:
 
         if updates.npc_trust_delta:
             delta = max(-1, min(1, int(updates.npc_trust_delta)))
-            allowed_trust_npcs = {"วิชัย", "ต้น"} if act_before == "B" else {"ประเสริฐ"}
+            allowed_trust_by_act = {
+                "A": {"ประเสริฐ"},
+                "B": {"วิชัย", "ต้น"},
+                "C": {"ยายบุญมี"},
+                "D": {"แม่แก้ว (นางตานี)"},
+                "E": {"ดล", "วิชัย"},
+                "F": {"แม่แก้ว (นางตานี)", "ประเสริฐ", "วิชัย"},
+            }
+            allowed_trust_npcs = allowed_trust_by_act.get(act_before, {"ประเสริฐ"})
             target_npc = updates.npc_trust_target if updates.npc_trust_target in allowed_trust_npcs else None
             if target_npc is None:
                 if act_before == "A":
@@ -1931,6 +2412,8 @@ class RoomManager:
                     target_npc = "วิชัย"
                 elif scene_before == "B2":
                     target_npc = "ต้น"
+                elif default_speaker in allowed_trust_npcs:
+                    target_npc = default_speaker
             if target_npc:
                 cur = room.npc_trust.get(target_npc, 0)
                 room.npc_trust[target_npc] = max(-3, min(5, cur + delta))
@@ -1961,10 +2444,52 @@ class RoomManager:
             and room.ending_triggered is None
         ):
             room.ending_triggered = "act_b_complete"
+        elif (
+            act_before == "C"
+            and updates.ending_triggered == "act_c_complete"
+            and room.ending_triggered is None
+        ):
+            room.ending_triggered = "act_c_complete"
+        elif (
+            act_before == "D"
+            and updates.ending_triggered == "act_d_complete"
+            and "cart_tracks_to_house" in room.clues_found
+            and room.ending_triggered is None
+        ):
+            room.ending_triggered = "act_d_complete"
+        elif (
+            act_before == "E"
+            and updates.ending_triggered == "act_e_complete"
+            and "ritual_bracelet_core" in room.clues_found
+            and room.ending_triggered is None
+        ):
+            room.ending_triggered = "act_e_complete"
+        elif (
+            act_before == "F"
+            and updates.ending_triggered in {
+                "ending_a",
+                "ending_b",
+                "ending_b_vigilante",
+                "ending_c",
+                "ending_c_bloodstained",
+                "ending_d",
+                "ending_d_fallen",
+            }
+            and room.ending_triggered is None
+        ):
+            room.ending_triggered = self.resolve_final_ending(room)
 
         room.total_turn_count += 1
         if target_next_scene and target_next_scene != scene_before and not room.ending_triggered:
             queued_events.extend(self._advance_scene(room, target_next_scene))
+            if target_next_scene == "D4" and "kaew_coerced_truth" not in room.clues_found and not room.combat:
+                queued_events.extend(
+                    self.start_combat(
+                        room.room_code,
+                        return_scene="D4",
+                        encounter_id="KAEW_SHIELDED_SHADOW",
+                    )
+                )
         else:
             room.scene_turn_count += 1
 
@@ -1996,6 +2521,12 @@ class RoomManager:
                     room.board_node = "headman_house"
                 elif room.ending_triggered == "act_b_complete":
                     room.board_node = "road_to_don_house"
+                elif room.ending_triggered == "act_c_complete":
+                    room.board_node = "c_to_act_d_gate"
+                elif room.ending_triggered == "act_d_complete":
+                    room.board_node = "d_to_act_e_house"
+                elif room.ending_triggered == "act_e_complete":
+                    room.board_node = "e_to_act_f_ritual"
 
         return {
             "primary_event": primary_event,
@@ -2004,6 +2535,27 @@ class RoomManager:
             "live_tts_speaker": live_tts_speaker,
             "live_tts_text": live_tts_text,
         }
+
+    def resolve_final_ending(self, room: RoomState) -> str:
+        """Deterministically resolve CASE 001 Final Ending A-D from v5.5 rules."""
+        if "player_dead" in room.case_flags or any(not p.is_conscious for p in room.players.values()):
+            return "ending_d_fallen"
+        if "ritual_stopped" not in room.clues_found:
+            return "ending_d"
+        if "hostage_dead" in room.case_flags:
+            return "ending_c_bloodstained"
+        if "wichai_executed_by_kaew" in room.case_flags:
+            return "ending_b_vigilante"
+        has_evidence = (
+            "wichai_debt_evidence" in room.clues_found
+            and "wichai_debt_docs" in room.inventory
+            and "wichai_escaped" not in room.case_flags
+        )
+        if not has_evidence or "hostages_found" not in room.clues_found:
+            return "ending_c"
+        if "kaew_reconciled" in room.clues_found and "flood_truth_disclosed" in room.clues_found:
+            return "ending_a"
+        return "ending_b"
 
     def _is_board_node_unlocked(self, room: RoomState, node: dict[str, Any]) -> bool:
         if node.get("unlocked_by_default"):
@@ -2106,6 +2658,93 @@ class RoomManager:
                         mode="script",
                     )
                 )
+        elif node_id == "don_living_room":
+            if room.current_scene != "C1":
+                events.extend(self._advance_scene(room, "C1"))
+        elif node_id == "don_desk":
+            if room.current_scene != "C2":
+                events.extend(self._advance_scene(room, "C2"))
+        elif node_id == "don_floor_echo":
+            if room.current_scene != "C3":
+                events.extend(self._advance_scene(room, "C3"))
+        elif node_id == "grove_boonmee_house":
+            if room.current_scene != "C5":
+                events.extend(self._advance_scene(room, "C5"))
+        elif node_id == "c_to_act_d_gate" and not room.ending_triggered:
+            room.ending_triggered = "act_c_complete"
+            room.board_node = "c_to_act_d_gate"
+            end_entry = self.repo.get_dialogue("c_ending_to_act_d")
+            if end_entry:
+                self._apply_dialogue_unlocks(room, end_entry)
+                self.append_log(room, end_entry["speaker"], end_entry["text"], kind="ending")
+                events.append(
+                    self._build_audio_payload(
+                        dialogue_id=end_entry["id"],
+                        speaker=end_entry["speaker"],
+                        text=end_entry["text"],
+                        mode="script",
+                    )
+                )
+        elif node_id == "banana_path_d1":
+            if room.current_scene != "D1":
+                events.extend(self._advance_scene(room, "D1"))
+        elif node_id == "banana_shrine_d2":
+            if room.current_scene != "D2":
+                events.extend(self._advance_scene(room, "D2"))
+        elif node_id == "kaew_shrine_d3":
+            if room.current_scene != "D3":
+                events.extend(self._advance_scene(room, "D3"))
+        elif node_id == "cart_tracks_d5":
+            if room.current_scene != "D5":
+                events.extend(self._advance_scene(room, "D5"))
+        elif node_id == "d_to_act_e_house" and not room.ending_triggered:
+            room.ending_triggered = "act_d_complete"
+            room.board_node = "d_to_act_e_house"
+            end_entry = self.repo.get_dialogue("d_ending_to_act_e")
+            if end_entry:
+                self._apply_dialogue_unlocks(room, end_entry)
+                self.append_log(room, end_entry["speaker"], end_entry["text"], kind="ending")
+                events.append(
+                    self._build_audio_payload(
+                        dialogue_id=end_entry["id"],
+                        speaker=end_entry["speaker"],
+                        text=end_entry["text"],
+                        mode="script",
+                    )
+                )
+        elif node_id == "stilt_house_yard":
+            if room.current_scene != "E1":
+                events.extend(self._advance_scene(room, "E1"))
+        elif node_id == "cellar_room":
+            if room.current_scene != "E2":
+                events.extend(self._advance_scene(room, "E2"))
+        elif node_id == "ritual_upstairs":
+            if room.current_scene != "E4":
+                events.extend(self._advance_scene(room, "E4"))
+        elif node_id == "e_to_act_f_ritual" and not room.ending_triggered:
+            room.ending_triggered = "act_e_complete"
+            room.board_node = "e_to_act_f_ritual"
+            end_entry = self.repo.get_dialogue("e_ending_to_act_f")
+            if end_entry:
+                self._apply_dialogue_unlocks(room, end_entry)
+                self.append_log(room, end_entry["speaker"], end_entry["text"], kind="ending")
+                events.append(
+                    self._build_audio_payload(
+                        dialogue_id=end_entry["id"],
+                        speaker=end_entry["speaker"],
+                        text=end_entry["text"],
+                        mode="script",
+                    )
+                )
+        elif node_id == "ritual_upstairs_final":
+            if room.current_scene != "F1":
+                events.extend(self._advance_scene(room, "F1"))
+        elif node_id == "reconcile_spot_f5":
+            if room.current_scene != "F5":
+                events.extend(self._advance_scene(room, "F5"))
+        elif node_id == "dawn_road_epilogue":
+            if room.current_scene != "F6":
+                events.extend(self._advance_scene(room, "F6"))
 
         return {"board_node": room.board_node, "events": events}
 
@@ -2155,6 +2794,7 @@ class RoomManager:
                 "active": c.active,
                 "round_number": c.round_number,
                 "phase": c.phase,
+                "encounter_id": c.encounter_id,
                 "enemy_id": c.enemy_id,
                 "enemy_name": c.enemy_name,
                 "enemy_sprite": c.enemy_sprite,
@@ -2167,6 +2807,10 @@ class RoomManager:
                 "retreat_goal": c.retreat_goal,
                 "ghost_exposed": c.ghost_exposed,
                 "party_shield": c.party_shield,
+                "ritual_shield_up": c.ritual_shield_up,
+                "ritual_step": c.ritual_step,
+                "ritual_max_steps": c.ritual_max_steps,
+                "ritual_released": c.ritual_released,
                 "telegraph": c.telegraph,
                 "environment_features": c.environment_features,
                 "last_roll": c.last_roll,
@@ -2192,6 +2836,7 @@ class RoomManager:
             "total_turn_count": room.total_turn_count,
             "inventory": items,
             "clues_found": clues,
+            "case_flags": sorted(room.case_flags),
             "npc_trust": dict(room.npc_trust),
             "pending_check": room.pending_check,
             "resolved_checks": room.resolved_checks,

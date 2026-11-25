@@ -34,9 +34,26 @@ class StateUpdates(BaseModel):
         default=None,
         description="รหัสจุดบนกระดานแผนที่หากทีมย้ายตำแหน่งในเทิร์นนี้",
     )
-    ending_triggered: Optional[Literal["act_a_complete", "act_a_combat_clear", "lost_in_grove", "act_b_complete"]] = Field(
+    ending_triggered: Optional[
+        Literal[
+            "act_a_complete",
+            "act_a_combat_clear",
+            "lost_in_grove",
+            "act_b_complete",
+            "act_c_complete",
+            "act_d_complete",
+            "act_e_complete",
+            "ending_a",
+            "ending_b",
+            "ending_b_vigilante",
+            "ending_c",
+            "ending_c_bloodstained",
+            "ending_d",
+            "ending_d_fallen",
+        ]
+    ] = Field(
         default=None,
-        description="รหัสตอนจบหากเงื่อนไขจบบท (ACT A หรือ ACT B) ครบถ้วนแล้ว",
+        description="รหัสตอนจบหรือจุดเปลี่ยนบท (ACT A–F และ Ending A–D) เฉพาะเมื่อเงื่อนไขครบถ้วนแล้ว",
     )
 
 
@@ -78,8 +95,16 @@ class DMDecision(BaseModel):
 class GhostTurnDecision(BaseModel):
     """Strict structured tactical move returned by Gemini Tactical Ghost AI."""
 
-    move_id: Literal["WET_CLAW", "UNDERFLOOR_HAND", "DROWNED_WHISPER"] = Field(
-        description="รหัสท่าโจมตีของผีเงาจมน้ำจากรายการท่าที่ใช้ได้"
+    move_id: Literal[
+        "WET_CLAW",
+        "UNDERFLOOR_HAND",
+        "DROWNED_WHISPER",
+        "THREAD_SNAP",
+        "COERCED_VOICE",
+        "BRACELET_LASH",
+        "RITUAL_COMMAND",
+    ] = Field(
+        description="รหัสท่าโจมตีของศัตรูจากรายการท่าที่ใช้ได้"
     )
     target_player_id: str = Field(
         description="player_id ของผู้เล่นที่มีสติอยู่ซึ่งผีเลือกโจมตี"
@@ -100,8 +125,8 @@ class GhostTurnDecision(BaseModel):
 class CombatPlayerActionPlan(BaseModel):
     """Structured TRPG action interpretation for freeform player combat declarations."""
 
-    action_id: Literal["strike", "soothe", "steady", "role_skill", "assist", "retreat"] = Field(
-        description="ประเภทแอ็กชันหลักที่สอดคล้องกับเจตนาของผู้เล่นที่สุด"
+    action_id: Literal["strike", "soothe", "steady", "role_skill", "assist", "retreat", "ritual"] = Field(
+        description="ประเภทแอ็กชันหลักที่สอดคล้องกับเจตนาของผู้เล่นที่สุด (ใช้ 'ritual' เฉพาะเมื่อคลายเกราะ 3 ขั้นหรือปลดกำไลทองเหลืองในศึกสุดท้าย)"
     )
     stat_choice: Optional[Literal["BODY", "PER", "INT", "SOC", "SPI", "RES"]] = Field(
         default=None,

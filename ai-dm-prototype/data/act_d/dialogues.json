@@ -1,0 +1,417 @@
+{
+  "dialogues": [
+    {
+      "id": "d1_intro_dm",
+      "scene": "D1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก D1 เข้าสวนกล้วย"
+      },
+      "text": "พ้นแสงไฟจากชานบ้านยายบุญมีมาได้ไม่กี่ก้าว เสียงแมลงกลางคืนก็เงียบสนิท... เหลือแค่เสียงฝีเท้าพวกคุณบนดินชื้น ทั้งที่คืนนี้ฟ้าแห้งไร้ฝน ข้างหน้ามีใบกล้วยต้นหนึ่งแกว่งทวนลมอยู่ลำพัง เผยให้เห็นหลังคาศาลเก่าลึกเข้าไปในเงามืด ข้างทางมีรอยดินยุบเป็นเส้นคู่ แต่กอกล้วยบังจนยังมองไม่เห็นปลายทาง",
+      "is_filler": false,
+      "unlocks": { "clues": ["double_track_clue"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d1_move_to_d2",
+      "scene": "D1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นเดินต่อตามทางดินเข้าไปยังศาลเก่า (D2)"
+      },
+      "text": "พวกคุณส่องไฟฉายเดินตามทางดินชื้นตรงลึกเข้าไปยังศาลเก่ากลางดงกล้วย รอยกดคู่บนดินยังทอดขนานตามแนวทางไปข้างหน้า...",
+      "is_filler": false,
+      "unlocks": { "clues": ["double_track_clue"], "items": [], "next_scene": "D2", "trust_delta": {} }
+    },
+    {
+      "id": "d2_intro_dm",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก D2 ที่ศาลผ้าเขียวและด้ายดำ"
+      },
+      "text": "แสงไฟฉายกวาดไปจับผ้าสีเขียวผืนเก่าที่คลุมศาลอยู่ ยังได้กลิ่นธูปจาง ๆ... แต่พอมองไล่ลงมา กลับเห็นด้ายดำเส้นใหม่พันรัดเสาไม้จนตึงบาดลึก หน้าศาลมีป้ายผ้าเปื้อนดินสามผืนแขวนเรียงกัน—ดล... นิด... และเพิ่ม ปมด้ายใต้ชื่อทั้งสามขึงแน่น ด้ายเส้นหนึ่งดึงสูงขึ้นไปกลืนกับยอดกล้วย และตรงโคนต้นกล้วยหลังศาลมีสายคล้องกล้องถ่ายรูปขาดตกจมโคลนอยู่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["shrine_three_names"],
+        "items": ["camera_strap_mud"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "d2_qa_warn_cut",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เตือนสติ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นถามว่าจะตัดหรือกระชากด้ายดำที่ศาลเลยได้ไหม หรือด้ายโยงไปถึงไหน"
+      },
+      "text": "ด้ายดำเลื้อยสูงขึ้นพันยอดกล้วยจนมองตามปลายไม่เห็น ป้ายชื่อทั้งสามบอกแค่ว่าถูกนำมาผูกไว้กับพิธี ยังไม่ใช่หลักฐานว่าทั้งสามเสียชีวิต การตัดหรือกระชากมั่วที่ปลายสายอาจเกิดแรงสะท้อนกลับ ควรหาแกนควบคุมของพิธีให้พบก่อน",
+      "is_filler": false,
+      "unlocks": { "clues": ["shrine_three_names"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d2_check_int_full",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D2_BINDING_PATTERN สำเร็จเต็ม"
+      },
+      "text": "จากจำนวนปมและทิศการพัน คุณแยกได้ว่าเป็นพลังผูกวิญญาณจากพิธีชุดเดียว เส้นด้ายตรงศาลเป็นแค่สายส่งคำสั่ง และมีแกนควบคุมซ่อนอยู่ที่อื่น ไม่ใช่ที่ศาลนี้",
+      "is_filler": false,
+      "unlocks": { "clues": ["shrine_binding_core"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d2_check_int_partial",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D2_BINDING_PATTERN สำเร็จบางส่วน"
+      },
+      "text": "คุณอ่านได้ว่าด้ายนี้มีหน้าที่ผูกหรือบังคับบางอย่างจากระยะไกล แต่ยังไม่ระบุรูปแบบหรือตำแหน่งแกนทั้งหมด",
+      "is_filler": false,
+      "unlocks": { "clues": ["shrine_binding_core"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d2_check_int_fail",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D2_BINDING_PATTERN ล้มเหลว"
+      },
+      "text": "ปมจำนวนมากพันซ้อนกันจนคุณอ่านไม่ออกว่ามันสั่งการอย่างไร แต่ยังเห็นชื่อ ดล นิด เพิ่ม และทางด้านหลังศาลชัดเจน",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d2_move_to_d3",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นเดินผ่านศาลต่อไปด้านหลัง (เข้าพบแม่แก้วใน D3)"
+      },
+      "text": "ทันทีที่พวกคุณขยับจะก้าวพ้นเสาศาล ใบกล้วยรอบตัวก็หยุดไหวพร้อมกันหมด...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "D3", "trust_delta": {} }
+    },
+    {
+      "id": "d3_intro_dm",
+      "scene": "D3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับโศก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก D3 แม่แก้วปรากฏตัว"
+      },
+      "text": "หญิงชุดเขียวยืนกั้นทางอยู่หลังเสาศาล เธอปรายตามองป้ายชื่อทั้งสาม ก่อนเงยหน้ามองพวกคุณนิ่ง ๆ เส้นด้ายสีดำตรงข้อมือเธอกระตุกตึง",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d3_kaew_greet",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ นุ่มทุ้ม เศร้าสร้อย เยือกเย็น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "คำพูดแรกของแม่แก้วใน D3"
+      },
+      "text": "มาตามหาคน... หรือมาหาเรื่องใส่ตัว? คนเป็นหายไป ข้ารู้... ข้าได้ยินเสียงพวกเขา แต่พวกเขาไม่ได้อยู่ในศาลข้า",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d3_qa_why_scare",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ เศร้าสร้อย คับแค้นใจ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าแม่แก้วจับคนหายไหม หรือทำไมถึงออกมาหลอกชาวบ้าน"
+      },
+      "text": "ข้าเคยหลอกหลอนให้พวกนั้นกลัว... แต่ข้าไม่เคยจับใครไปขังไว้ที่ไหน ตอนแรกมีคนรับปากว่าจะเอาเรื่องคืนน้ำท่วมปี 2534 มาเปิดให้คนเป็นดู ข้าก็เลยหลงเชื่อ... พอเห็นชาวบ้านหอบของหนี ข้าจะหยุด แต่มันก็เอาด้ายนี่มารั้งข้าไว้ บีบให้ข้ากรีดร้องในคืนที่ข้าไม่อยากร้อง",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_coerced_truth"], "items": [], "next_scene": null, "trust_delta": { "แม่แก้ว": 1 } }
+    },
+    {
+      "id": "d3_qa_who_controls",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ ถูกด้ายรัดคอ ขาดห้วง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าใครเป็นคนทำพิธีบังคับ หรือถามว่ารู้จักวิชัยไหม"
+      },
+      "text": "คนที่อยู่ข้างผู้ใหญ่... เด็กที่ข้าเคยดึงขึ้นจากน้ำ... อึก! ...ข้า... วิ... ข้าเอ่ยชื่อมันตรง ๆ ไม่ได้ ด้ายมันรัดคอข้า! อย่าเพิ่งตัดด้ายตรงนี้แรงมันจะตีกลับ... ตามรอยคนเป็นไป เอาของข้าคืนมา!",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_coerced_truth"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d3_qa_boonmee",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ อ่อนโยนลง",
+      "trigger_condition": {
+        "requires_clues": ["boonmee_thread_warning"],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "พูดถึงยายบุญมี หรือบอกว่าจะช่วยตัดเสียงสั่งและช่วยคน"
+      },
+      "text": "บุญมียังอยู่หรือ... ผ้าเขียวผืนนั้น นางยังเอามาให้ข้าอยู่สินะ... ฝากบอกนางด้วยว่าข้าไม่เคยโกรธที่นางรอด ถ้าพวกเอ็งช่วยตัดเสียงสั่งนั่นได้ ข้าจะลองเชื่อ",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_coerced_truth"], "items": [], "next_scene": null, "trust_delta": { "แม่แก้ว": 1 } }
+    },
+    {
+      "id": "d3_check_spi_full",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ สั่นเครือ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D3_KAEW_CONTACT สำเร็จเต็ม"
+      },
+      "text": "ข้าไม่ได้อยากให้ใครต้องหายไป... ถ้าพวกเอ็งช่วยได้ ช่วยให้เสียงสั่งมันเงียบที",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_coerced_truth"], "items": [], "next_scene": null, "trust_delta": { "แม่แก้ว": 1 } }
+    },
+    {
+      "id": "d3_check_spi_partial",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ อึดอัด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D3_KAEW_CONTACT สำเร็จบางส่วน"
+      },
+      "text": "ข้าขยับได้... แต่ไม่ใช่ทุกครั้งที่ข้าเลือกเอง",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_coerced_truth"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d3_check_spi_fail",
+      "scene": "D3",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ เย็นชาเจ็บปวด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D3_KAEW_CONTACT ล้มเหลว"
+      },
+      "text": "อย่าฝืนเข้ามาในหัวข้า... มันเจ็บ",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d3_move_to_d5",
+      "scene": "D3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "แม่แก้วเปิดทางหรือทีมเดินผ่านศาลไปดูด้านหลังศาล (D5)"
+      },
+      "text": "เมื่อตกลงกันได้ แม่แก้วถอยหลบเงียบ ๆ เปิดทางให้พวกคุณอ้อมไปหลังศาลเพื่อตรวจดูพื้นดิน...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "D5", "trust_delta": {} }
+    },
+    {
+      "id": "d4_intro_dm",
+      "scene": "D4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตึงเครียด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก D4 เผชิญหน้าแม่แก้ว"
+      },
+      "text": "แม่แก้วถอยหลังไปหนึ่งก้าว ใบกล้วยรอบศาลสั่นกราวเหมือนมีลมพายุพัดวนอยู่แค่ตรงนั้น รากไม้ค่อย ๆ ดันดินขึ้นมาขวางหน้าพวกคุณไว้ เธอพูดเสียงต่ำ 'ข้าเตือนแล้วนะ...' ก่อนเถาวัลย์จะฟาดลงตรงหน้าทีม เปิดช่องให้ตัดสินใจว่าจะเจรจา ถอย หรือเข้าปะทะ",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d4_reconcile_to_d5",
+      "scene": "D4",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ ยอมถอย",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเจรจายุติความขัดแย้งหรือถอยอ้อมไปหลังศาล (D5)"
+      },
+      "text": "ถ้าพวกเอ็งหยุดทำร้ายข้า... ข้าก็จะพยายามรั้งมือไว้ พ้นศาลนี้ไปมีทางคนเป็นอยู่ รีบไปดูเสียเถิด",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_coerced_truth"], "items": [], "next_scene": "D5", "trust_delta": { "แม่แก้ว": 1 } }
+    },
+    {
+      "id": "d5_intro_dm",
+      "scene": "D5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก D5 รอยล้อหลังศาล"
+      },
+      "text": "ด้ายดำจากศาลไต่ขึ้นยอดกล้วยจนหายลับไปในความมืด แต่พอก้มไฟฉายส่องพื้นหลังศาล กลับเห็นรอยล้อหนักกดลึกสองแนวบนดินเลน มีเศษกระสอบข้าวเกี่ยวค้างอยู่ตามกิ่งกล้วย รอยล้อไม่ได้วนกลับเข้าหมู่บ้าน... แต่มันทอดตรงไปยังเรือนไม้ยกพื้นร้างที่โผล่พ้นแนวสวนอยู่ข้างหน้า",
+      "is_filler": false,
+      "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d5_check_per_full",
+      "scene": "D5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ละเอียด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D5_CART_TRACKS สำเร็จเต็ม"
+      },
+      "text": "คุณเห็นรอยล้อหนักลึกสองแนว มีเศษกระสอบข้าวติดกิ่งและรอยรองเท้ามนุษย์ย่ำชัดตรงจุดหยุดรถ บ่งชี้ว่ามีการเข็นขนของหนักโดยคนเป็นตรงไปยังเรือนไม้ท้ายสวน",
+      "is_filler": false,
+      "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d5_check_per_partial",
+      "scene": "D5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D5_CART_TRACKS สำเร็จบางส่วน"
+      },
+      "text": "เห็นรอยล้อไปถึงเรือนไม้ร้างข้างหน้าชัดเจน แต่รอยรองเท้าและน้ำหนักสัมภาระยังแยกไม่ออก",
+      "is_filler": false,
+      "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d5_check_per_fail",
+      "scene": "D5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย D5_CART_TRACKS ล้มเหลว"
+      },
+      "text": "คุณยังแยกไม่ได้ว่ารอยล้อเป็นของรถแบบไหน แต่แนวทางดินและรอยล้อก็ชัดเจนพอให้เดินตรงไปยังเรือนไม้ร้างได้",
+      "is_filler": false,
+      "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d_ending_to_act_e",
+      "scene": "D5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตื่นเต้นระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นเดินตามรอยล้อตรงไปยังเรือนไม้ร้างท้ายสวน (จบ ACT D -> ACT E)"
+      },
+      "text": "พวกคุณเดินตามรอยล้อหนักและเศษกระสอบข้าวฝ่าความมืดลึกเข้าไปท้ายสวน จนเห็นเงาเรือนไม้ยกพื้นหลังเก่าตั้งโดดเดี่ยว มีแสงเทียนวับแวมลอดตามรอยฝาชั้นบน...",
+      "is_filler": false,
+      "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    }
+  ]
+}

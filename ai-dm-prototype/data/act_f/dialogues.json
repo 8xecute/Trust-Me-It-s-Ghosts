@@ -1,0 +1,191 @@
+{
+  "dialogues": [
+    {
+      "id": "f1_intro_dm",
+      "scene": "F1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ กดดันตื่นเต้น",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก F1 เกราะพิธี 3 ชั้นปรากฏ" },
+      "text": "ทันทีที่ปลายนิ้วแตะวงกำไล เสียงโลหะครูดก็ดังลั่นจากก้นกล่อง เส้นด้ายดำบนขื่อคานกระตุกตึงพร้อมกันทั้งห้อง เงาหญิงชุดเขียวถูกบีบให้ก่อร่างขึ้นกลางแสงเทียน รอบตัวเธอเกิดเกราะด้ายสีดำซ้อนกันสามชั้น บนโต๊ะเห็นสายตึงรับแรง ด้ายป้ายชื่อสามเส้น และปมบังคับกำไล—ต้องคลายเกราะทั้ง 3 ขั้นก่อนจึงจะทำลายหรือปลดกำไลได้!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f1_kaew_forced",
+      "scene": "F1",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ ฝืนใจ เจ็บปวด",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "แม่แก้วถูกบังคับให้ป้องกันแกนพิธีใน F1" },
+      "text": "อย่า... ข้าไม่ได้อยากทำร้ายพวกเอ็ง! ต้นเหตุมันอยู่ที่กำไลนั่น... แก้ปมทั้งสามชั้นแล้วปลดมันออกที!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f5_intro_dm",
+      "scene": "F5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สงบขลัง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก F5 หลังปลดกำไลและหยุดพิธีสำเร็จ" },
+      "text": "ปมด้ายดำคลายตัวออกทีละจุดก่อนสลายดับสนิท แสงเทียนนิ่งลง กำไลทองเหลืองหยุดสั่น แม่แก้วลดแขนลงเองเป็นครั้งแรก มองกำไลบนพื้นแล้วหันมามองพวกคุณโดยไม่มีแรงอาคมกระชากอีกต่อไป",
+      "is_filler": false,
+      "unlocks": { "clues": ["ritual_stopped"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f5_kaew_free",
+      "scene": "F5",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ สงบนิ่งปนความอาลัย",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "คำพูดแรกของแม่แก้วหลังเป็นอิสระใน F5" },
+      "text": "มันหยุดแล้ว... คราวนี้ข้าเลือกเองได้ แต่พวกเอ็งจะทำอย่างไรกับข้า และจะเอาความจริงเรื่องคืนน้ำท่วมไปให้คนเป็นเห็นอย่างไรต่อ?",
+      "is_filler": false,
+      "unlocks": { "clues": ["ritual_stopped"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f5_check_full",
+      "scene": "F5",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ สงบลง ยอมวางความแค้น",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย F5_KAEW_RECONCILE สำเร็จเต็ม" },
+      "text": "หากพวกเอ็งกล้าเอาความจริงไปตีแผ่ต่อหน้าทุกคนจริง... ข้าก็จะยอมหยุด แต่ถ้าพวกเอ็งตระบัดสัตย์ ข้าจะกลับมาทวงคืน",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_reconciled"], "items": [], "next_scene": null, "trust_delta": { "แม่แก้ว": 2 } }
+    },
+    {
+      "id": "f5_check_partial",
+      "scene": "F5",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ ลังเล",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย F5_KAEW_RECONCILE สำเร็จบางส่วน" },
+      "text": "ข้าจะรอดู... แต่อย่ามีแค่คำพูด เอาหลักฐานไปให้ชาวบ้านและเจ้าหน้าที่เห็นก่อนฟ้าสาง",
+      "is_filler": false,
+      "unlocks": { "clues": ["kaew_reconciled"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f5_check_fail",
+      "scene": "F5",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ เย็นชาขมขื่น",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผลทอย F5_KAEW_RECONCILE ล้มเหลว" },
+      "text": "ข้าเคยได้ยินคำสัญญามามากพอแล้ว ถ้าไม่มีหลักฐานกับการกระทำจริง ก็อย่าขอให้ข้าเชื่อ",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f5_move_to_f6_dawn",
+      "scene": "F5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ โล่งใจ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นพาดล นิด เพิ่ม วิชัย และหลักฐานเดินออกมาถึงหน้าถนนยามฟ้าสาง (เข้าสู่ F6 Epilogue)" },
+      "text": "พวกคุณพาตัวประกันทั้งสาม หลักฐานทั้งหมด และวิชัยที่ถูกคุมตัวเดินพ้นแนวสวนกล้วยออกมาถึงถนนใหญ่ในเวลาใกล้สาง...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "F6", "trust_delta": {} }
+    },
+    {
+      "id": "f6_dawn_dm",
+      "scene": "F6",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สงบจริงจัง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "เปิดฉาก Epilogue F6 หน้าถนนยามฟ้าสาง" },
+      "text": "เมื่อพวกคุณพาผู้รอดชีวิตออกมาถึงหน้าถนนตอนฟ้าสาง ผู้ใหญ่ประเสริฐยืนรออยู่ข้างรถตำรวจและกู้ภัย สายตาของเขาจับจ้องมาที่แฟ้มเอกสารและสมุดสวดมนต์ในมือพวกคุณ",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f6_prasert_confess",
+      "scene": "F6",
+      "speaker": "ประเสริฐ",
+      "voice": "Algenib",
+      "style": "เสียงชายไทย 50+ ถอนหายใจยาว ยอมรับความจริง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "ผู้เล่นยื่นหลักฐานปี 2534 ให้ประเสริฐและเจ้าหน้าที่ เปิดเผยความจริง" },
+      "text": "พวกคุณ... ไปเจอมันจนได้สินะครับ คืนนั้นผมร่วมตัดสินใจเปิดประตูน้ำจริง ทั้งที่ยังตรวจเช็กคนไม่ครบ... ผมหนีมันมาสามสิบกว่าปีแล้ว พอสักทีครับ เดี๋ยวผมไปให้การกับตำรวจและขอโทษชาวบ้านเอง",
+      "is_filler": false,
+      "unlocks": { "clues": ["flood_truth_disclosed"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_a_epilogue",
+      "scene": "F6",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สงบงดงาม ปิดคดีสมบูรณ์",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "บทสรุปปิดท้าย Ending A และปิดลูปวิทยุรถตู้" },
+      "text": "แสงเช้าส่องพาดผ่านแนวสวนกล้วยอย่างสงบเงียบ ก่อนรถตู้บริษัทจะเคลื่อนตัวออกจากบ้านหนองตาล วิทยุหน้ารถส่งเสียงซ่าสั้น ๆ ขึ้นมาหนึ่งครั้ง... ไม่มีเสียงน้ำ ไม่มีเสียงร้องขอความช่วยเหลืออีกแล้ว",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_b_summary",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "สรุป Ending B" },
+      "text": "คนหายทั้งสามกลับถึงบ้านแล้ว ด้ายดำที่ศาลไม่กระตุกอีก แต่ทุกครั้งที่ลมพัดผ่านสวน เสียงครางต่ำยังลอดออกมาจากแนวกล้วย...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_b_vigilante_summary",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เยือกเย็น",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "สรุป Ending B Vigilante Ghost" },
+      "text": "ผู้รอดชีวิตทั้งสามกลับบ้านอย่างปลอดภัย แต่วิชัยสิ้นใจอยู่บนพื้นเรือนไม้ แม่แก้วได้รับอิสรภาพแล้ว... และไม่มีใครบอกได้ว่าเธอจะหยุดตัดสินคนเป็นด้วยมือของตัวเองเมื่อไร",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_c_summary",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ หนักอึ้ง",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "สรุป Ending C" },
+      "text": "เช้าแล้วและพิธีหยุดลง ทว่ารายงานของบริษัทยังมีช่องว่างที่ไม่มีหลักฐานใดเติมได้หมด คำว่า 'ช่วยสำเร็จ' ยังเขียนลงไม่ได้เต็มบรรทัด",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_c_bloodstained_summary",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สลดใจ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "สรุป Ending C Bloodstained Rescue" },
+      "text": "แสงเช้ามาถึงพร้อมเสียงล้อรถกู้ภัย บนเปลมีร่างคลุมผ้าขาว ต่อให้ทีมหยุดพิธีได้ รายงานก็ไม่มีวันเขียนว่า 'กลับบ้านครบสามคน' ได้อีก",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_d_summary",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สยองขวัญ",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "สรุป Ending D" },
+      "text": "เสียงร้องจากสวนดังข้ามถนน พิธียังไม่หยุด ชาวบ้านทยอยปิดประตูและปิดไฟ หมู่บ้านหนองตาลยังคงจมอยู่ใต้คำสาปต่อไป",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "ending_d_fallen_summary",
+      "scene": "*",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ไว้อาลัย",
+      "trigger_condition": { "requires_clues": [], "requires_items": [], "min_trust": null, "once": true, "topic_hint": "สรุป Ending D Fallen Agent" },
+      "text": "ตอนรถตู้บริษัทแล่นออกจากหมู่บ้าน ที่นั่งหนึ่งกลับว่างอยู่ รายงานภารกิจ BS-001 ต้องมีบรรทัดใหม่ว่ามีเจ้าหน้าที่เสียชีวิตระหว่างปฏิบัติหน้าที่",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    }
+  ]
+}

@@ -41,8 +41,9 @@ def test_scenario_data_and_assets_integrity() -> None:
         bg_rel = scene["background_image"].lstrip("/")
         assert (PROTO_DIR / "frontend" / bg_rel).exists(), f"Missing background {bg_rel}"
         for npc in scene.get("npcs", []):
-            sprite_rel = npc["sprite"].lstrip("/")
-            assert (PROTO_DIR / "frontend" / sprite_rel).exists(), f"Missing sprite {sprite_rel}"
+            if npc.get("sprite"):
+                sprite_rel = npc["sprite"].lstrip("/")
+                assert (PROTO_DIR / "frontend" / sprite_rel).exists(), f"Missing sprite {sprite_rel}"
 
     for role in repo.roles:
         avatar_rel = role["avatar"].lstrip("/")
@@ -677,14 +678,15 @@ def test_gemini_503_transient_retry_and_failover(monkeypatch: pytest.MonkeyPatch
 
 def test_act_b_data_integrity_and_unique_voices() -> None:
     repo = ScenarioRepository()
-    assert len(repo.dialogues) == 90
+    assert len(repo.dialogues) >= 180
     for new_id in ("a1_qa_missing_who", "b2_qa_ton_friends", "b3_wichai_stay_behind"):
         assert new_id in repo.dialogues_by_id
-    for scene_id in ("A1", "A2", "A3", "B1", "B2", "B3"):
+    for scene_id in ("A1", "A2", "A3", "B1", "B2", "B3", "C1", "D1", "E1", "F1", "F5", "F6"):
         assert scene_id in repo.scenes
-    for check_id in ("B2_WICHAI_TELL", "B3_TON_DISCLOSURE", "B4_FLOOD_PHOTO"):
+    for check_id in ("B2_WICHAI_TELL", "B3_TON_DISCLOSURE", "B4_FLOOD_PHOTO", "C2_LAND_PATTERN", "D2_BINDING_PATTERN", "E4_BRACELET_DECODE", "H1_FLOOD_TIMELINE", "F5_KAEW_RECONCILE"):
         assert check_id in repo.dice_checks
     assert "act_b_complete" in repo.endings
+    assert "ending_a" in repo.endings
     assert "filler_wichai_calm" in repo.fillers_by_id
     assert "filler_ton_nervous" in repo.fillers_by_id
     act_b_fillers = repo.get_fillers_for_act("B")
@@ -832,19 +834,30 @@ def test_modular_data_and_categorized_audio_assets() -> None:
     from backend.state_manager import audio_bucket_for_entry
 
     repo = ScenarioRepository()
-    assert len(repo.dialogues) == 90
+    subtitle_only_buckets = {"act_c", "act_d", "act_e", "act_f"}
+    voiced_entries = [
+        entry for entry in repo.dialogues if audio_bucket_for_entry(entry) not in subtitle_only_buckets
+    ]
+    subtitle_entries = [
+        entry for entry in repo.dialogues if audio_bucket_for_entry(entry) in subtitle_only_buckets
+    ]
+    assert len(voiced_entries) == 90
+    assert len(subtitle_entries) >= 90
     assert repo.count_cached_audio() == 88
     assert repo.resolve_audio_url("a1_intro_dm") == "/audio_assets/act_a/a1_intro_dm.wav"
     assert repo.resolve_audio_url("b1_intro_dm") == "/audio_assets/act_b/b1_intro_dm.wav"
     assert repo.resolve_audio_url("combat_drowned_intro") == "/audio_assets/combat/combat_drowned_intro.wav"
     assert repo.resolve_audio_url("filler_dm_think") == "/audio_assets/fillers/filler_dm_think.wav"
+    assert repo.resolve_audio_url("c1_intro_dm") is None
 
     pending_voice_ids = {"b2_qa_ton_friends", "b3_wichai_stay_behind"}
     assert audio_bucket_for_entry(repo.dialogues_by_id["a1_qa_missing_who"]) == "act_a"
     assert audio_bucket_for_entry(repo.dialogues_by_id["b2_qa_ton_friends"]) == "act_b"
     assert audio_bucket_for_entry(repo.dialogues_by_id["b3_wichai_stay_behind"]) == "act_b"
+    assert audio_bucket_for_entry(repo.dialogues_by_id["c5_boonmee_greet"]) == "act_c"
+    assert audio_bucket_for_entry(repo.dialogues_by_id["f6_dawn_dm"]) == "act_f"
 
-    for entry in repo.dialogues:
+    for entry in voiced_entries:
         if entry["id"] in pending_voice_ids:
             continue
         url = repo.resolve_audio_url(entry["id"])
@@ -1065,3 +1078,166 @@ def test_third_person_narration_coerced_to_dm_speaker() -> None:
     assert out_speech["live_tts_speaker"] == "ประเสริฐ"
     assert out_speech["primary_event"]["character"] == "ประเสริฐ"
     assert out_speech["primary_event"]["dialogue_id"] == "filler_prasert_hmm"
+
+
+def test_lobby_presets_and_full_act_a_to_f_progression() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+
+    for act, exp_scene, exp_node, exp_clue in [
+        ("C", "C1", "don_living_room", "don_house_location"),
+        ("D", "D1", "banana_path_d1", "boonmee_thread_warning"),
+        ("E", "E1", "stilt_house_yard", "cart_tracks_to_house"),
+        ("F", "F1", "ritual_upstairs_final", "ritual_bracelet_core"),
+    ]:
+        r, _, _ = mgr.add_player(f"PRE_{act}", f"s_{act}", "ฟรังก์", "investigator", start_act=act)
+        assert r.current_scene == exp_scene
+        assert r.board_node == exp_node
+        assert exp_clue in r.clues_found
+
+    # Continuous transition B -> C -> D -> E -> F preserving clues
+    room, _, _ = mgr.add_player("FULLRUN", "sid_1", "ฟรังก์", "investigator", start_act="B")
+    mgr.start_game("FULLRUN")
+    mgr.validate_and_apply_decision(
+        room,
+        DMDecision(mode="script", character="DM", selected_audio_id="b1_inspect_files_free"),
+        "ฟรังก์",
+    )
+    assert "don_house_location" in room.clues_found
+    _, ev_c = mgr.advance_to_act("FULLRUN", "C")
+    assert room.current_scene == "C1"
+    assert [ev["dialogue_id"] for ev in ev_c] == ["c1_intro_dm"]
+    assert ev_c[0]["audio_url"] is None
+
+    # Move to C5 Boonmee -> improvise emits silent subtitle filler (dialogue_id=None) instead of male DM filler
+    mgr.move_board_node("FULLRUN", "grove_boonmee_house", "ฟรังก์")
+    assert room.current_scene == "C5"
+    out_boonmee = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(
+            mode="improvise",
+            character="ยายบุญมี",
+            filler_audio_id=None,
+            improvised_text="คืนนี้ลมแรงผิดปกติ อย่าไปดึงด้ายดำส่งเดชนะลูก",
+        ),
+        "ฟรังก์",
+    )
+    assert out_boonmee["primary_event"]["character"] == "ยายบุญมี"
+    assert out_boonmee["primary_event"]["dialogue_id"] is None
+    assert out_boonmee["primary_event"]["is_filler"] is True
+
+    mgr.move_board_node("FULLRUN", "c_to_act_d_gate", "ฟรังก์")
+    assert room.ending_triggered == "act_c_complete"
+
+    _, ev_d = mgr.advance_to_act("FULLRUN", "D")
+    assert room.current_scene == "D1"
+    assert ev_d[0]["dialogue_id"] == "d1_intro_dm"
+
+    mgr.move_board_node("FULLRUN", "cart_tracks_d5", "ฟรังก์")
+    room.clues_found.extend(["shrine_three_names", "cart_tracks_to_house"])
+    mgr.move_board_node("FULLRUN", "d_to_act_e_house", "ฟรังก์")
+    assert room.ending_triggered == "act_d_complete"
+
+    _, ev_e = mgr.advance_to_act("FULLRUN", "E")
+    assert room.current_scene == "E1"
+    assert ev_e[0]["dialogue_id"] == "e1_intro_dm"
+    room.clues_found.append("ritual_bracelet_core")
+    mgr.move_board_node("FULLRUN", "e_to_act_f_ritual", "ฟรังก์")
+    assert room.ending_triggered == "act_e_complete"
+
+    _, ev_f = mgr.advance_to_act("FULLRUN", "F")
+    assert room.current_scene == "F1"
+    assert [ev["dialogue_id"] for ev in ev_f] == ["f1_intro_dm", "f1_kaew_forced"]
+    assert "don_house_location" in room.clues_found
+    assert "ritual_bracelet_core" in room.clues_found
+
+
+def test_act_f_ritual_shield_boss_and_ending_resolver(monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    room, p1, _ = mgr.add_player("FINAL01", "sid_1", "เอก", "investigator", start_act="F")
+    mgr.start_game("FINAL01")
+
+    mgr.start_combat("FINAL01", return_scene="F1", encounter_id="KAEW_FINAL_BOSS")
+    assert room.combat is not None
+    assert room.combat.ritual_shield_up is True
+    assert room.combat.ritual_max_steps == 3
+    init_hp = room.combat.enemy_hp
+
+    # Force high rolls (18) so strike & ritual succeed deterministically
+    monkeypatch.setattr("backend.state_manager.secrets.randbelow", lambda n: 17)
+
+    # Strike while 3-stage shield is UP deals 0 HP damage
+    res_strike = mgr.perform_combat_action("FINAL01", "sid_1", "strike")
+    assert room.combat.enemy_hp == init_hp
+    assert "เกราะ" in res_strike["summary"]
+
+    # Ghost turn uses KAEW_FINAL_BOSS move
+    ghost_res = mgr.apply_ghost_turn(
+        "FINAL01",
+        GhostTurnDecision(move_id="BRACELET_LASH", target_player_id=p1.public_id, narration_th="ด้ายกำไลตวัด!"),
+    )
+    assert ghost_res["roll_detail"]["actor"] == room.combat.enemy_name
+
+    # Clear 3 ritual stages -> shield drops (ghost acts after each solo round)
+    for step_idx in range(1, 4):
+        mgr.perform_combat_action("FINAL01", "sid_1", "ritual")
+        assert room.combat is not None
+        assert room.combat.ritual_step == step_idx
+        mgr.apply_ghost_turn(
+            "FINAL01",
+            GhostTurnDecision(move_id="RITUAL_COMMAND", target_player_id=p1.public_id, narration_th="แรงอาคมกดดัน!"),
+        )
+    assert room.combat.ritual_shield_up is False
+
+    # 4th ritual action = Controlled Release -> wins encounter without killing Mae Kaew & moves to F5
+    release_res = mgr.perform_combat_action("FINAL01", "sid_1", "ritual")
+    assert room.combat is None
+    assert "ritual_stopped" in room.clues_found
+    assert room.case_flags.get("ritual_status") == "stopped"
+    assert room.current_scene == "F5"
+    assert any(ev["dialogue_id"] == "f5_intro_dm" for ev in release_res["events"])
+
+    # Verify Ending A–D deterministic resolution rules
+    room.clues_found.extend(["kaew_reconciled", "flood_truth_disclosed"])
+    assert mgr.resolve_final_ending(room) == "ending_a"
+
+    room.clues_found.remove("kaew_reconciled")
+    assert mgr.resolve_final_ending(room) == "ending_b"
+
+    room.case_flags["wichai_executed_by_kaew"] = True
+    assert mgr.resolve_final_ending(room) == "ending_b_vigilante"
+
+    room.case_flags.pop("wichai_executed_by_kaew")
+    room.inventory.remove("wichai_debt_docs")
+    assert mgr.resolve_final_ending(room) == "ending_c"
+
+    room.case_flags["hostage_dead"] = True
+    assert mgr.resolve_final_ending(room) == "ending_c_bloodstained"
+
+    room.clues_found.remove("ritual_stopped")
+    assert mgr.resolve_final_ending(room) == "ending_d"
+
+    p1.hp = 0
+    assert mgr.resolve_final_ending(room) == "ending_d_fallen"
+
+
+def test_act_c_to_f_local_fallback_dm_and_combat_planner() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    engine = AIDMEngine()
+
+    room, p1, _ = mgr.add_player("FB_CF", "sid_1", "เอก", "investigator", start_act="C")
+    mgr.start_game("FB_CF")
+    room.current_scene = "C2"
+    d_c2 = engine._local_fallback_decision(room, mgr, "เทียบวันที่ข่าวผีกับราคาที่ดินในสมุด")
+    assert d_c2.requested_check_id == "C2_LAND_PATTERN"
+
+    room.current_scene = "E4"
+    d_h1 = engine._local_fallback_decision(room, mgr, "เทียบบันทึกเวรประตูน้ำกับสมุดยายบุญมี H1")
+    assert d_h1.requested_check_id == "H1_FLOOD_TIMELINE"
+
+    room.current_scene = "F1"
+    mgr.start_combat("FB_CF", return_scene="F1", encounter_id="KAEW_FINAL_BOSS")
+    plan = engine._local_fallback_combat_action(room, p1, "คลายปมเกราะบนกำไลทองเหลืองตามตำรา")
+    assert plan.action_id == "ritual"

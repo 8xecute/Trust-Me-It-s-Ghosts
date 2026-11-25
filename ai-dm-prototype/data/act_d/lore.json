@@ -1,0 +1,313 @@
+{
+  "act": "D",
+  "title": "ACT D — เข้าสวนกล้วย ศาลด้ายดำ แม่แก้ว และรอยล้อ (D1–D5)",
+  "clues_catalog": {
+    "double_track_clue": {
+      "label": "รอยกดคู่บนดินชื้นในสวนกล้วย",
+      "detail": "พื้นดินริมทางเดินเข้าศาลมีรอยกดเป็นเส้นคู่ทอดลึกเข้าไปในแนวสวน แต่กอกล้วยบังจนยังไม่เห็นปลายทาง"
+    },
+    "shrine_three_names": {
+      "label": "ด้ายดำและป้ายชื่อ 3 คนหายที่ศาล",
+      "detail": "ศาลเก่าคลุมผ้าเขียวถูกด้ายดำเส้นใหม่พันรัดเสาแน่น มีป้ายผ้าเปื้อนดินเขียนชื่อ 'ดล' 'นิด' 'เพิ่ม' ขึงปมไว้และด้ายไต่สูงกลืนไปกับยอดกล้วย"
+    },
+    "shrine_binding_core": {
+      "label": "ด้ายดำมีแกนควบคุมอยู่ที่อื่น",
+      "detail": "ด้ายดำที่ศาลเป็นเพียงปลายสายส่งคำสั่งจากพิธีชุดเดียว แกนควบคุมหลักถูกซ่อนอยู่นอกศาล (การตัดมั่วที่ปลายสายอาจตีกลับ)"
+    },
+    "kaew_coerced_truth": {
+      "label": "แม่แก้วถูกหลอกและโดนด้ายดำบังคับ",
+      "detail": "แม่แก้วไม่เคยจับคนหาย—เธอถูกคนที่เคยช่วยขึ้นจากน้ำหลอกว่าจะเปิดแฟ้มปี 2534 ก่อนถูกเอาด้ายอาคมมารั้งบังคับเสียงร้อง"
+    },
+    "cart_tracks_to_house": {
+      "label": "รอยล้อหนักและกระสอบข้าวไปเรือนไม้ร้าง",
+      "detail": "หลังศาลมีรอยล้อรถเข็นหนักกดลึกสองแนวพร้อมเศษกระสอบข้าวและรอยรองเท้าคน ทอดตรงไปยังเรือนไม้ยกพื้นร้างท้ายสวน"
+    }
+  },
+  "items_catalog": {
+    "camera_strap_mud": {
+      "label": "สายคล้องกล้องเปื้อนโคลนของนิด",
+      "detail": "สายคล้องกล้องถ่ายรูปขาดตกจมโคลนอยู่โคนต้นกล้วยหลังศาล ชี้ชัดว่านิดเคยมาถึงจุดนี้"
+    }
+  },
+  "board_nodes": [
+    {
+      "id": "banana_path_d1",
+      "name": "ทางเดินสวนกล้วย",
+      "subtitle": "กอกล้วยทึบ ดินชื้น และรอยกดคู่",
+      "scene": "D1",
+      "x": 18,
+      "y": 56,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "D"
+    },
+    {
+      "id": "banana_shrine_d2",
+      "name": "ศาลผ้าเขียว & ด้ายดำ",
+      "subtitle": "ป้ายชื่อ ดล นิด เพิ่ม และสายกล้องนิด",
+      "scene": "D2",
+      "x": 45,
+      "y": 42,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "D"
+    },
+    {
+      "id": "kaew_shrine_d3",
+      "name": "หลังเสาศาล (พบแม่แก้ว)",
+      "subtitle": "เจรจาหรือรับมือหญิงชุดเขียว",
+      "scene": "D3",
+      "x": 58,
+      "y": 64,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "D"
+    },
+    {
+      "id": "cart_tracks_d5",
+      "name": "แนวรอยล้อหลังศาล",
+      "subtitle": "รอยรถเข็น เศษกระสอบ มุ่งหน้าท้ายสวน",
+      "scene": "D5",
+      "x": 76,
+      "y": 36,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "D"
+    },
+    {
+      "id": "d_to_act_e_house",
+      "name": "ทางสู่เรือนไม้ร้าง (จบบท D)",
+      "subtitle": "ตามรอยล้อไปเรือนไม้ท้ายสวนใน ACT E",
+      "scene": "D5",
+      "x": 88,
+      "y": 72,
+      "unlocked_by_default": false,
+      "requires_clues": [
+        "shrine_three_names",
+        "cart_tracks_to_house"
+      ],
+      "act": "D"
+    }
+  ],
+  "scenes": {
+    "D1": {
+      "id": "D1",
+      "title": "D1: เข้าสวนกล้วยยามค่ำ",
+      "subtitle": "เสียงแมลงเงียบสนิท ใบกล้วยแกว่งทวนลมเผยหลังคาศาลเก่า",
+      "background_image": "/assets/scenes/banana_grove.png",
+      "npcs": [],
+      "intro_audio_ids": [
+        "d1_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "D2",
+        "D5"
+      ],
+      "allowed_clues": [
+        "double_track_clue"
+      ],
+      "allowed_items": [],
+      "available_checks": [],
+      "quick_prompts": [
+        "ส่องไฟดูรอยยุบบนพื้นดินแล้วเดินต่อไปยังศาลเก่า (D2)",
+        "สังเกตรอบแนวต้นกล้วยและเสียงกระซิบ",
+        "ถอยกลับออกไปทางหน้าสวน"
+      ],
+      "spoiler_guardrails": [
+        "ห้ามระบุว่ารอยดินเป็นของรถเข็นหรือของวิชัยจนกว่าจะตรวจ D5",
+        "ห้ามให้แม่แก้วปรากฏร่างหรือบอกพิกัดเรือนไม้ใน D1"
+      ]
+    },
+    "D2": {
+      "id": "D2",
+      "title": "D2: ศาลผ้าเขียวและป้ายชื่อทั้งสาม",
+      "subtitle": "ด้ายดำพันเสาไม้ตึงแน่น ป้ายชื่อ ดล นิด เพิ่ม และสายกล้องตกโคลน",
+      "background_image": "/assets/scenes/banana_grove.png",
+      "npcs": [],
+      "intro_audio_ids": [
+        "d2_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "D1",
+        "D3",
+        "D5"
+      ],
+      "allowed_clues": [
+        "shrine_three_names",
+        "shrine_binding_core"
+      ],
+      "allowed_items": [
+        "camera_strap_mud"
+      ],
+      "available_checks": [
+        "D2_BINDING_PATTERN"
+      ],
+      "quick_prompts": [
+        "ดูป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องหลังโคนต้นกล้วย",
+        "วิเคราะห์โครงสร้างการพันด้ายดำของพิธี (ทอย INT)",
+        "เงยดูด้ายดำและเดินผ่านศาลต่อไป (พบแม่แก้ว D3)",
+        "อ้อมไปสำรวจพื้นดินหลังศาล (D5)"
+      ],
+      "spoiler_guardrails": [
+        "เห็นชื่อ ดล นิด เพิ่ม ได้ฟรี แต่ห้ามสรุปว่าทั้งสามตายแล้วหรือบอกว่ากำไลอยู่ที่เรือนไม้",
+        "ถ้าผู้เล่นถามเรื่องตัดด้าย ให้เตือนว่าที่นี่เป็นปลายสาย ตัดมั่วอาจสะท้อนกลับ"
+      ]
+    },
+    "D3": {
+      "id": "D3",
+      "title": "D3: แม่แก้วหลังเสาศาล",
+      "subtitle": "หญิงชุดเขียวยืนกั้นทางด้วยแววตาเศร้า เส้นด้ายดำที่ข้อมือกระตุกตึง",
+      "background_image": "/assets/scenes/banana_grove.png",
+      "npcs": [
+        {
+          "name": "แม่แก้ว (นางตานี)",
+          "sprite": "/assets/characters/drowned_echo.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "d3_intro_dm",
+        "d3_kaew_greet"
+      ],
+      "allowed_next_scenes": [
+        "D2",
+        "D4",
+        "D5"
+      ],
+      "allowed_clues": [
+        "kaew_coerced_truth"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "D3_KAEW_CONTACT"
+      ],
+      "quick_prompts": [
+        "คุณจับคนหายไปขังไว้หรือเปล่า? ทำไมถึงออกมาหลอกชาวบ้าน?",
+        "ใครเป็นคนผูกด้ายบังคับคุณ? คุณรู้จักวิชัยไหม?",
+        "ตั้งจิตสัมผัสความรู้สึกของแม่แก้วผ่านด้าย (ทอย SPI)",
+        "รับปากว่าจะช่วยตามหาของให้ แล้วขอผ่านไปหลังศาล (D5)"
+      ],
+      "spoiler_guardrails": [
+        "แม่แก้วจำเด็กที่เคยช่วยจากน้ำได้ แต่ด้ายดำจะรัดคอทันทีก่อนเธอจะพูดชื่อวิชัยว่าเป็นคนทำพิธีได้เต็มคำ",
+        "แม่แก้วไม่รู้ตำแหน่งห้องขังหรือกำไล ห้ามเฉลยตำแหน่งเรือนไม้ล่วงหน้า"
+      ]
+    },
+    "D4": {
+      "id": "D4",
+      "title": "D4: เผชิญหน้าแม่แก้วในสวน",
+      "subtitle": "รากกล้วยดันดินขวางทาง แรงอาคมบีบให้เธอต้านทีม",
+      "background_image": "/assets/scenes/banana_grove.png",
+      "npcs": [
+        {
+          "name": "แม่แก้ว (นางตานี)",
+          "sprite": "/assets/characters/drowned_echo.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "d4_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "D3",
+        "D5"
+      ],
+      "allowed_clues": [
+        "kaew_coerced_truth"
+      ],
+      "allowed_items": [],
+      "available_checks": [],
+      "quick_prompts": [
+        "เจรจาขอหยุดสู้: พวกเราจะไม่ทำร้ายคุณ เราจะไปช่วยคนหาย!",
+        "เปิดฉากต่อสู้ / คุ้มกันทีมรับมือร่างแม่แก้ว",
+        "ถอยอ้อมแนวเถาวัลย์ไปตรวจทางหลังศาล (D5)"
+      ],
+      "spoiler_guardrails": [
+        "D4 เป็นฉากทางเลือก ทีมเลือกเจรจา ถอย หรือสู้ก็ได้ — ถึงสลายร่างที่นี่กำไลก็ยังไม่หยุด",
+        "ห้ามทำให้แม่แก้วตายถาวรหรือเฉลยตำแหน่งกำไล"
+      ]
+    },
+    "D5": {
+      "id": "D5",
+      "title": "D5: รอยล้อรถเข็นไปยังเรือนไม้ร้าง",
+      "subtitle": "รอยล้อกดลึกสองแนวบนดินเลนกับเศษกระสอบข้าวชี้ตรงไปยังเรือนไม้ท้ายสวน",
+      "background_image": "/assets/scenes/banana_grove.png",
+      "npcs": [],
+      "intro_audio_ids": [
+        "d5_intro_dm"
+      ],
+      "allowed_next_scenes": [
+        "D2",
+        "D3"
+      ],
+      "allowed_clues": [
+        "cart_tracks_to_house"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "D5_CART_TRACKS"
+      ],
+      "quick_prompts": [
+        "ตรวจรายละเอียดรอยล้อ เศษกระสอบ และรอยรองเท้า (ทอย PER)",
+        "รอยล้อหนักแบบนี้ชี้ไปที่ไหน บอกตัวคนเข็นได้ไหม?",
+        "เดินตามรอยล้อตรงไปยังเรือนไม้ร้างท้ายสวนเลย (จบบท ACT D)"
+      ],
+      "spoiler_guardrails": [
+        "การเดินตามรอยล้อไปยังเรือนไม้ได้ฟรี ไม่ล็อกหลังผลทอย PER11",
+        "รอยล้อยืนยันได้ว่ามีคนเป็นขนของหนักไปเรือนไม้ แต่ยังระบุตัวคนเข็นจากรอยล้ออย่างเดียวไม่ได้"
+      ]
+    }
+  },
+  "dice_checks": {
+    "D2_BINDING_PATTERN": {
+      "id": "D2_BINDING_PATTERN",
+      "scene_id": "D2",
+      "title": "แปลโครงสร้างด้ายดำของพิธีผูก",
+      "stat": "INT",
+      "dc": 14,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นตรวจปมด้ายและวัตถุที่ศาลเพื่อวิเคราะห์โครงสร้างอาคม",
+      "audio_ids": {
+        "full": "d2_check_int_full",
+        "partial": "d2_check_int_partial",
+        "failure": "d2_check_int_fail"
+      }
+    },
+    "D3_KAEW_CONTACT": {
+      "id": "D3_KAEW_CONTACT",
+      "scene_id": "D3",
+      "title": "รับรู้อารมณ์แม่แก้วผ่านแรงพันธนาการ",
+      "stat": "SPI",
+      "dc": 14,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นตั้งจิตสัมผัสความรู้สึกของแม่แก้วขณะด้ายดำรัดไม่ให้เธอเอ่ยชื่อคนบงการ",
+      "audio_ids": {
+        "full": "d3_check_spi_full",
+        "partial": "d3_check_spi_partial",
+        "failure": "d3_check_spi_fail"
+      }
+    },
+    "D5_CART_TRACKS": {
+      "id": "D5_CART_TRACKS",
+      "scene_id": "D5",
+      "title": "อ่านรอยล้อหนักและรอยรองเท้าหลังศาล",
+      "stat": "PER",
+      "dc": 11,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นก้มสำรวจรอยล้อรถเข็น เศษกระสอบ และรอยรองเท้ามนุษย์บนดินเลน",
+      "audio_ids": {
+        "full": "d5_check_per_full",
+        "partial": "d5_check_per_partial",
+        "failure": "d5_check_per_fail"
+      }
+    }
+  },
+  "endings": {
+    "act_d_complete": {
+      "id": "act_d_complete",
+      "type": "true_ending",
+      "title": "ผ่านบท ACT D: สู่เรือนไม้ร้างท้ายสวนกล้วย",
+      "summary": "ทีมสืบสวนผ่านศาลด้ายดำ เผชิญหน้าแม่แก้ว และแกะรอยล้อรถเข็นจนพบเส้นทางสู่เรือนไม้ยกพื้นร้างท้ายสวนใน ACT E",
+      "audio_id": "d_ending_to_act_e"
+    }
+  }
+}

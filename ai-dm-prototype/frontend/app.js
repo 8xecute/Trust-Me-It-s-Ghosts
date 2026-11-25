@@ -27,6 +27,7 @@
   let isPlayingQueue = false;
   let activeAudioEl = null;
   let activeSubtitleTimer = null;
+  let activeSubtitleFinishFn = null;
   let pendingGapTimer = null;
   let isDiceRolling = false;
   let activeDiceAnimFrame = null;
@@ -70,12 +71,18 @@
     "ประเสริฐ": "ผู้ใหญ่ประเสริฐ",
     "วิชัย": "วิชัย (ผู้ช่วยผู้ใหญ่)",
     "ต้น": "ต้น (อาสาสมัคร)",
+    "ยายบุญมี": "ยายบุญมี (ผู้ดูแลศาล)",
+    "แม่แก้ว (นางตานี)": "แม่แก้ว (นางตานี)",
+    "ดล": "ดล (พยาน/ผู้สูญหาย)",
+    "ผีเงาจมน้ำ": "ผีเงาจมน้ำ",
   };
 
   const SPEAKER_AVATARS = {
     "ประเสริฐ": "/assets/characters/prasert.png",
     "วิชัย": "/assets/characters/wichai.png",
     "ต้น": "/assets/characters/ton.png",
+    "ดล": "/assets/characters/ton.png",
+    "แม่แก้ว (นางตานี)": "/assets/characters/drowned_echo.png",
     "ผีเงาจมน้ำ": "/assets/characters/drowned_echo.png",
   };
 
@@ -90,12 +97,18 @@
     missing_names: "missing",
     report_timeline_gap: "missing",
     don_house_location: "missing",
+    hostages_found: "missing",
     banana_grove_area: "location",
     headman_files_exist: "location",
     location_headman_house: "location",
     map_two_layers: "location",
     flood_waterway_clue: "location",
     flood_near_grove_clue: "location",
+    double_track_clue: "location",
+    cart_tracks_to_house: "location",
+    evac_gap_discovered: "location",
+    flood_timeline_confirmed: "location",
+    flood_truth_disclosed: "location",
     prasert_nervous_clue: "witness",
     witnesses_at_house: "witness",
     wichai_hand_scratch: "witness",
@@ -106,6 +119,13 @@
     ton_saw_person_at_grove: "witness",
     ton_black_bundle_clue: "witness",
     wichai_cart_suspect: "witness",
+    don_table_found: "witness",
+    don_notebook_found: "witness",
+    land_price_pattern: "witness",
+    knows_wichai_saved: "witness",
+    wichai_kidnapper_confirmed: "witness",
+    wichai_debt_evidence: "witness",
+    wichai_confronted: "witness",
     kaew_mention: "occult",
     radio_still_alive: "occult",
     radio_no_recording: "occult",
@@ -113,6 +133,16 @@
     radio_supernatural_chill: "occult",
     flood_photo_seen: "occult",
     photo_water_anomaly: "occult",
+    black_thread_clue: "occult",
+    spirit_echo_vision: "occult",
+    boonmee_thread_warning: "occult",
+    shrine_three_names: "occult",
+    shrine_binding_core: "occult",
+    kaew_coerced_truth: "occult",
+    ritual_bracelet_core: "occult",
+    ritual_plan_prepared: "occult",
+    ritual_stopped: "occult",
+    kaew_reconciled: "occult",
   };
 
   function getClueCategory(clue) {
@@ -702,10 +732,21 @@
 
     $("scene-bg-img").src = combat.background_image;
     $("combat-enemy-name").textContent = combat.enemy_name;
+    if ($("ghost-sprite-img")) {
+      $("ghost-sprite-img").src = combat.enemy_sprite || "/assets/characters/drowned_echo.png";
+      $("ghost-sprite-img").alt = combat.enemy_name;
+    }
     $("combat-round-badge").textContent =
-      `รอบที่ ${combat.round_number} • ${combat.phase === "players" ? "ตาผู้สืบสวน" : "ตาผีเงาจมน้ำ"}`;
+      `รอบที่ ${combat.round_number} • ${combat.phase === "players" ? "ตาผู้สืบสวน" : `ตาของ ${combat.enemy_name}`}`;
 
     const tags = [];
+    if ((combat.ritual_max_steps || 0) > 0) {
+      tags.push(
+        combat.ritual_shield_up
+          ? `เกราะกำไล 3 ชั้น (${combat.ritual_step}/${combat.ritual_max_steps})`
+          : "เกราะสลายแล้ว: ปลดกำไลได้เลย!"
+      );
+    }
     if (combat.ghost_exposed) tags.push("เปิดจุดอ่อน (+2 ทอย)");
     if (combat.party_shield > 0) tags.push(`เกราะทีม +${combat.party_shield}`);
     if ((me?.assisted_bonus || 0) > 0) tags.push(`คุณได้เปรียบ +${me.assisted_bonus}`);
@@ -720,6 +761,18 @@
 
     $("combat-retreat-text").textContent = `${combat.retreat_progress} / ${combat.retreat_goal}`;
     $("combat-retreat-fill").style.width = `${(combat.retreat_progress / Math.max(1, combat.retreat_goal)) * 100}%`;
+
+    const hasRitual = (combat.ritual_max_steps || 0) > 0;
+    const ritualRow = $("combat-ritual-row");
+    if (ritualRow) {
+      ritualRow.classList.toggle("hidden", !hasRitual);
+      if (hasRitual) {
+        $("combat-ritual-text").textContent = combat.ritual_shield_up
+          ? `${combat.ritual_step} / ${combat.ritual_max_steps}`
+          : "ครบ 3 ขั้น · รอปลดกำไล!";
+        $("combat-ritual-fill").style.width = `${(combat.ritual_step / Math.max(1, combat.ritual_max_steps)) * 100}%`;
+      }
+    }
 
     const teleBox = $("combat-telegraph-box");
     if (teleBox) {
@@ -761,7 +814,22 @@
     const sootheMod = Math.max(me?.stats?.SOC ?? 0, me?.stats?.SPI ?? 0);
     const sootheStat = (me?.stats?.SOC ?? 0) >= (me?.stats?.SPI ?? 0) ? "SOC" : "SPI";
     if ($("combat-strike-hint")) {
-      $("combat-strike-hint").textContent = `ทอย ${strikeStat} +${strikeMod} vs PDEF 12`;
+      $("combat-strike-hint").textContent = combat.ritual_shield_up
+        ? "เกราะ 3 ชั้นกันดาเมจ! คลายเกราะก่อน"
+        : `ทอย ${strikeStat} +${strikeMod} vs PDEF 12`;
+    }
+    const ritualBtn = $("combat-ritual-btn");
+    if (ritualBtn) {
+      ritualBtn.classList.toggle("hidden", !hasRitual);
+      if (hasRitual) {
+        const stepLabels = ["1) คุมแรงสะท้อน", "2) แยกสายคำสั่ง", "3) คลายปมเกราะ"];
+        $("combat-ritual-btn-title").textContent = combat.ritual_shield_up
+          ? `คลายเกราะ (${stepLabels[combat.ritual_step] || "ขั้นต่อไป"})`
+          : "ปลดกำไลขั้นสุดท้าย!";
+        $("combat-ritual-btn-desc").textContent = combat.ritual_shield_up
+          ? `ขั้น ${combat.ritual_step}/${combat.ritual_max_steps} · ทอย INT/SPI คลายวงป้องกัน`
+          : "Controlled Release — หยุดพิธีโดยไม่ฆ่าแม่แก้ว";
+      }
     }
     if ($("combat-soothe-hint")) {
       $("combat-soothe-hint").textContent = `ทอย ${sootheStat} +${sootheMod} vs MDEF 13`;
@@ -785,7 +853,7 @@
 
     let statusMsg = "ตาของคุณ — กดปุ่มคำสั่ง หรือพิมพ์/พูดบรรยายวิธีรับมือ TRPG ด้านล่าง (ใช้ไฟฉาย/สิ่งแวดล้อมได้โบนัส!)";
     if (!conscious) statusMsg = "คุณหมดสติหรือเสียขวัญแล้ว รอเพื่อนร่วมทีมช่วยเหลือ";
-    else if (combat.phase !== "players") statusMsg = "กำลังถึงตาของผีเงาจมน้ำ...";
+    else if (combat.phase !== "players") statusMsg = `กำลังถึงตาของ ${combat.enemy_name}...`;
     else if (me.acted_this_round) statusMsg = "คุณลงมือรอบนี้แล้ว รอเพื่อนร่วมทีมคนอื่น...";
     $("combat-turn-status").textContent = statusMsg;
 
@@ -829,7 +897,7 @@
     const layer = $("npc-layer");
     if (!layer) return;
     const visibleNpcs = (state.npcs || []).filter((n) => n.visible !== false);
-    const sig = visibleNpcs.map((n) => `${n.name}:${n.sprite}`).join("|");
+    const sig = visibleNpcs.map((n) => `${n.name}:${n.sprite || ""}`).join("|");
     layer.classList.toggle("multi-npc", visibleNpcs.length >= 2);
     if (sig === renderedNpcSignature) return;
     renderedNpcSignature = sig;
@@ -839,14 +907,30 @@
       wrap.className = "npc-sprite-wrap";
       wrap.dataset.speaker = npc.name;
       const displayName = NPC_DISPLAY_LABELS[npc.name] || npc.name;
-      const img = document.createElement("img");
-      img.src = npc.sprite;
-      img.alt = displayName;
-      img.className = "npc-sprite";
+      if (npc.sprite) {
+        const img = document.createElement("img");
+        img.src = npc.sprite;
+        img.alt = displayName;
+        img.className = "npc-sprite";
+        img.addEventListener("error", () => {
+          img.remove();
+          if (!wrap.querySelector(".npc-portrait-fallback")) {
+            const fb = document.createElement("div");
+            fb.className = "npc-portrait-fallback";
+            fb.textContent = displayName.slice(0, 1);
+            wrap.prepend(fb);
+          }
+        });
+        wrap.appendChild(img);
+      } else {
+        const fb = document.createElement("div");
+        fb.className = "npc-portrait-fallback";
+        fb.textContent = displayName.slice(0, 1);
+        wrap.appendChild(fb);
+      }
       const label = document.createElement("span");
       label.className = "npc-label";
       label.textContent = displayName;
-      wrap.appendChild(img);
       wrap.appendChild(label);
       layer.appendChild(wrap);
     });
@@ -857,19 +941,44 @@
     if (!routesLayer || renderedBoardAct === act) return;
     renderedBoardAct = act;
     routesLayer.innerHTML = "";
-    const segments =
-      act === "B"
-        ? [
-            { x1: 42, y1: 50, x2: 24, y2: 66, cls: "map-road" },
-            { x1: 42, y1: 50, x2: 68, y2: 36, cls: "map-road" },
-            { x1: 42, y1: 50, x2: 82, y2: 72, cls: "map-road" },
-            { x1: 68, y1: 36, x2: 82, y2: 72, cls: "map-road" },
-          ]
-        : [
-            { x1: 22, y1: 62, x2: 45, y2: 46, cls: "map-road" },
-            { x1: 45, y1: 46, x2: 76, y2: 30, cls: "map-road" },
-            { x1: 45, y1: 46, x2: 70, y2: 72, cls: "map-road map-road-danger" },
-          ];
+    const routesByAct = {
+      A: [
+        { x1: 22, y1: 62, x2: 45, y2: 46, cls: "map-road" },
+        { x1: 45, y1: 46, x2: 76, y2: 30, cls: "map-road" },
+        { x1: 45, y1: 46, x2: 70, y2: 72, cls: "map-road map-road-danger" },
+      ],
+      B: [
+        { x1: 42, y1: 50, x2: 24, y2: 66, cls: "map-road" },
+        { x1: 42, y1: 50, x2: 68, y2: 36, cls: "map-road" },
+        { x1: 42, y1: 50, x2: 82, y2: 72, cls: "map-road" },
+        { x1: 68, y1: 36, x2: 82, y2: 72, cls: "map-road" },
+      ],
+      C: [
+        { x1: 22, y1: 46, x2: 45, y2: 30, cls: "map-road" },
+        { x1: 22, y1: 46, x2: 46, y2: 68, cls: "map-road" },
+        { x1: 45, y1: 30, x2: 72, y2: 46, cls: "map-road" },
+        { x1: 46, y1: 68, x2: 72, y2: 46, cls: "map-road" },
+        { x1: 72, y1: 46, x2: 88, y2: 66, cls: "map-road map-road-danger" },
+      ],
+      D: [
+        { x1: 18, y1: 56, x2: 45, y2: 42, cls: "map-road" },
+        { x1: 45, y1: 42, x2: 58, y2: 64, cls: "map-road map-road-danger" },
+        { x1: 45, y1: 42, x2: 76, y2: 36, cls: "map-road" },
+        { x1: 58, y1: 64, x2: 76, y2: 36, cls: "map-road" },
+        { x1: 76, y1: 36, x2: 88, y2: 72, cls: "map-road" },
+      ],
+      E: [
+        { x1: 20, y1: 54, x2: 45, y2: 68, cls: "map-road" },
+        { x1: 20, y1: 54, x2: 66, y2: 36, cls: "map-road" },
+        { x1: 45, y1: 68, x2: 66, y2: 36, cls: "map-road" },
+        { x1: 66, y1: 36, x2: 86, y2: 54, cls: "map-road map-road-danger" },
+      ],
+      F: [
+        { x1: 36, y1: 46, x2: 62, y2: 46, cls: "map-road" },
+        { x1: 62, y1: 46, x2: 84, y2: 64, cls: "map-road" },
+      ],
+    };
+    const segments = routesByAct[act] || routesByAct.A;
     segments.forEach((seg) => {
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", String(seg.x1));
@@ -885,9 +994,25 @@
     const listEl = $("npc-trust-list");
     const titleEl = $("trust-card-title");
     if (!listEl) return;
-    const npcs = act === "B" ? ["วิชัย", "ต้น"] : ["ประเสริฐ"];
+    const npcsByAct = {
+      A: ["ประเสริฐ"],
+      B: ["วิชัย", "ต้น"],
+      C: ["ยายบุญมี"],
+      D: ["แม่แก้ว (นางตานี)"],
+      E: ["ดล", "วิชัย"],
+      F: ["แม่แก้ว (นางตานี)", "ประเสริฐ"],
+    };
+    const npcs = npcsByAct[act] || ["ประเสริฐ"];
     if (titleEl) {
-      titleEl.textContent = act === "B" ? "ท่าทีพยานและผู้ช่วย (ACT B)" : "ท่าทีผู้ใหญ่ประเสริฐ";
+      const titlesByAct = {
+        A: "ท่าทีผู้ใหญ่ประเสริฐ",
+        B: "ท่าทีพยานและผู้ช่วย (ACT B)",
+        C: "ท่าทียายบุญมี (ACT C)",
+        D: "ท่าทีแม่แก้ว (ACT D)",
+        E: "ท่าทีดลและวิชัย (ACT E)",
+        F: "ท่าทีแม่แก้ว & ประเสริฐ (FINAL)",
+      };
+      titleEl.textContent = titlesByAct[act] || "ท่าทีตัวละคร";
     }
     listEl.innerHTML = "";
     npcs.forEach((npcName) => {
@@ -914,21 +1039,24 @@
 
   function renderState(state) {
     currentState = state;
-    const act = state.act || (String(state.current_scene || "").startsWith("B") ? "B" : "A");
+    const scenePrefix = String(state.current_scene || "A1")[0];
+    const act = state.act || (["A", "B", "C", "D", "E", "F"].includes(scenePrefix) ? scenePrefix : "A");
     const me = (state.players || []).find((p) => p.id === myPlayer?.id || p.sid === socket?.id);
     $("game-screen").classList.toggle("in-combat", Boolean(state.combat?.active));
 
     $("hud-room-code").textContent = state.room_code;
     $("hud-scene-title").textContent = state.combat?.active
-      ? `เผชิญหน้า: ${state.combat.enemy_name} (ปากทางสวนกล้วย)`
+      ? `เผชิญหน้า: ${state.combat.enemy_name}`
       : state.scene_title;
     $("hud-scene-subtitle").textContent = state.combat?.active
-      ? "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย"
+      ? (state.combat.ritual_max_steps > 0
+          ? "ปะทะผลัดเทิร์น 1 Action/รอบ — คลายเกราะกำไล 3 ขั้นแล้วปลดกำไลขั้นสุดท้าย"
+          : "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย")
       : state.scene_subtitle;
     $("hud-quota-pill").textContent = `เสียงสด ${state.live_tts_used}/${state.live_tts_limit}`;
-    $("demo-combat-btn")?.classList.toggle("hidden", act === "B");
+    $("demo-combat-btn")?.classList.toggle("hidden", act === "B" || act === "E");
     if ($("reset-room-btn")) {
-      $("reset-room-btn").title = act === "B" ? "เริ่มเล่นช่วง ACT B ใหม่" : "เริ่มเล่นช่วง ACT A ใหม่";
+      $("reset-room-btn").title = `เริ่มเล่นช่วง ACT ${act} ใหม่`;
     }
 
     if (!state.combat?.active) {
@@ -939,42 +1067,59 @@
     // Overlays
     $("start-overlay").classList.toggle("hidden", Boolean(state.started));
     if (!state.started) {
-      if (act === "B") {
-        $("start-overlay-crest").textContent = "บทที่ 2 · ACT B";
-        $("start-overlay-title").textContent = "ก้าวเข้าสู่บ้านผู้ใหญ่บ้าน";
-        $("start-overlay-desc").textContent = "เมื่อสมาชิกเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดฉาก B1";
-        $("start-game-btn").textContent = "เริ่มบท ACT B";
-      } else {
-        $("start-overlay-crest").textContent = "บทนำ ACT A";
-        $("start-overlay-title").textContent = "พร้อมเข้าสู่หมู่บ้านหนองตาล";
-        $("start-overlay-desc").textContent = "เมื่อสมาชิกเข้าห้องครบแล้ว กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดคดี A1";
-        $("start-game-btn").textContent = "เริ่มบทนำ ACT A";
-      }
+      const introCopy = {
+        A: ["บทนำ ACT A", "พร้อมเข้าสู่หมู่บ้านหนองตาล", "กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดคดี A1", "เริ่มบทนำ ACT A"],
+        B: ["บทที่ 2 · ACT B", "ก้าวเข้าสู่บ้านผู้ใหญ่บ้าน", "กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดฉาก B1", "เริ่มบท ACT B"],
+        C: ["บทที่ 3 · ACT C", "ก้าวเข้าสู่บ้านดลและทางแยกศาล", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT C (ระบบซับไตเติ้ล + AI DM)", "เริ่มบท ACT C"],
+        D: ["บทที่ 4 · ACT D", "เข้าสู่สวนกล้วยและศาลด้ายดำ", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT D (ระบบซับไตเติ้ล + AI DM)", "เริ่มบท ACT D"],
+        E: ["บทที่ 5 · ACT E", "ถึงเรือนไม้ร้างท้ายสวนกล้วย", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT E ช่วยตัวประกันและเปิดโปงวิชัย", "เริ่มบท ACT E"],
+        F: ["บทสุดท้าย · FINAL ACT F", "วงป้องกันกำไลแม่แก้วกำลังทำงาน", "กดปุ่มด้านล่างเพื่อเข้าสู่ศึกสุดท้ายและบทส่งท้าย Ending A–D", "เริ่มบทสุดท้าย FINAL"],
+      }[act] || ["บทนำ ACT A", "พร้อมเข้าสู่หมู่บ้านหนองตาล", "กดปุ่มด้านล่างเพื่อเริ่มต้น", `เริ่มบท ACT ${act}`];
+      $("start-overlay-crest").textContent = introCopy[0];
+      $("start-overlay-title").textContent = introCopy[1];
+      $("start-overlay-desc").textContent = introCopy[2];
+      $("start-game-btn").textContent = introCopy[3];
     }
 
     const endingOverlay = $("ending-overlay");
     if (state.ending) {
       endingOverlay.classList.remove("hidden");
-      const endingAct = state.ending.id === "act_b_complete" ? "B" : "A";
+      const nextActByEnding = {
+        act_a_complete: ["B", "ไปต่อ ACT B: เข้าบ้านผู้ใหญ่บ้าน"],
+        act_a_combat_clear: ["B", "ไปต่อ ACT B: เข้าบ้านผู้ใหญ่บ้าน"],
+        act_b_complete: ["C", "ไปต่อ ACT C: มุ่งหน้าสู่บ้านดล"],
+        act_c_complete: ["D", "ไปต่อ ACT D: เข้าสวนกล้วยและศาลด้ายดำ"],
+        act_d_complete: ["E", "ไปต่อ ACT E: บุกเรือนไม้ร้างช่วยตัวประกัน"],
+        act_e_complete: ["F", "ไปต่อ FINAL ACT F: คลายเกราะกำไลแม่แก้ว"],
+      };
+      const nextInfo = nextActByEnding[state.ending.id] || null;
+      const endingActLabel = state.ending.id.startsWith("ending_")
+        ? "FINAL"
+        : `ACT ${act}`;
       const badge = $("ending-badge");
       badge.textContent =
         state.ending.type === "true_ending"
-          ? `TRUE ENDING • ACT ${endingAct}`
-          : `BAD ENDING • ACT ${endingAct}`;
+          ? `TRUE ENDING • ${endingActLabel}`
+          : `BAD ENDING • ${endingActLabel}`;
       badge.className = `ending-badge ${state.ending.type === "true_ending" ? "true" : "bad"}`;
       $("ending-title").textContent = state.ending.title;
       $("ending-summary").textContent = state.ending.summary;
 
-      const canAdvanceB =
-        state.ending.id === "act_a_complete" || state.ending.id === "act_a_combat_clear";
+      const canAdvance = Boolean(nextInfo);
       const nextActBtn = $("ending-next-act-btn");
       const resetBtn = $("ending-reset-btn");
       const restartABtn = $("ending-restart-a-btn");
-      nextActBtn?.classList.toggle("hidden", !canAdvanceB);
-      restartABtn?.classList.toggle("hidden", endingAct !== "B");
+      if (nextActBtn) {
+        nextActBtn.classList.toggle("hidden", !canAdvance);
+        if (nextInfo) {
+          nextActBtn.dataset.targetAct = nextInfo[0];
+          nextActBtn.textContent = nextInfo[1];
+        }
+      }
+      restartABtn?.classList.toggle("hidden", act === "A");
       if (resetBtn) {
-        resetBtn.textContent = `เล่น ACT ${endingAct} ใหม่อีกครั้ง`;
-        resetBtn.className = canAdvanceB ? "btn btn-secondary" : "btn btn-primary";
+        resetBtn.textContent = `เล่น ACT ${act} ใหม่อีกครั้ง`;
+        resetBtn.className = canAdvance ? "btn btn-secondary" : "btn btn-primary";
       }
     } else {
       endingOverlay.classList.add("hidden");
@@ -1449,6 +1594,9 @@
       clearTimeout(activeSubtitleTimer);
       activeSubtitleTimer = null;
     }
+    activeSubtitleFinishFn = null;
+    $("subtitle-skip-hint")?.classList.add("hidden");
+    $("subtitle-box")?.classList.remove("clickable");
     if (pendingGapTimer) {
       clearTimeout(pendingGapTimer);
       pendingGapTimer = null;
@@ -1481,6 +1629,9 @@
   function processAudioQueue() {
     if (audioQueue.length === 0) {
       isPlayingQueue = false;
+      activeSubtitleFinishFn = null;
+      $("subtitle-skip-hint")?.classList.add("hidden");
+      $("subtitle-box")?.classList.remove("clickable");
       setSpeakingVisual("", false);
       return;
     }
@@ -1517,6 +1668,8 @@
     }
 
     if (!isMuted && voiceVolume > 0 && src) {
+      $("subtitle-skip-hint")?.classList.add("hidden");
+      $("subtitle-box")?.classList.remove("clickable");
       const audio = new Audio(src);
       audio.volume = voiceVolume;
       activeAudioEl = audio;
@@ -1528,22 +1681,35 @@
           clearTimeout(activeSubtitleTimer);
           activeSubtitleTimer = null;
         }
+        activeSubtitleFinishFn = null;
         activeAudioEl = null;
         scheduleNextQueueItem(speaker, Boolean(ev.is_filler));
       };
+      activeSubtitleFinishFn = finish;
       audio.addEventListener("ended", finish);
       audio.addEventListener("error", finish);
       activeSubtitleTimer = setTimeout(finish, 45000);
       audio.play().catch(() => {
-        const readMs = ev.is_filler ? 800 : Math.min(6000, Math.max(2200, subtitle.length * 55));
+        const readMs = ev.is_filler ? 800 : Math.min(8500, Math.max(2400, subtitle.length * 60));
         activeSubtitleTimer = setTimeout(finish, readMs);
       });
     } else {
-      const readMs = ev.is_filler ? 700 : Math.min(6000, Math.max(2000, subtitle.length * 55));
-      activeSubtitleTimer = setTimeout(() => {
-        activeSubtitleTimer = null;
+      const finishSubOnly = () => {
+        if (activeSubtitleTimer) {
+          clearTimeout(activeSubtitleTimer);
+          activeSubtitleTimer = null;
+        }
+        activeSubtitleFinishFn = null;
+        $("subtitle-skip-hint")?.classList.add("hidden");
+        $("subtitle-box")?.classList.remove("clickable");
         scheduleNextQueueItem(speaker, Boolean(ev.is_filler));
-      }, readMs);
+      };
+      activeSubtitleFinishFn = finishSubOnly;
+      const showSkip = !ev.is_filler && audioQueue.length > 0;
+      $("subtitle-skip-hint")?.classList.toggle("hidden", !showSkip);
+      $("subtitle-box")?.classList.toggle("clickable", showSkip);
+      const readMs = ev.is_filler ? 450 : Math.min(9000, Math.max(2600, subtitle.length * 62));
+      activeSubtitleTimer = setTimeout(finishSubOnly, readMs);
     }
   }
 
@@ -2069,12 +2235,16 @@
       renderedBoardAct = "";
       document.querySelector('.stage-tab[data-view="scene"]')?.click();
       const actLabel = payload?.act || "B";
-      appendTranscriptLog(
-        "ระบบ",
-        `เข้าสู่บทที่ 2 (ACT ${actLabel}): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่`,
-        "system"
-      );
-      showToast(`เข้าสู่ช่วง ACT ${actLabel}: บ้านผู้ใหญ่บ้านแล้ว`);
+      const actMsgMap = {
+        B: "เข้าสู่บทที่ 2 (ACT B): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่",
+        C: "เข้าสู่บทที่ 3 (ACT C): บ้านดลและบ้านยายบุญมีก่อนทางแยก",
+        D: "เข้าสู่บทที่ 4 (ACT D): เข้าสวนกล้วยและศาลด้ายดำ",
+        E: "เข้าสู่บทที่ 5 (ACT E): เรือนไม้ร้าง ตัวประกัน และหลักฐานวิชัย",
+        F: "เข้าสู่บทสุดท้าย (ACT F): ศึกคลายเกราะกำไลแม่แก้วและบทส่งท้าย",
+      };
+      const msg = actMsgMap[actLabel] || `เข้าสู่ช่วง ACT ${actLabel} แล้ว`;
+      appendTranscriptLog("ระบบ", msg, "system");
+      showToast(`เข้าสู่ช่วง ACT ${actLabel} แล้ว`);
     });
 
     socket.on("room:reset_done", (payload) => {
@@ -2086,9 +2256,9 @@
       $("dice-result-banner").classList.add("hidden");
       $("subtitle-speaker").textContent = "ระบบ";
       $("subtitle-text").textContent =
-        actLabel === "B"
-          ? "เริ่มบท ACT B ใหม่แล้ว กด 'เริ่มบท ACT B' เพื่อเข้าสู่ห้องรับแขกบ้านผู้ใหญ่"
-          : "เริ่มห้องใหม่แล้ว กด 'เริ่มบทนำ ACT A' เพื่อเริ่มต้น";
+        actLabel === "A"
+          ? "เริ่มห้องใหม่แล้ว กด 'เริ่มบทนำ ACT A' เพื่อเริ่มต้น"
+          : `เริ่มบท ACT ${actLabel} ใหม่แล้ว กดปุ่มเริ่มบทเพื่อดำเนินเรื่องต่อ`;
       const logEl = $("transcript-log");
       logEl.innerHTML = "";
       (payload.history || []).forEach((h) => {
@@ -2234,7 +2404,14 @@
     $("ending-next-act-btn")?.addEventListener("click", () => {
       unlockBrowserAudio();
       document.querySelector('.stage-tab[data-view="scene"]')?.click();
-      socket?.emit("room:advance_act_b", {});
+      const targetAct = $("ending-next-act-btn")?.dataset.targetAct || "B";
+      socket?.emit("room:advance_act", { act: targetAct });
+    });
+
+    $("subtitle-box")?.addEventListener("click", () => {
+      if (typeof activeSubtitleFinishFn === "function" && !activeAudioEl && audioQueue.length > 0) {
+        activeSubtitleFinishFn();
+      }
     });
 
     $("ending-reset-btn").addEventListener("click", () => {

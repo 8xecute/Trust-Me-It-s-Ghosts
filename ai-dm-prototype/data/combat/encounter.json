@@ -43,5 +43,126 @@
         "detail": "เสียงสำลักน้ำกระซิบหลอน ลด 2 สติ และติดสถานะหวาดกลัว (กล่อม/ใช้ท่าอาชีพไม่ได้ 1 รอบ)"
       }
     ]
+  },
+  "encounters": {
+    "DROWNED_ECHO": {
+      "id": "DROWNED_ECHO",
+      "name": "ผีเงาจมน้ำ",
+      "sprite": "/assets/characters/drowned_echo.png",
+      "background_image": "/assets/scenes/a3_grove_entrance.png",
+      "base_hp_for_2": 8,
+      "hp_per_extra_player": 3,
+      "soothe_goal": 3,
+      "retreat_goal": 2,
+      "pdef": 12,
+      "mdef": 13,
+      "atk": 3,
+      "ritual_max_steps": 0,
+      "moves": [
+        {
+          "id": "WET_CLAW",
+          "name_th": "เล็บเปียกน้ำ",
+          "target_defense": "PDEF",
+          "damage_resource": "HP",
+          "damage": 3,
+          "condition": null,
+          "audio_id": "ghost_move_wet_claw",
+          "detail": "ตะปบด้วยกรงเล็บเย็นเฉียบ สร้างความเสียหาย 3 HP"
+        },
+        {
+          "id": "UNDERFLOOR_HAND",
+          "name_th": "มือจากใต้พื้น",
+          "target_defense": "PDEF",
+          "damage_resource": "HP",
+          "damage": 2,
+          "condition": "ROOTED",
+          "audio_id": "ghost_move_underfloor_hand",
+          "detail": "มือเงาดึงข้อเท้า สร้าง 2 HP และติดสถานะพันธนาการ (ถอยทัพไม่ได้ 1 รอบ)"
+        },
+        {
+          "id": "DROWNED_WHISPER",
+          "name_th": "เสียงเรียกจากคราบน้ำ",
+          "target_defense": "MDEF",
+          "damage_resource": "Sanity",
+          "damage": 2,
+          "condition": "SHAKEN",
+          "audio_id": "ghost_move_drowned_whisper",
+          "detail": "เสียงสำลักน้ำกระซิบหลอน ลด 2 สติ และติดสถานะหวาดกลัว (กล่อม/ใช้ท่าอาชีพไม่ได้ 1 รอบ)"
+        }
+      ]
+    },
+    "KAEW_SHIELDED_SHADOW": {
+      "id": "KAEW_SHIELDED_SHADOW",
+      "name": "แม่แก้ว (ร่างเงาหน้าศาล)",
+      "sprite": "/assets/characters/drowned_echo.png",
+      "background_image": "/assets/scenes/banana_grove.png",
+      "base_hp_for_2": 10,
+      "hp_per_extra_player": 3,
+      "soothe_goal": 3,
+      "retreat_goal": 2,
+      "pdef": 13,
+      "mdef": 13,
+      "atk": 3,
+      "ritual_max_steps": 0,
+      "moves": [
+        {
+          "id": "THREAD_SNAP",
+          "name_th": "ด้ายดำกระชากแนวตั้งรับ",
+          "target_defense": "PDEF",
+          "damage_resource": "HP",
+          "damage": 2,
+          "condition": "ROOTED",
+          "audio_id": null,
+          "detail": "ด้ายดำจากศาลพุ่งกระชากแนวตั้งรับ สร้าง 2 HP และติดพันธนาการ"
+        },
+        {
+          "id": "COERCED_VOICE",
+          "name_th": "เสียงคำสั่งผ่านร่าง",
+          "target_defense": "MDEF",
+          "damage_resource": "Sanity",
+          "damage": 2,
+          "condition": "SHAKEN",
+          "audio_id": null,
+          "detail": "เสียงอาคมบังคับดังสะท้อน ลด 2 สติ และติดสถานะหวาดกลัว"
+        }
+      ]
+    },
+    "KAEW_FINAL_BOSS": {
+      "id": "KAEW_FINAL_BOSS",
+      "name": "แม่แก้ว (วงป้องกันกำไลพิธี)",
+      "sprite": "/assets/characters/drowned_echo.png",
+      "background_image": "/assets/scenes/b1_living_room.png",
+      "base_hp_for_2": 14,
+      "hp_per_extra_player": 4,
+      "soothe_goal": 4,
+      "retreat_goal": 2,
+      "pdef": 14,
+      "mdef": 14,
+      "atk": 4,
+      "ritual_max_steps": 3,
+      "ritual_dc": 12,
+      "moves": [
+        {
+          "id": "BRACELET_LASH",
+          "name_th": "ด้ายกำไลตวัด",
+          "target_defense": "PDEF",
+          "damage_resource": "HP",
+          "damage": 3,
+          "condition": "ROOTED",
+          "audio_id": null,
+          "detail": "ด้ายจากกำไลทองเหลืองตวัดตัดแนวป้องกัน สร้าง 3 HP และติดพันธนาการ"
+        },
+        {
+          "id": "RITUAL_COMMAND",
+          "name_th": "คำสั่งสะท้อนในวงพิธี",
+          "target_defense": "MDEF",
+          "damage_resource": "Sanity",
+          "damage": 2,
+          "condition": "SHAKEN",
+          "audio_id": null,
+          "detail": "แรงอาคมในวงพิธีกดจิตเป้าหมาย ลด 2 สติ และติดสถานะหวาดกลัว"
+        }
+      ]
+    }
   }
 }

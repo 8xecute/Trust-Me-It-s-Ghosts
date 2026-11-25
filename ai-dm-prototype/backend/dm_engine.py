@@ -42,6 +42,31 @@ WORLD_LORE_BY_ACT = {
         "การเดินสำรวจและการจบบท: ผู้เล่นสามารถสลับไปมาระหว่าง B1 (โต๊ะแผนที่/วิชัย), B2 (ชานบ้าน/ต้น) และ B3 (ผนังภาพเก่า) ได้อิสระ "
         "และเมื่อพบพิกัดบ้านดล (don_house_location) แล้วตัดสินใจออกเดินทางไปบ้านดล จะจบบท ACT B เข้าสู่ ACT C"
     ),
+    "C": (
+        "ฉากหลัง: บ้านไม้ชั้นเดียวของดล (ชายหนุ่มผู้สูญหาย) และบ้านยายบุญมีก่อนทางแยกเข้าสวนกล้วย\n"
+        "ฉาก C1–C4 (บ้านดล): ไม่มีคนอยู่ ประตูแง้ม มีจานกับข้าวแห้งกรัง บนโต๊ะทำงานมีปฏิทิน โน้ตตาเพิ่ม และสมุดปกดำจดรายชื่อผู้ถูกกดราคาที่ดิน ชื่อวิชัย และเศษด้ายดำ "
+        "มุมพื้นไม้มีเสียงเคาะสามครั้งและคราบน้ำเย็น (ไม่มีห้องขังใต้พื้นบ้านดล — ห้ามบอกว่าพบตัวประกันที่นี่) ใน C4 อาจเผชิญเงาผีจมน้ำเพื่อขอภาพนิมิตคนเข็นรถไปเรือนร้างท้ายสวน\n"
+        "ฉาก C5 (บ้านยายบุญมี): ยายบุญมีหญิงชราผู้ดูแลศาลเล่าความจริงคืนน้ำท่วม 2534 ว่า 'แม่แก้ว' ลงน้ำช่วยเด็กชาย 'วิชัย' ขึ้นมาก่อนตัวเองจะจมน้ำตาย "
+        "และเตือนว่ามีด้ายดำถูกผูกเพิ่มที่ศาลทีหลัง ห้ามดึง/กระชากส่งเดช พร้อมสมุดสวดมนต์จดชื่ออพยพที่เทียบกับเวรประตูน้ำได้ (H1)"
+    ),
+    "D": (
+        "ฉากหลัง: ทางเดินสวนกล้วยยามค่ำ ศาลผ้าเขียวพันด้ายดำ และรอยล้อรถเข็นหลังศาล (D1–D5)\n"
+        "จุดสำคัญ (D2): ศาลเก่ามีด้ายดำเส้นใหม่รัดแน่นกับป้ายชื่อ 'ดล', 'นิด', 'เพิ่ม' และสายคล้องกล้องเปื้อนโคลนของนิด ด้ายไต่ขึ้นยอดกล้วยและเชื่อมไปแกนควบคุมที่อื่น (ห้ามตัด/กระชากปลายสายที่ศาล)\n"
+        "ตัวละคร แม่แก้ว (นางตานี) (D3–D4): หญิงชุดเขียวไม่เคยฆ่าหรือลักพาตัวคนหาย เธอถูกหลอกว่าจะเปิดความจริงแฟ้ม 2534 แล้วถูกด้ายอาคมรั้งเสียงร้องไว้ "
+        "สามารถพูดคุย สัมผัสวิญญาณ หรือปะทะพอรับมือใน D4 ก่อนเดินอ้อมหลังศาล (D5) ตามรอยล้อรถเข็นและเศษกระสอบข้าวไปเรือนไม้ร้างท้ายสวน"
+    ),
+    "E": (
+        "ฉากหลัง: เรือนไม้ยกพื้นร้างท้ายสวนกล้วย (E1–E6) และจุดเชื่อมหลักฐาน 2534 (H1)\n"
+        "ใต้ถุน (E2–E3): กระสอบกั้นบังประตูไม้ หลังพังหรือเปิดเข้าไปพบตัวประกันทั้ง 3 คน (ดล นิด ตาเพิ่ม) ยังมีชีวิต ดลยืนยันว่า 'วิชัย' เป็นคนจับมาขังและขึ้นไปทำพิธีบนชั้นสอง\n"
+        "ชั้นสอง (E4–E6): พบกำไลทองเหลืองสลักชื่อ 'แก้ว' (แกนควบคุมพิธี) ตำราวิธีคลายเกราะ 3 ขั้น (1.คุมแรงสะท้อน -> 2.แยกสายคำสั่ง -> 3.คลายปมเกราะ) "
+        "และหลักฐานหนี้สินกับสัญญาซื้อขายที่ดินของวิชัยใต้ผ้าคลุมโต๊ะ เมื่อวิชัยกลับขึ้นมาจึงกดดันและคุมตัวเขาไว้ ก่อนลงมือคลายกำไลเข้าสู่ FINAL (ACT F)"
+    ),
+    "F": (
+        "ฉากหลัง: ห้องพิธีชั้นสองยามวงป้องกันกำไลทำงาน (F1–F5) และถนนหน้าหมู่บ้านยามฟ้าสาง (F6 Epilogue)\n"
+        "การปะทะใน F1: เกราะด้ายดำ 3 ชั้นปกป้องร่างแม่แก้วไว้ ห้ามบังคับฆ่าแม่แก้วจน HP 0 — ชัยชนะคือการคลายเกราะ 3 ขั้นแล้วทำ 'ปลดกำไลขั้นสุดท้าย' (Controlled Release)\n"
+        "หลังคลายเกราะ (F5): แม่แก้วเป็นอิสระ เล่าว่าถูกวิชัยหลอก และถามทีมว่าจะเปิดเผยความจริงให้ชาวบ้านและจัดการวิชัยอย่างไร\n"
+        "บทส่งท้ายยามฟ้าสาง (F6): นำแฟ้มคดี หลักฐานวิชัย และหลักฐานคืนน้ำท่วมปี 2534 (H1) ส่งให้ผู้ใหญ่ประเสริฐและเจ้าหน้าที่เพื่อปิดคดีสู่ Ending A–D ตามผลจริงของทีม"
+    ),
 }
 WORLD_LORE_SUMMARY = WORLD_LORE_BY_ACT["A"]
 
@@ -52,6 +77,25 @@ SCENE_ENVIRONMENT_NOTES = {
     "B1": "ห้องรับแขกบ้านผู้ใหญ่บ้าน บนโต๊ะไม้กลางห้องมีแฟ้มคนหายและแผนที่หมู่บ้านสองชั้นกางอยู่ใต้แสงไฟ วิชัยยืนดูแลแฟ้มอยู่ริมโต๊ะ และต้นนั่งเงียบ ๆ ข้างประตู (ประเสริฐออกไปแล้ว)",
     "B2": "ชานบ้านไม้หน้าประตูบ้านผู้ใหญ่ คืนนี้ฟ้าแห้งสนิทไร้เมฆฝน แต่ลมจากฝั่งสวนกลับเย็นชื้นและมีกลิ่นดินเปียกอย่างประหลาด ต้นยืนพิงรถมอเตอร์ไซค์กำพวงกุญแจ คอยชำเลืองหน้าต่างห้องรับแขกที่มีเงาวิชัยมองมาเป็นระยะ",
     "B3": "มุมผนังด้านในห้องรับแขก แสงหลอดไฟห้องรับแขกส่องกรอบภาพถ่ายเก่าปี 2534 แสดงชาวบ้านยืนข้างประตูน้ำ และมีตู้วางกองแฟ้มเอกสารเก่าอยู่ด้านล่าง (DM บรรยายเท่านั้น ห้ามสวมบทประเสริฐหรือ NPC อื่น)",
+    "C1": "ห้องโถงบ้านไม้ของดล ประตูมุ้งลวดแง้มไว้ บนโต๊ะอาหารมีจานกับข้าวแห้งกรัง บนโต๊ะทำงานมีสมุดและกระดาษโน้ตวางอยู่",
+    "C2": "หน้าโต๊ะทำงานบ้านดล มีปฏิทินวงนัดนิด โน้ตลายมือตาเพิ่ม และสมุดปกดำจดชื่อผู้ขายที่ดินพร้อมชื่อวิชัยกับเศษด้ายดำ",
+    "C3": "มุมพื้นไม้ในบ้านดลที่ส่งเสียงเคาะ 3 ครั้งและเกิดคราบชื้นเย็นเยียบ เศษด้ายดำสั่นไหวเบา ๆ",
+    "C4": "ห้องมืดในบ้านดลที่มีเงาเปียกโชกของผีเงาจมน้ำปรากฏตัวพร้อมบรรยากาศเย็นเยียบและนิมิตของคนเข็นรถบรรทุกหนัก",
+    "C5": "เรือนไม้ของยายบุญมีก่อนทางแยกเข้าสวนกล้วย กลิ่นธูปสมุนไพรจาง ๆ ยายบุญมีนั่งถือสมุดสวดมนต์เก่าพร้อมผ้าเขียวพับเรียบร้อย",
+    "D1": "ทางเดินดินชื้นเข้าสู่สวนกล้วยมืด ใบกล้วยทึบแกว่งทวนลมจนเผยให้เห็นหลังคาศาลเก่าและรอยกดคู่บนดิน",
+    "D2": "ศาลไม้เก่าคลุมผ้าเขียวที่ถูกด้ายดำเส้นใหม่พันรัดเสาแน่นพร้อมป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องเปื้อนโคลนของนิดโคนต้นกล้วย",
+    "D3": "หลังเสาศาลเก่ากลางดงกล้วย หญิงชุดเขียว (แม่แก้ว) ยืนนิ่งท่ามกลางหมอกเย็นและแรงดึงของเส้นด้ายดำ",
+    "D4": "บริเวณหน้าศาลท่ามกลางใบกล้วยที่สั่นสะท้าน แม่แก้วถูกด้ายอาคมบังคับให้ขยับตวัดเส้นด้ายใส่ผู้ที่เข้าใกล้",
+    "D5": "แนวป่ากล้วยด้านหลังศาล รอยล้อรถเข็นหนักกดลึกบนดินโคลนคู่กับรอยรองเท้าคนและเศษกระสอบข้าว มุ่งหน้าสู่เรือนไม้ร้างท้ายสวน",
+    "E1": "ลานหน้าเรือนไม้ยกพื้นร้างท้ายสวนกล้วย รอยล้อหยุดลงที่นี่ มีเสียงเคาะเบา ๆ จากประตูใต้ถุนที่มีกระสอบปิดบัง และแสงเทียนสีส้มบนชั้นสอง",
+    "E2": "หน้าประตูไม้ห้องใต้ถุนเรือนไม้ร้างที่ล็อกขัดกลอนและวางกระสอบข้าวบังไว้ มีเสียงเรียกขอความช่วยเหลืออู้อี้จากข้างใน",
+    "E3": "ภายในห้องใต้ถุนอับชื้น ดล นิด และตาเพิ่มนั่งพิงเสาไม้หลังถูกแก้มัดและผ้าปิดปาก",
+    "E4": "ห้องพิธีชั้นสองบนเรือนไม้ กลิ่นน้ำตาเทียนและด้ายดำ บนโต๊ะกลางห้องมีกล่องไม้ใส่กำไลทองเหลืองสลักชื่อ 'แก้ว' กับตำราพิธี ใต้โต๊ะมีเอกสารหนี้สินและสัญญาซื้อขายที่ดินของวิชัย",
+    "E5": "เชิงบันไดและกลางห้องพิธีชั้นสอง วิชัยเพิ่งเดินขึ้นมาพบทีมสืบสวนอยู่หน้าโต๊ะกำไลและแฟ้มหนี้สินของตัวเอง",
+    "E6": "กลางห้องพิธีชั้นสอง วิชัยถูกคุมตัวไว้แล้ว ทีมยืนล้อมกำไลทองเหลืองบนโต๊ะเตรียมลงมือคลายพิธี",
+    "F1": "ห้องพิธีชั้นสองที่วงด้ายดำสามชั้นแผ่คลุมโต๊ะและร่างแม่แก้ว แสงเทียนไหววูบใต้แรงสะท้อนอาคม",
+    "F5": "ห้องพิธีชั้นสองหลังเส้นด้ายดำสลายลงหมด กำไลทองเหลืองหลุดจากแกน แม่แก้วในชุดเขียวอ่อนยืนสงบนิ่งเบื้องหน้าทีมและวิชัย",
+    "F6": "ถนนดินหน้าหมู่บ้านหนองตาลยามฟ้าสาง แสงอาทิตย์แรกสาดผ่านแนวสวนกล้วย รถกู้ภัยและตำรวจจอดอยู่ข้างหน้า ผู้ใหญ่ประเสริฐยืนรอรับฟังความจริงทั้งหมด",
 }
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -409,11 +453,58 @@ class AIDMEngine:
                 "- หากมีเบาะแส 'don_house_location' แล้วและทีมตกลงออกเดินทางไปบ้านดล -> เลือก selected_audio_id='b_ending_to_act_c' และ state_updates.ending_triggered='act_b_complete'\n"
                 "- ข้อห้ามสำคัญ: ห้ามเลือก character='ประเสริฐ' ใน ACT B เด็ดขาด และในฉาก B3 ให้ใช้ character='DM' เท่านั้น\n"
             )
+        elif act == "C":
+            ending_note = (
+                "\nกติกาการย้ายจุดและตอนจบของ ACT C (C1–C5):\n"
+                "- เลือก state_updates.current_scene เพื่อเดินไปโต๊ะทำงาน (C2), มุมพื้นเสียงเคาะ (C3), นิมิต C4, หรือบ้านยายบุญมี (C5)\n"
+                "- ใน C5 หากผู้เล่นได้คุยกับยายบุญมีแล้วและตกลงเดินเข้าสวนกล้วยต่อ -> เลือก selected_audio_id='c_ending_to_act_d' และ state_updates.ending_triggered='act_c_complete'\n"
+            )
+        elif act == "D":
+            ending_note = (
+                "\nกติกาการย้ายจุดและตอนจบของ ACT D (D1–D5):\n"
+                "- เลือก state_updates.current_scene เพื่อเดินจาก D1 -> ศาล D2 -> พบแม่แก้ว D3/D4 -> แนวรอยล้อหลังศาล D5\n"
+                "- ใน D5 เมื่อผู้เล่นสำรวจรอยล้อและตกลงตามไปที่เรือนไม้ร้างท้ายสวน -> เลือก selected_audio_id='d_ending_to_act_e' และ state_updates.ending_triggered='act_d_complete'\n"
+            )
+        elif act == "E":
+            ending_note = (
+                "\nกติกาการย้ายจุดและตอนจบของ ACT E (E1–E6, H1):\n"
+                "- ผู้เล่นเปิดใต้ถุน (E2) -> แก้มัดคุยกับดล (E3) -> ขึ้นชั้นสองตรวจกำไล ตำรา และหลักฐานวิชัยใต้โต๊ะ (E4) -> เผชิญหน้าวิชัย (E5) -> คุมตัวเตรียมคลายกำไล (E6)\n"
+                "- หากผู้เล่นนำบันทึกเวรประตูน้ำมาเทียบกับสมุดยายบุญมี -> ใช้ requested_check_id='H1_FLOOD_TIMELINE'\n"
+                "- ใน E6 เมื่อผู้เล่นยืนยันเริ่มคลายกำไลทองเหลือง -> เลือก selected_audio_id='e_ending_to_act_f' และ state_updates.ending_triggered='act_e_complete'\n"
+            )
+        elif act == "F":
+            ending_note = (
+                "\nกติกาของ ACT F (FINAL F1, F5, F6 Epilogue):\n"
+                "- ใน F1 เมื่อผู้เล่นพร้อมสู้/คลายเกราะ 3 ขั้น ระบบจะเปิดฉากต่อสู้ KAEW_FINAL_BOSS อัตโนมัติ (ห้ามข้ามไป F5 จนกว่าจะมี clue 'ritual_stopped')\n"
+                "- ใน F5 หลังคลายเกราะสำเร็จ ให้ผู้เล่นเจรจากับแม่แก้ว (F5_KAEW_RECONCILE) หรือเลือกจัดการวิชัย แล้วมุ่งหน้าสู่รุ่งเช้า (F6: f5_move_to_f6_dawn)\n"
+                "- ใน F6 เมื่อส่งมอบหลักฐานให้ประเสริฐ (f6_prasert_confess) และปิดคดี -> เลือก selected_audio_id='ending_a_epilogue' และ state_updates.ending_triggered='ending_a'\n"
+            )
 
-        improv_speaker_hint = (
-            "'DM' เท่านั้น"
-            if room.current_scene == "B3"
-            else ("'วิชัย', 'ต้น', หรือ 'DM'" if act == "B" else "'ประเสริฐ' หรือ 'DM'")
+        speaker_hints_by_scene = {
+            "B3": "'DM' เท่านั้น",
+            "C1": "'DM' เท่านั้น",
+            "C2": "'DM' เท่านั้น",
+            "C3": "'DM' เท่านั้น",
+            "C4": "'ผีเงาจมน้ำ' หรือ 'DM'",
+            "C5": "'ยายบุญมี' หรือ 'DM'",
+            "D1": "'DM' เท่านั้น",
+            "D2": "'DM' เท่านั้น",
+            "D3": "'แม่แก้ว (นางตานี)' หรือ 'DM'",
+            "D4": "'แม่แก้ว (นางตานี)' หรือ 'DM'",
+            "D5": "'DM' เท่านั้น",
+            "E1": "'DM' เท่านั้น",
+            "E2": "'ดล' หรือ 'DM'",
+            "E3": "'ดล' หรือ 'DM'",
+            "E4": "'DM' เท่านั้น",
+            "E5": "'วิชัย' หรือ 'DM'",
+            "E6": "'วิชัย' หรือ 'DM'",
+            "F1": "'แม่แก้ว (นางตานี)' หรือ 'DM'",
+            "F5": "'แม่แก้ว (นางตานี)', 'วิชัย', หรือ 'DM'",
+            "F6": "'ประเสริฐ' หรือ 'DM'",
+        }
+        improv_speaker_hint = speaker_hints_by_scene.get(
+            room.current_scene,
+            "'วิชัย', 'ต้น', หรือ 'DM'" if act == "B" else "'ประเสริฐ' หรือ 'DM'",
         )
 
         return f"""คุณคือ AI Game Master (DM) และผู้สวมบท NPC สำหรับเกมสืบสวนสยองขวัญภาษาไทย 'CASE 001: เสียงร้องจากสวนกล้วย' (ช่วง ACT {act})
@@ -698,16 +789,276 @@ class AIDMEngine:
                 if any(k in text for k in ("ใครในรูป", "ประเสริฐ", "อพยพ", "เก็บแฟ้ม")) and "b3_qa_photo_prasert" in eligible_ids:
                     return pick_script("b3_qa_photo_prasert", "DM")
 
+        elif scene.startswith("C"):
+            if scene == "C5" and any(k in text for k in ("เข้าสวน", "ไปศาล", "ไปต่อ", "จบบท", "act d")) and "c_ending_to_act_d" in eligible_ids:
+                return pick_script("c_ending_to_act_d", "DM", ending="act_c_complete")
+            if scene != "C2" and any(k in text for k in ("โต๊ะทำงาน", "สมุดดล", "ปฏิทิน", "c2")):
+                if "c1_search_desk_to_c2" in eligible_ids:
+                    return pick_script("c1_search_desk_to_c2", "DM")
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณเดินไปสำรวจโต๊ะทำงานของดลที่มีปฏิทินและสมุดปกดำวางอยู่",
+                    state_updates=StateUpdates(current_scene="C2"),
+                    reason="local_fallback_move_c2",
+                )
+            if scene != "C3" and any(k in text for k in ("เคาะ", "พื้นไม้", "คราบ", "มุมห้อง", "c3")):
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณขยับไปดูมุมพื้นไม้ในห้องที่ส่งเสียงเคาะสามครั้งและมีคราบชื้นเย็นเยียบ",
+                    state_updates=StateUpdates(current_scene="C3"),
+                    reason="local_fallback_move_c3",
+                )
+            if scene != "C5" and any(k in text for k in ("ยาย", "บุญมี", "บ้านยาย", "c5")):
+                if scene == "C4" and "c4_leave_to_c5" in eligible_ids:
+                    return pick_script("c4_leave_to_c5", "DM")
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณเดินออกมาที่เรือนไม้ของยายบุญมีก่อนทางแยกเข้าสวนกล้วย",
+                    state_updates=StateUpdates(current_scene="C5"),
+                    reason="local_fallback_move_c5",
+                )
+            if scene == "C1":
+                if any(k in text for k in ("กับข้าว", "จาน", "ประตู", "มุ้งลวด")) and "c1_qa_food_door" in eligible_ids:
+                    return pick_script("c1_qa_food_door", "DM")
+                if any(k in text for k in ("ใต้พื้น", "ห้องขัง", "คนหาย")) and "c1_check_floor_empty" in eligible_ids:
+                    return pick_script("c1_check_floor_empty", "DM")
+            elif scene == "C2":
+                if any(k in text for k in ("เทียบ", "int", "ราคา", "ที่ดิน", "ข่าวผี")) and "C2_LAND_PATTERN" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณเปิดสมุดปกดำเทียบวันที่ข่าวผีกับวันนัดซื้อขายที่ดิน — กรุณากดทอยเต๋า INT",
+                        requested_check_id="C2_LAND_PATTERN",
+                        reason="local_fallback_check_c2_int",
+                    )
+                if any(k in text for k in ("อ่าน", "สมุด", "รายละเอียด")) and "c2_qa_read_all" in eligible_ids:
+                    return pick_script("c2_qa_read_all", "DM")
+            elif scene == "C3":
+                if any(k in text for k in ("สัมผัส", "spi", "ด้าย", "พลัง", "ตรวจ")) and "C3_SPIRIT_RESIDUE" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณยื่นมือสัมผัสไอเย็นรอบเศษด้ายดำและคราบชื้นบนพื้น — กรุณากดทอยเต๋า SPI",
+                        requested_check_id="C3_SPIRIT_RESIDUE",
+                        reason="local_fallback_check_c3_spi",
+                    )
+                if any(k in text for k in ("เรียก", "เงา", "เผชิญ", "c4")) and "c3_trigger_c4_echo" in eligible_ids:
+                    return pick_script("c3_trigger_c4_echo", "DM")
+            elif scene == "C4":
+                if any(k in text for k in ("ตั้งจิต", "ขอภาพ", "นิมิต", "spi", "ติดต่อ")) and "C4_DROWNED_ECHO_VISION" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณตั้งจิตติดต่อกับเงาดำเปียกโชกเพื่อรับภาพนิมิตคืนเกิดเหตุ — กรุณากดทอยเต๋า SPI",
+                        requested_check_id="C4_DROWNED_ECHO_VISION",
+                        reason="local_fallback_check_c4_spi",
+                    )
+                if any(k in text for k in ("ถอย", "ไป", "ยาย", "c5")) and "c4_leave_to_c5" in eligible_ids:
+                    return pick_script("c4_leave_to_c5", "DM")
+            elif scene == "C5":
+                if any(k in text for k in ("เทียบ", "สมุดสวดมนต์", "อพยพ", "ประตูน้ำ", "int")) and "C5_EVACUATION_RECORDS" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id=None,
+                        improvised_text="คุณเปิดสมุดสวดมนต์จดชื่ออพยพของยายบุญมีมาเทียบเวลาประตูน้ำปี 2534 — กรุณากดทอยเต๋า INT",
+                        requested_check_id="C5_EVACUATION_RECORDS",
+                        reason="local_fallback_check_c5_int",
+                    )
+                if any(k in text for k in ("ช่วยใคร", "เด็ก", "วิชัย")) and "c5_qa_which_child" in eligible_ids:
+                    return pick_script("c5_qa_which_child", "ยายบุญมี")
+                if any(k in text for k in ("แม่แก้ว", "แก้ว", "น้ำท่วม", "2534")) and "c5_qa_kaew_story" in eligible_ids:
+                    return pick_script("c5_qa_kaew_story", "ยายบุญมี")
+                if any(k in text for k in ("สมุด", "ด้ายดำ", "ศาล")) and "c5_qa_floodgate_book" in eligible_ids:
+                    return pick_script("c5_qa_floodgate_book", "ยายบุญมี")
+
+        elif scene.startswith("D"):
+            if scene == "D5" and any(k in text for k in ("เรือนไม้", "ตามรอย", "ไปต่อ", "จบบท", "act e")) and "d_ending_to_act_e" in eligible_ids:
+                return pick_script("d_ending_to_act_e", "DM", ending="act_d_complete")
+            if scene == "D1" and any(k in text for k in ("ศาล", "ผ้าเขียว", "เดิน", "d2")) and "d1_move_to_d2" in eligible_ids:
+                return pick_script("d1_move_to_d2", "DM")
+            if scene == "D2":
+                if any(k in text for k in ("ตรวจ", "ปมด้าย", "int", "เทียบ", "สายกล้อง")) and "D2_BINDING_PATTERN" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณส่องไฟตรวจปมด้ายดำ ป้ายชื่อ 3 คน และสายกล้องของนิดโดยยังไม่แตะต้องปลายสาย — กรุณากดทอยเต๋า INT",
+                        requested_check_id="D2_BINDING_PATTERN",
+                        reason="local_fallback_check_d2_int",
+                    )
+                if any(k in text for k in ("ตัด", "ดึง", "กระชาก")) and "d2_qa_warn_cut" in eligible_ids:
+                    return pick_script("d2_qa_warn_cut", "DM")
+                if any(k in text for k in ("หลังเสา", "แม่แก้ว", "เรียก", "d3")) and "d2_move_to_d3" in eligible_ids:
+                    return pick_script("d2_move_to_d3", "DM")
+            if scene == "D3":
+                if any(k in text for k in ("ตั้งจิต", "สัมผัส", "spi", "ความรู้สึก")) and "D3_KAEW_CONTACT" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณตั้งจิตสื่อสารและสัมผัสแรงกดดันของเส้นด้ายที่รั้งร่างแม่แก้ว — กรุณากดทอยเต๋า SPI",
+                        requested_check_id="D3_KAEW_CONTACT",
+                        reason="local_fallback_check_d3_spi",
+                    )
+                if any(k in text for k in ("ทำไม", "หลอก", "จับคน")) and "d3_qa_why_scare" in eligible_ids:
+                    return pick_script("d3_qa_why_scare", "แม่แก้ว (นางตานี)")
+                if any(k in text for k in ("ใครคุม", "ใครสั่ง", "กำไล", "วิชัย")) and "d3_qa_who_controls" in eligible_ids:
+                    return pick_script("d3_qa_who_controls", "แม่แก้ว (นางตานี)")
+                if any(k in text for k in ("บุญมี", "ยาย")) and "d3_qa_boonmee" in eligible_ids:
+                    return pick_script("d3_qa_boonmee", "แม่แก้ว (นางตานี)")
+                if any(k in text for k in ("ปะทะ", "สู้", "d4")):
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="เส้นด้ายดำกระตุกตึงจนแม่แก้วถูกดึงพุ่งเข้ามาขวางหน้าศาล — เตรียมรับมือแม่แก้วในร่างเงา!",
+                        state_updates=StateUpdates(current_scene="D4"),
+                        reason="local_fallback_move_d4",
+                    )
+                if any(k in text for k in ("รอยล้อ", "หลังศาล", "เดินอ้อม", "d5")) and "d3_move_to_d5" in eligible_ids:
+                    return pick_script("d3_move_to_d5", "DM")
+            if scene == "D4" and any(k in text for k in ("รอยล้อ", "d5", "อ้อม", "ปลอบ", "ผ่าน")) and "d4_reconcile_to_d5" in eligible_ids:
+                return pick_script("d4_reconcile_to_d5", "แม่แก้ว (นางตานี)")
+            if scene == "D5":
+                if any(k in text for k in ("สำรวจ", "รอยล้อ", "per", "กระสอบ", "รองเท้า")) and "D5_CART_TRACKS" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณส่องไฟสำรวจรอยล้อรถเข็นหนัก เศษกระสอบข้าว และรอยรองเท้าหลังศาล — กรุณากดทอยเต๋า PER",
+                        requested_check_id="D5_CART_TRACKS",
+                        reason="local_fallback_check_d5_per",
+                    )
+
+        elif scene.startswith("E"):
+            if "H1_FLOOD_TIMELINE" in available_check_ids and any(
+                k in text for k in ("h1", "เส้นเวลา", "เวรประตูน้ำ", "สมุดยายบุญมี", "เทียบหลักฐาน 2534")
+            ):
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณวางสมุดอพยพของยายบุญมีเทียบเวลาเข้ากับบันทึกเวรเปิดประตูน้ำปี 2534 — กรุณากดทอยเต๋า INT (H1)",
+                    requested_check_id="H1_FLOOD_TIMELINE",
+                    reason="local_fallback_check_h1_int",
+                )
+            if scene == "E6" and any(k in text for k in ("คลายกำไล", "เริ่ม", "act f", "จบบท", "ลงมือ")) and "e_ending_to_act_f" in eligible_ids:
+                return pick_script("e_ending_to_act_f", "DM", ending="act_e_complete")
+            if scene == "E1":
+                if any(k in text for k in ("ใต้ถุน", "กระสอบ", "ประตู", "e2")) and "e1_open_cellar_to_e2" in eligible_ids:
+                    return pick_script("e1_open_cellar_to_e2", "DM")
+                if any(k in text for k in ("ชั้นสอง", "ข้างบน", "บันได", "e4")):
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณย่องขึ้นบันไดไม้เก่าไปยังห้องพิธีชั้นสองที่มีแสงเทียนสีส้ม",
+                        state_updates=StateUpdates(current_scene="E4"),
+                        reason="local_fallback_move_e4",
+                    )
+            if scene == "E2":
+                if any(k in text for k in ("ถีบ", "พัง", "งัด", "body", "กระแทก")) and "E2_DOOR_BREAK" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณเตรียมถีบกระแทกกลอนประตูห้องใต้ถุนให้หลุด — กรุณากดทอยเต๋า BODY",
+                        requested_check_id="E2_DOOR_BREAK",
+                        reason="local_fallback_check_e2_body",
+                    )
+                if any(k in text for k in ("ช่วย", "แก้มัด", "เข้าไป", "e3")) and "e2_untie_to_e3" in eligible_ids:
+                    return pick_script("e2_untie_to_e3", "DM")
+            if scene == "E3":
+                if any(k in text for k in ("ปลอบ", "เรียงลำดับ", "soc", "ดล")) and "E3_HOSTAGES_ORDER" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id=None,
+                        improvised_text="คุณช่วยปลอบดลให้หายสั่นและถามรายละเอียดการถูกจับ — กรุณากดทอยเต๋า SOC",
+                        requested_check_id="E3_HOSTAGES_ORDER",
+                        reason="local_fallback_check_e3_soc",
+                    )
+                if any(k in text for k in ("ใครทำ", "วิชัย", "ถามดล")) and "e3_don_confirm" in eligible_ids:
+                    return pick_script("e3_don_confirm", "ดล")
+                if any(k in text for k in ("ชั้นสอง", "ขึ้นข้างบน", "ห้องพิธี", "e4")) and "e3_upstairs_to_e4" in eligible_ids:
+                    return pick_script("e3_upstairs_to_e4", "DM")
+            if scene == "E4":
+                if any(k in text for k in ("ถอด", "ตำรา", "กำไล", "int", "ลำดับ", "คลาย")) and "E4_BRACELET_DECODE" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณกางตำราพิธีบนโต๊ะชั้นสองเพื่อถอดลำดับคลายเกราะกำไล 3 ขั้น — กรุณากดทอยเต๋า INT",
+                        requested_check_id="E4_BRACELET_DECODE",
+                        reason="local_fallback_check_e4_int",
+                    )
+                if any(k in text for k in ("ใต้โต๊ะ", "กระเป๋า", "หนี้", "สัญญา", "ค้น")) and "e4_search_under_table" in eligible_ids:
+                    return pick_script("e4_search_under_table", "DM")
+                if any(k in text for k in ("วิชัย", "เสียงฝีเท้า", "บันได", "e5")) and "e4_wichai_arrives_to_e5" in eligible_ids:
+                    return pick_script("e4_wichai_arrives_to_e5", "DM")
+            if scene == "E5":
+                if any(k in text for k in ("กดดัน", "เจรจา", "จี้หลักฐาน", "soc", "ยอมรับ")) and "E5_WICHAI_NEGOTIATE" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id="filler_wichai_think",
+                        improvised_text="คุณชูสัญญาซื้อขายที่ดินและหนังสือทวงหนี้จี้ถามวิชัยตรง ๆ — กรุณากดทอยเต๋า SOC",
+                        requested_check_id="E5_WICHAI_NEGOTIATE",
+                        reason="local_fallback_check_e5_soc",
+                    )
+                if any(k in text for k in ("แรงจูงใจ", "สารภาพ", "ทำไม", "หลอกแม่แก้ว")) and "e5_qa_confess_motive" in eligible_ids:
+                    return pick_script("e5_qa_confess_motive", "วิชัย")
+                if any(k in text for k in ("มัด", "คุมตัว", "จับ", "e6")) and "e5_capture_to_e6" in eligible_ids:
+                    return pick_script("e5_capture_to_e6", "DM")
+
+        elif scene.startswith("F"):
+            if scene == "F5":
+                if any(k in text for k in ("เจรจา", "ปรองดอง", "ขอร้อง", "soc", "เปิดเผย")) and "F5_KAEW_RECONCILE" in available_check_ids:
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        filler_audio_id=None,
+                        improvised_text="คุณเอ่ยกับแม่แก้วอย่างจริงใจและแสดงความตั้งใจจะเปิดเผยความจริงให้ชาวบ้านรับรู้ — กรุณากดทอยเต๋า SOC",
+                        requested_check_id="F5_KAEW_RECONCILE",
+                        reason="local_fallback_check_f5_soc",
+                    )
+                if any(k in text for k in ("รุ่งเช้า", "ฟ้าสาง", "หน้าถนน", "ประเสริฐ", "f6")) and "f5_move_to_f6_dawn" in eligible_ids:
+                    return pick_script("f5_move_to_f6_dawn", "DM")
+            if scene == "F6":
+                if any(k in text for k in ("ประเสริฐ", "h1", "ประตูน้ำ", "หลักฐาน", "ยื่น")) and "f6_prasert_confess" in eligible_ids:
+                    return pick_script("f6_prasert_confess", "ประเสริฐ")
+                if any(k in text for k in ("จบคดี", "ปิดคดี", "สรุป", "epilogue", "รถตู้", "กลับ")) and "ending_a_epilogue" in eligible_ids:
+                    return pick_script("ending_a_epilogue", "DM", ending=room_manager.resolve_final_ending(room))
+
         default_speaker = room_manager.default_speaker_for_scene(scene)
-        default_filler = room_manager.repo.default_filler_for_speaker(default_speaker)["id"]
+        filler_obj = room_manager.repo.default_filler_for_speaker(default_speaker)
+        default_filler = filler_obj["id"] if filler_obj else None
         if default_speaker == "ประเสริฐ":
-            default_text = "ผมอยากให้เราตรวจดูข้อมูลคนหายและแฟ้มที่บ้านผมให้แน่ใจก่อนนะครับ มีอะไรอยากถามเพิ่มไหม?"
+            default_text = "ความจริงทั้งหมดอยู่ที่เอกสารตรงหน้าแล้วครับ พวกคุณตัดสินใจได้เลย" if scene == "F6" else "ผมอยากให้เราตรวจดูข้อมูลคนหายและแฟ้มที่บ้านผมให้แน่ใจก่อนนะครับ มีอะไรอยากถามเพิ่มไหม?"
         elif default_speaker == "วิชัย":
             default_text = "ข้อมูลคนหายกับแผนที่อยู่ที่โต๊ะนี้ทั้งหมดแล้วครับ อยากตรวจสอบหรือซักถามเรื่องไหนต่อบอกได้เลย"
         elif default_speaker == "ต้น":
             default_text = "ตรงนี้ไม่มีใครได้ยินหรอกพี่... อยากรู้อะไรก็รีบถามแล้วกันนะ เดี๋ยวพี่วิชัยจะสงสัย"
+        elif default_speaker == "ยายบุญมี":
+            default_text = "เรื่องคืนน้ำท่วมกับศาลด้ายดำ ยายจำได้เท่าที่เห็นและจดไว้ในสมุดสวดมนต์นี่แหละลูก อยากถามอะไรก็รีบถาม"
+        elif default_speaker == "แม่แก้ว (นางตานี)":
+            default_text = "เส้นลมเย็นพัดผ่านใบกล้วย... พวกเจ้าจะทำอะไรกับความจริงและชายผู้นั้นก็จงเลือกเสีย"
+        elif default_speaker == "ดล":
+            default_text = "ผม นิด กับตาเพิ่มปลอดภัยแล้วครับพี่ ข้างบนวิชัยเอาตำรากับกำไลทองเหลืองวางไว้บนโต๊ะพิธี!"
         elif scene == "B3":
             default_text = "ภาพถ่ายเก่าปี 2534 และกองแฟ้มใต้ผนังยังรอให้คุณตรวจสอบละเอียด หรือเทียบกับแผนที่หมู่บ้าน"
+        elif scene.startswith(("C", "D", "E", "F")):
+            default_text = "แสงสลัวยังคลุมพื้นที่ตรงหน้า คุณสามารถตรวจสอบร่องรอย ซักถามรายละเอียด หรือกดจุดแผนที่เพื่อย้ายจุดต่อได้"
         else:
             default_text = "บรรยากาศรอบศาลาเงียบสงัด อากาศแห้งอบอ้าวและเงียบผิดปกติ — พวกคุณจะสอบถามอะไรเพิ่มหรือสำรวจจุดใดต่อ?"
         return DMDecision(
@@ -784,15 +1135,15 @@ class AIDMEngine:
         repo: ScenarioRepository,
     ) -> tuple[GhostTurnDecision, bool]:
         """Use Gemini Tactical Ghost AI (or smart deterministic fallback) to pick move & target."""
-        if not self.gemini_ready:
-            return self._local_fallback_ghost_turn(room), True
-
         combat = room.combat
-        enc = repo.combat_encounter
+        enc = repo.get_combat_encounter(combat.encounter_id if combat else "DROWNED_ECHO")
+        if not self.gemini_ready:
+            return self._local_fallback_ghost_turn(room, enc), True
+
         conscious = [p for p in room.players.values() if p.is_conscious]
         connected_conscious = [p for p in conscious if p.connected] or conscious
         if not combat or not connected_conscious:
-            return self._local_fallback_ghost_turn(room), True
+            return self._local_fallback_ghost_turn(room, enc), True
 
         targets_json = [
             {
@@ -819,26 +1170,30 @@ class AIDMEngine:
             for m in enc.get("moves", [])
         ]
 
-        prompt = f"""คุณคือ AI ควบคุม 'ผีเงาจมน้ำ' ในฉากต่อสู้แบบผลัดเทิร์นของเกมสืบสวนสยองขวัญไทย
+        ritual_info = (
+            f"\n- เกราะกำไลพิธี 3 ขั้น: {'เปิดอยู่' if combat.ritual_shield_up else 'คลายหมดแล้ว'} ({combat.ritual_step}/{combat.ritual_max_steps})"
+            if combat.ritual_max_steps > 0
+            else ""
+        )
+
+        prompt = f"""คุณคือ AI ควบคุม '{combat.enemy_name}' ในฉากต่อสู้แบบผลัดเทิร์นของเกมสืบสวนสยองขวัญไทย
 
 ## สถานะการต่อสู้ปัจจุบัน
 - รอบที่: {combat.round_number}
-- HP ผีเงาจมน้ำ: {combat.enemy_hp}/{combat.enemy_max_hp}
+- HP {combat.enemy_name}: {combat.enemy_hp}/{combat.enemy_max_hp}
 - ความคืบหน้ากล่อมวิญญาณ: {combat.soothe_progress}/{combat.soothe_goal}
-- ความคืบหน้าถอยทัพ: {combat.retreat_progress}/{combat.retreat_goal}
+- ความคืบหน้าถอยทัพ: {combat.retreat_progress}/{combat.retreat_goal}{ritual_info}
 - สัญญาณอันตรายที่ส่งออกไว้ก่อนหน้า (Telegraph): {json.dumps(combat.telegraph, ensure_ascii=False)}
 
 ## เป้าหมายผู้สืบสวนที่ยังมีสติ (เลือก target_player_id จากรายการนี้เท่านั้น)
 {json.dumps(targets_json, ensure_ascii=False)}
 
-## ท่าของผีที่ใช้ได้ (เลือก move_id จากรายการนี้เท่านั้น)
+## ท่าของศัตรูที่ใช้ได้ (เลือก move_id จากรายการนี้เท่านั้น)
 {json.dumps(moves_json, ensure_ascii=False)}
 
 ## แนวทางแทคติก
-- ถ้าทีมกำลังจะถอยทัพสำเร็จ (retreat_progress >= 1) ให้ใช้ UNDERFLOOR_HAND เพื่อดึงข้อเท้าติดพันธนาการ
-- ถ้าทีมเน้นกล่อมหรือมีคนสติต่ำ / ร่างทรง ให้ใช้ DROWNED_WHISPER เพื่อตัดสติและติดสถานะหวาดกลัว
-- ถ้าเป้าหมาย HP ต่ำหรือเปิดช่องโหว่ ให้ใช้ WET_CLAW
-- ตั้ง use_live_taunt=true เฉพาะบางรอบที่ดราม่า (เช่น เป้าหมายสติต่ำกว่า 6 หรือผีใกล้แพ้) แล้วเขียน ghost_taunt หลอน ๆ สั้น 1 ประโยค
+- เลือก move_id เฉพาะจากรายการท่าด้านบนให้สอดคล้องกับสถานะผู้เล่น (เช่น ใช้ท่าที่ติด ROOTED เมื่อทีมจะถอย ใช้ท่าตัดสติ/MDEF เมื่อเป้าหมายสติต่ำหรือกำลังทำพิธี/กล่อม)
+- ตั้ง use_live_taunt=true เฉพาะบางรอบที่ดราม่า (เช่น เป้าหมายสติต่ำกว่า 6 หรือใกล้จบศึก) แล้วเขียน ghost_taunt สั้น 1 ประโยค
 - เขียน narration_th เป็นคำบรรยายสั้น ๆ 1 ประโยคภาษาไทย
 """
 
@@ -866,47 +1221,61 @@ class AIDMEngine:
             return decision, False
         except Exception as exc:  # noqa: BLE001
             logger.warning("Gemini ghost AI failed, using fallback: %s", exc)
-            return self._local_fallback_ghost_turn(room), True
+            return self._local_fallback_ghost_turn(room, enc), True
 
     @staticmethod
-    def _local_fallback_ghost_turn(room: RoomState) -> GhostTurnDecision:
+    def _local_fallback_ghost_turn(
+        room: RoomState,
+        enc: Optional[dict[str, Any]] = None,
+    ) -> GhostTurnDecision:
         combat = room.combat
+        enemy_name = combat.enemy_name if combat else "ผีเงาจมน้ำ"
+        moves = (enc or {}).get("moves", [])
+        move_ids = [m["id"] for m in moves]
+        root_move = next((m["id"] for m in moves if m.get("condition") == "ROOTED"), None) or (
+            move_ids[0] if move_ids else "WET_CLAW"
+        )
+        shaken_move = next((m["id"] for m in moves if m.get("condition") == "SHAKEN"), None) or (
+            move_ids[-1] if move_ids else "DROWNED_WHISPER"
+        )
+        default_move = move_ids[0] if move_ids else "WET_CLAW"
+
         conscious = [p for p in room.players.values() if p.is_conscious]
         pool = [p for p in conscious if p.connected] or conscious
         if not pool:
             return GhostTurnDecision(
-                move_id="WET_CLAW",
+                move_id=default_move,
                 target_player_id="",
                 use_live_taunt=False,
-                narration_th="เงาดำจมน้ำตะปบผ่านความมืดอันว่างเปล่า",
+                narration_th=f"{enemy_name} ฟาดผ่านความมืดอันว่างเปล่า",
             )
 
         if combat and combat.retreat_progress >= 1:
             target = max(pool, key=lambda p: p.hp)
             return GhostTurnDecision(
-                move_id="UNDERFLOOR_HAND",
+                move_id=root_move,
                 target_player_id=target.public_id,
                 use_live_taunt=True,
-                ghost_taunt=f"{target.name}... คิดจะหนีไปไหน...",
-                narration_th=f"มือซีดเปียกโชกผุดขึ้นจากโคลนคว้าข้อเท้าของ {target.name} ไว้แน่น!",
+                ghost_taunt=f"{target.name}... ยังออกไปไม่ได้...",
+                narration_th=f"แรงอาคมจาก {enemy_name} พุ่งคว้าข้อเท้าของ {target.name} ไว้แน่น!",
             )
 
-        if combat and combat.soothe_progress >= 1:
+        if combat and (combat.soothe_progress >= 1 or combat.ritual_step >= 1):
             target = min(pool, key=lambda p: p.sanity)
             return GhostTurnDecision(
-                move_id="DROWNED_WHISPER",
+                move_id=shaken_move,
                 target_player_id=target.public_id,
                 use_live_taunt=True,
-                ghost_taunt="อย่าปลอบข้า... น้ำยังท่วมอยู่...",
-                narration_th=f"เสียงสำลักน้ำเย็นเยียบกระซิบกรอกหู {target.name} จนเสียขวัญ!",
+                ghost_taunt="ด้ายดำยังรั้งอยู่... อย่าเพิ่งหยุด...",
+                narration_th=f"คลื่นเสียงสะท้อนจาก {enemy_name} กดทับสติของ {target.name} อย่างหนัก!",
             )
 
         target = min(pool, key=lambda p: p.hp)
         return GhostTurnDecision(
-            move_id="WET_CLAW",
+            move_id=default_move,
             target_player_id=target.public_id,
             use_live_taunt=False,
-            narration_th=f"ผีเงาจมน้ำพุ่งเล็บเปียกโคลนเข้าตะปบใส่ {target.name} ท่ามกลางความมืด!",
+            narration_th=f"{enemy_name} พุ่งเข้าจู่โจมใส่ {target.name} ท่ามกลางความมืด!",
         )
 
     async def plan_combat_player_action(
@@ -921,6 +1290,19 @@ class AIDMEngine:
             return self._local_fallback_combat_action(room, player, declaration_text), True
 
         combat = room.combat
+        enemy_label = combat.enemy_name if combat else "ผีเงาจมน้ำ"
+        has_ritual = bool(combat and combat.ritual_max_steps > 0)
+        ritual_rule = (
+            f"- ด่านนี้มีวงป้องกันกำไล 3 ขั้น (คลายแล้ว {combat.ritual_step}/{combat.ritual_max_steps} · "
+            f"{'เกราะยังอยู่ ต้องใช้ action_id=\"ritual\" คลายเกราะก่อน' if combat.ritual_shield_up else 'เกราะสลายแล้ว ใช้ action_id=\"ritual\" ปลดกำไลขั้นสุดท้ายเพื่อปิดฉาก!'} )\n"
+            if has_ritual
+            else ""
+        )
+        ritual_action_desc = (
+            ", 'ritual' (ทำพิธีคลายเกราะ 3 ขั้น / ปลดกำไลทองเหลืองขั้นสุดท้าย)"
+            if has_ritual
+            else ""
+        )
         party_list = [
             {
                 "player_id": p.public_id,
@@ -932,7 +1314,7 @@ class AIDMEngine:
             }
             for p in room.players.values()
         ]
-        prompt = f"""คุณคือ AI Game Master (DM) ของเกม TRPG สืบสวนสยองขวัญไทย 'CASE 001: เสียงร้องจากสวนกล้วย' ระหว่างการเผชิญหน้ากับผีเงาจมน้ำ
+        prompt = f"""คุณคือ AI Game Master (DM) ของเกม TRPG สืบสวนสยองขวัญไทย 'CASE 001: เสียงร้องจากสวนกล้วย' ระหว่างการเผชิญหน้ากับ {enemy_label}
 
 ## ผู้เล่นที่ประกาศการกระทำ
 - ชื่อ: {player.name} ({player.role_name})
@@ -941,8 +1323,8 @@ class AIDMEngine:
 - ท่าประจำอาชีพ: {json.dumps(player.skill, ensure_ascii=False)}
 
 ## สถานะการต่อสู้และสิ่งแวดล้อมในฉาก ({combat.round_number if combat else 1})
-- HP ผีเงาจมน้ำ: {combat.enemy_hp if combat else 0}/{combat.enemy_max_hp if combat else 8} | กล่อม: {combat.soothe_progress if combat else 0}/{combat.soothe_goal if combat else 3} | ถอย: {combat.retreat_progress if combat else 0}/{combat.retreat_goal if combat else 2}
-- สัญญาณอันตรายรอบนี้ (Telegraph): {json.dumps(combat.telegraph if combat else None, ensure_ascii=False)}
+- HP {enemy_label}: {combat.enemy_hp if combat else 0}/{combat.enemy_max_hp if combat else 8} | กล่อม: {combat.soothe_progress if combat else 0}/{combat.soothe_goal if combat else 3} | ถอย: {combat.retreat_progress if combat else 0}/{combat.retreat_goal if combat else 2}
+{ritual_rule}- สัญญาณอันตรายรอบนี้ (Telegraph): {json.dumps(combat.telegraph if combat else None, ensure_ascii=False)}
 - องค์ประกอบฉาก: {json.dumps(combat.environment_features if combat else [], ensure_ascii=False)}
 - เพื่อนร่วมทีม: {json.dumps(party_list, ensure_ascii=False)}
 
@@ -950,10 +1332,10 @@ class AIDMEngine:
 "{declaration_text}"
 
 ## กติกาการตัดสิน
-- เลือก action_id ที่ตรงเจตนาที่สุด: 'strike' (โจมตี/ขัดขวางกายภาพ), 'soothe' (กล่อม/พูดเรียกสติ/สวด), 'assist' (ช่วย/บัง/ดึงเพื่อนหลบ), 'steady' (ตั้งสติ/ถอยมาคุมตัวเอง), 'role_skill' (ใช้ท่าประจำอาชีพ — ใช้ได้เฉพาะเมื่อ focus >= 1), 'retreat' (คุ้มกันเปิดทางหนี)
-- เลือก stat_choice ที่สมเหตุสมผลกับวิธีที่ผู้เล่นบรรยาย (เช่น สาดไฟฉาย/สังเกตจุดอ่อนใช้ PER/INT, พูดคุยปลอบโยนใช้ SOC, ใช้อาคม/สัมผัสวิญญาณใช้ SPI, ใช้แรงกายใช้ BODY)
-- ให้ tactical_bonus (+1 หรือ +2) เฉพาะเมื่อผู้เล่นใช้สภาพแวดล้อม (ไฟฉาย, แอ่งโคลน, ดงกล้วย) หรือแก้ทาง Telegraph รอบนี้ได้ชาญฉลาด พร้อมอธิบายสั้น ๆ ใน tactical_reason
-- เขียน narration_full, narration_partial, narration_failure เป็นภาษาไทยบรรยายผลลัพธ์อย่างสมจริงโดยไม่ออกนอกกติกาหรือสปอยล์ ACT C–F"""
+- เลือก action_id ที่ตรงเจตนาที่สุด: 'strike' (โจมตี/ขัดขวางกายภาพ), 'soothe' (กล่อม/พูดเรียกสติ/สวด), 'assist' (ช่วย/บัง/ดึงเพื่อนหลบ), 'steady' (ตั้งสติ/ถอยมาคุมตัวเอง), 'role_skill' (ใช้ท่าประจำอาชีพ — ใช้ได้เฉพาะเมื่อ focus >= 1), 'retreat' (คุ้มกันเปิดทางหนี){ritual_action_desc}
+- เลือก stat_choice ที่สมเหตุสมผลกับวิธีที่ผู้เล่นบรรยาย (เช่น สาดไฟฉาย/สังเกตจุดอ่อนใช้ PER/INT, พูดคุยปลอบโยนใช้ SOC, ใช้อาคม/สัมผัสวิญญาณ/คลายพิธีใช้ SPI/INT, ใช้แรงกายใช้ BODY)
+- ให้ tactical_bonus (+1 หรือ +2) เฉพาะเมื่อผู้เล่นใช้สภาพแวดล้อม (ไฟฉาย, แอ่งโคลน, ดงกล้วย, ตำราพิธี E4) หรือแก้ทาง Telegraph รอบนี้ได้ชาญฉลาด พร้อมอธิบายสั้น ๆ ใน tactical_reason
+- เขียน narration_full, narration_partial, narration_failure เป็นภาษาไทยบรรยายผลลัพธ์อย่างสมจริง"""
 
         def _call_plan(client: Any) -> CombatPlayerActionPlan:
             from google.genai.types import GenerateContentConfig
@@ -1004,6 +1386,22 @@ class AIDMEngine:
 
         shaken = "SHAKEN" in (player.statuses or [])
         rooted = "ROOTED" in (player.statuses or [])
+
+        if (
+            combat
+            and combat.ritual_max_steps > 0
+            and any(k in text for k in ("กำไล", "คลาย", "ปม", "ด้าย", "เกราะ", "พิธี", "ปลด", "แยกสาย", "คุมแรง"))
+        ):
+            stat_pick = "INT" if player.stats.get("INT", 0) >= player.stats.get("SPI", 0) else "SPI"
+            return CombatPlayerActionPlan(
+                action_id="ritual",
+                stat_choice=stat_pick,
+                tactical_bonus=bonus,
+                tactical_reason=reason,
+                narration_full=f"{player.name} ลงมือตามขั้นตอน ({declaration_text}) จนวงด้ายดำบนกำไลทองเหลืองคลายตัวลงอย่างแม่นยำ!",
+                narration_partial=f"{player.name} แตะแยกปมด้ายเฉียดจังหวะ เปิดช่องให้คลายพิธีต่อได้ง่ายขึ้น (+2 ทอย)",
+                narration_failure=f"{player.name} พยายาม ({declaration_text}) แต่แรงสะท้อนจากเกราะกำไลตีกลับมา!",
+            )
 
         if any(k in text for k in ("ช่วย", "บัง", "ดึงเพื่อน", "คว้าเพื่อน", "คว้าแขน", "คุ้มกันเพื่อน", "ขวาง")):
             others = [p for p in room.players.values() if p.player_token != player.player_token and p.is_conscious]

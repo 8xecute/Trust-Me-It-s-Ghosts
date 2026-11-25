@@ -52,15 +52,31 @@
         </div>
 
         <div class="act-selector">
-          <div class="act-selector-label">ช่วงเริ่มต้นเมื่อสร้างห้องใหม่</div>
+          <div class="act-selector-label">ช่วงเริ่มต้นเมื่อสร้างห้องใหม่ (เล่นต่อเนื่องหรือกระโดดทดสอบได้ทุกบท)</div>
           <div class="act-toggle-group" role="group" aria-label="เลือกบทเริ่มต้น">
             <button type="button" class="act-toggle-btn selected" data-act="A">
               <strong>ACT A · ศาลาริมทาง</strong>
-              <span>พบผู้ใหญ่ประเสริฐและเหตุวิทยุรถตู้ (A1–A3)</span>
+              <span>ผู้ใหญ่ประเสริฐ & วิทยุรถตู้ (A1–A3)</span>
             </button>
             <button type="button" class="act-toggle-btn" data-act="B">
               <strong>ACT B · บ้านผู้ใหญ่บ้าน</strong>
-              <span>สอบวิชัย แยกคุยต้น และภาพเก่าปี 2534 (B1–B3)</span>
+              <span>วิชัย ต้น และภาพเก่า 2534 (B1–B3)</span>
+            </button>
+            <button type="button" class="act-toggle-btn" data-act="C">
+              <strong>ACT C · บ้านดล & ยายบุญมี</strong>
+              <span>สมุดปกดำ เสียงเคาะ และประวัติแก้ว (C1–C5)</span>
+            </button>
+            <button type="button" class="act-toggle-btn" data-act="D">
+              <strong>ACT D · ศาลด้ายดำในสวน</strong>
+              <span>แม่แก้ว 3 ป้ายชื่อ และรอยล้อ (D1–D5)</span>
+            </button>
+            <button type="button" class="act-toggle-btn" data-act="E">
+              <strong>ACT E · เรือนไม้ร้าง & H1</strong>
+              <span>ช่วยตัวประกัน 3 คน กำไล และวิชัย (E1–E6)</span>
+            </button>
+            <button type="button" class="act-toggle-btn" data-act="F">
+              <strong>ACT F · FINAL & ตอนจบ</strong>
+              <span>คลายเกราะ 3 ขั้น รุ่งเช้า Ending A–D (F1–F6)</span>
             </button>
           </div>
         </div>
@@ -197,6 +213,14 @@
                     <strong id="combat-retreat-text">0 / 2</strong>
                   </div>
                   <div class="meter-track"><div id="combat-retreat-fill" class="meter-fill retreat" style="width: 0%"></div></div>
+
+                  <div id="combat-ritual-row" class="combat-ritual-row hidden">
+                    <div class="meter-row">
+                      <span>คลายเกราะกำไล 3 ขั้น</span>
+                      <strong id="combat-ritual-text">0 / 3</strong>
+                    </div>
+                    <div class="meter-track"><div id="combat-ritual-fill" class="meter-fill ritual" style="width: 0%"></div></div>
+                  </div>
                 </div>
 
                 <div id="combat-telegraph-box" class="combat-telegraph-box hidden">
@@ -362,6 +386,10 @@
               <strong id="combat-skill-name">ท่าประจำอาชีพ</strong>
               <span id="combat-skill-desc">ใช้ 1 โฟกัส</span>
             </button>
+            <button type="button" id="combat-ritual-btn" class="btn combat-btn ritual hidden" data-action="ritual">
+              <strong id="combat-ritual-btn-title">คลายเกราะ 3 ขั้น</strong>
+              <span id="combat-ritual-btn-desc">คุมแรง -> แยกสาย -> คลายปมกำไล (INT/SPI)</span>
+            </button>
             <button type="button" class="btn combat-btn retreat" data-action="retreat">
               <strong>คุ้มกันถอยทัพ</strong>
               <span>เปิดทางหนีกลับถนน (+เกราะถ้าทอยผ่าน)</span>
@@ -389,7 +417,7 @@
         <div id="dice-result-banner" class="dice-result-banner hidden"></div>
 
         <!-- LIVE SUBTITLE & NARRATION BOX -->
-        <div class="subtitle-box">
+        <div id="subtitle-box" class="subtitle-box">
           <div class="subtitle-top">
             <img id="subtitle-avatar" class="subtitle-avatar hidden" alt="ผู้พูด" />
             <span id="subtitle-speaker" class="speaker-badge">ระบบ</span>
@@ -397,6 +425,7 @@
               <span></span><span></span><span></span><span></span>
             </div>
             <span id="thinking-status" class="thinking-status"></span>
+            <span id="subtitle-skip-hint" class="subtitle-skip-hint hidden">คลิกซับเพื่ออ่านต่อ ▸</span>
           </div>
           <p id="subtitle-text" class="subtitle-text">
             ยินดีต้อนรับสู่แฟ้มคดีบ้านหนองตาล กด "เริ่มบทนำ ACT A" เพื่อเริ่มฟังเสียงบรรยายจากผู้ดำเนินเกม

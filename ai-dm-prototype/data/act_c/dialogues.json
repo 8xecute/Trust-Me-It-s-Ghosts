@@ -1,0 +1,490 @@
+{
+  "dialogues": [
+    {
+      "id": "c1_intro_dm",
+      "scene": "C1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก C1 หน้าบ้านดล"
+      },
+      "text": "แผนที่จากบ้านผู้ใหญ่พาพวกคุณมาถึงบ้านไม้ท้ายซอยของดล ถนนดินหน้าบ้านแห้งผากไร้รอยฝนเหมือนทั้งหมู่บ้าน แต่ทันทีที่เข้าใกล้ประตูที่แง้มอยู่ กลิ่นดินชื้นคล้ายน้ำขังกลับลอยสวนออกมา ด้านในเงียบกริบ เสื้อเชิ้ตยังพาดเก้าอี้ บนโต๊ะกินข้าวมีจานอาหารแห้งกรัง และมองเห็นโต๊ะทำงานที่มีกระดาษวางค้างอยู่",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c1_search_desk_to_c2",
+      "scene": "C1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นเลือกค้นโต๊ะทำงาน กองแฟ้ม หรือหยิบสมุดปกดำของดล"
+      },
+      "text": "ข้างโต๊ะทำงานมีปฏิทินแขวนที่วงวันไว้พร้อมคำว่า 'นัดนิดคุยเรื่องรูปแถวศาล' และกระดาษโน้ตลายมือหวัด ๆ ลงชื่อตาเพิ่มเขียนว่า 'เห็นคนเข็นรถแปลก ๆ แถวปากสวน ระวังตัวด้วย' ส่วนใต้กองแฟ้ม คุณพบสมุดปกดำที่ดลใช้จดบันทึกวางอยู่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["don_table_found", "don_notebook_found"],
+        "items": ["note_from_phoem", "don_black_notebook"],
+        "next_scene": "C2",
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "c1_qa_food_door",
+      "scene": "C1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นตรวจอาหารบนโต๊ะ ประตูบ้าน หรือร่องรอยการบุกรุก"
+      },
+      "text": "ประตูแง้มอยู่มีรอยใช้งานทั่วไปแต่ยังไม่มีหลักฐานว่าถูกงัด บนโต๊ะมีอาหารแห้งเริ่มเสียกับถ้วยจับฝุ่นเหมือนไม่มีคนเก็บมาหลายวัน แต่บอกไม่ได้แน่ชัดว่าใครเข้าออกล่าสุด",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c1_check_floor_empty",
+      "scene": "C1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเปิดแผ่นไม้ใต้พื้นบ้านตรวจดูว่ามีคนหายถูกขังอยู่หรือไม่"
+      },
+      "text": "เมื่อพวกคุณลงมืองัดตรวจใต้พื้นบ้านดล พบเพียงความมืดและสัตว์เล็กที่ตกใจวิ่งหนี ไม่พบห้องขังหรือผู้สูญหายถูกกักตัวอยู่ที่บ้านหลังนี้",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c2_intro_dm",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดอ่านสมุดปกดำของดลใน C2"
+      },
+      "text": "ใต้กองแฟ้มมีสมุดปกดำสันยับ หน้าในจดรายชื่อเจ้าของที่ดิน วันที่นัดหมาย และตัวเลขขายที่หลายแปลง ชื่อ 'วิชัย' โผล่ซ้ำอยู่ตามแปลงขอบสวน—ตรงกับวงสีน้ำเงินบนแผนที่บ้านผู้ใหญ่ หน้าใกล้ท้ายเล่มดลเขียนว่า 'ข่าวผีเริ่มก่อนหรือหลังคนมาขอซื้อ? ต้องกลับไปดูศาล' ข้างกันจดไว้ว่า 'ยายบุญมีดูแลศาล บ้านก่อนทางแยกเข้าสวน' และที่สันเล่มมีเศษด้ายดำเส้นเล็กติดอยู่",
+      "is_filler": false,
+      "unlocks": {
+        "clues": ["don_notebook_found"],
+        "items": ["don_black_notebook"],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "c2_qa_read_all",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าสมุดดลเขียนอะไรบ้าง ขออ่านทุกหน้า เรื่องทวงหนี้วิชัย หรือทางไปศาล"
+      },
+      "text": "คุณพลิกอ่านข้อความทุกหน้าในสมุดได้ครบ: มีรายชื่อเจ้าของที่ดินริมสวน วันนัดขาย ชื่อวิชัยกำกับไว้ ข่าวที่ดลจดว่า 'มีคนทวงหนี้วิชัย—ต้องตรวจสอบ' คำถามเรื่องข่าวผีกับการซื้อที่ และโน้ตชี้ทางไปหายายบุญมีผู้ดูแลศาลก่อนทางแยกเข้าสวน",
+      "is_filler": false,
+      "unlocks": { "clues": ["don_notebook_found"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c2_check_int_full",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ วิเคราะห์ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C2_LAND_PATTERN สำเร็จเต็ม"
+      },
+      "text": "คุณเรียงวันที่สามเหตุการณ์ลงแผ่นกระดาษ ข่าวผีเพิ่มขึ้นก่อนหลายบ้านถูกติดต่อขายที่ดินในราคาต่ำผิดปกติ รูปแบบเกิดซ้ำมากกว่าหนึ่งครั้ง—เห็นชัดว่ามีคนได้ประโยชน์จากข่าวผี แต่ยังต้องหาหลักฐานเพิ่มว่าทำอย่างไร",
+      "is_filler": false,
+      "unlocks": { "clues": ["land_price_pattern"], "items": [], "next_scene": "C3", "trust_delta": {} }
+    },
+    {
+      "id": "c2_check_int_partial",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C2_LAND_PATTERN สำเร็จบางส่วน"
+      },
+      "text": "ตัวเลขบางหน้าเชื่อมกันได้ คุณเห็นว่าราคาหลายแปลงต่ำลงช่วงใกล้ข่าวผี แต่ยังสรุปสาเหตุไม่ได้เพราะยังขาดเอกสารเทียบจากแหล่งอื่น",
+      "is_filler": false,
+      "unlocks": { "clues": ["land_price_pattern"], "items": [], "next_scene": "C3", "trust_delta": {} }
+    },
+    {
+      "id": "c2_check_int_fail",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C2_LAND_PATTERN ล้มเหลว"
+      },
+      "text": "ข้อมูลในสมุดกระจัดกระจายเกินกว่าจะเชื่อมเป็นแบบแผนได้ในตอนนี้ แต่ข้อความที่ดลเขียนสงสัยเรื่องวิชัย ข่าวผี และที่อยู่ยายบุญมียังอ่านได้ครบทั้งหมด",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C3", "trust_delta": {} }
+    },
+    {
+      "id": "c3_intro_dm",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก C3 เสียงเคาะสามครั้ง"
+      },
+      "text": "ก๊อก... ก๊อก... ก๊อก เสียงเคาะสามครั้งดังขึ้นจากใต้แผ่นไม้ ก่อนจะย้ายไปดังจากผนังทึบอีกด้านอย่างเงียบเชียบ คราบชื้นค่อย ๆ ซึมขยายตามรอยต่อไม้พร้อมกลิ่นน้ำขังเย็นเยียบ—กลิ่นเดียวกับความเย็นประหลาดที่พวกคุณเพิ่งสัมผัสในบ้านผู้ใหญ่ ทั้งที่ข้างนอกแห้งสนิท",
+      "is_filler": false,
+      "unlocks": { "clues": ["black_thread_clue"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c3_check_spi_full",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เยือกเย็น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C3_SPIRIT_RESIDUE สำเร็จเต็ม"
+      },
+      "text": "พลังเย็นจับตัวเป็นวงแคบรอบเศษด้ายดำ คุณรู้ว่ามันกำลังดึงความทรงจำค้างคาให้รวมเป็นร่าง และไม่ใช่เสียงคนถูกขังใต้พื้นบ้าน เสียงแผ่วดังมาจากผนังว่า 'น้ำ... ยัง... อยู่...'",
+      "is_filler": false,
+      "unlocks": { "clues": ["black_thread_clue"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c3_check_spi_partial",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C3_SPIRIT_RESIDUE สำเร็จบางส่วน"
+      },
+      "text": "กระแสเย็นบอกว่าบางสิ่งกำลังก่อตัวจากบริเวณเปียกชื้น แต่ยังหาจุดรวมพลังแน่ชัดไม่ได้ เสียงจากผนังดังแผ่วว่า 'อึก... ช่วย...'",
+      "is_filler": false,
+      "unlocks": { "clues": ["black_thread_clue"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c3_check_spi_fail",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C3_SPIRIT_RESIDUE ล้มเหลว"
+      },
+      "text": "ความรู้สึกพร่าเลือนเพราะเสียงเคาะถี่ขึ้น คุณยังไม่แยกที่มาของพลังได้ มีเพียงเสียงสำลักน้ำแว่วมาก่อนเงียบหาย",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c3_trigger_c4_echo",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตึงเครียด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นขยับเข้าใกล้เสียงเคาะหรือคราบชื้นจนเงาดำก่อตัวขึ้น (เข้าสู่ C4)"
+      },
+      "text": "ทันทีที่คุณก้าวเข้าไปชิดคราบชื้นริมผนัง อุณหภูมิในห้องก็ลดวูบลง เงามืดตรงมุมห้องเริ่มขยับบิดตัว...",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C4", "trust_delta": {} }
+    },
+    {
+      "id": "c4_intro_dm",
+      "scene": "C4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ กดดันสยองขวัญ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก C4 ผีเงาจมน้ำ"
+      },
+      "text": "ลมหายใจของพวกคุณกลายเป็นไอขาว เสียงน้ำหยดจากผนังทั้งที่ไม้แห้งสนิท ร่างเปียกโชกค่อย ๆ คลานออกจากเงาดำ เสียงไอสำลักน้ำดังแทรกความเงียบ—เป็นจังหวะหายใจเดียวกับเสียงที่เคยลอดออกจากวิทยุรถตู้บริษัทตรงศาลาริมทางไม่มีผิด มันเงยหน้ามองคนใกล้ที่สุดแล้วเหยียดแขนออก น้ำขุ่นผุดขึ้นใกล้เท้า แต่ยังไม่พุ่งเข้าใส่หากพวกคุณตั้งรับหรือถอยออกทางประตู",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c4_check_spi_full",
+      "scene": "C4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C4_DROWNED_ECHO_VISION สำเร็จเต็ม"
+      },
+      "text": "ร่างเปียกโชกหยุดสำลักชั่วขณะ ภาพน้ำไหลเชี่ยวซ้อนขึ้นมาพร้อมภาพคนหนึ่งกำลังเข็นรถบรรทุกของหนักผ่านทางดินเปียกไปทางเรือนไม้ท้ายสวน แม้ไม่เห็นใบหน้า แต่คุณจำได้ว่ามันไม่ได้จับคนหายเอง มีเพียงเสียงสะท้อนว่า 'น้ำ... เขา... เอา... ไป...'",
+      "is_filler": false,
+      "unlocks": { "clues": ["spirit_echo_vision"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c4_check_spi_partial",
+      "scene": "C4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C4_DROWNED_ECHO_VISION สำเร็จบางส่วน"
+      },
+      "text": "ปรากฏภาพเงาล้อรถบดดินโคลนและเค้าโครงเรือนไม้เก่า แล้วภาพก็ถูกเสียงน้ำกลบ เสียงสะท้อนเบา ๆ ดังขึ้นว่า 'ไป... ทาง...'",
+      "is_filler": false,
+      "unlocks": { "clues": ["spirit_echo_vision"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c4_check_spi_fail",
+      "scene": "C4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C4_DROWNED_ECHO_VISION ล้มเหลว"
+      },
+      "text": "เสียงสำลักน้ำดังก้องขึ้นอีกครั้งจนภาพความทรงจำแตกกระจาย คุณยังไม่ได้ภาพเพิ่มเติม แต่ประตูทางออกบ้านดลยังคงเปิดอยู่หากต้องการถอยออกไปหายายบุญมี",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c4_leave_to_c5",
+      "scene": "C4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นถอยหรือเดินออกจากบ้านดลมุ่งหน้าไปบ้านยายบุญมี (C5)"
+      },
+      "text": "พวกคุณถอยพ้นธรณีประตูบ้านดลออกมา ร่างเปียกโชกหยุดชะงักอยู่แค่ความมืดด้านใน ก่อนทีมจะเดินตามทางไปยังบ้านยายบุญมีก่อนทางแยกเข้าสวน",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C5", "trust_delta": {} }
+    },
+    {
+      "id": "c5_intro_dm",
+      "scene": "C5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ อ่อนโยนขลัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "เปิดฉาก C5 หน้าบ้านยายบุญมี"
+      },
+      "text": "ทางหมู่บ้านค่อย ๆ แคบลงก่อนถึงทางแยกเข้าสวนกล้วย มีบ้านไม้หลังเล็กเปิดไฟอยู่ข้างทาง ที่ชานบ้าน หญิงชราผมขาวกำลังพับผ้าสีเขียววางข้างถาดธูป เธอเงยหน้าขึ้นมองรถและอุปกรณ์ของทีม ก่อนเหลือบสายตาไปทางสวนที่อยู่ถัดไป",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_boonmee_greet",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา 70+ เมตตา ขลัง พูดเนิบช้า",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ยายบุญมีทักทายและเตือนเรื่องด้ายดำที่ศาล"
+      },
+      "text": "จะเข้าสวนกันหรือลูก? ถ้าผ่านไปทางศาล... ระวังด้ายดำที่มีคนเพิ่งเอาไปผูกไว้ด้วยล่ะ อย่าไปดึงมันสุ่มสี่สุ่มห้าเชียว",
+      "is_filler": false,
+      "unlocks": { "clues": ["boonmee_thread_warning"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_qa_kaew_story",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา เศร้าซึ้ง เมตตา",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่ายายรู้จักแม่แก้วไหม แก้วตายอย่างไร"
+      },
+      "text": "รู้จักสิ แก้วเป็นคนบ้านนี้ ข้ายังไปไหว้ที่ศาลอยู่เลย ตอนยังมีชีวิตแก้วมันคนใจดีนะลูก ปีน้ำท่วมนั่น แก้วลงไปช่วยเด็กคนหนึ่งขึ้นจากน้ำ... แล้วตัวเองกลับไม่รอด",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_qa_which_child",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา พูดชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าเด็กคนที่แม่แก้วช่วยขึ้นจากน้ำปี 2534 คือใคร"
+      },
+      "text": "วิชัยนั่นแหละ ตอนนั้นยังเล็กอยู่ แก้วลงไปช่วยเขาขึ้นมาเพียงคนเดียว",
+      "is_filler": false,
+      "unlocks": { "clues": ["knows_wichai_saved"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_qa_floodgate_book",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา หยิบสมุดสวดมนต์ให้ดู",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามเรื่องเปิดประตูน้ำปี 2534 หรือขอดูสมุดจดชื่ออพยพของยาย"
+      },
+      "text": "ข้าอยู่ที่ศูนย์อพยพ คอยจดชื่อคนที่มาถึง ไม่ได้ยืนอยู่ตรงประตูน้ำเลยไม่เห็นว่าใครเปิด ข้ารู้แค่คืนนั้นรายชื่อคนจากในสวนยังมาไม่ครบ... มีสมุดสวดมนต์เล่มนี้แหละที่ข้าจดชื่อเวลาไว้ ถ้าจะเอาไปเทียบก็ดูได้เลยลูก",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": ["boonmee_prayer_book"], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_check_int_full",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา สั่นเทา ซาบซึ้ง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C5_EVACUATION_RECORDS สำเร็จเต็ม"
+      },
+      "text": "เวลามันตรงกันเลย... แต่ชื่อคนจากในสวนยังมาไม่ครบเลยนะ ทำไมถึงรีบเปิดประตูน้ำ... ข้าไม่ได้เห็นหรอกว่าใครเปิด ข้ารู้แค่คืนนั้นเรายังนั่งรอกันอยู่",
+      "is_filler": false,
+      "unlocks": { "clues": ["evac_gap_discovered"], "items": ["boonmee_prayer_book"], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_check_int_partial",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C5_EVACUATION_RECORDS สำเร็จบางส่วน"
+      },
+      "text": "ใช่ มีคนมาจดช้าไป เวลาในสมุดกับบันทึกประตูน้ำเลยไม่ลงตัว แต่ข้าไม่แน่ใจหรอกลูกว่าคืนนั้นใครเป็นคนสั่ง",
+      "is_filler": false,
+      "unlocks": { "clues": ["evac_gap_discovered"], "items": ["boonmee_prayer_book"], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_check_int_fail",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผลทอย C5_EVACUATION_RECORDS ล้มเหลว"
+      },
+      "text": "หลายหน้ามันเลือนไปตามเวลา ข้าก็จำได้เท่านี้แหละลูก ลองเก็บสมุดเล่มนี้เอาไปเทียบกับหลักฐานอื่นดูอีกทีเถอะ",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": ["boonmee_prayer_book"], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c_ending_to_act_d",
+      "scene": "C5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนติดตาม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": true,
+        "topic_hint": "ผู้เล่นขอตัวเดินเข้าสวนกล้วยต่อเพื่อไปยังศาล (จบ ACT C -> ACT D)"
+      },
+      "text": "ยายบุญมีพยักหน้าช้า ๆ พร้อมชี้แนวทางเดินข้างชานบ้านที่ทอดลึกเข้าสู่สวนกล้วยมืดทึบ เสียงกอไผ่และใบกล้วยเงียบสงัดลงผิดปกติทันทีที่พวกคุณก้าวพ้นแสงไฟ...",
+      "is_filler": false,
+      "unlocks": { "clues": ["boonmee_thread_warning"], "items": [], "next_scene": null, "trust_delta": {} }
+    }
+  ]
+}

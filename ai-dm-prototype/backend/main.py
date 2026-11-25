@@ -623,7 +623,7 @@ async def on_room_join(sid: str, data: dict[str, Any]) -> None:
     role_id = str(data.get("role_id") or "investigator")
     player_token = data.get("player_token")
     raw_act = str(data.get("start_act") or "A").strip().upper()
-    start_act = "B" if raw_act == "B" else "A"
+    start_act = raw_act if raw_act in {"A", "B", "C", "D", "E", "F"} else "A"
 
     try:
         room, player, reconnected = room_manager.add_player(
@@ -1084,7 +1084,13 @@ async def on_combat_start_demo(sid: str, _data: dict[str, Any] | None = None) ->
     if room.ending_triggered:
         room.ending_triggered = None
         setattr(room, "_usage_ending_logged", None)
-    events = room_manager.start_combat(room.room_code, return_scene=room.current_scene)
+    scene_upper = (room.current_scene or "A1").upper()
+    enc_id = (
+        "KAEW_FINAL_BOSS"
+        if scene_upper.startswith("F")
+        else ("KAEW_SHIELDED_SHADOW" if scene_upper in {"D3", "D4"} else "DROWNED_ECHO")
+    )
+    events = room_manager.start_combat(room.room_code, return_scene=room.current_scene, encounter_id=enc_id)
     actor_name = player.name if player else "ผู้สืบสวน"
     usage_tracker.record_combat_start(room.room_code, actor_name)
     logger.info("[USAGE] COMBAT_START | room=%s | by=%s", room.room_code, actor_name)
@@ -1110,26 +1116,46 @@ async def on_combat_action(sid: str, data: dict[str, Any]) -> None:
     )
 
 
-@sio.on("room:advance_act_b")
-async def on_room_advance_act_b(sid: str, _data: dict[str, Any] | None = None) -> None:
-    room = room_manager.get_room_by_sid(sid)
-    if not room:
-        return
-    _, events = room_manager.advance_to_act_b(room.room_code)
-    room_manager.append_log(
-        room,
-        "ระบบ",
-        "เข้าสู่บทที่ 2 (ACT B): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่",
-        kind="system",
-    )
+_ACT_TRANSITION_LABELS = {
+    "B": "เข้าสู่บทที่ 2 (ACT B): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่",
+    "C": "เข้าสู่บทที่ 3 (ACT C): บ้านดลและบ้านยายบุญมีก่อนทางแยกเข้าสวน",
+    "D": "เข้าสู่บทที่ 4 (ACT D): เข้าสวนกล้วย ศาลด้ายดำ และรอยล้อรถเข็น",
+    "E": "เข้าสู่บทที่ 5 (ACT E): เรือนไม้ร้าง ตัวประกัน กำไล และหลักฐานวิชัย",
+    "F": "เข้าสู่บทสุดท้าย (FINAL ACT F): ปลุกวงป้องกันกำไล 3 ขั้นของแม่แก้ว",
+}
+
+
+async def _handle_advance_act(room: RoomState, target_act: str) -> None:
+    _, events = room_manager.advance_to_act(room.room_code, target_act)
+    label = _ACT_TRANSITION_LABELS.get(target_act, f"เข้าสู่บท ACT {target_act}")
+    room_manager.append_log(room, "ระบบ", label, kind="system")
     await sio.emit(
         "room:act_changed",
-        {"act": "B", "scene": "B1", "history": room.transcript_log},
+        {"act": target_act, "scene": room.current_scene, "history": room.transcript_log},
         room=room.room_code,
     )
     await _emit_room_state(room)
     for ev in events:
         await sio.emit("dm:audio", ev, room=room.room_code)
+
+
+@sio.on("room:advance_act_b")
+async def on_room_advance_act_b(sid: str, _data: dict[str, Any] | None = None) -> None:
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    await _handle_advance_act(room, "B")
+
+
+@sio.on("room:advance_act")
+async def on_room_advance_act(sid: str, data: dict[str, Any] | None = None) -> None:
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    target_act = str((data or {}).get("act") or "B").strip().upper()
+    if target_act not in {"B", "C", "D", "E", "F"}:
+        target_act = "B"
+    await _handle_advance_act(room, target_act)
 
 
 @sio.on("room:reset")
@@ -1139,7 +1165,7 @@ async def on_room_reset(sid: str, data: dict[str, Any] | None = None) -> None:
         return
     code = room.room_code
     raw_act = str((data or {}).get("act") or room_manager.act_for_scene(room.current_scene)).strip().upper()
-    act = "B" if raw_act == "B" else "A"
+    act = raw_act if raw_act in {"A", "B", "C", "D", "E", "F"} else "A"
 
     preserved_players = dict(room.players)
     for p in preserved_players.values():
@@ -1149,16 +1175,22 @@ async def on_room_reset(sid: str, data: dict[str, Any] | None = None) -> None:
         p.statuses = []
         p.guarded = False
         p.damage_reduction = 0
+        p.assisted_bonus = 0
+        p.protected_by = None
         p.acted_this_round = False
 
-    fresh = RoomState(
-        room_code=code,
-        current_scene="B1" if act == "B" else "A1",
-        board_node="headman_living_room" if act == "B" else "sala",
-        players=preserved_players,
-    )
+    fresh = RoomState(room_code=code, players=preserved_players)
+    room_manager.apply_act_start_preset(fresh, act)
     room_manager.rooms[code] = fresh
-    label = "ACT B (บ้านผู้ใหญ่บ้าน)" if act == "B" else "บทนำ ACT A"
+    label_map = {
+        "A": "บทนำ ACT A",
+        "B": "ACT B (บ้านผู้ใหญ่บ้าน)",
+        "C": "ACT C (บ้านดลและยายบุญมี)",
+        "D": "ACT D (สวนกล้วยและศาลด้ายดำ)",
+        "E": "ACT E (เรือนไม้ร้างและตัวประกัน)",
+        "F": "ACT F (FINAL — กำไลแม่แก้วและบทส่งท้าย)",
+    }
+    label = label_map.get(act, f"ACT {act}")
     room_manager.append_log(fresh, "ระบบ", f"รีเซ็ตห้องเพื่อเริ่ม {label} ใหม่อีกครั้ง", kind="system")
     await sio.emit("room:reset_done", {"history": fresh.transcript_log, "act": act}, room=code)
     await _emit_room_state(fresh)
