@@ -81,8 +81,9 @@
     "ประเสริฐ": "/assets/characters/prasert.png",
     "วิชัย": "/assets/characters/wichai.png",
     "ต้น": "/assets/characters/ton.png",
-    "ดล": "/assets/characters/ton.png",
-    "แม่แก้ว (นางตานี)": "/assets/characters/drowned_echo.png",
+    "ยายบุญมี": "/assets/characters/boonmee.png",
+    "ดล": "/assets/characters/don.png",
+    "แม่แก้ว (นางตานี)": "/assets/characters/kaew.png",
     "ผีเงาจมน้ำ": "/assets/characters/drowned_echo.png",
   };
 

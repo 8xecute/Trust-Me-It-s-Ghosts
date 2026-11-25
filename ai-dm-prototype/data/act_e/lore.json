@@ -98,7 +98,7 @@
       "id": "E1",
       "title": "E1: เรือนไม้ร้าง — ใต้ถุนและชั้นสอง",
       "subtitle": "เสียงเคาะเบา ๆ จากหลังประตูใต้ถุนที่มีกระสอบกั้น และแสงเทียนสีส้มจากชั้นสอง",
-      "background_image": "/assets/scenes/a3_headman_house.png",
+      "background_image": "/assets/scenes/e1_stilt_house.png",
       "npcs": [],
       "intro_audio_ids": [
         "e1_intro_dm"
@@ -124,11 +124,11 @@
       "id": "E2",
       "title": "E2: ห้องใต้ถุน — ช่วยดล นิด และเพิ่ม",
       "subtitle": "พบตัวประกันทั้งสามยังมีชีวิต แต่เพิ่มอ่อนแรงและมีด้ายดำพันข้อเท้า",
-      "background_image": "/assets/scenes/b3_archive_wall.png",
+      "background_image": "/assets/scenes/e2_cellar_room.png",
       "npcs": [
         {
           "name": "ดล",
-          "sprite": "/assets/characters/ton.png",
+          "sprite": "/assets/characters/don.png",
           "visible": true
         }
       ],
@@ -162,11 +162,11 @@
       "id": "E3",
       "title": "E3: คำยืนยันของดลและเบาะแสชั้นบน",
       "subtitle": "ดลยืนยันชื่อวิชัยและชี้ว่ามีเสียงพิธีดังลงมาจากชั้นบนทุกคืน",
-      "background_image": "/assets/scenes/b3_archive_wall.png",
+      "background_image": "/assets/scenes/e2_cellar_room.png",
       "npcs": [
         {
           "name": "ดล",
-          "sprite": "/assets/characters/ton.png",
+          "sprite": "/assets/characters/don.png",
           "visible": true
         }
       ],
@@ -199,7 +199,7 @@
       "id": "E4",
       "title": "E4: ห้องพิธีชั้นสอง — กำไล ตำรา และหลักฐานวิชัย",
       "subtitle": "กล่องไม้ใส่กำไลทองเหลือง 'แก้ว' ตำราอาคม และกระเป๋าเอกสารใต้โต๊ะ",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [],
       "intro_audio_ids": [
         "e4_intro_dm"
@@ -240,7 +240,7 @@
       "id": "E5",
       "title": "E5: วิชัยจนตรอกในห้องพิธี",
       "subtitle": "วิชัยโผล่ขึ้นมาเพื่อเก็บหลักฐานหนีและชะงักเมื่อเห็นทีมอยู่หน้าโต๊ะพิธี",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [
         {
           "name": "วิชัย",
@@ -279,7 +279,7 @@
       "id": "E6",
       "title": "E6: ก่อนปลดกำไล — วงป้องกันเตรียมตอบโต้",
       "subtitle": "ทุกอย่างพร้อมแล้ว: ทันทีที่เริ่มปลดกำไล วงป้องกันจะดึงแม่แก้วกลับร่างเพื่อเข้าสู่ศึกสุดท้าย",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [
         {
           "name": "วิชัย",

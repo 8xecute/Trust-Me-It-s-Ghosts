@@ -94,8 +94,8 @@
     "KAEW_SHIELDED_SHADOW": {
       "id": "KAEW_SHIELDED_SHADOW",
       "name": "แม่แก้ว (ร่างเงาหน้าศาล)",
-      "sprite": "/assets/characters/drowned_echo.png",
-      "background_image": "/assets/scenes/banana_grove.png",
+      "sprite": "/assets/characters/kaew.png",
+      "background_image": "/assets/scenes/d2_banana_shrine.png",
       "base_hp_for_2": 10,
       "hp_per_extra_player": 3,
       "soothe_goal": 3,
@@ -130,8 +130,8 @@
     "KAEW_FINAL_BOSS": {
       "id": "KAEW_FINAL_BOSS",
       "name": "แม่แก้ว (วงป้องกันกำไลพิธี)",
-      "sprite": "/assets/characters/drowned_echo.png",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "sprite": "/assets/characters/kaew.png",
+      "background_image": "/assets/scenes/e4_ritual_room.png",
       "base_hp_for_2": 14,
       "hp_per_extra_player": 4,
       "soothe_goal": 4,

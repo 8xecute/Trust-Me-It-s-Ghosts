@@ -113,7 +113,7 @@
       "id": "C1",
       "title": "C1: บ้านดล — ร่องรอยชีวิตที่หยุดไป",
       "subtitle": "ประตูแง้ม กลิ่นดินชื้นจากด้านใน โต๊ะกินข้าวและโต๊ะทำงานที่ยังมีกระดาษค้าง",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/c1_don_house.png",
       "npcs": [],
       "intro_audio_ids": [
         "c1_intro_dm"
@@ -148,7 +148,7 @@
       "id": "C2",
       "title": "C2: สมุดปกดำของดล",
       "subtitle": "รายชื่อเจ้าของที่ดิน ชื่อวิชัย โน้ตเรื่องศาล-ยายบุญมี และเศษด้ายดำ",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/c1_don_house.png",
       "npcs": [],
       "intro_audio_ids": [
         "c2_intro_dm"
@@ -183,7 +183,7 @@
       "id": "C3",
       "title": "C3: เคาะสามครั้งจากใต้พื้น",
       "subtitle": "คราบชื้นเย็นเยียบขยายตัวตามรอยต่อไม้พร้อมกลิ่นน้ำขัง",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/c1_don_house.png",
       "npcs": [],
       "intro_audio_ids": [
         "c3_intro_dm"
@@ -216,7 +216,7 @@
       "id": "C4",
       "title": "C4: ผีเงาจมน้ำในความมืดบ้านดล",
       "subtitle": "ร่างเปียกโชกคลานออกจากเงาพร้อมเสียงสำลักน้ำ",
-      "background_image": "/assets/scenes/a3_grove_entrance.png",
+      "background_image": "/assets/scenes/c1_don_house.png",
       "npcs": [
         {
           "name": "ผีเงาจมน้ำ",
@@ -252,11 +252,11 @@
       "id": "C5",
       "title": "C5: ยายบุญมี — บ้านก่อนทางแยกเข้าสวน",
       "subtitle": "หญิงชราผู้ดูแลศาลกับผ้าสีเขียวและสมุดสวดมนต์ปี 2534",
-      "background_image": "/assets/scenes/b2_porch.png",
+      "background_image": "/assets/scenes/c5_boonmee_porch.png",
       "npcs": [
         {
           "name": "ยายบุญมี",
-          "sprite": null,
+          "sprite": "/assets/characters/boonmee.png",
           "visible": true
         }
       ],

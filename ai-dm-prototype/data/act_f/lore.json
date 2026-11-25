@@ -60,11 +60,11 @@
       "id": "F1",
       "title": "F1: เกราะพิธีปรากฏ — เผชิญหน้าแม่แก้ว",
       "subtitle": "วงด้ายดำสามชั้นปกป้องร่างแม่แก้วไว้ ต้องคลายพิธี 3 ขั้นจึงปลดกำไลได้",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [
         {
           "name": "แม่แก้ว (นางตานี)",
-          "sprite": "/assets/characters/drowned_echo.png",
+          "sprite": "/assets/characters/kaew.png",
           "visible": true
         }
       ],
@@ -95,11 +95,11 @@
       "id": "F5",
       "title": "F5: อิสรภาพของแม่แก้ว — หลังด้ายไม่บังคับอีกต่อไป",
       "subtitle": "ปมด้ายคลายลงจนหมด แม่แก้วเป็นอิสระและถามทีมว่าจะทำอย่างไรกับความจริงต่อ",
-      "background_image": "/assets/scenes/b1_living_room.png",
+      "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [
         {
           "name": "แม่แก้ว (นางตานี)",
-          "sprite": "/assets/characters/drowned_echo.png",
+          "sprite": "/assets/characters/kaew.png",
           "visible": true
         },
         {
@@ -137,7 +137,7 @@
       "id": "F6",
       "title": "Epilogue: รุ่งเช้าหน้าถนนกับผู้ใหญ่ประเสริฐ",
       "subtitle": "นำผู้รอดชีวิตและหลักฐานปี 2534 ออกมาส่งมอบยามฟ้าสางเพื่อสรุปผลคดี CASE 001",
-      "background_image": "/assets/scenes/a1_sala.png",
+      "background_image": "/assets/scenes/f6_dawn_road.png",
       "npcs": [
         {
           "name": "ประเสริฐ",

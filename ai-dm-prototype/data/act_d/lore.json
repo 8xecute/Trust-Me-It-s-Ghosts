@@ -122,7 +122,7 @@
       "id": "D2",
       "title": "D2: ศาลผ้าเขียวและป้ายชื่อทั้งสาม",
       "subtitle": "ด้ายดำพันเสาไม้ตึงแน่น ป้ายชื่อ ดล นิด เพิ่ม และสายกล้องตกโคลน",
-      "background_image": "/assets/scenes/banana_grove.png",
+      "background_image": "/assets/scenes/d2_banana_shrine.png",
       "npcs": [],
       "intro_audio_ids": [
         "d2_intro_dm"
@@ -157,11 +157,11 @@
       "id": "D3",
       "title": "D3: แม่แก้วหลังเสาศาล",
       "subtitle": "หญิงชุดเขียวยืนกั้นทางด้วยแววตาเศร้า เส้นด้ายดำที่ข้อมือกระตุกตึง",
-      "background_image": "/assets/scenes/banana_grove.png",
+      "background_image": "/assets/scenes/d2_banana_shrine.png",
       "npcs": [
         {
           "name": "แม่แก้ว (นางตานี)",
-          "sprite": "/assets/characters/drowned_echo.png",
+          "sprite": "/assets/characters/kaew.png",
           "visible": true
         }
       ],
@@ -196,11 +196,11 @@
       "id": "D4",
       "title": "D4: เผชิญหน้าแม่แก้วในสวน",
       "subtitle": "รากกล้วยดันดินขวางทาง แรงอาคมบีบให้เธอต้านทีม",
-      "background_image": "/assets/scenes/banana_grove.png",
+      "background_image": "/assets/scenes/d2_banana_shrine.png",
       "npcs": [
         {
           "name": "แม่แก้ว (นางตานี)",
-          "sprite": "/assets/characters/drowned_echo.png",
+          "sprite": "/assets/characters/kaew.png",
           "visible": true
         }
       ],
