@@ -137,9 +137,9 @@
           <button id="voice-mute-btn" class="vol-btn" type="button">เสียงพูด</button>
           <input id="voice-vol-slider" class="vol-slider" type="range" min="0" max="100" value="100" aria-label="ระดับเสียงพากย์" />
         </div>
-        <div class="vol-control" title="ปรับความดังเสียงฝนและเอฟเฟกต์">
+        <div class="vol-control" title="ปรับความดังเสียงบรรยากาศและเอฟเฟกต์">
           <button id="ambient-mute-btn" class="vol-btn" type="button">บรรยากาศ</button>
-          <input id="ambient-vol-slider" class="vol-slider" type="range" min="0" max="100" value="70" aria-label="ระดับเสียงฝนและเอฟเฟกต์" />
+          <input id="ambient-vol-slider" class="vol-slider" type="range" min="0" max="100" value="70" aria-label="ระดับเสียงบรรยากาศและเอฟเฟกต์" />
         </div>
 
         <div class="topbar-actions">
@@ -198,6 +198,15 @@
                     <strong id="combat-retreat-text">0 / 2</strong>
                   </div>
                   <div class="meter-track"><div id="combat-retreat-fill" class="meter-fill retreat" style="width: 0%"></div></div>
+                </div>
+
+                <div id="combat-telegraph-box" class="combat-telegraph-box hidden">
+                  <div class="telegraph-head">
+                    <span class="telegraph-badge">สัญญาณอันตรายรอบนี้</span>
+                    <strong id="combat-telegraph-target"></strong>
+                  </div>
+                  <div id="combat-telegraph-hint" class="telegraph-hint"></div>
+                  <div id="combat-telegraph-tip" class="telegraph-tip"></div>
                 </div>
               </div>
 
@@ -265,17 +274,32 @@
         <!-- COMBAT ACTION BAR -->
         <div id="combat-actions-bar" class="combat-actions-bar hidden">
           <div class="combat-bar-header">
-            <span id="combat-turn-status">เลือก 1 การกระทำในรอบนี้</span>
+            <span id="combat-turn-status">เลือก 1 การกระทำในรอบนี้ หรือพิมพ์/พูดบรรยายวิธีรับมือ</span>
             <span id="combat-last-log" class="combat-last-log"></span>
+          </div>
+          <div id="combat-party-turn-strip" class="combat-party-turn-strip"></div>
+          <div id="combat-roll-card" class="combat-roll-card hidden">
+            <div id="combat-roll-die" class="combat-roll-die">20</div>
+            <div class="combat-roll-body">
+              <div class="combat-roll-top">
+                <span id="combat-roll-tier" class="combat-roll-tier">สำเร็จ</span>
+                <span id="combat-roll-math" class="combat-roll-math"></span>
+              </div>
+              <div id="combat-roll-narration" class="combat-roll-narration"></div>
+            </div>
           </div>
           <div class="combat-btn-grid">
             <button type="button" class="btn combat-btn" data-action="strike">
-              <strong>โจมตี</strong>
-              <span>ทอย BODY / SPI สู้</span>
+              <strong>โจมตี / ปะทะ</strong>
+              <span id="combat-strike-hint">ทอย BODY / SPI สู้</span>
             </button>
             <button type="button" class="btn combat-btn" data-action="soothe">
               <strong>กล่อมวิญญาณ</strong>
-              <span>ทอย SOC / SPI สงบผี</span>
+              <span id="combat-soothe-hint">ทอย SOC / SPI สงบผี</span>
+            </button>
+            <button type="button" class="btn combat-btn assist" data-action="assist">
+              <strong>ช่วยเพื่อน / คุ้มกัน</strong>
+              <span id="combat-assist-hint">ล้างสถานะ · เกราะ +2 · ได้เปรียบ +2</span>
             </button>
             <button type="button" class="btn combat-btn" data-action="steady">
               <strong>ดึงสติ</strong>
@@ -287,9 +311,10 @@
             </button>
             <button type="button" class="btn combat-btn retreat" data-action="retreat">
               <strong>คุ้มกันถอยทัพ</strong>
-              <span>เปิดทางหนีกลับถนน</span>
+              <span>เปิดทางหนีกลับถนน (+เกราะถ้าทอยผ่าน)</span>
             </button>
           </div>
+          <div id="combat-rp-hints" class="combat-rp-hints"></div>
         </div>
 
         <!-- DICE CHECK PANEL -->

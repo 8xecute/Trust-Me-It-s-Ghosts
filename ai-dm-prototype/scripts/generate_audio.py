@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Resumable batch TTS generator for dialogues.json using google-genai."""
+"""Resumable batch TTS generator for modular data/ files using google-genai."""
 
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import shutil
 import subprocess
@@ -17,7 +16,12 @@ from typing import Any
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DIALOGUES_PATH = BASE_DIR / "data" / "dialogues.json"
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+from backend.state_manager import audio_bucket_for_entry, load_scenario_files  # noqa: E402
+
+DATA_DIR = BASE_DIR / "data"
 AUDIO_DIR = BASE_DIR / "audio_assets"
 ENV_PATH = BASE_DIR / ".env"
 
@@ -132,23 +136,26 @@ def generate_one(
                 config=config,
             )
             wav_bytes = extract_audio_bytes(response)
-            AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+            bucket = audio_bucket_for_entry(entry)
+            target_dir = AUDIO_DIR / bucket
+            target_dir.mkdir(parents=True, exist_ok=True)
             if ffmpeg_bin:
-                out_path = AUDIO_DIR / f"{dialogue_id}.mp3"
+                out_path = target_dir / f"{dialogue_id}.mp3"
                 convert_wav_to_mp3(wav_bytes, out_path, ffmpeg_bin)
             else:
-                out_path = AUDIO_DIR / f"{dialogue_id}.wav"
+                out_path = target_dir / f"{dialogue_id}.wav"
                 out_path.write_bytes(wav_bytes)
             return out_path
         except Exception as exc:  # noqa: BLE001
             err_msg = str(exc)
-            if "RequestsPerDay" in err_msg or "per day" in err_msg.lower():
+            err_lower = err_msg.lower()
+            if "requestsperday" in err_lower or "per day" in err_lower or "limit: 0" in err_lower:
                 raise DailyQuotaExhaustedError(err_msg) from exc
 
             last_err = exc
             if attempt < max_retries:
                 is_rpm = "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "RequestsPerMinute" in err_msg
-                backoff = 20 if is_rpm else (2**attempt)
+                backoff = 35 if is_rpm else (2**attempt)
                 print(
                     f"  [retry {attempt}/{max_retries - 1}] {dialogue_id} error: {exc}. Waiting {backoff}s...",
                     file=sys.stderr,
@@ -158,9 +165,25 @@ def generate_one(
     raise last_err
 
 
+def _find_cached_audio_stems(audio_dir: Path) -> set[str]:
+    if not audio_dir.exists():
+        return set()
+    stems: set[str] = set()
+    for p in audio_dir.rglob("*"):
+        if not p.is_file() or p.suffix.lower() not in {".mp3", ".wav"}:
+            continue
+        rel_parts = p.relative_to(audio_dir).parts
+        if rel_parts and rel_parts[0] == "preview":
+            continue
+        stems.add(p.stem)
+    return stems
+
+
 def main() -> int:
+    load_dotenv(ENV_PATH)
+
     parser = argparse.ArgumentParser(
-        description="Batch pre-generate Thai voice lines from data/dialogues.json into audio_assets/."
+        description="Batch pre-generate Thai voice lines from data/ into categorized audio_assets/ subfolders."
     )
     parser.add_argument(
         "--model",
@@ -176,12 +199,17 @@ def main() -> int:
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Regenerate files even if audio_assets/{id}.mp3 or .wav already exists",
+        help="Regenerate files even if audio_assets/**/{id}.mp3 or .wav already exists",
     )
     parser.add_argument(
         "--only-fillers",
         action="store_true",
         help="Only generate entries marked with is_filler=true",
+    )
+    parser.add_argument(
+        "--bucket",
+        default=None,
+        help="Only generate entries for a specific bucket (e.g. act_a, act_b, combat, fillers)",
     )
     parser.add_argument(
         "--id",
@@ -196,18 +224,19 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    load_dotenv(ENV_PATH)
-
-    if not DIALOGUES_PATH.exists():
-        print(f"Error: {DIALOGUES_PATH} not found.", file=sys.stderr)
+    if not DATA_DIR.exists():
+        print(f"Error: {DATA_DIR} not found.", file=sys.stderr)
         return 1
 
-    payload = json.loads(DIALOGUES_PATH.read_text(encoding="utf-8"))
+    payload, _ = load_scenario_files(DATA_DIR)
     voice_profiles = payload.get("voice_profiles", {})
     dialogues = payload.get("dialogues", [])
 
     if args.only_fillers:
         dialogues = [d for d in dialogues if d.get("is_filler")]
+    if args.bucket:
+        target_bucket = args.bucket.strip().lower()
+        dialogues = [d for d in dialogues if audio_bucket_for_entry(d) == target_bucket]
     if args.only_id:
         dialogues = [d for d in dialogues if d.get("id") == args.only_id]
         if not dialogues:
@@ -220,13 +249,12 @@ def main() -> int:
             "Note: ffmpeg not found on PATH; saving raw 24kHz .wav files directly (backend serves both .mp3 and .wav)."
         )
 
+    cached_stems = _find_cached_audio_stems(AUDIO_DIR)
     pending: list[dict[str, Any]] = []
     skipped = 0
     for entry in dialogues:
         did = entry["id"]
-        mp3_exists = (AUDIO_DIR / f"{did}.mp3").exists()
-        wav_exists = (AUDIO_DIR / f"{did}.wav").exists()
-        if (mp3_exists or wav_exists) and not args.overwrite:
+        if did in cached_stems and not args.overwrite:
             skipped += 1
         else:
             pending.append(entry)
@@ -267,6 +295,8 @@ def main() -> int:
     using_paid = not api_key and bool(paid_api_key)
 
     generated = 0
+    generated_free = 0
+    generated_paid = 0
     failed = 0
     for idx, entry in enumerate(pending, start=1):
         did = entry["id"]
@@ -275,7 +305,12 @@ def main() -> int:
         try:
             out_path = generate_one(client, args.model, entry, voice_profiles, ffmpeg_bin)
             generated += 1
-            print(f"OK -> {out_path.name} ({out_path.stat().st_size} bytes)")
+            if using_paid:
+                generated_paid += 1
+            else:
+                generated_free += 1
+            tier_label = "paid" if using_paid else "free"
+            print(f"OK [{tier_label}] -> {out_path.name} ({out_path.stat().st_size} bytes)")
         except (DailyQuotaExhaustedError, Exception) as exc:  # noqa: BLE001
             err_lower = str(exc).lower()
             is_quota = isinstance(exc, DailyQuotaExhaustedError) or (
@@ -288,7 +323,8 @@ def main() -> int:
                 try:
                     out_path = generate_one(client, args.model, entry, voice_profiles, ffmpeg_bin)
                     generated += 1
-                    print(f"OK -> {out_path.name} ({out_path.stat().st_size} bytes)")
+                    generated_paid += 1
+                    print(f"OK [paid] -> {out_path.name} ({out_path.stat().st_size} bytes)")
                     if idx < len(pending) and args.delay > 0:
                         time.sleep(args.delay)
                     continue
@@ -310,7 +346,9 @@ def main() -> int:
         if idx < len(pending) and args.delay > 0:
             time.sleep(args.delay)
 
-    print(f"\nSummary: generated={generated}, skipped={skipped}, failed={failed}")
+    print(
+        f"\nSummary: generated={generated} (free={generated_free}, paid={generated_paid}), skipped={skipped}, failed={failed}"
+    )
     return 1 if failed > 0 else 0
 
 

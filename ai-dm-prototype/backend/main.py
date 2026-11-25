@@ -123,6 +123,8 @@ def _match_combat_action(text: str) -> Optional[str]:
     lower = text.lower()
     if any(k in lower for k in ("ท่า", "สกิล", "โฟกัส", "ยันต์", "สแกน", "ปฐมพยาบาล", "แนวป้องกัน", "จุดอ่อน")):
         return "role_skill"
+    if any(k in lower for k in ("ช่วย", "บัง", "คุ้มกันเพื่อน", "ดึงเพื่อน", "ขวาง")):
+        return "assist"
     if any(k in lower for k in ("กล่อม", "ปลอบ", "สวด")):
         return "soothe"
     if any(k in lower for k in ("ดึงสติ", "ตั้งสติ", "พัก", "หายใจ")):
@@ -170,7 +172,7 @@ async def _idle_watcher_loop() -> None:
                     "พวกคุณจะซักถามวิชัย ออกไปคุยกับต้น ตรวจผนังภาพเก่า หรือดูแผนที่ต่อดี?"
                     if act == "B"
                     else (
-                        "ลมฝนพัดผ่านศาลาริมทางจนเสียงใบกล้วยไหวกรอบแกรบ... "
+                        "ลมกลางคืนพัดผ่านศาลาริมทางจนเสียงใบกล้วยไหวกรอบแกรบ... "
                         "พวกคุณจะสอบถามประเสริฐ ตรวจเบาะแส หรือลองดูแผนที่ต่อดี?"
                     )
                 )
@@ -350,6 +352,16 @@ async def _run_ghost_turn(room: RoomState) -> None:
             },
             room=room.room_code,
         )
+        if res.get("roll_detail"):
+            await sio.emit(
+                "combat:roll",
+                {
+                    "roll": res["roll_detail"],
+                    "narration": res["summary"],
+                    "visual_fx": res.get("visual_fx", "ghost_lunge"),
+                },
+                room=room.room_code,
+            )
         for ev in res["events"]:
             await sio.emit("dm:audio", ev, room=room.room_code)
 
@@ -380,11 +392,62 @@ async def _run_ghost_turn(room: RoomState) -> None:
         await sio.emit("dm:thinking", {"active": False, "stage": ""}, room=room.room_code)
 
 
-async def _execute_combat_action(room: RoomState, sid: str, action_id: str) -> None:
+async def _execute_combat_action(
+    room: RoomState,
+    sid: str,
+    action_id: str,
+    *,
+    declaration_text: str = "",
+    target_ally_id: Optional[str] = None,
+) -> None:
     lock = _get_room_lock(room.room_code)
     async with lock:
+        player = room_manager.get_player_by_sid(sid)
+        if not player:
+            await sio.emit("dm:error", {"message": "ไม่พบข้อมูลตัวละครของคุณในห้อง"}, to=sid)
+            return
+
+        chosen_action = action_id
+        stat_override: Optional[str] = None
+        tactical_bonus = 0
+        tactical_reason: Optional[str] = None
+        chosen_ally = target_ally_id
+        narration_by_tier: Optional[dict[str, str]] = None
+
+        clean_decl = declaration_text.strip()
+        if clean_decl:
+            await sio.emit(
+                "dm:thinking",
+                {"active": True, "stage": "AI DM กำลังตัดสินการกระทำและคำนวณโบนัสแทคติก..."},
+                room=room.room_code,
+            )
+            try:
+                plan, _used_fb = await dm_engine.plan_combat_player_action(room, player, clean_decl, repo)
+                chosen_action = plan.action_id
+                stat_override = plan.stat_choice
+                tactical_bonus = plan.tactical_bonus
+                tactical_reason = plan.tactical_reason
+                chosen_ally = chosen_ally or plan.target_ally_id
+                narration_by_tier = {
+                    "full": plan.narration_full,
+                    "partial": plan.narration_partial,
+                    "failure": plan.narration_failure,
+                }
+            finally:
+                await sio.emit("dm:thinking", {"active": False, "stage": ""}, room=room.room_code)
+
         try:
-            res = room_manager.perform_combat_action(room.room_code, sid, action_id)
+            res = room_manager.perform_combat_action(
+                room.room_code,
+                sid,
+                chosen_action,
+                intent_text=clean_decl,
+                stat_override=stat_override,
+                tactical_bonus=tactical_bonus,
+                tactical_reason=tactical_reason,
+                target_ally_id=chosen_ally,
+                narration_by_tier=narration_by_tier,
+            )
         except ValueError as exc:
             await sio.emit("dm:error", {"message": str(exc)}, to=sid)
             return
@@ -394,8 +457,32 @@ async def _execute_combat_action(room: RoomState, sid: str, action_id: str) -> N
             {"sfx": res["sfx"], "summary": res["summary"]},
             room=room.room_code,
         )
-        for ev in res["events"]:
-            await sio.emit("dm:audio", ev, room=room.room_code)
+        if res.get("roll_detail"):
+            await sio.emit(
+                "combat:roll",
+                {
+                    "roll": res["roll_detail"],
+                    "narration": res.get("narration") or res["summary"],
+                    "visual_fx": res.get("visual_fx", "miss"),
+                },
+                room=room.room_code,
+            )
+        if res["events"]:
+            for ev in res["events"]:
+                await sio.emit("dm:audio", ev, room=room.room_code)
+        elif res.get("narration"):
+            await sio.emit(
+                "dm:audio",
+                {
+                    "mode": "script",
+                    "dialogue_id": None,
+                    "character": "DM",
+                    "subtitle": res["narration"],
+                    "audio_url": None,
+                    "is_filler": False,
+                },
+                room=room.room_code,
+            )
 
         await _emit_room_state(room)
         _record_ending_once(room)
@@ -405,22 +492,7 @@ async def _execute_combat_action(room: RoomState, sid: str, action_id: str) -> N
 
 async def _process_player_turn(room: RoomState, sid: str, player_name: str, text: str) -> None:
     if room.combat and room.combat.active:
-        matched = _match_combat_action(text)
-        if matched:
-            await _execute_combat_action(room, sid, matched)
-            return
-        await sio.emit(
-            "dm:audio",
-            {
-                "mode": "script",
-                "dialogue_id": None,
-                "character": "DM",
-                "subtitle": "ขณะนี้อยู่ในฉากต่อสู้! กดปุ่มคำสั่งด้านล่าง หรือพูดว่า โจมตี / กล่อม / ดึงสติ / ใช้ท่า / ถอย",
-                "audio_url": None,
-                "is_filler": False,
-            },
-            room=room.room_code,
-        )
+        await _execute_combat_action(room, sid, "", declaration_text=text)
         return
 
     lock = _get_room_lock(room.room_code)
@@ -638,15 +710,20 @@ async def on_game_start(sid: str, _data: dict[str, Any] | None = None) -> None:
 @sio.on("mic:start")
 async def on_mic_start(sid: str, _data: dict[str, Any] | None = None) -> None:
     room = room_manager.get_room_by_sid(sid)
+    player = room_manager.get_player_by_sid(sid)
     if not room:
         return
     if room.combat and room.combat.active:
-        await sio.emit(
-            "dm:error",
-            {"message": "ขณะนี้อยู่ในฉากต่อสู้ ปิดการใช้ไมค์ชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้"},
-            to=sid,
-        )
-        return
+        if room.combat.phase != "players":
+            await sio.emit("dm:error", {"message": "กรุณารอตาของผีเงาจมน้ำสักครู่"}, to=sid)
+            return
+        if player and (not player.is_conscious or player.acted_this_round):
+            await sio.emit(
+                "dm:error",
+                {"message": "คุณลงมือในรอบนี้ไปแล้วหรือหมดสติอยู่ กรุณารอเพื่อนร่วมทีม"},
+                to=sid,
+            )
+            return
     can_mic, reason_holder = room_manager.can_start_mic(room, sid)
     if not can_mic:
         await sio.emit("mic:denied", {"holder_name": reason_holder}, to=sid)
@@ -720,12 +797,20 @@ async def on_mic_transcribe(sid: str, data: dict[str, Any]) -> None:
         return
 
     if room.combat and room.combat.active:
-        await sio.emit(
-            "mic:transcript",
-            {"ok": False, "error": "ขณะนี้อยู่ในฉากต่อสู้ ปิดการพูดคุยชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน"},
-            to=sid,
-        )
-        return
+        if room.combat.phase != "players":
+            await sio.emit(
+                "mic:transcript",
+                {"ok": False, "error": "กรุณารอตาของผีเงาจมน้ำให้จบก่อน"},
+                to=sid,
+            )
+            return
+        if not player.is_conscious or player.acted_this_round:
+            await sio.emit(
+                "mic:transcript",
+                {"ok": False, "error": "คุณลงมือในรอบนี้ไปแล้ว กรุณารอขึ้นรอบใหม่"},
+                to=sid,
+            )
+            return
 
     if room.ending_triggered:
         ending_act = room_manager.act_for_scene(room.current_scene)
@@ -793,13 +878,15 @@ async def on_mic_audio(sid: str, data: dict[str, Any]) -> None:
     await sio.emit("mic:unlocked", {}, room=room.room_code)
 
     if room.combat and room.combat.active:
+        if room.combat.phase != "players" or not player.is_conscious or player.acted_this_round:
+            await _emit_room_state(room)
+            await sio.emit(
+                "dm:error",
+                {"message": "ตอนนี้ยังลงมือในรอบนี้ไม่ได้ กรุณารอตาถัดไป"},
+                to=sid,
+            )
+            return
         await _emit_room_state(room)
-        await sio.emit(
-            "dm:error",
-            {"message": "ขณะนี้อยู่ในฉากต่อสู้ ปิดการพูดคุยชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน"},
-            to=sid,
-        )
-        return
 
     if room.ending_triggered:
         ending_act = room_manager.act_for_scene(room.current_scene)
@@ -880,11 +967,25 @@ async def on_chat_message(sid: str, data: dict[str, Any]) -> None:
     if not room or not player:
         return
     if room.combat and room.combat.active:
+        text = str(data.get("text") or "").strip()[:300]
+        if not text:
+            return
+        if room.combat.phase != "players":
+            await sio.emit("dm:error", {"message": "กรุณารอตาของผีเงาจมน้ำสักครู่"}, to=sid)
+            return
+        if not player.is_conscious:
+            await sio.emit("dm:error", {"message": "ตัวละครของคุณหมดสติหรือเสียขวัญแล้ว ไม่สามารถลงมือได้"}, to=sid)
+            return
+        if player.acted_this_round:
+            await sio.emit("dm:error", {"message": "คุณลงมือในรอบนี้ไปแล้ว รอเพื่อนร่วมทีมหรือขึ้นรอบถัดไป"}, to=sid)
+            return
+        room_manager.append_log(room, player.name, text, kind="player")
         await sio.emit(
-            "dm:error",
-            {"message": "ขณะนี้อยู่ในฉากต่อสู้ ปิดการพูดคุยชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน"},
-            to=sid,
+            "player:transcript",
+            {"speaker": player.name, "role_name": player.role_name, "text": text},
+            room=room.room_code,
         )
+        await _execute_combat_action(room, sid, "", declaration_text=text)
         return
     if room.ending_triggered:
         ending_act = room_manager.act_for_scene(room.current_scene)
@@ -998,7 +1099,15 @@ async def on_combat_action(sid: str, data: dict[str, Any]) -> None:
     if not room:
         return
     action_id = str(data.get("action_id") or "")
-    await _execute_combat_action(room, sid, action_id)
+    intent_text = str(data.get("intent_text") or "").strip()
+    target_ally_id = data.get("target_ally_id")
+    await _execute_combat_action(
+        room,
+        sid,
+        action_id,
+        declaration_text=intent_text,
+        target_ally_id=str(target_ally_id) if target_ally_id else None,
+    )
 
 
 @sio.on("room:advance_act_b")

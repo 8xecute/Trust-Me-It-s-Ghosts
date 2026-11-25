@@ -20,6 +20,105 @@ MAX_LIVE_TTS_PER_ROOM = 25
 DEFAULT_EMPTY_ROOM_TTL_SECONDS = 120.0
 
 
+def _dialogue_act_from_id(did: str) -> Optional[str]:
+    """Extract Act code ('A'..'F') from IDs like 'b_ending_to_act_c' or 'b3_wichai_stay_behind'."""
+    if not did:
+        return None
+    act = did[0].upper()
+    if act not in {"A", "B", "C", "D", "E", "F"}:
+        return None
+    if len(did) >= 2 and did[1] == "_":
+        return act
+    if len(did) >= 3 and did[1].isdigit() and did[2] == "_":
+        return act
+    return None
+
+
+def audio_bucket_for_entry(entry: dict[str, Any]) -> str:
+    """Map a dialogue entry to its audio_assets subfolder (act_a, act_b, combat, fillers, ...)."""
+    if entry.get("is_filler"):
+        return "fillers"
+    scene = str(entry.get("scene") or "")
+    if scene == "COMBAT":
+        return "combat"
+    if scene and scene[0].upper() in {"A", "B", "C", "D", "E", "F"}:
+        return f"act_{scene[0].lower()}"
+    act = _dialogue_act_from_id(str(entry.get("id") or ""))
+    if act:
+        return f"act_{act.lower()}"
+    return "common"
+
+
+def load_scenario_files(data_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Load modular scenario data from data/{common,combat,act_*} or fall back to flat JSONs."""
+    common_dir = data_dir / "common"
+    if common_dir.is_dir():
+        def _read(path: Path, default: Any = None) -> Any:
+            if not path.exists():
+                return {} if default is None else default
+            return json.loads(path.read_text(encoding="utf-8"))
+
+        case_meta = _read(common_dir / "case.json", {})
+        voices_raw = _read(common_dir / "voices.json", {})
+        roles_raw = _read(common_dir / "roles.json", {})
+        fillers_raw = _read(common_dir / "fillers.json", {})
+        combat_enc_raw = _read(data_dir / "combat" / "encounter.json", {})
+        combat_dlg_raw = _read(data_dir / "combat" / "dialogues.json", {})
+
+        dialogues: list[dict[str, Any]] = []
+        clues_catalog: dict[str, dict[str, str]] = {}
+        items_catalog: dict[str, dict[str, str]] = {}
+        board_nodes: list[dict[str, Any]] = []
+        scenes: dict[str, dict[str, Any]] = {}
+        dice_checks: dict[str, dict[str, Any]] = {}
+        endings: dict[str, dict[str, Any]] = {}
+
+        act_dirs = sorted(
+            (p for p in data_dir.iterdir() if p.is_dir() and p.name.startswith("act_")),
+            key=lambda p: p.name,
+        )
+        for act_dir in act_dirs:
+            act_lore = _read(act_dir / "lore.json", {})
+            act_code = str(act_lore.get("act") or act_dir.name.replace("act_", "").upper())
+            clues_catalog.update(act_lore.get("clues_catalog", {}))
+            items_catalog.update(act_lore.get("items_catalog", {}))
+            for node in act_lore.get("board_nodes", []):
+                node_copy = dict(node)
+                node_copy.setdefault("act", act_code)
+                board_nodes.append(node_copy)
+            scenes.update(act_lore.get("scenes", {}))
+            dice_checks.update(act_lore.get("dice_checks", {}))
+            endings.update(act_lore.get("endings", {}))
+
+            act_dlgs = _read(act_dir / "dialogues.json", {})
+            dialogues.extend(act_dlgs.get("dialogues", []))
+
+        dialogues.extend(combat_dlg_raw.get("dialogues", []))
+        dialogues.extend(fillers_raw.get("dialogues", []))
+
+        dialogues_raw = {
+            "voice_profiles": voices_raw.get("voice_profiles", {}),
+            "dialogues": dialogues,
+        }
+        lore_raw = {
+            "case_id": case_meta.get("case_id", "CASE001"),
+            "case_title": case_meta.get("case_title", "CASE 001"),
+            "roles": roles_raw.get("roles", []),
+            "clues_catalog": clues_catalog,
+            "items_catalog": items_catalog,
+            "board_nodes": board_nodes,
+            "scenes": scenes,
+            "dice_checks": dice_checks,
+            "combat_encounter": combat_enc_raw.get("combat_encounter", {}),
+            "endings": endings,
+        }
+        return dialogues_raw, lore_raw
+
+    dialogues_raw = json.loads((data_dir / "dialogues.json").read_text(encoding="utf-8"))
+    lore_raw = json.loads((data_dir / "world_lore.json").read_text(encoding="utf-8"))
+    return dialogues_raw, lore_raw
+
+
 class ScenarioRepository:
     """Loads and serves data-driven dialogues, lore, voice profiles, checks, combat, and assets."""
 
@@ -27,8 +126,7 @@ class ScenarioRepository:
         self.data_dir = data_dir
         self.audio_dir = audio_dir
 
-        dialogues_raw = json.loads((data_dir / "dialogues.json").read_text(encoding="utf-8"))
-        lore_raw = json.loads((data_dir / "world_lore.json").read_text(encoding="utf-8"))
+        dialogues_raw, lore_raw = load_scenario_files(data_dir)
 
         self.voice_profiles: dict[str, dict[str, str]] = dialogues_raw.get("voice_profiles", {})
         self.dialogues: list[dict[str, Any]] = dialogues_raw.get("dialogues", [])
@@ -89,21 +187,42 @@ class ScenarioRepository:
             self.voice_profiles.get("DM", {"voice": "Charon", "style": "เสียงทุ้มต่ำ สุขุม"}),
         )
 
+    def _iter_audio_files(self) -> list[Path]:
+        if not self.audio_dir.exists():
+            return []
+        files: list[Path] = []
+        for path in self.audio_dir.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in {".mp3", ".wav"}:
+                continue
+            rel_parts = path.relative_to(self.audio_dir).parts
+            if rel_parts and rel_parts[0] == "preview":
+                continue
+            files.append(path)
+        # Sort so .mp3 takes priority over .wav if both exist
+        files.sort(key=lambda p: (0 if p.suffix.lower() == ".mp3" else 1, str(p)))
+        return files
+
     def resolve_audio_url(self, audio_id: str) -> Optional[str]:
-        """Return static URL if pre-generated .mp3 or .wav exists on disk."""
+        """Return static URL if pre-generated .mp3 or .wav exists anywhere under audio_assets/."""
         for ext in ("mp3", "wav"):
-            if (self.audio_dir / f"{audio_id}.{ext}").exists():
+            direct = self.audio_dir / f"{audio_id}.{ext}"
+            if direct.exists():
                 return f"/audio_assets/{audio_id}.{ext}"
+        entry = self.dialogues_by_id.get(audio_id)
+        if entry:
+            bucket = audio_bucket_for_entry(entry)
+            for ext in ("mp3", "wav"):
+                bucketed = self.audio_dir / bucket / f"{audio_id}.{ext}"
+                if bucketed.exists():
+                    return f"/audio_assets/{bucket}/{audio_id}.{ext}"
+        for path in self._iter_audio_files():
+            if path.stem == audio_id:
+                rel = path.relative_to(self.audio_dir).as_posix()
+                return f"/audio_assets/{rel}"
         return None
 
     def count_cached_audio(self) -> int:
-        if not self.audio_dir.exists():
-            return 0
-        seen: set[str] = set()
-        for path in self.audio_dir.iterdir():
-            if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}:
-                seen.add(path.stem)
-        return len(seen)
+        return len({p.stem for p in self._iter_audio_files()})
 
     def default_filler_for_speaker(self, speaker: str) -> dict[str, Any]:
         preferred = {
@@ -147,6 +266,8 @@ class PlayerInfo:
     statuses: list[str] = field(default_factory=list)
     guarded: bool = False
     damage_reduction: int = 0
+    assisted_bonus: int = 0
+    protected_by: Optional[str] = None
     acted_this_round: bool = False
     connected: bool = True
     joined_at: float = field(default_factory=time.time)
@@ -164,7 +285,7 @@ class CombatState:
     enemy_id: str = "DROWNED_ECHO"
     enemy_name: str = "ผีเงาจมน้ำ"
     enemy_sprite: str = "/assets/characters/drowned_echo.png"
-    background_image: str = "/assets/scenes/banana_grove.png"
+    background_image: str = "/assets/scenes/a3_grove_entrance.png"
     enemy_hp: int = 8
     enemy_max_hp: int = 8
     soothe_progress: int = 0
@@ -174,6 +295,10 @@ class CombatState:
     ghost_exposed: bool = False
     party_shield: int = 0
     return_scene: str = "A3"
+    telegraph: Optional[dict[str, Any]] = None
+    environment_features: list[dict[str, str]] = field(default_factory=list)
+    last_roll: Optional[dict[str, Any]] = None
+    chronicle: list[dict[str, Any]] = field(default_factory=list)
     combat_log: list[str] = field(default_factory=list)
 
 
@@ -561,10 +686,7 @@ class RoomManager:
                 continue
             entry_scene = entry.get("scene")
             if entry_scene == "*":
-                if not (
-                    (current_act == "B" and did.startswith("b_"))
-                    or (current_act == "A" and did.startswith("a_"))
-                ):
+                if _dialogue_act_from_id(did) != current_act:
                     continue
             elif entry_scene != room.current_scene:
                 continue
@@ -843,6 +965,68 @@ class RoomManager:
 
     # ----------------- TURN-BASED COMBAT ENGINE -----------------
 
+    @staticmethod
+    def _default_combat_features() -> list[dict[str, str]]:
+        return [
+            {
+                "id": "mud_puddle",
+                "label": "แอ่งโคลนเดือดพล่าน",
+                "hint": "ล่อหรือสาดไฟฉายตัดจังหวะเงาที่ผุดขึ้นจากโคลน",
+                "sample": "สาดไฟฉายแรงสูงลงกลางแอ่งโคลนแล้วพุ่งกระแทกให้มันชะงัก",
+            },
+            {
+                "id": "flashlight_beam",
+                "label": "ลำแสงไฟฉายภาคสนาม",
+                "hint": "ส่องตัดความมืดช่วยเปิดช่องโหว่หรือดึงเพื่อนหลบ",
+                "sample": "คว้าตัวเพื่อนที่กำลังจะโดนตะปบหลบเข้าแนวลำแสงไฟฉาย",
+            },
+            {
+                "id": "banana_grove_trails",
+                "label": "แนวต้นกล้วยรกทึบ",
+                "hint": "ใช้ดงกล้วยกำบังแนวถอยหรือตั้งสติเรียกความทรงจำแม่แก้ว",
+                "sample": "ตะโกนถามเสียงในวิทยุเรื่องคืนน้ำท่วมปี 2534 เพื่อเรียกสติมัน",
+            },
+        ]
+
+    @staticmethod
+    def _prepare_round_telegraph(room: RoomState) -> None:
+        combat = room.combat
+        if not combat:
+            return
+        conscious = [p for p in room.players.values() if p.is_conscious]
+        pool = [p for p in conscious if p.connected] or conscious
+        if not pool:
+            combat.telegraph = None
+            return
+
+        if combat.retreat_progress >= 1:
+            move_id = "UNDERFLOOR_HAND"
+            move_name = "มือจากใต้พื้น"
+            target = max(pool, key=lambda p: p.hp)
+            hint = f"โคลนรอบเท้าของ {target.name} เริ่มขยับยวบยาบ คล้ายมีมือซีดกำลังจะผุดขึ้นมาคว้าข้อเท้า!"
+            counter_tip = "ช่วยเพื่อนดึงขาหลุด / กางยันต์คุ้มภัย หรือตั้งแนวรับก่อนถอย"
+        elif combat.soothe_progress >= 1 or min(p.sanity for p in pool) <= 6:
+            move_id = "DROWNED_WHISPER"
+            move_name = "เสียงเรียกจากคราบน้ำ"
+            target = min(pool, key=lambda p: p.sanity)
+            hint = f"ผีเงาจมน้ำหันหน้ามาทาง {target.name} เสียงหายใจสำลักน้ำดังก้องเตรียมบั่นทอนสติ!"
+            counter_tip = "ใช้ 'กล่อมวิญญาณ' หรือ 'ช่วยเพื่อน / คุ้มกัน' เพื่อยืนขวางและเรียกสติ"
+        else:
+            move_id = "WET_CLAW"
+            move_name = "เล็บเปียกน้ำ"
+            target = min(pool, key=lambda p: p.hp)
+            hint = f"ผีเงาจมน้ำย่อตัวกางกรงเล็บเปียกโคลน เล็งจะพุ่งตะปบใส่ {target.name}!"
+            counter_tip = "สาดไฟฉายเปิดจุดอ่อน ใช้ 'ช่วยเพื่อน / คุ้มกัน' หรือ 'ตั้งแนวป้องกัน' รับแรงปะทะ"
+
+        combat.telegraph = {
+            "move_id": move_id,
+            "move_name": move_name,
+            "target_id": target.public_id,
+            "target_name": target.name,
+            "hint": hint,
+            "counter_tip": counter_tip,
+        }
+
     def start_combat(self, room_code: str, return_scene: Optional[str] = None) -> list[dict[str, Any]]:
         room = self.get_or_create_room(room_code)
         enc = self.repo.combat_encounter
@@ -864,7 +1048,7 @@ class RoomManager:
             enemy_id=enc.get("id", "DROWNED_ECHO"),
             enemy_name=enc.get("name", "ผีเงาจมน้ำ"),
             enemy_sprite=enc.get("sprite", "/assets/characters/drowned_echo.png"),
-            background_image=enc.get("background_image", "/assets/scenes/banana_grove.png"),
+            background_image=enc.get("background_image", "/assets/scenes/a3_grove_entrance.png"),
             enemy_hp=max_hp,
             enemy_max_hp=max_hp,
             soothe_progress=0,
@@ -872,6 +1056,10 @@ class RoomManager:
             retreat_progress=0,
             retreat_goal=int(enc.get("retreat_goal", 2)),
             return_scene=return_scene or room.current_scene,
+            environment_features=self._default_combat_features(),
+            chronicle=[
+                {"round": 1, "actor": "ระบบ", "tier": "system", "text": "เริ่มการเผชิญหน้ากับผีเงาจมน้ำบริเวณปากทางสวนกล้วย"}
+            ],
             combat_log=["เริ่มการเผชิญหน้ากับ ผีเงาจมน้ำ! รอบที่ 1 — ตาของผู้สืบสวน"],
         )
 
@@ -879,7 +1067,11 @@ class RoomManager:
             p.acted_this_round = False
             p.guarded = False
             p.damage_reduction = 0
+            p.assisted_bonus = 0
+            p.protected_by = None
             p.statuses = []
+
+        self._prepare_round_telegraph(room)
 
         events: list[dict[str, Any]] = []
         intro = self.repo.get_dialogue("combat_drowned_intro")
@@ -907,7 +1099,19 @@ class RoomManager:
             return False
         return all(p.acted_this_round for p in conscious_connected)
 
-    def perform_combat_action(self, room_code: str, sid: str, action_id: str) -> dict[str, Any]:
+    def perform_combat_action(
+        self,
+        room_code: str,
+        sid: str,
+        action_id: str,
+        *,
+        intent_text: str = "",
+        stat_override: Optional[str] = None,
+        tactical_bonus: int = 0,
+        tactical_reason: Optional[str] = None,
+        target_ally_id: Optional[str] = None,
+        narration_by_tier: Optional[dict[str, str]] = None,
+    ) -> dict[str, Any]:
         room = self.get_or_create_room(room_code)
         combat = room.combat
         if not combat or not combat.active:
@@ -924,7 +1128,7 @@ class RoomManager:
             raise ValueError("คุณลงมือในรอบนี้ไปแล้ว รอเพื่อนร่วมทีมหรือขึ้นรอบถัดไป")
 
         if "SHAKEN" in player.statuses and action_id in {"soothe", "role_skill"}:
-            raise ValueError("ติดสถานะหวาดกลัว! รอบนี้กล่อมหรือใช้ท่าประจำอาชีพไม่ได้ (ลองโจมตีหรือดึงสติ)")
+            raise ValueError("ติดสถานะหวาดกลัว! รอบนี้กล่อมหรือใช้ท่าประจำอาชีพไม่ได้ (ลองโจมตี ช่วยเพื่อน หรือดึงสติ)")
         if "ROOTED" in player.statuses and action_id == "retreat":
             raise ValueError("ติดสถานะพันธนาการ! ขาถูกจับไว้ ถอยทัพไม่ได้จนกว่าจะล้างสถานะหรือพ้นรอบนี้")
 
@@ -932,55 +1136,244 @@ class RoomManager:
         pdef = int(enc.get("pdef", 12))
         mdef = int(enc.get("mdef", 13))
         exposed_bonus = 2 if combat.ghost_exposed else 0
+        assist_bonus = int(player.assisted_bonus or 0)
+        safe_tactical = max(0, min(2, int(tactical_bonus or 0)))
+        clean_intent = intent_text.strip()[:240]
 
         room.last_activity_at = time.time()
         summary = ""
+        narration = ""
         sfx = "combat_hit"
+        visual_fx = "miss"
+        tier_key = "full"
+        roll_detail: Optional[dict[str, Any]] = None
         events: list[dict[str, Any]] = []
 
+        valid_stats = {"BODY", "PER", "INT", "SOC", "SPI", "RES"}
+        chosen_override = stat_override.upper() if stat_override and stat_override.upper() in valid_stats else None
+
+        def _pick_narration(default_text: str) -> str:
+            if narration_by_tier and narration_by_tier.get(tier_key):
+                return narration_by_tier[tier_key].strip()
+            return default_text
+
         if action_id == "strike":
-            stat = "BODY" if player.stats.get("BODY", 0) >= player.stats.get("SPI", 0) else "SPI"
+            stat = chosen_override or ("BODY" if player.stats.get("BODY", 0) >= player.stats.get("SPI", 0) else "SPI")
             mod = int(player.stats.get(stat, 0))
             d20 = secrets.randbelow(20) + 1
-            total = d20 + mod + exposed_bonus
-            if total >= pdef:
+            bonus_total = exposed_bonus + assist_bonus + safe_tactical
+            total = d20 + mod + bonus_total
+            player.assisted_bonus = 0
+
+            if d20 == 20:
+                dmg = 5 + (1 if combat.ghost_exposed else 0)
+                combat.enemy_hp = max(0, combat.enemy_hp - dmg)
+                combat.ghost_exposed = True
+                tier_key = "full"
+                tier_label = "คริติคอล! (NAT 20)"
+                summary = f"{player.name} โจมตีคริติคอลด้วย {stat} (D20:20+{mod}+{bonus_total}={total}) -{dmg} HP ผี + เปิดจุดอ่อน!"
+                narration = _pick_narration(
+                    f"{player.name} ชิงจังหวะแม่นยำพุ่งโจมตีเต็มแรงจนร่างโคลนของผีเงาจมน้ำแตกกระเซ็น (-{dmg} HP และเปิดช่องโหว่ทั้งทีม)!"
+                )
+                sfx = "dice_success"
+                visual_fx = "ghost_hit"
+            elif total >= pdef:
                 dmg = 3 + (1 if combat.ghost_exposed else 0)
                 combat.enemy_hp = max(0, combat.enemy_hp - dmg)
-                summary = f"{player.name} โจมตีด้วย {stat} (D20:{d20}+{mod + exposed_bonus}={total} ≥ {pdef}) โดนเต็ม! -{dmg} HP ผี"
+                tier_key = "full"
+                tier_label = "สำเร็จเต็ม"
+                summary = f"{player.name} โจมตีด้วย {stat} (D20:{d20}+{mod + bonus_total}={total} ≥ {pdef}) โดนเต็ม! -{dmg} HP ผี"
+                narration = _pick_narration(
+                    f"{player.name} จู่โจมทะลุแนวเงาโคลนเข้ากลางลำตัวผีเงาจมน้ำเต็มแรง (-{dmg} HP)!"
+                )
                 sfx = "combat_hit"
-            elif total >= pdef - 3:
+                visual_fx = "ghost_hit"
+            elif total >= pdef - 3 and d20 != 1:
                 dmg = 1
                 combat.enemy_hp = max(0, combat.enemy_hp - dmg)
+                tier_key = "partial"
+                tier_label = "เฉียด (Partial)"
                 summary = f"{player.name} โจมตีเฉี่ยว ({total}/{pdef}) ทำได้ {dmg} HP ผี"
+                narration = _pick_narration(
+                    f"ผีเงาจมน้ำเอนตัวหลบได้หวุดหวิด แต่แรงปะทะยังเฉี่ยวโดนร่างมันไปได้ {dmg} HP"
+                )
                 sfx = "combat_hit"
-            else:
-                summary = f"{player.name} โจมตีพลาด ({total}/{pdef}) เงาจมน้ำเลือนหลบไปได้"
+                visual_fx = "ghost_hit"
+            elif d20 == 1:
+                tier_key = "failure"
+                tier_label = "พลาดหนัก (NAT 1)"
+                if player.sanity > 1:
+                    player.sanity -= 1
+                summary = f"{player.name} พลาดหนัก (NAT 1)! เงาจมน้ำตวัดโคลนกระแทกกลับ (สติ -1)"
+                narration = _pick_narration(
+                    f"{player.name} เสียหลักกลางโคลนลื่น ปล่อยให้เสียงหัวเราะสำลักน้ำกระแทกใส่จนขวัญเสีย (สติ -1)"
+                )
                 sfx = "dice_fail"
+                visual_fx = "miss"
+            else:
+                tier_key = "failure"
+                tier_label = "พลาด (Failure)"
+                summary = f"{player.name} โจมตีพลาด ({total}/{pdef}) เงาจมน้ำเลือนหลบไปได้"
+                narration = _pick_narration(
+                    f"จังหวะจู่โจมของ {player.name} แหวกผ่านได้เพียงเงาละอองน้ำที่สลายหลบไปในความมืด"
+                )
+                sfx = "dice_fail"
+                visual_fx = "miss"
+
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "strike",
+                "action_label": "โจมตี / ปะทะ",
+                "stat": stat,
+                "d20": d20,
+                "modifier": mod,
+                "bonus": bonus_total,
+                "bonus_reason": tactical_reason or ("ได้เปรียบ/จุดอ่อน" if bonus_total else None),
+                "total": total,
+                "target_dc": pdef,
+                "dc_label": "PDEF",
+                "tier": tier_key,
+                "tier_label": tier_label,
+                "is_ghost": False,
+            }
 
         elif action_id == "soothe":
-            stat = "SOC" if player.stats.get("SOC", 0) >= player.stats.get("SPI", 0) else "SPI"
+            stat = chosen_override or ("SOC" if player.stats.get("SOC", 0) >= player.stats.get("SPI", 0) else "SPI")
             mod = int(player.stats.get(stat, 0))
             d20 = secrets.randbelow(20) + 1
-            total = d20 + mod + exposed_bonus
+            bonus_total = exposed_bonus + assist_bonus + safe_tactical
+            total = d20 + mod + bonus_total
+            player.assisted_bonus = 0
+
             if total >= mdef:
-                gain = 2 if d20 >= 18 else 1
+                gain = 2 if (d20 >= 18) else 1
                 combat.soothe_progress = min(combat.soothe_goal, combat.soothe_progress + gain)
-                summary = f"{player.name} กล่อมวิญญาณ ({stat} {total} ≥ {mdef}) สงบลง +{gain} ({combat.soothe_progress}/{combat.soothe_goal})"
+                tier_key = "full"
+                tier_label = "ปลอบสงบ +" + str(gain)
+                summary = f"{player.name} กล่อมวิญญาณ ({stat} D20:{d20}+{mod + bonus_total}={total} ≥ {mdef}) สงบลง +{gain} ({combat.soothe_progress}/{combat.soothe_goal})"
+                narration = _pick_narration(
+                    f"{player.name} เอ่ยคำปลอบโยนฝ่าเสียงน้ำไหล จนร่างเงาจมน้ำชะงักนิ่งและเปลือกโคลนสั่นคลอน (+{gain} กล่อมวิญญาณ)!"
+                )
                 sfx = "skill_cast"
+                visual_fx = "ghost_soothe"
+            elif total >= mdef - 3:
+                combat.ghost_exposed = True
+                tier_key = "partial"
+                tier_label = "ชะงัก (เปิดจุดอ่อน +2)"
+                summary = f"{player.name} เรียกสติเฉียดเป้า ({total}/{mdef}) ทำให้ผีชะงักและเปิดจุดอ่อนทั้งทีม (+2 ทอย)!"
+                narration = _pick_narration(
+                    f"เสียงเรียกของ {player.name} ทำให้ผีเงาจมน้ำหยุดชะงักไปชั่วครู่ เปิดช่องให้เพื่อนร่วมทีมจู่โจมหรือกล่อมต่อได้แม่นขึ้น (+2 ทอย)!"
+                )
+                sfx = "skill_cast"
+                visual_fx = "ghost_soothe"
             else:
+                tier_key = "failure"
+                tier_label = "ไม่เป็นผล (Failure)"
                 summary = f"{player.name} พยายามกล่อมวิญญาณ ({total}/{mdef}) แต่เสียงสำลักน้ำกลบเสียงของคุณ"
+                narration = _pick_narration(
+                    f"เสียงครวญสำลักน้ำดังกลบคำพูดของ {player.name} จนไม่อาจเข้าถึงความทรงจำของมันได้"
+                )
                 sfx = "dice_fail"
+                visual_fx = "miss"
+
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "soothe",
+                "action_label": "กล่อมวิญญาณ",
+                "stat": stat,
+                "d20": d20,
+                "modifier": mod,
+                "bonus": bonus_total,
+                "bonus_reason": tactical_reason or ("ได้เปรียบ/จุดอ่อน" if bonus_total else None),
+                "total": total,
+                "target_dc": mdef,
+                "dc_label": "MDEF",
+                "tier": tier_key,
+                "tier_label": tier_label,
+                "is_ghost": False,
+            }
+
+        elif action_id == "assist":
+            others = [p for p in room.players.values() if p.player_token != player.player_token and p.is_conscious]
+            ally = next((p for p in others if target_ally_id and p.public_id == target_ally_id), None)
+            if ally is None and combat.telegraph:
+                tele_id = combat.telegraph.get("target_id")
+                ally = next((p for p in others if p.public_id == tele_id), None)
+            if ally is None and others:
+                afflicted = [p for p in others if p.statuses]
+                pool_pick = afflicted or others
+                ally = min(pool_pick, key=lambda p: (p.hp, p.sanity))
+
+            tier_key = "full"
+            if ally is not None:
+                cleared = list(ally.statuses)
+                ally.statuses = []
+                ally.damage_reduction += 2
+                ally.assisted_bonus = max(ally.assisted_bonus, 2)
+                ally.protected_by = player.name
+                cleared_note = f" ล้างสถานะ {', '.join(cleared)} และ" if cleared else ""
+                summary = f"{player.name} เข้าคุ้มกัน {ally.name} ({cleared_note}ลดดาเมจ 2 + ได้เปรียบ +2 ทอย)"
+                narration = _pick_narration(
+                    f"{player.name} พุ่งเข้าไปคว้าตัวและตั้งแนวขวางหน้าให้ {ally.name} ลดแรงปะทะรอบนี้ลง 2 หน่วย พร้อมเปิดช่องได้เปรียบ +2 ให้ลงมือต่อ!"
+                )
+            else:
+                player.guarded = True
+                player.damage_reduction += 2
+                player.assisted_bonus = max(player.assisted_bonus, 2)
+                summary = f"{player.name} ตั้งหลักคุ้มกันตัวเอง (ลดดาเมจ 2 + ได้เปรียบ +2 ทอยรอบหน้า)"
+                narration = _pick_narration(
+                    f"{player.name} ก้าวถอยคุมจังหวะแสงไฟฉาย ยืนปักหลักรับมือการจู่โจมรอบนี้ด้วยความเยือกเย็น"
+                )
+            sfx = "skill_cast"
+            visual_fx = "party_buff"
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "assist",
+                "action_label": "ช่วยเพื่อน / คุ้มกัน",
+                "stat": "TEAM",
+                "d20": None,
+                "modifier": None,
+                "bonus": 2,
+                "bonus_reason": tactical_reason or "คุ้มกัน & ส่งต่อความได้เปรียบ",
+                "total": None,
+                "target_dc": None,
+                "dc_label": "Auto",
+                "tier": "full",
+                "tier_label": "คุ้มกันสำเร็จ",
+                "is_ghost": False,
+            }
 
         elif action_id == "steady":
             old_san, old_foc = player.sanity, player.focus
             player.sanity = min(player.max_sanity, player.sanity + 2)
             player.focus = min(player.max_focus, player.focus + 1)
             player.statuses = []
+            tier_key = "full"
             summary = (
                 f"{player.name} ตั้งสติและสะบัดหลุดจากอาการหลอน "
                 f"(สติ {old_san}→{player.sanity}, โฟกัส {old_foc}→{player.focus})"
             )
+            narration = _pick_narration(
+                f"{player.name} สูดลมหายใจลึก กดความหวาดกลัวในความมืดลงจนสติกลับมามั่นคง (สติ +2, โฟกัส +1)!"
+            )
             sfx = "skill_cast"
+            visual_fx = "party_buff"
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "steady",
+                "action_label": "ดึงสติ",
+                "stat": "RES",
+                "d20": None,
+                "modifier": int(player.stats.get("RES", 0)),
+                "bonus": 0,
+                "bonus_reason": "ฟื้นสติ & ล้างสถานะ",
+                "total": None,
+                "target_dc": None,
+                "dc_label": "Auto",
+                "tier": "full",
+                "tier_label": "มั่นคงขึ้น",
+                "is_ghost": False,
+            }
 
         elif action_id == "role_skill":
             if player.focus < 1:
@@ -989,46 +1382,115 @@ class RoomManager:
             skill_id = (player.skill or {}).get("id", "")
             skill_name = (player.skill or {}).get("name", "ท่าประจำอาชีพ")
             sfx = "skill_cast"
+            tier_key = "full"
 
             if skill_id == "weakness_analysis":
                 combat.ghost_exposed = True
                 combat.enemy_hp = max(0, combat.enemy_hp - 1)
                 summary = f"{player.name} ใช้ [{skill_name}] เปิดจุดอ่อนผี (+2 ทอยทั้งทีม) และทำ 1 HP ผี!"
+                visual_fx = "ghost_hit"
             elif skill_id == "soothe_spirit":
                 combat.soothe_progress = min(combat.soothe_goal, combat.soothe_progress + 2)
                 summary = f"{player.name} ใช้ [{skill_name}] ปลอบวิญญาณ +2 ({combat.soothe_progress}/{combat.soothe_goal})"
+                visual_fx = "ghost_soothe"
             elif skill_id == "protective_talisman":
                 combat.party_shield += 2
                 for ally in room.players.values():
                     ally.statuses = []
                 summary = f"{player.name} ใช้ [{skill_name}] กางเกราะทั้งทีม +2 และล้างสถานะผิดปกติทั้งหมด!"
+                visual_fx = "party_buff"
             elif skill_id == "defensive_line":
                 player.guarded = True
                 player.damage_reduction += 2
                 summary = f"{player.name} ใช้ [{skill_name}] ยืนขวางหน้าดึงเป้าผีและลดดาเมจ 2 หน่วย!"
+                visual_fx = "party_buff"
             elif skill_id == "field_first_aid":
                 conscious = [p for p in room.players.values() if p.is_conscious]
                 target = min(conscious, key=lambda p: (p.hp, p.sanity)) if conscious else player
                 target.hp = min(target.max_hp, target.hp + 3)
                 target.sanity = min(target.max_sanity, target.sanity + 2)
                 summary = f"{player.name} ใช้ [{skill_name}] รักษา {target.name} (+3 HP, +2 สติ)"
+                visual_fx = "party_buff"
             else:  # spirit_scanner or fallback
                 combat.ghost_exposed = True
                 for ally in room.players.values():
                     if ally.player_token != player.player_token and ally.is_conscious:
                         ally.focus = min(ally.max_focus, ally.focus + 1)
                 summary = f"{player.name} ใช้ [{skill_name}] เปิดจุดอ่อนผี (+2 ทอย) และคืน +1 โฟกัสให้เพื่อน!"
+                visual_fx = "party_buff"
+
+            narration = _pick_narration(summary)
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "role_skill",
+                "action_label": skill_name,
+                "stat": "SKILL",
+                "d20": None,
+                "modifier": None,
+                "bonus": 0,
+                "bonus_reason": "ใช้ 1 โฟกัส",
+                "total": None,
+                "target_dc": None,
+                "dc_label": "1 Focus",
+                "tier": "full",
+                "tier_label": "ปล่อยท่าสำเร็จ",
+                "is_ghost": False,
+            }
 
         elif action_id == "retreat":
+            stat = chosen_override or ("BODY" if player.stats.get("BODY", 0) >= player.stats.get("PER", 0) else "PER")
+            mod = int(player.stats.get(stat, 0))
+            d20 = secrets.randbelow(20) + 1
+            bonus_total = assist_bonus + safe_tactical
+            total = d20 + mod + bonus_total
+            player.assisted_bonus = 0
             combat.retreat_progress = min(combat.retreat_goal, combat.retreat_progress + 1)
-            summary = f"{player.name} คุ้มกันเปิดทางถอย ({combat.retreat_progress}/{combat.retreat_goal})"
-            sfx = "skill_cast"
+            if total >= 11:
+                player.damage_reduction += 1
+                tier_key = "full"
+                tier_label = "เปิดทาง + ตั้งรับ (+1 เกราะ)"
+                summary = f"{player.name} คุ้มกันเปิดทางถอย ({stat} {total} ≥ 11 · ได้ +1 เกราะ) ({combat.retreat_progress}/{combat.retreat_goal})"
+                narration = _pick_narration(
+                    f"{player.name} ฉายไฟหาแนวทางออกกลางดงกล้วยพร้อมคุมหลังให้เพื่อนอย่างรัดกุม (เปิดทางถอย {combat.retreat_progress}/{combat.retreat_goal})"
+                )
+                sfx = "skill_cast"
+            else:
+                tier_key = "partial"
+                tier_label = "เปิดทางถอย"
+                summary = f"{player.name} คุ้มกันเปิดทางถอย ({combat.retreat_progress}/{combat.retreat_goal})"
+                narration = _pick_narration(
+                    f"{player.name} แหวกกอกล้วยเปิดช่องทางหนีออกไปได้อีกก้าว (เปิดทางถอย {combat.retreat_progress}/{combat.retreat_goal})"
+                )
+                sfx = "skill_cast"
+            visual_fx = "party_buff"
+            roll_detail = {
+                "actor": player.name,
+                "action_id": "retreat",
+                "action_label": "คุ้มกันถอยทัพ",
+                "stat": stat,
+                "d20": d20,
+                "modifier": mod,
+                "bonus": bonus_total,
+                "bonus_reason": tactical_reason,
+                "total": total,
+                "target_dc": 11,
+                "dc_label": "DC",
+                "tier": tier_key,
+                "tier_label": tier_label,
+                "is_ghost": False,
+            }
         else:
             raise ValueError("ไม่รู้จักคำสั่งต่อสู้ที่เลือก")
 
         player.acted_this_round = True
-        combat.combat_log.append(summary)
-        self.append_log(room, "ต่อสู้", summary, kind="check")
+        combat.last_roll = roll_detail
+        chronicle_text = f"[{clean_intent}] → {summary}" if clean_intent else summary
+        combat.chronicle.append(
+            {"round": combat.round_number, "actor": player.name, "tier": tier_key, "text": narration or summary}
+        )
+        combat.chronicle = combat.chronicle[-16:]
+        combat.combat_log.append(chronicle_text)
+        self.append_log(room, "ต่อสู้", narration or summary, kind="check")
 
         # Check immediate combat resolution
         if combat.enemy_hp <= 0:
@@ -1040,7 +1502,15 @@ class RoomManager:
                 self._apply_dialogue_unlocks(room, win)
                 self.append_log(room, win["speaker"], win["text"], kind="ending")
                 events.append(self._build_audio_payload(win["id"], win["speaker"], win["text"]))
-            return {"summary": summary, "sfx": "dice_success", "ready_for_ghost_turn": False, "events": events}
+            return {
+                "summary": summary,
+                "narration": narration,
+                "roll_detail": roll_detail,
+                "visual_fx": "ghost_hit",
+                "sfx": "dice_success",
+                "ready_for_ghost_turn": False,
+                "events": events,
+            }
 
         if combat.soothe_progress >= combat.soothe_goal:
             combat.active = False
@@ -1051,7 +1521,15 @@ class RoomManager:
                 self._apply_dialogue_unlocks(room, win)
                 self.append_log(room, win["speaker"], win["text"], kind="ending")
                 events.append(self._build_audio_payload(win["id"], win["speaker"], win["text"]))
-            return {"summary": summary, "sfx": "dice_success", "ready_for_ghost_turn": False, "events": events}
+            return {
+                "summary": summary,
+                "narration": narration,
+                "roll_detail": roll_detail,
+                "visual_fx": "ghost_soothe",
+                "sfx": "dice_success",
+                "ready_for_ghost_turn": False,
+                "events": events,
+            }
 
         if combat.retreat_progress >= combat.retreat_goal:
             combat.active = False
@@ -1063,13 +1541,24 @@ class RoomManager:
                 self._apply_dialogue_unlocks(room, esc)
                 self.append_log(room, esc["speaker"], esc["text"], kind="narration")
                 events.append(self._build_audio_payload(esc["id"], esc["speaker"], esc["text"]))
-            return {"summary": summary, "sfx": "dice_success", "ready_for_ghost_turn": False, "events": events}
+            return {
+                "summary": summary,
+                "narration": narration,
+                "roll_detail": roll_detail,
+                "visual_fx": "party_buff",
+                "sfx": "dice_success",
+                "ready_for_ghost_turn": False,
+                "events": events,
+            }
 
         ready_for_ghost = self.check_ready_for_ghost_turn(room)
         if ready_for_ghost:
             combat.phase = "ghost"
         return {
             "summary": summary,
+            "narration": narration,
+            "roll_detail": roll_detail,
+            "visual_fx": visual_fx,
             "sfx": sfx,
             "ready_for_ghost_turn": ready_for_ghost,
             "events": events,
@@ -1090,7 +1579,7 @@ class RoomManager:
             combat.active = False
             room.combat = None
             room.ending_triggered = "lost_in_grove"
-            return {"summary": "ทีมสืบสวนหมดสติทั้งหมดแล้ว", "events": [], "defeated": True}
+            return {"summary": "ทีมสืบสวนหมดสติทั้งหมดแล้ว", "events": [], "defeated": True, "roll_detail": None, "visual_fx": "miss"}
 
         connected_conscious = [p for p in conscious if p.connected]
         pool = connected_conscious or conscious
@@ -1123,6 +1612,7 @@ class RoomManager:
 
         hit = total >= defense
         mitigated = 0
+        cover_note = f" (ได้ {target.protected_by} ช่วยรับแรงปะทะ)" if target.protected_by else ""
         if hit:
             raw_dmg = int(move.get("damage", 2))
             mitigated = max(0, raw_dmg - combat.party_shield - target.damage_reduction)
@@ -1140,14 +1630,35 @@ class RoomManager:
                 cond_label = " + ติดพันธนาการ!" if cond == "ROOTED" else " + ติดหวาดกลัว!"
             summary = (
                 f"ผีเงาจมน้ำใช้ [{move['name_th']}] ใส่ {target.name} "
-                f"(ทอย {total} vs {defense}) โดน {dmg_label}{cond_label}"
+                f"(ทอย {total} vs {defense}) โดน {dmg_label}{cond_label}{cover_note}"
             )
         else:
             summary = (
                 f"ผีเงาจมน้ำใช้ [{move['name_th']}] ใส่ {target.name} "
-                f"(ทอย {total} vs {defense}) แต่หลบพ้นได้อย่างหวุดหวิด!"
+                f"(ทอย {total} vs {defense}) แต่หลบพ้นได้อย่างหวุดหวิด!{cover_note}"
             )
 
+        ghost_roll = {
+            "actor": "ผีเงาจมน้ำ",
+            "action_id": move["id"],
+            "action_label": move["name_th"],
+            "stat": "ATK",
+            "d20": d20,
+            "modifier": atk,
+            "bonus": 0,
+            "bonus_reason": None,
+            "total": total,
+            "target_dc": defense,
+            "dc_label": move.get("target_defense", "DEF"),
+            "tier": "failure" if hit else "full",
+            "tier_label": f"ผีโจมตีเข้าเป้า ({target.name})" if hit else f"{target.name} หลบพ้น!",
+            "is_ghost": True,
+        }
+        combat.last_roll = ghost_roll
+        combat.chronicle.append(
+            {"round": combat.round_number, "actor": "ผีเงาจมน้ำ", "tier": "ghost", "text": summary}
+        )
+        combat.chronicle = combat.chronicle[-16:]
         combat.combat_log.append(summary)
         self.append_log(room, "ผีเงาจมน้ำ", summary, kind="ending")
 
@@ -1182,6 +1693,8 @@ class RoomManager:
             return {
                 "summary": summary,
                 "hit": hit,
+                "roll_detail": ghost_roll,
+                "visual_fx": "ghost_lunge",
                 "events": events,
                 "defeated": True,
                 "use_live_taunt": False,
@@ -1197,11 +1710,15 @@ class RoomManager:
             p.acted_this_round = False
             p.guarded = False
             p.damage_reduction = 0
+            p.protected_by = None
+        self._prepare_round_telegraph(room)
         combat.combat_log.append(f"รอบที่ {combat.round_number} — ตาของผู้สืบสวน")
 
         return {
             "summary": summary,
             "hit": hit,
+            "roll_detail": ghost_roll,
+            "visual_fx": "ghost_lunge",
             "events": events,
             "defeated": False,
             "use_live_taunt": bool(decision.use_live_taunt and decision.ghost_taunt),
@@ -1209,6 +1726,23 @@ class RoomManager:
         }
 
     # ----------------- NARRATIVE & GUARDRAILS -----------------
+
+    def _build_wichai_farewell_event(self, room: RoomState) -> Optional[dict[str, Any]]:
+        """Emit Wichai's parting line before transitioning out of Act B, if not yet played."""
+        farewell_id = "b3_wichai_stay_behind"
+        if farewell_id in room.played_audio_ids:
+            return None
+        entry = self.repo.get_dialogue(farewell_id)
+        if not entry:
+            return None
+        self._apply_dialogue_unlocks(room, entry)
+        self.append_log(room, entry["speaker"], entry["text"], kind="dialogue")
+        return self._build_audio_payload(
+            dialogue_id=entry["id"],
+            speaker=entry["speaker"],
+            text=entry["text"],
+            mode="script",
+        )
 
     def validate_and_apply_decision(
         self,
@@ -1272,17 +1806,32 @@ class RoomManager:
         if decision.mode == "script" and decision.selected_audio_id in eligible_by_id:
             entry = eligible_by_id[decision.selected_audio_id]
             proposed_next_scene = self._apply_dialogue_unlocks(room, entry)
-            self.append_log(room, entry["speaker"], entry["text"], kind="dialogue")
-            primary_event = self._build_audio_payload(
-                dialogue_id=entry["id"],
-                speaker=entry["speaker"],
-                text=entry["text"],
-                mode="script",
-            )
-            if entry["id"] == "a3_ending_true" and room.ending_triggered is None:
-                room.ending_triggered = "act_a_complete"
-            elif entry["id"] == "b_ending_to_act_c" and room.ending_triggered is None:
-                room.ending_triggered = "act_b_complete"
+            if entry["id"] == "b_ending_to_act_c":
+                farewell_ev = self._build_wichai_farewell_event(room)
+                self.append_log(room, entry["speaker"], entry["text"], kind="dialogue")
+                ending_ev = self._build_audio_payload(
+                    dialogue_id=entry["id"],
+                    speaker=entry["speaker"],
+                    text=entry["text"],
+                    mode="script",
+                )
+                if farewell_ev is not None:
+                    primary_event = farewell_ev
+                    queued_events.append(ending_ev)
+                else:
+                    primary_event = ending_ev
+                if room.ending_triggered is None:
+                    room.ending_triggered = "act_b_complete"
+            else:
+                self.append_log(room, entry["speaker"], entry["text"], kind="dialogue")
+                primary_event = self._build_audio_payload(
+                    dialogue_id=entry["id"],
+                    speaker=entry["speaker"],
+                    text=entry["text"],
+                    mode="script",
+                )
+                if entry["id"] == "a3_ending_true" and room.ending_triggered is None:
+                    room.ending_triggered = "act_a_complete"
         else:
             raw_improv = (decision.improvised_text or "").strip()[:450]
             if decision.mode == "script" and decision.selected_audio_id is None and raw_improv:
@@ -1423,6 +1972,10 @@ class RoomManager:
                     ev.get("dialogue_id") == end_audio_id for ev in queued_events
                 )
                 if end_audio_id and not already_emitted:
+                    if room.ending_triggered == "act_b_complete":
+                        farewell_ev = self._build_wichai_farewell_event(room)
+                        if farewell_ev is not None:
+                            queued_events.append(farewell_ev)
                     end_entry = self.repo.get_dialogue(end_audio_id)
                     if end_entry:
                         self._apply_dialogue_unlocks(room, end_entry)
@@ -1534,6 +2087,9 @@ class RoomManager:
         elif node_id == "road_to_don_house" and not room.ending_triggered:
             room.ending_triggered = "act_b_complete"
             room.board_node = "road_to_don_house"
+            farewell_ev = self._build_wichai_farewell_event(room)
+            if farewell_ev is not None:
+                events.append(farewell_ev)
             end_entry = self.repo.get_dialogue("b_ending_to_act_c")
             if end_entry:
                 self._apply_dialogue_unlocks(room, end_entry)
@@ -1607,6 +2163,10 @@ class RoomManager:
                 "retreat_goal": c.retreat_goal,
                 "ghost_exposed": c.ghost_exposed,
                 "party_shield": c.party_shield,
+                "telegraph": c.telegraph,
+                "environment_features": c.environment_features,
+                "last_roll": c.last_roll,
+                "chronicle": c.chronicle[-10:],
                 "combat_log": c.combat_log[-10:],
             }
 
@@ -1655,6 +2215,8 @@ class RoomManager:
                     "max_focus": p.max_focus,
                     "statuses": list(p.statuses),
                     "guarded": p.guarded,
+                    "assisted_bonus": p.assisted_bonus,
+                    "protected_by": p.protected_by,
                     "acted_this_round": p.acted_this_round,
                 }
                 for p in room.players.values()

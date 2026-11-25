@@ -370,6 +370,43 @@
     box.querySelector(".char-skill").textContent = `ท่าประจำอาชีพ: ${me.skill?.name || "-"}`;
   }
 
+  function _renderCombatRollCard(rollData, overrideNarration = "") {
+    const rollCard = $("combat-roll-card");
+    if (!rollCard) return;
+    if (!rollData) {
+      rollCard.classList.add("hidden");
+      return;
+    }
+    rollCard.classList.remove("hidden", "tier-full", "tier-partial", "tier-failure", "tier-ghost");
+    const tierCls = rollData.is_ghost ? "tier-ghost" : `tier-${rollData.tier || "partial"}`;
+    rollCard.classList.add(tierCls);
+
+    const dieEl = $("combat-roll-die");
+    if (dieEl) {
+      dieEl.textContent = rollData.d20 != null ? String(rollData.d20) : "★";
+    }
+    const tierEl = $("combat-roll-tier");
+    if (tierEl) {
+      tierEl.textContent = `${rollData.actor} · ${rollData.tier_label || rollData.action_label}`;
+    }
+    const mathEl = $("combat-roll-math");
+    if (mathEl) {
+      if (rollData.d20 != null) {
+        const modStr = (rollData.modifier || 0) >= 0 ? `+${rollData.modifier || 0}` : String(rollData.modifier || 0);
+        const bonusStr = rollData.bonus > 0 ? ` +โบนัส ${rollData.bonus}` : "";
+        const reasonStr = rollData.bonus_reason ? ` (${rollData.bonus_reason})` : "";
+        mathEl.textContent = `${rollData.action_label} [${rollData.stat}]: D20(${rollData.d20}) ${modStr}${bonusStr} = ${rollData.total} vs ${rollData.dc_label} ${rollData.target_dc}${reasonStr}`;
+      } else {
+        mathEl.textContent = `${rollData.action_label}${rollData.bonus_reason ? ` · ${rollData.bonus_reason}` : ""}`;
+      }
+    }
+    const narEl = $("combat-roll-narration");
+    if (narEl) {
+      narEl.textContent = overrideNarration || "";
+      narEl.classList.toggle("hidden", !narEl.textContent);
+    }
+  }
+
   function renderCombatUI(state, me) {
     const combat = state.combat;
     const active = Boolean(combat && combat.active);
@@ -387,6 +424,8 @@
     const tags = [];
     if (combat.ghost_exposed) tags.push("เปิดจุดอ่อน (+2 ทอย)");
     if (combat.party_shield > 0) tags.push(`เกราะทีม +${combat.party_shield}`);
+    if ((me?.assisted_bonus || 0) > 0) tags.push(`คุณได้เปรียบ +${me.assisted_bonus}`);
+    if (me?.protected_by) tags.push(`${me.protected_by} คุ้มกันอยู่`);
     $("combat-tags").textContent = tags.join(" · ");
 
     $("combat-hp-text").textContent = `${combat.enemy_hp} / ${combat.enemy_max_hp}`;
@@ -398,8 +437,57 @@
     $("combat-retreat-text").textContent = `${combat.retreat_progress} / ${combat.retreat_goal}`;
     $("combat-retreat-fill").style.width = `${(combat.retreat_progress / Math.max(1, combat.retreat_goal)) * 100}%`;
 
+    const teleBox = $("combat-telegraph-box");
+    if (teleBox) {
+      const tele = combat.telegraph;
+      if (tele) {
+        teleBox.classList.remove("hidden");
+        $("combat-telegraph-target").textContent = `เป้าหมาย: ${tele.target_name} (${tele.move_name})`;
+        $("combat-telegraph-hint").textContent = tele.hint;
+        $("combat-telegraph-tip").textContent = `วิธีแก้ทาง: ${tele.counter_tip}`;
+      } else {
+        teleBox.classList.add("hidden");
+      }
+    }
+
+    const turnStrip = $("combat-party-turn-strip");
+    if (turnStrip) {
+      turnStrip.innerHTML = "";
+      (state.players || []).forEach((p) => {
+        const chip = document.createElement("div");
+        const isTeleTarget = combat.telegraph?.target_id === p.id;
+        chip.className = `combat-turn-chip ${p.acted_this_round ? "done" : "ready"} ${isTeleTarget ? "targeted" : ""}`;
+        const badges = [];
+        if (p.protected_by) badges.push(`🛡 ${p.protected_by}`);
+        if ((p.assisted_bonus || 0) > 0) badges.push(`+${p.assisted_bonus} ทอย`);
+        if (isTeleTarget && combat.phase === "players") badges.push("ถูกเล็งเป้า");
+        chip.textContent = `${p.name}: ${p.hp}/${p.max_hp}HP · สติ ${p.sanity}${badges.length ? ` (${badges.join(", ")})` : ""}`;
+        turnStrip.appendChild(chip);
+      });
+    }
+
+    const latestChronicle = (combat.chronicle || []).slice(-1)[0]?.text || "";
+    _renderCombatRollCard(combat.last_roll, latestChronicle);
+
     const lastLog = (combat.combat_log || []).slice(-1)[0] || "";
     $("combat-last-log").textContent = lastLog;
+
+    const strikeMod = Math.max(me?.stats?.BODY ?? 0, me?.stats?.SPI ?? 0);
+    const strikeStat = (me?.stats?.BODY ?? 0) >= (me?.stats?.SPI ?? 0) ? "BODY" : "SPI";
+    const sootheMod = Math.max(me?.stats?.SOC ?? 0, me?.stats?.SPI ?? 0);
+    const sootheStat = (me?.stats?.SOC ?? 0) >= (me?.stats?.SPI ?? 0) ? "SOC" : "SPI";
+    if ($("combat-strike-hint")) {
+      $("combat-strike-hint").textContent = `ทอย ${strikeStat} +${strikeMod} vs PDEF 12`;
+    }
+    if ($("combat-soothe-hint")) {
+      $("combat-soothe-hint").textContent = `ทอย ${sootheStat} +${sootheMod} vs MDEF 13`;
+    }
+    if ($("combat-assist-hint")) {
+      const targetName = combat.telegraph?.target_name;
+      $("combat-assist-hint").textContent = targetName
+        ? `ช่วย ${targetName} · เกราะ +2 · ได้เปรียบ +2`
+        : "ล้างสถานะ · เกราะ +2 · ได้เปรียบ +2";
+    }
 
     if (me?.skill) {
       $("combat-skill-name").textContent = me.skill.name;
@@ -411,7 +499,7 @@
     const isShaken = Boolean(me?.statuses?.includes("SHAKEN"));
     const isRooted = Boolean(me?.statuses?.includes("ROOTED"));
 
-    let statusMsg = "เลือก 1 การกระทำของคุณในรอบนี้ (กดปุ่มคำสั่งด้านล่าง)";
+    let statusMsg = "ตาของคุณ — กดปุ่มคำสั่ง หรือพิมพ์/พูดบรรยายวิธีรับมือ TRPG ด้านล่าง (ใช้ไฟฉาย/สิ่งแวดล้อมได้โบนัส!)";
     if (!conscious) statusMsg = "คุณหมดสติหรือเสียขวัญแล้ว รอเพื่อนร่วมทีมช่วยเหลือ";
     else if (combat.phase !== "players") statusMsg = "กำลังถึงตาของผีเงาจมน้ำ...";
     else if (me.acted_this_round) statusMsg = "คุณลงมือรอบนี้แล้ว รอเพื่อนร่วมทีมคนอื่น...";
@@ -425,6 +513,32 @@
       if (act === "retreat" && isRooted) disabled = true;
       btn.disabled = disabled;
     });
+
+    const rpWrap = $("combat-rp-hints");
+    if (rpWrap) {
+      rpWrap.innerHTML = "";
+      if (canAct && (combat.environment_features || []).length) {
+        const prefix = document.createElement("span");
+        prefix.className = "rp-hint-label";
+        prefix.textContent = "แนวทางสวมบทบาทจากฉาก:";
+        rpWrap.appendChild(prefix);
+        (combat.environment_features || []).forEach((feat) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "rp-hint-chip";
+          btn.title = feat.hint;
+          btn.textContent = `+ ${feat.sample}`;
+          btn.addEventListener("click", () => {
+            const input = $("chat-input");
+            if (input && !input.disabled) {
+              input.value = feat.sample;
+              input.focus();
+            }
+          });
+          rpWrap.appendChild(btn);
+        });
+      }
+    }
   }
 
   function renderNpcLayer(state) {
@@ -733,7 +847,11 @@
     }
 
     const inCombat = Boolean(state.combat?.active);
-    if (inCombat && (isHoldingMic || isToggleListening)) {
+    const consciousInCombat = Boolean(me && me.hp > 0 && me.sanity > 0);
+    const canActInCombat = Boolean(
+      inCombat && state.combat.phase === "players" && consciousInCombat && !me.acted_this_round
+    );
+    if (inCombat && !canActInCombat && (isHoldingMic || isToggleListening)) {
       stopListeningNow();
     }
     const myId = myPlayer?.id;
@@ -745,18 +863,21 @@
     const controlsPanel = document.querySelector(".controls-panel");
     const chatInput = $("chat-input");
     const chatSubmit = $("chat-form")?.querySelector('button[type="submit"]');
-    if (controlsPanel) controlsPanel.classList.toggle("combat-locked", inCombat);
+    const lockForCombatWait = inCombat && !canActInCombat;
+    if (controlsPanel) controlsPanel.classList.toggle("combat-locked", lockForCombatWait);
 
-    const lockChatForMe = inCombat || iAmHoldingOrQueued;
+    const lockChatForMe = lockForCombatWait || iAmHoldingOrQueued;
     if (chatInput) {
       chatInput.disabled = lockChatForMe;
-      chatInput.placeholder = inCombat
-        ? "โหมดต่อสู้: เลือกคำสั่งต่อสู้ด้านบน"
-        : iAmHoldingOrQueued
-          ? "คำสั่งอยู่ในคิว กำลังประมวลผล"
-          : tq.busy
-            ? `${tq.owner_name || "ผู้เล่นอื่น"} กำลังใช้เทิร์น — พิมพ์เพื่อต่อคิวได้`
-            : "พิมพ์คำถามหรือการกระทำ";
+      chatInput.placeholder = lockForCombatWait
+        ? "คุณลงมือแล้วหรือถึงตาผี — รอขึ้นรอบถัดไป"
+        : inCombat
+          ? "บรรยายการกระทำ TRPG ของคุณ (เช่น สาดไฟฉายใส่แอ่งโคลนแล้วคว้าแขนเพื่อนหลบ) หรือกดคำสั่งด้านบน"
+          : iAmHoldingOrQueued
+            ? "คำสั่งอยู่ในคิว กำลังประมวลผล"
+            : tq.busy
+              ? `${tq.owner_name || "ผู้เล่นอื่น"} กำลังใช้เทิร์น — พิมพ์เพื่อต่อคิวได้`
+              : "พิมพ์คำถามหรือการกระทำ";
     }
     if (chatSubmit) {
       chatSubmit.disabled = lockChatForMe;
@@ -764,7 +885,9 @@
         ? "อยู่ในคิว"
         : tq.busy
           ? "ต่อคิวส่ง"
-          : "ส่งคำสั่ง";
+          : inCombat
+            ? "ประกาศแอ็กชัน"
+            : "ส่งคำสั่ง";
     }
     document.querySelectorAll(".quick-chip").forEach((chip) => {
       chip.disabled = lockChatForMe;
@@ -775,10 +898,16 @@
     const btn = $("ptt-btn");
     const label = $("ptt-label");
     if (currentState?.combat?.active) {
-      btn.classList.remove("recording", "locked-other");
-      btn.disabled = true;
-      label.textContent = "ปิดไมค์ชั่วคราวระหว่างต่อสู้";
-      return;
+      const me = (currentState.players || []).find((p) => p.id === myPlayer?.id || p.sid === socket?.id);
+      const canAct = Boolean(
+        currentState.combat.phase === "players" && me && me.hp > 0 && me.sanity > 0 && !me.acted_this_round
+      );
+      if (!canAct) {
+        btn.classList.remove("recording", "locked-other");
+        btn.disabled = true;
+        label.textContent = "รอตาถัดไปในการต่อสู้";
+        return;
+      }
     }
     if (isToggleListening) {
       btn.classList.add("recording");
@@ -934,9 +1063,17 @@
     }
   }
 
+  function _canMeActInCombat() {
+    if (!currentState?.combat?.active) return true;
+    const me = (currentState.players || []).find((p) => p.id === myPlayer?.id || p.sid === socket?.id);
+    return Boolean(
+      currentState.combat.phase === "players" && me && me.hp > 0 && me.sanity > 0 && !me.acted_this_round
+    );
+  }
+
   function sendTextMessage(text) {
-    if (currentState?.combat?.active) {
-      showToast("ขณะนี้อยู่ในฉากต่อสู้ ปิดการพิมพ์ชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน");
+    if (currentState?.combat?.active && !_canMeActInCombat()) {
+      showToast("ตอนนี้ยังลงมือในรอบนี้ไม่ได้ กรุณารอตาถัดไป");
       return;
     }
     const clean = (text || "").trim();
@@ -1057,8 +1194,8 @@
 
   async function startPushToTalk() {
     if (isHoldingMic || isToggleListening || isTranscribingMic || !socket) return;
-    if (currentState?.combat?.active) {
-      showToast("ขณะนี้อยู่ในฉากต่อสู้ ปิดการใช้ไมค์ชั่วคราว กรุณากดปุ่มคำสั่งต่อสู้ด้านบน");
+    if (currentState?.combat?.active && !_canMeActInCombat()) {
+      showToast("ตอนนี้ยังลงมือในรอบนี้ไม่ได้ กรุณารอตาถัดไป");
       return;
     }
     const tq = currentState?.turn_queue || {};
@@ -1379,6 +1516,23 @@
       if (data?.sfx) audioFX?.playSfx(data.sfx);
     });
 
+    socket.on("combat:roll", (data) => {
+      if (data?.roll) {
+        _renderCombatRollCard(data.roll, data.narration || "");
+      }
+      const ghostWrap = $("ghost-sprite-wrap");
+      const fx = data?.visual_fx;
+      if (ghostWrap && fx && fx !== "miss") {
+        ghostWrap.classList.remove("fx-hit", "fx-soothe", "fx-lunge");
+        void ghostWrap.offsetWidth;
+        const cls = fx === "ghost_hit" ? "fx-hit" : fx === "ghost_soothe" ? "fx-soothe" : fx === "ghost_lunge" ? "fx-lunge" : "";
+        if (cls) {
+          ghostWrap.classList.add(cls);
+          setTimeout(() => ghostWrap.classList.remove(cls), 650);
+        }
+      }
+    });
+
     socket.on("room:act_changed", (payload) => {
       clearAudioQueue();
       $("dice-result-banner").classList.add("hidden");
@@ -1634,7 +1788,7 @@
       const tag = document.activeElement?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if ($("game-screen").classList.contains("hidden")) return;
-      if (currentState?.combat?.active) return;
+      if (currentState?.combat?.active && !_canMeActInCombat()) return;
       e.preventDefault();
       handleMicPressStart();
     });

@@ -44,14 +44,14 @@ class DMDecision(BaseModel):
     """Strict structured response returned by Gemini DM Decision Engine."""
 
     mode: Literal["script", "improvise"] = Field(
-        description="ใช้ 'script' เมื่อมีบทใน dialogues.json ที่ตรงกับคำถาม/การกระทำ หรือ 'improvise' เฉพาะเมื่อผู้เล่นถามนอกบท"
+        description="ใช้ 'script' เมื่อมีบทในข้อมูลเกม (data/) ที่ตรงกับคำถาม/การกระทำ หรือ 'improvise' เฉพาะเมื่อผู้เล่นถามนอกบท"
     )
     character: str = Field(
         description="ชื่อตัวละครที่พูดในเทิร์นนี้ เช่น 'DM', 'ประเสริฐ' (เฉพาะ ACT A), 'วิชัย' (ACT B), 'ต้น' (ACT B), หรือ 'เสียงวิทยุ'"
     )
     selected_audio_id: Optional[str] = Field(
         default=None,
-        description="รหัสบทพูดจาก dialogues.json เมื่อ mode == 'script' เท่านั้น มิฉะนั้นเป็น null",
+        description="รหัสบทพูดจากคลังบทพูดของฉากปัจจุบันเมื่อ mode == 'script' เท่านั้น มิฉะนั้นเป็น null",
     )
     filler_audio_id: Optional[str] = Field(
         default=None,
@@ -94,4 +94,37 @@ class GhostTurnDecision(BaseModel):
     )
     narration_th: str = Field(
         description="คำบรรยายสั้น ๆ 1 ประโยคภาษาไทยว่าผีจู่โจมเป้าหมายอย่างไร"
+    )
+
+
+class CombatPlayerActionPlan(BaseModel):
+    """Structured TRPG action interpretation for freeform player combat declarations."""
+
+    action_id: Literal["strike", "soothe", "steady", "role_skill", "assist", "retreat"] = Field(
+        description="ประเภทแอ็กชันหลักที่สอดคล้องกับเจตนาของผู้เล่นที่สุด"
+    )
+    stat_choice: Optional[Literal["BODY", "PER", "INT", "SOC", "SPI", "RES"]] = Field(
+        default=None,
+        description="ค่าสถานะหลักที่เหมาะกับการกระทำที่ผู้เล่นบรรยาย (ใช้เฉพาะเมื่อ action_id เป็น strike, soothe, หรือ retreat)",
+    )
+    tactical_bonus: int = Field(
+        default=0,
+        description="โบนัสแทคติก (0, 1, หรือ 2) หากผู้เล่นใช้สภาพแวดล้อม (ไฟฉาย, แอ่งโคลน, ต้นกล้วย) หรือแก้ทาง Telegraph ได้เฉียบคม",
+    )
+    tactical_reason: Optional[str] = Field(
+        default=None,
+        description="เหตุผลสั้น ๆ ภาษาไทยของโบนัสแทคติก (ถ้ามี)",
+    )
+    target_ally_id: Optional[str] = Field(
+        default=None,
+        description="player_id ของเพื่อนร่วมทีมที่จะเข้าไปช่วยหรือคุ้มกัน (เมื่อ action_id == 'assist')",
+    )
+    narration_full: str = Field(
+        description="คำบรรยายผลสำเร็จเต็ม 1-2 ประโยคภาษาไทยที่สะท้อนวิธีกระทำของผู้เล่นอย่างสมจริง"
+    )
+    narration_partial: str = Field(
+        description="คำบรรยายผลสำเร็จบางส่วน 1-2 ประโยคภาษาไทย"
+    )
+    narration_failure: str = Field(
+        description="คำบรรยายผลล้มเหลว 1-2 ประโยคภาษาไทยอย่างตื่นเต้น"
     )

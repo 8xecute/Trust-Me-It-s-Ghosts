@@ -11,23 +11,25 @@ import re
 import time
 from typing import Any, Callable, Optional, TypeVar
 
-from backend.schemas import DMDecision, GhostTurnDecision, StateUpdates
+from backend.schemas import CombatPlayerActionPlan, DMDecision, GhostTurnDecision, StateUpdates
 from backend.state_manager import RoomManager, RoomState, ScenarioRepository
 
 WORLD_LORE_BY_ACT = {
     "A": (
-        "ฉากหลัง: หมู่บ้านหนองตาล ชนบทไทยปี พ.ศ. 2534 (1991) เวลาหัวค่ำราวสองทุ่มเศษ ฝนตกพรำต่อเนื่อง บรรยากาศเงียบวังเวง "
-        "ชาวบ้านส่วนใหญ่ปิดไฟปิดหน้าต่างเงียบ และหลายหลังมัดสัมภาระวางไว้หน้าชานคล้ายเตรียมย้ายหนี\n"
-        "ทีมผู้เล่น: พนักงานจากบริษัทรับจ้างสืบสวนลี้ลับ เดินทางมาด้วยรถตู้บริษัท (จอดเปิดไฟหน้าอยู่ริมถนนข้างศาลา "
+        "ฉากหลัง: หมู่บ้านหนองตาล ชนบทไทยปี พ.ศ. 2534 (1991) เวลาหัวค่ำ คืนนี้อากาศแห้งอบอ้าวไร้เมฆฝนและเงียบผิดปกติ "
+        "ชาวบ้านส่วนใหญ่ปิดไฟปิดหน้าต่างเงียบ หลายหลังติดผ้ายันต์หน้าประตู และวางถุงกับกล่องสัมภาระกองหน้าชานคล้ายเตรียมย้ายหนี\n"
+        "ทีมผู้เล่น: พนักงานจากบริษัทรับจ้างสืบสวนลี้ลับ บริษัทรับงานไว้เรียบร้อยแล้วก่อนเดินทางมาถึง (CASE_ACCEPTED=true) "
+        "เดินทางมาด้วยรถตู้บริษัท (จอดเปิดไฟหน้าอยู่ริมถนนข้างศาลา "
         "ในรถมีอุปกรณ์ภาคสนามพื้นฐาน เช่น ไฟฉาย วิทยุสื่อสาร ปฐมพยาบาล และเครื่องสแกนคลื่นของนักศึกษาฝึกงาน)\n"
         "ตัวละครผู้ใหญ่ประเสริฐ: ชายวัย 50+ เป็นผู้ใหญ่บ้านที่เคร่งเครียด เหนื่อยล้า แต่พยายามคุมสติและสุภาพกับทีม "
         "เขายืนรออยู่ที่ศาลาพร้อมไฟฉายและสำเนาใบรับแจ้งคนหาย (ส่วนแผนที่ละเอียดและแฟ้มเต็มอยู่ที่บ้านของเขา) "
         "เขาหวั่นใจทุกครั้งที่พูดถึงแนวสวนกล้วยและอดีตของ 'แก้ว'\n"
-        "การใช้ดุลยพินิจตอบคำถามทั่วไป: สามารถบรรยายรายละเอียดสภาพอากาศ สิ่งของรอบตัว บรรยากาศหมู่บ้านยุค 2534 "
+        "การใช้ดุลยพินิจตอบคำถามทั่วไป: สามารถบรรยายรายละเอียดสภาพอากาศแห้งอบอ้าว สิ่งของรอบตัว บรรยากาศหมู่บ้านยุค 2534 "
         "ท่าทีตัวละคร หรือคำถามเล่นบทบาทสมมติทั่วไปของประเสริฐ/DM ได้อย่างเป็นธรรมชาติ โดยไม่ขัดกฎห้ามสปอยล์ด้านล่าง"
     ),
     "B": (
-        "ฉากหลัง: ภายในและชานบ้านไม้สองชั้นของผู้ใหญ่ประเสริฐ บ้านหนองตาล ปี พ.ศ. 2534 ฝนเริ่มซาลงเหลือลมชื้นกับกลิ่นดิน\n"
+        "ฉากหลัง: ภายในและชานบ้านไม้สองชั้นของผู้ใหญ่ประเสริฐ บ้านหนองตาล ปี พ.ศ. 2534 คืนนี้ฟ้าแห้งสนิทไร้เมฆฝน "
+        "แต่ลมที่พัดมาจากฝั่งสวนกล้วยกลับเย็นชื้นและมีกลิ่นดินเปียกอย่างประหลาด ภายในห้องรับแขกเปิดหลอดไฟสว่างรอไว้\n"
         "สถานะผู้ใหญ่ประเสริฐ (สำคัญมาก): สายตรวจโทรตามประเสริฐออกไปช่วยดูจุดตั้งด่านหน้าหมู่บ้านทันทีตั้งแต่เริ่มฉาก B1 "
         "ดังนั้น **ประเสริฐไม่อยู่ในฉาก และห้ามให้ประเสริฐมีบทพูดใน ACT B เด็ดขาด**\n"
         "ตัวละครในฉาก B1 (ห้องรับแขกและโต๊ะแผนที่): วิชัย ผู้ช่วยผู้ใหญ่วัย 40 ปลาย ๆ สวมเสื้อเชิ้ตพับแขน สุขุม สุภาพ เป็นทางการ "
@@ -44,12 +46,12 @@ WORLD_LORE_BY_ACT = {
 WORLD_LORE_SUMMARY = WORLD_LORE_BY_ACT["A"]
 
 SCENE_ENVIRONMENT_NOTES = {
-    "A1": "ศาลาริมทางไม้เก่าหน้าทางเข้าหมู่บ้าน ฝนโปรยปราย มีแสงไฟหน้ารถตู้ส่องไปตามบ้านเรือนที่ปิดเงียบ ประเสริฐยืนคุยอยู่หน้าศาลา",
+    "A1": "ศาลาริมทางไม้เก่าหน้าทางเข้าหมู่บ้าน คืนนี้อากาศแห้งอบอ้าวไร้เมฆฝน มีหมอกบางในความมืด แสงไฟหน้ารถตู้ส่องไปตามบ้านเรือนที่ปิดเงียบ ติดผ้ายันต์หน้าประตู และวางข้าวของเตรียมย้ายหนี ประเสริฐยืนคุยอยู่หน้าศาลา",
     "A2": "ข้างประตูรถตู้บริษัทที่เปิดค้างไว้ วิทยุสื่อสารในรถเพิ่งส่งเสียงซ่าและเสียงผู้หญิงสำลักน้ำ ประเสริฐยืนหน้าซีดอยู่ใกล้ ๆ",
     "A3": "หน้าบ้านไม้สองชั้นของประเสริฐที่ยังเปิดไฟสว่างในห้องรับแขก ส่วนด้านขวามือเป็นซอยมืดทอดไปสู่ปากทางสวนกล้วย",
     "B1": "ห้องรับแขกบ้านผู้ใหญ่บ้าน บนโต๊ะไม้กลางห้องมีแฟ้มคนหายและแผนที่หมู่บ้านสองชั้นกางอยู่ใต้แสงไฟ วิชัยยืนดูแลแฟ้มอยู่ริมโต๊ะ และต้นนั่งเงียบ ๆ ข้างประตู (ประเสริฐออกไปแล้ว)",
-    "B2": "ชานบ้านไม้หน้าประตูบ้านผู้ใหญ่ ฝนหยุดซาเหลือลมชื้นกับกลิ่นดิน ต้นยืนพิงรถมอเตอร์ไซค์กำพวงกุญแจ คอยชำเลืองหน้าต่างห้องรับแขกที่มีเงาวิชัยมองมาเป็นระยะ",
-    "B3": "มุมผนังด้านในห้องรับแขก แสงตะเกียงส่องกรอบภาพถ่ายเก่าปี 2534 แสดงชาวบ้านยืนข้างประตูน้ำ และมีตู้วางกองแฟ้มเอกสารเก่าอยู่ด้านล่าง (DM บรรยายเท่านั้น ห้ามสวมบทประเสริฐหรือ NPC อื่น)",
+    "B2": "ชานบ้านไม้หน้าประตูบ้านผู้ใหญ่ คืนนี้ฟ้าแห้งสนิทไร้เมฆฝน แต่ลมจากฝั่งสวนกลับเย็นชื้นและมีกลิ่นดินเปียกอย่างประหลาด ต้นยืนพิงรถมอเตอร์ไซค์กำพวงกุญแจ คอยชำเลืองหน้าต่างห้องรับแขกที่มีเงาวิชัยมองมาเป็นระยะ",
+    "B3": "มุมผนังด้านในห้องรับแขก แสงหลอดไฟห้องรับแขกส่องกรอบภาพถ่ายเก่าปี 2534 แสดงชาวบ้านยืนข้างประตูน้ำ และมีตู้วางกองแฟ้มเอกสารเก่าอยู่ด้านล่าง (DM บรรยายเท่านั้น ห้ามสวมบทประเสริฐหรือ NPC อื่น)",
 }
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -541,6 +543,8 @@ class AIDMEngine:
                 return pick_script("a1_qa_why_company", "ประเสริฐ")
             if any(k in text for k in ("ค่าจ้าง", "เงิน", "ราคา")) and "a1_qa_fee" in eligible_ids:
                 return pick_script("a1_qa_fee", "ประเสริฐ")
+            if any(k in text for k in ("เป็นใคร", "ทำงานอะไร", "นิสัย", "ประวัติ", "รู้จักดล", "รู้จักนิด", "รู้จักเพิ่ม")) and "a1_qa_missing_who" in eligible_ids:
+                return pick_script("a1_qa_missing_who", "ประเสริฐ")
             if any(k in text for k in ("คนหาย", "ใครบ้าง", "ลำดับ", "ชื่อ")) and "a1_qa_order" in eligible_ids:
                 return pick_script("a1_qa_order", "ประเสริฐ")
 
@@ -576,6 +580,8 @@ class AIDMEngine:
         elif scene in {"B1", "B2", "B3"}:
             if any(k in text for k in ("บ้านดล", "ไปบ้านดล", "ออกเดินทาง", "ข้อมูลพอแล้ว")) and "b_ending_to_act_c" in eligible_ids:
                 return pick_script("b_ending_to_act_c", "DM", ending="act_b_complete")
+            if any(k in text for k in ("วิชัยไปด้วย", "ไปด้วยกันไหม", "ไปบ้านดลด้วย", "อยู่เฝ้า", "รออยู่ที่นี่")) and "b3_wichai_stay_behind" in eligible_ids:
+                return pick_script("b3_wichai_stay_behind", "วิชัย")
 
             if scene != "B2" and any(k in text for k in ("ชานบ้าน", "ออกไปคุยกับต้น", "แยกคุย", "ตามต้นออกไป", "หน้าประตู")):
                 return DMDecision(
@@ -658,6 +664,8 @@ class AIDMEngine:
                     return pick_script("b2_qa_ton_why_scared", "ต้น")
                 if any(k in text for k in ("ผี", "เปียกน้ำ", "ชุดเขียว")) and "b2_qa_ton_ghost" in eligible_ids:
                     return pick_script("b2_qa_ton_ghost", "ต้น")
+                if any(k in text for k in ("รู้จักดล", "รู้จักนิด", "รู้จักเพิ่ม", "รุ่นเดียว", "ก่อนหาย", "คุยอะไรกับดล", "เพื่อน")) and "b2_qa_ton_friends" in eligible_ids:
+                    return pick_script("b2_qa_ton_friends", "ต้น")
                 if any(k in text for k in ("เห็นอะไร", "คืนนั้น", "ทางเข้าสวน", "เล่า")) and "b2_ton_baseline" in eligible_ids:
                     return pick_script("b2_ton_baseline", "ต้น")
 
@@ -689,7 +697,7 @@ class AIDMEngine:
         elif scene == "B3":
             default_text = "ภาพถ่ายเก่าปี 2534 และกองแฟ้มใต้ผนังยังรอให้คุณตรวจสอบละเอียด หรือเทียบกับแผนที่หมู่บ้าน"
         else:
-            default_text = "บรรยากาศรอบศาลาเงียบสงัด มีเพียงเสียงฝนโปรย — พวกคุณจะสอบถามอะไรเพิ่มหรือสำรวจจุดใดต่อ?"
+            default_text = "บรรยากาศรอบศาลาเงียบสงัด อากาศแห้งอบอ้าวและเงียบผิดปกติ — พวกคุณจะสอบถามอะไรเพิ่มหรือสำรวจจุดใดต่อ?"
         return DMDecision(
             mode="improvise",
             character=default_speaker,
@@ -806,6 +814,7 @@ class AIDMEngine:
 - HP ผีเงาจมน้ำ: {combat.enemy_hp}/{combat.enemy_max_hp}
 - ความคืบหน้ากล่อมวิญญาณ: {combat.soothe_progress}/{combat.soothe_goal}
 - ความคืบหน้าถอยทัพ: {combat.retreat_progress}/{combat.retreat_goal}
+- สัญญาณอันตรายที่ส่งออกไว้ก่อนหน้า (Telegraph): {json.dumps(combat.telegraph, ensure_ascii=False)}
 
 ## เป้าหมายผู้สืบสวนที่ยังมีสติ (เลือก target_player_id จากรายการนี้เท่านั้น)
 {json.dumps(targets_json, ensure_ascii=False)}
@@ -886,4 +895,173 @@ class AIDMEngine:
             target_player_id=target.public_id,
             use_live_taunt=False,
             narration_th=f"ผีเงาจมน้ำพุ่งเล็บเปียกโคลนเข้าตะปบใส่ {target.name} ท่ามกลางความมืด!",
+        )
+
+    async def plan_combat_player_action(
+        self,
+        room: RoomState,
+        player: Any,
+        declaration_text: str,
+        repo: ScenarioRepository,
+    ) -> tuple[CombatPlayerActionPlan, bool]:
+        """Interpret a freeform TRPG combat declaration into mechanics, tactical bonus, and narration."""
+        if not self.gemini_ready:
+            return self._local_fallback_combat_action(room, player, declaration_text), True
+
+        combat = room.combat
+        party_list = [
+            {
+                "player_id": p.public_id,
+                "name": p.name,
+                "role": p.role_name,
+                "hp": f"{p.hp}/{p.max_hp}",
+                "sanity": f"{p.sanity}/{p.max_sanity}",
+                "statuses": p.statuses,
+            }
+            for p in room.players.values()
+        ]
+        prompt = f"""คุณคือ AI Game Master (DM) ของเกม TRPG สืบสวนสยองขวัญไทย 'CASE 001: เสียงร้องจากสวนกล้วย' ระหว่างการเผชิญหน้ากับผีเงาจมน้ำ
+
+## ผู้เล่นที่ประกาศการกระทำ
+- ชื่อ: {player.name} ({player.role_name})
+- ค่าสถานะ: {json.dumps(player.stats, ensure_ascii=False)}
+- โฟกัส: {player.focus}/{player.max_focus} | สถานะติดตัว: {player.statuses}
+- ท่าประจำอาชีพ: {json.dumps(player.skill, ensure_ascii=False)}
+
+## สถานะการต่อสู้และสิ่งแวดล้อมในฉาก ({combat.round_number if combat else 1})
+- HP ผีเงาจมน้ำ: {combat.enemy_hp if combat else 0}/{combat.enemy_max_hp if combat else 8} | กล่อม: {combat.soothe_progress if combat else 0}/{combat.soothe_goal if combat else 3} | ถอย: {combat.retreat_progress if combat else 0}/{combat.retreat_goal if combat else 2}
+- สัญญาณอันตรายรอบนี้ (Telegraph): {json.dumps(combat.telegraph if combat else None, ensure_ascii=False)}
+- องค์ประกอบฉาก: {json.dumps(combat.environment_features if combat else [], ensure_ascii=False)}
+- เพื่อนร่วมทีม: {json.dumps(party_list, ensure_ascii=False)}
+
+## การกระทำที่ผู้เล่นประกาศ
+"{declaration_text}"
+
+## กติกาการตัดสิน
+- เลือก action_id ที่ตรงเจตนาที่สุด: 'strike' (โจมตี/ขัดขวางกายภาพ), 'soothe' (กล่อม/พูดเรียกสติ/สวด), 'assist' (ช่วย/บัง/ดึงเพื่อนหลบ), 'steady' (ตั้งสติ/ถอยมาคุมตัวเอง), 'role_skill' (ใช้ท่าประจำอาชีพ — ใช้ได้เฉพาะเมื่อ focus >= 1), 'retreat' (คุ้มกันเปิดทางหนี)
+- เลือก stat_choice ที่สมเหตุสมผลกับวิธีที่ผู้เล่นบรรยาย (เช่น สาดไฟฉาย/สังเกตจุดอ่อนใช้ PER/INT, พูดคุยปลอบโยนใช้ SOC, ใช้อาคม/สัมผัสวิญญาณใช้ SPI, ใช้แรงกายใช้ BODY)
+- ให้ tactical_bonus (+1 หรือ +2) เฉพาะเมื่อผู้เล่นใช้สภาพแวดล้อม (ไฟฉาย, แอ่งโคลน, ดงกล้วย) หรือแก้ทาง Telegraph รอบนี้ได้ชาญฉลาด พร้อมอธิบายสั้น ๆ ใน tactical_reason
+- เขียน narration_full, narration_partial, narration_failure เป็นภาษาไทยบรรยายผลลัพธ์อย่างสมจริงโดยไม่ออกนอกกติกาหรือสปอยล์ ACT C–F"""
+
+        def _call_plan(client: Any) -> CombatPlayerActionPlan:
+            from google.genai.types import GenerateContentConfig
+
+            response = client.models.generate_content(
+                model=self.dm_model,
+                contents=prompt,
+                config=GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=CombatPlayerActionPlan,
+                    temperature=0.4,
+                ),
+            )
+            parsed = getattr(response, "parsed", None)
+            if isinstance(parsed, CombatPlayerActionPlan):
+                return parsed
+            if isinstance(parsed, dict):
+                return CombatPlayerActionPlan.model_validate(parsed)
+            return CombatPlayerActionPlan.model_validate_json(response.text)
+
+        try:
+            plan = await asyncio.to_thread(self._run_with_gemini_failover, _call_plan)
+            if plan.action_id == "role_skill" and player.focus < 1:
+                plan.action_id = "steady"
+            return plan, False
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Gemini combat action planner failed, using fallback: %s", exc)
+            return self._local_fallback_combat_action(room, player, declaration_text), True
+
+    @staticmethod
+    def _local_fallback_combat_action(
+        room: RoomState,
+        player: Any,
+        declaration_text: str,
+    ) -> CombatPlayerActionPlan:
+        text = declaration_text.lower()
+        combat = room.combat
+        tele_target_id = (combat.telegraph or {}).get("target_id") if combat else None
+
+        bonus = 0
+        reason: Optional[str] = None
+        if any(k in text for k in ("ไฟฉาย", "แอ่งโคลน", "โคลน", "กิ่งกล้วย", "ต้นกล้วย", "ใบกล้วย")):
+            bonus = 2
+            reason = "ใช้สภาพแวดล้อมในฉากได้อย่างชาญฉลาด"
+        elif any(k in text for k in ("น้ำท่วม", "2534", "แม่แก้ว", "แก้ว", "ดึง", "คว้า", "ขวาง")):
+            bonus = 1
+            reason = "จับจังหวะแก้ทางสถานการณ์ได้ตรงจุด"
+
+        shaken = "SHAKEN" in (player.statuses or [])
+        rooted = "ROOTED" in (player.statuses or [])
+
+        if any(k in text for k in ("ช่วย", "บัง", "ดึงเพื่อน", "คว้าเพื่อน", "คว้าแขน", "คุ้มกันเพื่อน", "ขวาง")):
+            others = [p for p in room.players.values() if p.player_token != player.player_token and p.is_conscious]
+            ally_id = tele_target_id or (others[0].public_id if others else None)
+            return CombatPlayerActionPlan(
+                action_id="assist",
+                tactical_bonus=bonus,
+                tactical_reason=reason or "เข้าช่วยคุ้มกันเพื่อนร่วมทีม",
+                target_ally_id=ally_id,
+                narration_full=f"{player.name} ลงมือตามที่ประกาศ ({declaration_text}) เข้าช่วยคุ้มกันเพื่อนและส่งต่อจังหวะได้เปรียบ +2 ทันที!",
+                narration_partial=f"{player.name} รีบพุ่งเข้าช่วยเพื่อนตามที่ประกาศจนพ้นระยะอันตรายได้ทัน!",
+                narration_failure=f"{player.name} พยายามเข้าขวางเต็มที่แม้จังหวะในความมืดจะฉุกละหุกก็ตาม",
+            )
+
+        if not shaken and player.focus >= 1 and any(
+            k in text for k in ("ท่าประจำอาชีพ", "สกิล", "ยันต์", "สแกน", "ปฐมพยาบาล", "แนวป้องกัน", "วิเคราะห์จุดอ่อน")
+        ):
+            skill_name = (player.skill or {}).get("name", "ท่าประจำอาชีพ")
+            return CombatPlayerActionPlan(
+                action_id="role_skill",
+                tactical_bonus=bonus,
+                tactical_reason=reason,
+                narration_full=f"{player.name} ทุ่มสมาธิใช้ [{skill_name}] ควบคู่กับการกระทำ ({declaration_text}) ได้ผลเต็มกำลัง!",
+                narration_partial=f"{player.name} ปล่อยท่า [{skill_name}] ออกมาต้านภัยรอบตัวได้สำเร็จ",
+                narration_failure=f"{player.name} พยายามตั้งท่า [{skill_name}] แต่คลื่นอาฆาตกดดันไว้",
+            )
+
+        if any(k in text for k in ("ดึงสติ", "ตั้งสติ", "หายใจ", "สะบัด", "สงบใจ")):
+            return CombatPlayerActionPlan(
+                action_id="steady",
+                narration_full=f"{player.name} ตั้งหลักรวบรวมสติ ({declaration_text}) จนหลุดจากอาการหลอน (+2 สติ, +1 โฟกัส)!",
+                narration_partial=f"{player.name} พยายามตั้งสติและคุมจังหวะลมหายใจกลับมาได้",
+                narration_failure=f"{player.name} ยังรู้สึกหนาวเยือกแต่ก็ดึงสติกลับมาได้ระดับหนึ่ง",
+            )
+
+        if not rooted and any(k in text for k in ("ถอย", "หนี", "เปิดทาง", "วิ่งออก")):
+            stat_pick = "PER" if "ไฟฉาย" in text or "มอง" in text else "BODY"
+            return CombatPlayerActionPlan(
+                action_id="retreat",
+                stat_choice=stat_pick,
+                tactical_bonus=bonus,
+                tactical_reason=reason,
+                narration_full=f"{player.name} ({declaration_text}) เปิดทางหนีฝ่าแนวต้นกล้วยและตั้งรับได้อย่างเฉียบขาด!",
+                narration_partial=f"{player.name} ({declaration_text}) พาทีมขยับเข้าใกล้ทางออกได้อีกก้าว",
+                narration_failure=f"{player.name} แหวกพุ่มกล้วยเปิดทางออกมาได้แม้จะทุลักทุเล",
+            )
+
+        if not shaken and any(k in text for k in ("กล่อม", "ปลอบ", "สวด", "ถาม", "เรียกสติ", "แม่แก้ว", "น้ำท่วม", "2534", "คุย")):
+            stat_pick = "SPI" if any(k in text for k in ("สวด", "วิญญาณ", "จิต")) else "SOC"
+            return CombatPlayerActionPlan(
+                action_id="soothe",
+                stat_choice=stat_pick,
+                tactical_bonus=bonus,
+                tactical_reason=reason,
+                narration_full=f"{player.name} ({declaration_text}) สื่อสารทะลุเสียงสำลักน้ำจนเงาร่างของวิญญาณสงบนิ่งลงอย่างเห็นได้ชัด!",
+                narration_partial=f"{player.name} ({declaration_text}) ทำให้ผีเงาจมน้ำชะงักไปเสี้ยววินาที เปิดจุดอ่อน (+2 ทอย) ให้เพื่อนร่วมทีม!",
+                narration_failure=f"{player.name} พยายาม ({declaration_text}) แต่เสียงน้ำเชี่ยวหลอนกลับดังกลบจนมันไม่ยอมฟัง",
+            )
+
+        stat_pick = (
+            "PER"
+            if any(k in text for k in ("ไฟฉาย", "ส่อง", "เล็ง"))
+            else ("SPI" if player.stats.get("SPI", 0) > player.stats.get("BODY", 0) else "BODY")
+        )
+        return CombatPlayerActionPlan(
+            action_id="strike",
+            stat_choice=stat_pick,
+            tactical_bonus=bonus,
+            tactical_reason=reason,
+            narration_full=f"{player.name} ({declaration_text}) จู่โจมตรงจุดจนร่างโคลนของผีเงาจมน้ำสะท้านถอย!",
+            narration_partial=f"{player.name} ({declaration_text}) ปะทะเฉี่ยวโดนร่างเงาเปียกโชกไปได้หวุดหวิด",
+            narration_failure=f"{player.name} ({declaration_text}) พลาดเป้า ร่างเงาโคลนเลือนหายไปในเงาต้นกล้วยได้ทัน",
         )

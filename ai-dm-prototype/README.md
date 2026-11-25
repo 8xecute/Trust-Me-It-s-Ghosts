@@ -31,12 +31,12 @@ GEMINI_API_KEY=ใส่คีย์_Gemini_ที่นี่
 GROQ_API_KEY=ใส่คีย์_Groq_ที่นี่
 ```
 
-### 3. สร้างไฟล์เสียงตามสคริปต์ล่วงหน้า (Pre-generate ~49 ประโยค)
+### 3. สร้างไฟล์เสียงตามสคริปต์ล่วงหน้า (`audio_assets/{act_a,act_b,combat,fillers}/`)
 ```powershell
 cd ai-dm-prototype
-.\.venv\Scripts\python.exe scripts\generate_audio.py
+.\.venv\Scripts\python.exe scripts\generate_audio.py --delay 7
 ```
-*(ดูรายการก่อนสร้างจริงด้วย `--dry-run` ได้ครับ — หากไม่มี `ffmpeg` สคริปต์จะเซฟเป็น `.wav` ให้อัตโนมัติ)*
+*(ดูรายการก่อนสร้างจริงด้วย `--dry-run` หรือแยกสร้างเฉพาะบทด้วย `--bucket act_b` ได้ — ดูพื้นที่ทำงานคนเขียนบทครบทุกบท A–F และวิธีซิงก์บทพูดได้ที่ [`story/README.md`](story/README.md))*
 
 ### 4. รันเซิร์ฟเวอร์ทดสอบ
 ```powershell

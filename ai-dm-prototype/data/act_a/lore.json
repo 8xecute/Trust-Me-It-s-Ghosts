@@ -1,0 +1,307 @@
+{
+  "act": "A",
+  "title": "ACT A — ศาลาริมทางและเหตุวิทยุสื่อสาร (A1–A3)",
+  "clues_catalog": {
+    "missing_names": {
+      "label": "รายชื่อคนหาย 3 คน",
+      "detail": "ดล (เด็กหนุ่มช่างสงสัยชอบจดบันทึก), นิด (หลานช่างภาพ), และเพิ่ม (คนสวนสูงวัย) หายตัวไปตามลำดับคนละคืน"
+    },
+    "banana_grove_area": {
+      "label": "จุดเกิดเหตุแถวสวนกล้วย",
+      "detail": "ชาวบ้านเล่าว่าทั้งสามคนหายไปบริเวณทางเข้าสวนกล้วย"
+    },
+    "headman_files_exist": {
+      "label": "แฟ้มและแผนที่บ้านผู้ใหญ่",
+      "detail": "รายละเอียดจุดพบครั้งสุดท้ายและแผนที่หมู่บ้านเก็บอยู่ที่บ้านผู้ใหญ่ประเสริฐ"
+    },
+    "kaew_mention": {
+      "label": "ชื่อของ 'แก้ว'",
+      "detail": "ประเสริฐยอมรับว่าเมื่อพูดถึงหญิงชุดเขียว เขาคิดถึง 'แก้ว' ที่ตายไปนานแล้ว"
+    },
+    "prasert_nervous_clue": {
+      "label": "พิรุธและบ้านที่เตรียมย้ายหนี",
+      "detail": "หลายบ้านติดผ้ายันต์หน้าประตูและเก็บข้าวของเตรียมอพยพ ส่วนประเสริฐหลบตาทุกครั้งที่พูดถึงแนวสวนกล้วย"
+    },
+    "report_timeline_gap": {
+      "label": "ช่องว่างเวลาในใบรับแจ้ง",
+      "detail": "เอกสารลงเวลาหายคืนละคน แต่เว้นตำแหน่งสุดท้ายไว้รอเทียบกับแฟ้มที่บ้านผู้ใหญ่"
+    },
+    "radio_still_alive": {
+      "label": "เสียงจากวิทยุ: 'ยังมีคนอยู่'",
+      "detail": "เสียงผู้หญิงสำลักน้ำผ่านวิทยุรถตู้พูดว่า 'น้ำมาแล้ว ข้าจะช่วยเอ็ง ...ยังมีคนอยู่'"
+    },
+    "radio_no_recording": {
+      "label": "วิทยุไม่มีไฟล์เสียงย้อนหลัง",
+      "detail": "เมื่อเปิดเช็กบันทึกหรือเครื่องวิทยุ กลับมีเพียงเสียงซ่า ไม่พบคลื่นสัญญาณปกติ"
+    },
+    "radio_memory_echo": {
+      "label": "ร่องรอยความทรงจำเหนือธรรมชาติ",
+      "detail": "เสียงในวิทยุไม่ใช่การติดต่อสด แต่เป็นคลื่นความทรงจำเกี่ยวกับน้ำที่ตกค้างอยู่"
+    },
+    "radio_supernatural_chill": {
+      "label": "ไอเย็นผิดธรรมชาติรอบวิทยุ",
+      "detail": "สัมผัสได้ถึงลมชื้นเย็นผิดธรรมชาติรอบตัวเครื่อง แม้กระจกรถตู้จะปิดสนิท"
+    },
+    "location_headman_house": {
+      "label": "เส้นทางสู่บ้านผู้ใหญ่ประเสริฐ",
+      "detail": "บ้านไม้เปิดไฟรออยู่ด้านในถนน เป็นจุดตรวจแฟ้ม แผนที่ และพบพยาน"
+    },
+    "witnesses_at_house": {
+      "label": "พยานที่บ้านผู้ใหญ่ (วิชัย & ต้น)",
+      "detail": "วิชัย (ผู้ช่วยผู้ใหญ่) และต้น (อาสาสมัคร) กำลังรอให้ปากคำอยู่ที่บ้านผู้ใหญ่"
+    }
+  },
+  "items_catalog": {
+    "missing_report_copy": {
+      "label": "สำเนาใบรับแจ้งคนหาย",
+      "detail": "เอกสารแจ้งคนหายของดล นิด และเพิ่ม ออกโดยผู้ใหญ่บ้านประเสริฐ"
+    }
+  },
+  "board_nodes": [
+    {
+      "id": "sala",
+      "name": "ศาลาริมทาง",
+      "subtitle": "จุดนัดพบผู้ใหญ่ประเสริฐ",
+      "scene": "A1",
+      "x": 22,
+      "y": 62,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "A"
+    },
+    {
+      "id": "company_van",
+      "name": "รถตู้บริษัท",
+      "subtitle": "ประตูข้างเปิดค้าง / วิทยุสื่อสาร",
+      "scene": "A2",
+      "x": 45,
+      "y": 46,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "A"
+    },
+    {
+      "id": "headman_house",
+      "name": "บ้านผู้ใหญ่บ้าน",
+      "subtitle": "แฟ้มแผนที่ & พยาน (จบบท A)",
+      "scene": "A3",
+      "x": 76,
+      "y": 30,
+      "unlocked_by_default": false,
+      "requires_clues": [
+        "headman_files_exist",
+        "location_headman_house"
+      ],
+      "act": "A"
+    },
+    {
+      "id": "banana_grove_edge",
+      "name": "ปากทางสวนกล้วย",
+      "subtitle": "ทางมืดไร้แผนที่ (เสี่ยงเจอผี!)",
+      "scene": "A3",
+      "x": 70,
+      "y": 72,
+      "unlocked_by_default": true,
+      "requires_clues": [],
+      "act": "A"
+    }
+  ],
+  "scenes": {
+    "A1": {
+      "id": "A1",
+      "title": "A1: ศาลาริมทาง ทางเข้าบ้านหนองตาล",
+      "subtitle": "พบผู้ใหญ่ประเสริฐเพื่อสอบถามข้อมูลเบื้องต้นและตรวจใบรับแจ้ง",
+      "background_image": "/assets/scenes/a1_sala.png",
+      "npcs": [
+        {
+          "name": "ประเสริฐ",
+          "sprite": "/assets/characters/prasert.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "a1_intro_dm",
+        "a1_prasert_greet"
+      ],
+      "allowed_next_scenes": [
+        "A2"
+      ],
+      "allowed_clues": [
+        "missing_names",
+        "banana_grove_area",
+        "headman_files_exist",
+        "kaew_mention",
+        "prasert_nervous_clue",
+        "report_timeline_gap"
+      ],
+      "allowed_items": [
+        "missing_report_copy"
+      ],
+      "available_checks": [
+        "A1_PER_OBSERVE",
+        "A1_INT_FILES"
+      ],
+      "anti_stall_turn_limit": 6,
+      "anti_stall_audio_id": "a1_antistall_hint",
+      "quick_prompts": [
+        "คนหายมีใครบ้าง แล้วหายไปแถวไหนครับ?",
+        "ขอดูสำเนาใบรับแจ้งคนหายหน่อยได้ไหม?",
+        "ผมขอสังเกตท่าทีของผู้ใหญ่ประเสริฐและบ้านรอบ ๆ",
+        "ขอดูแฟ้มในมือผู้ใหญ่ตรงข้างรถตู้เลยได้ไหมครับ?"
+      ],
+      "spoiler_guardrails": [
+        "ห้ามประเสริฐพูดเรื่อง 'ผู้หญิงชุดเขียว' หรือ 'แก้ว' เองเด็ดขาด เว้นแต่ผู้เล่นจะถามถึงผู้หญิงชุดเขียวโดยตรง (ใช้ a1_qa_green_lady)",
+        "ห้ามเปิดเผยเรื่องน้ำท่วมปี 2534, ประตูน้ำ, วิชัยเป็นคนร้าย, หรือจุดซ่อนตัวประกันโดยเด็ดขาด",
+        "ห้ามเล่าเรื่องเสียงวิทยุล่วงหน้าจนกว่าจะเข้าฉาก A2 (เมื่อผู้เล่นคลี่แฟ้มหรือขอเปิดดูแฟ้มข้างรถ)"
+      ]
+    },
+    "A2": {
+      "id": "A2",
+      "title": "A2: เสียงจากวิทยุสื่อสารของรถบริษัท",
+      "subtitle": "เสียงผู้หญิงสำลักน้ำดังลอดออกจากวิทยุรถตู้ทั้งที่ไม่มีใครแตะเครื่อง",
+      "background_image": "/assets/scenes/a1_sala.png",
+      "npcs": [
+        {
+          "name": "ประเสริฐ",
+          "sprite": "/assets/characters/prasert.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "a2_radio_dm_intro",
+        "a2_radio_voice",
+        "a2_prasert_shock"
+      ],
+      "allowed_next_scenes": [
+        "A3"
+      ],
+      "allowed_clues": [
+        "radio_still_alive",
+        "radio_no_recording",
+        "radio_memory_echo",
+        "radio_supernatural_chill",
+        "location_headman_house"
+      ],
+      "allowed_items": [],
+      "available_checks": [
+        "A2_RADIO_ECHO"
+      ],
+      "anti_stall_turn_limit": 6,
+      "anti_stall_audio_id": "a2_antistall_hint",
+      "quick_prompts": [
+        "เมื่อกี้วิทยุพูดว่าอะไร เป็นเสียงใคร?",
+        "ลองเปิดบันทึกย้อนหลังหรือตรวจเครื่องวิทยุ",
+        "ตั้งจิตสัมผัสพลังจากเสียงในวิทยุสื่อสาร",
+        "ไปดูแฟ้มที่บ้านผู้ใหญ่กันต่อเถอะ"
+      ],
+      "spoiler_guardrails": [
+        "ห้ามเฉลยว่าเสียงในวิทยุเป็นเสียงของแม่แก้วหรือคนหายคนใด ก่อนเช็กหรือนอกบท",
+        "ถ้าเปิดบันทึกย้อนหลังหรือเช็กเครื่องธรรมดา จะได้ยินแค่เสียงซ่า (a2_qa_replay_static) ไม่ต้องทอย SPI",
+        "ใช้เช็ก A2_RADIO_ECHO เฉพาะเมื่อผู้เล่นตั้งใจสัมผัสพลังเหนือธรรมชาติหรือตรวจคลื่นวิญญาณจากวิทยุเท่านั้น"
+      ]
+    },
+    "A3": {
+      "id": "A3",
+      "title": "A3: จากศาลาสู่บ้านผู้ใหญ่",
+      "subtitle": "ตัดสินใจมุ่งหน้าไปบ้านผู้ใหญ่เพื่อดูแผนที่กับพยาน หรือเสี่ยงเดินเข้าสวนกล้วยเอง",
+      "background_image": "/assets/scenes/a3_headman_house.png",
+      "npcs": [
+        {
+          "name": "ประเสริฐ",
+          "sprite": "/assets/characters/prasert.png",
+          "visible": true
+        }
+      ],
+      "intro_audio_ids": [
+        "a3_intro_prasert"
+      ],
+      "allowed_next_scenes": [],
+      "allowed_clues": [
+        "location_headman_house",
+        "witnesses_at_house"
+      ],
+      "allowed_items": [],
+      "available_checks": [],
+      "anti_stall_turn_limit": 6,
+      "anti_stall_audio_id": "a3_antistall_hint",
+      "quick_prompts": [
+        "ที่บ้านผู้ใหญ่มีใครรออยู่บ้าง?",
+        "ทำไมไม่พาเข้าสวนกล้วยไปเลยตอนนี้?",
+        "ตกลง เดินเข้าไปดูแฟ้มในบ้านผู้ใหญ่กัน",
+        "ไม่รอแล้ว พวกเราเดินแยกเข้าสวนกล้วยเองเลย!"
+      ],
+      "spoiler_guardrails": [
+        "ห้ามหลุดความลับว่าวิชัยแอบดักฟังหรือเกี่ยวข้องกับการลักพาตัว",
+        "หากผู้เล่นเดินเข้าบ้านผู้ใหญ่บ้านให้จบช่วง A ด้วย ending act_a_complete (a3_ending_true)",
+        "หากผู้เล่นยืนกรานจะเข้าสวนกล้วยมืดเลย ระบบจะเปิดฉากเผชิญหน้ากับผีเงาจมน้ำ (หรือส่งสัญญาณจบ)"
+      ]
+    }
+  },
+  "dice_checks": {
+    "A1_PER_OBSERVE": {
+      "id": "A1_PER_OBSERVE",
+      "scene_id": "A1",
+      "title": "สังเกตท่าทีประเสริฐและบรรยากาศหมู่บ้าน",
+      "stat": "PER",
+      "dc": 12,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นขอสังเกตสีหน้า พิรุธของประเสริฐ หรือสภาพบ้านเรือนรอบศาลา",
+      "audio_ids": {
+        "full": "a1_check_per_full",
+        "partial": "a1_check_per_partial",
+        "failure": "a1_check_per_fail"
+      }
+    },
+    "A1_INT_FILES": {
+      "id": "A1_INT_FILES",
+      "scene_id": "A1",
+      "title": "ตรวจความครบถ้วนของสำเนาใบรับแจ้ง",
+      "stat": "INT",
+      "dc": 12,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นขอวิเคราะห์รายละเอียด วันเวลา หรือความผิดปกติในสำเนาใบรับแจ้งคนหาย",
+      "audio_ids": {
+        "full": "a1_check_int_full",
+        "partial": "a1_check_int_partial",
+        "failure": "a1_check_int_fail"
+      }
+    },
+    "A2_RADIO_ECHO": {
+      "id": "A2_RADIO_ECHO",
+      "scene_id": "A2",
+      "title": "แยกเสียงวิญญาณจากคลื่นรบกวน",
+      "stat": "SPI",
+      "dc": 14,
+      "partial_margin": 3,
+      "trigger_hint": "ผู้เล่นตั้งใจสัมผัสพลังเหนือธรรมชาติหรือสื่อสารกับเสียงในวิทยุสื่อสาร",
+      "audio_ids": {
+        "full": "a2_check_spi_full",
+        "partial": "a2_check_spi_partial",
+        "failure": "a2_check_spi_fail"
+      }
+    }
+  },
+  "endings": {
+    "act_a_complete": {
+      "id": "act_a_complete",
+      "type": "true_ending",
+      "title": "ผ่านบทนำ ACT A: ถึงบ้านผู้ใหญ่บ้านอย่างปลอดภัย",
+      "audio_id": "a3_ending_true",
+      "summary": "ทีมสืบสวนรวบรวมข้อมูลพื้นฐานจากศาลาและเหตุวิทยุสื่อสารได้ครบถ้วน พร้อมเดินเข้าสู่บ้านผู้ใหญ่ประเสริฐเพื่อตรวจแฟ้ม แผนที่ และสอบปากคำพยานใน ACT B"
+    },
+    "act_a_combat_clear": {
+      "id": "act_a_combat_clear",
+      "type": "true_ending",
+      "title": "ผ่านบทนำ ACT A: เผชิญหน้าและรอดพ้นจากผีเงาจมน้ำ",
+      "audio_id": "combat_win_disperse",
+      "summary": "แม้ทีมจะหลงเข้าไปปะทะกับผีเงาจมน้ำที่ปากทางสวนกล้วย แต่ทุกคนร่วมมือกันรับมือจนขับไล่หรือปลอบประโลมมันได้สำเร็จ และกลับเข้าสู่บ้านผู้ใหญ่เพื่อเริ่ม ACT B"
+    },
+    "lost_in_grove": {
+      "id": "lost_in_grove",
+      "type": "bad_ending",
+      "title": "BAD ENDING (ACT A): พ่ายแพ้ท่ามกลางสวนกล้วยมืด",
+      "audio_id": "combat_defeat_bad",
+      "summary": "ทีมสืบสวนหมดสติหรือเสียขวัญจากการเผชิญหน้ากับผีเงาจมน้ำกลางดงกล้วยโดยขาดแผนที่และข้อมูลพยาน ต้องถอยกลับไปตั้งหลักใหม่"
+    }
+  }
+}

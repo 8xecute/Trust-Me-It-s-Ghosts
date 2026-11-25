@@ -1,0 +1,47 @@
+{
+  "combat_encounter": {
+    "id": "DROWNED_ECHO",
+    "name": "ผีเงาจมน้ำ",
+    "sprite": "/assets/characters/drowned_echo.png",
+    "background_image": "/assets/scenes/a3_grove_entrance.png",
+    "base_hp_for_2": 8,
+    "hp_per_extra_player": 3,
+    "soothe_goal": 3,
+    "retreat_goal": 2,
+    "pdef": 12,
+    "mdef": 13,
+    "atk": 3,
+    "moves": [
+      {
+        "id": "WET_CLAW",
+        "name_th": "เล็บเปียกน้ำ",
+        "target_defense": "PDEF",
+        "damage_resource": "HP",
+        "damage": 3,
+        "condition": null,
+        "audio_id": "ghost_move_wet_claw",
+        "detail": "ตะปบด้วยกรงเล็บเย็นเฉียบ สร้างความเสียหาย 3 HP"
+      },
+      {
+        "id": "UNDERFLOOR_HAND",
+        "name_th": "มือจากใต้พื้น",
+        "target_defense": "PDEF",
+        "damage_resource": "HP",
+        "damage": 2,
+        "condition": "ROOTED",
+        "audio_id": "ghost_move_underfloor_hand",
+        "detail": "มือเงาดึงข้อเท้า สร้าง 2 HP และติดสถานะพันธนาการ (ถอยทัพไม่ได้ 1 รอบ)"
+      },
+      {
+        "id": "DROWNED_WHISPER",
+        "name_th": "เสียงเรียกจากคราบน้ำ",
+        "target_defense": "MDEF",
+        "damage_resource": "Sanity",
+        "damage": 2,
+        "condition": "SHAKEN",
+        "audio_id": "ghost_move_drowned_whisper",
+        "detail": "เสียงสำลักน้ำกระซิบหลอน ลด 2 สติ และติดสถานะหวาดกลัว (กล่อม/ใช้ท่าอาชีพไม่ได้ 1 รอบ)"
+      }
+    ]
+  }
+}

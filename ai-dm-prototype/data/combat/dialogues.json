@@ -1,0 +1,186 @@
+{
+  "dialogues": [
+    {
+      "id": "combat_drowned_intro",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตื่นเต้น กดดัน และสยองขวัญ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "เปิดฉากต่อสู้กับผีเงาจมน้ำบริเวณปากทางสวนกล้วย"
+      },
+      "text": "เสียงน้ำไหลเชี่ยวโอบล้อมดงกล้วย เงาดำเปียกโชกผุดขึ้นจากแอ่งโคลน! กลิ่นดินโคลนเน่าคละคลุ้งพร้อมเสียงสำลักน้ำที่คุ้นเคย ทุกคนเตรียมตั้งหลักรับมือ!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "ghost_move_wet_claw",
+      "scene": "COMBAT",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Kore",
+      "style": "เสียงกระซิบเย็นเยียบ แหบพร่า เกรี้ยวกราด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผีเงาจมน้ำใช้ท่าเล็บเปียกน้ำ"
+      },
+      "text": "อย่าหนี... เข้ามาในน้ำด้วยกัน...!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "ghost_move_underfloor_hand",
+      "scene": "COMBAT",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Kore",
+      "style": "เสียงกระซิบเย็นเยียบ ปนเสียงโคลนขยับและเสียงหัวเราะเบา ๆ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผีเงาจมน้ำใช้ท่ามือจากใต้พื้น"
+      },
+      "text": "ขาของเจ้า... จมลงมาในโคลนเสียเถอะ...",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "ghost_move_drowned_whisper",
+      "scene": "COMBAT",
+      "speaker": "ผีเงาจมน้ำ",
+      "voice": "Kore",
+      "style": "เสียงสำลักน้ำกระซิบข้างหู น่าขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผีเงาจมน้ำใช้ท่าเสียงเรียกจากคราบน้ำ"
+      },
+      "text": "อยู่เป็นเพื่อนข้า... น้ำท่วมแล้ว... ไม่มีใครรอดหรอก...",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "combat_win_disperse",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ โล่งอกแต่ยังคงความขลัง",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมขับไล่ผีเงาจมน้ำได้สำเร็จ"
+      },
+      "text": "แสงและแรงปะทะทำให้เงาเปียกโชกสลายกลายเป็นละอองน้ำ ทีมสืบสวนรอดจากปากทางสวนกล้วยและมุ่งหน้ากลับสู่บ้านผู้ใหญ่ได้สำเร็จ!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "location_headman_house"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "combat_win_soothe",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สงบ เยือกเย็น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมปลอบประโลมผีเงาจมน้ำสำเร็จ"
+      },
+      "text": "เสียงปลอบโยนทำให้คลื่นอาฆาตสงบลงชั่วคราว เงาจมน้ำค่อย ๆ จางหายไปในความมืด ทีมสืบสวนปลอดภัยและพร้อมเข้าบ้านผู้ใหญ่!",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "location_headman_house"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "combat_escape",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ กระชับ ตื่นเต้น",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมคุ้มกันถอยรอดออกจากสวนกล้วยสำเร็จ"
+      },
+      "text": "ทีมช่วยกันเปิดทางถอยกลับออกมาถึงแนวถนนอย่างหวุดหวิด ประเสริฐรีบกวักมือเรียกให้เข้าไปดูแฟ้มในบ้านผู้ใหญ่ทันที",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [
+          "location_headman_house"
+        ],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "combat_defeat_bad",
+      "scene": "COMBAT",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สยองขวัญ กดดัน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ทีมพ่ายแพ้ในการปะทะกับผีเงาจมน้ำ"
+      },
+      "text": "ทีมสืบสวนอ่อนแรงและเสียขวัญท่ามกลางดงกล้วยมืดมิด เสียงน้ำไหลโอบล้อมจนต้องถอยร่นออกมาตั้งหลักใหม่...",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": null,
+        "trust_delta": {}
+      }
+    }
+  ]
+}

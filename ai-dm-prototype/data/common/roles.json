@@ -1,0 +1,142 @@
+{
+  "roles": [
+    {
+      "id": "investigator",
+      "name": "นักสืบ",
+      "subtitle": "สืบหาข้อเท็จจริงและสังเกตพิรุธ",
+      "avatar": "/assets/characters/investigator.png",
+      "max_hp": 15,
+      "max_sanity": 10,
+      "max_focus": 4,
+      "stats": {
+        "BODY": 1,
+        "PER": 5,
+        "INT": 5,
+        "SOC": 4,
+        "SPI": 1,
+        "RES": 2
+      },
+      "skill": {
+        "id": "weakness_analysis",
+        "name": "วิเคราะห์จุดอ่อน",
+        "focus_cost": 1,
+        "description": "เปิดจุดอ่อนผีให้เพื่อนโจมตี/กล่อมแม่นขึ้น +2 ในรอบนี้ และทำ 1 ดาเมจ"
+      }
+    },
+    {
+      "id": "medium",
+      "name": "ร่างทรง",
+      "subtitle": "สัมผัสคลื่นวิญญาณและปลอบประโลม",
+      "avatar": "/assets/characters/medium.png",
+      "max_hp": 15,
+      "max_sanity": 10,
+      "max_focus": 4,
+      "stats": {
+        "BODY": 1,
+        "PER": 2,
+        "INT": 2,
+        "SOC": 5,
+        "SPI": 5,
+        "RES": 3
+      },
+      "skill": {
+        "id": "soothe_spirit",
+        "name": "เสียงปลอบวิญญาณ",
+        "focus_cost": 1,
+        "description": "ส่งคลื่นเสียงปลอบวิญญาณ เพิ่มความคืบหน้ากล่อมผี +2 ทันที (หรือ +1 หากต้าน)"
+      }
+    },
+    {
+      "id": "ritualist",
+      "name": "หมอพิธี",
+      "subtitle": "คลายอาคมและปกป้องทีม",
+      "avatar": "/assets/characters/ritualist.png",
+      "max_hp": 15,
+      "max_sanity": 10,
+      "max_focus": 4,
+      "stats": {
+        "BODY": 1,
+        "PER": 1,
+        "INT": 5,
+        "SOC": 2,
+        "SPI": 4,
+        "RES": 5
+      },
+      "skill": {
+        "id": "protective_talisman",
+        "name": "ยันต์คุ้มภัย",
+        "focus_cost": 1,
+        "description": "กางเกราะคุ้มภัยทั้งทีม +2 (1 รอบ) และล้างสถานะพันธนาการ/หวาดกลัวให้ทุกคน"
+      }
+    },
+    {
+      "id": "bodyguard",
+      "name": "บอดี้การ์ด",
+      "subtitle": "คุ้มกันทีมและรับมือแรงปะทะ",
+      "avatar": "/assets/characters/bodyguard.png",
+      "max_hp": 15,
+      "max_sanity": 10,
+      "max_focus": 4,
+      "stats": {
+        "BODY": 5,
+        "PER": 3,
+        "INT": 1,
+        "SOC": 3,
+        "SPI": 1,
+        "RES": 5
+      },
+      "skill": {
+        "id": "defensive_line",
+        "name": "ตั้งแนวป้องกัน",
+        "focus_cost": 1,
+        "description": "ดึงเป้าการโจมตีกายภาพของผีมาที่ตัวเองและลดดาเมจที่ได้รับ 2 หน่วยในรอบนี้"
+      }
+    },
+    {
+      "id": "driver",
+      "name": "คนขับรถ (อดีตนายพราน)",
+      "subtitle": "ชำนาญเส้นทางและปฐมพยาบาลทีม",
+      "avatar": "/assets/characters/driver.png",
+      "max_hp": 15,
+      "max_sanity": 10,
+      "max_focus": 4,
+      "stats": {
+        "BODY": 5,
+        "PER": 5,
+        "INT": 1,
+        "SOC": 3,
+        "SPI": 1,
+        "RES": 3
+      },
+      "skill": {
+        "id": "field_first_aid",
+        "name": "ปฐมพยาบาลภาคสนาม",
+        "focus_cost": 1,
+        "description": "ฟื้นฟู +3 HP และ +2 สติ ให้สมาชิกที่บาดเจ็บหนักที่สุดในทีม"
+      }
+    },
+    {
+      "id": "intern",
+      "name": "นักศึกษาฝึกงาน",
+      "subtitle": "สแกนคลื่นวิญญาณและเสริมโฟกัสทีม",
+      "avatar": "/assets/characters/intern.png",
+      "max_hp": 15,
+      "max_sanity": 10,
+      "max_focus": 4,
+      "stats": {
+        "BODY": 3,
+        "PER": 3,
+        "INT": 3,
+        "SOC": 3,
+        "SPI": 3,
+        "RES": 3
+      },
+      "skill": {
+        "id": "spirit_scanner",
+        "name": "เครื่องสแกนคลื่นวิญญาณ",
+        "focus_cost": 1,
+        "description": "สแกนเปิดจุดอ่อนผี (+2 ทอยทั้งทีม) และคืน +1 โฟกัสให้เพื่อนร่วมทีมทุกคน"
+      }
+    }
+  ]
+}

@@ -656,7 +656,9 @@ def test_gemini_503_transient_retry_and_failover(monkeypatch: pytest.MonkeyPatch
 
 def test_act_b_data_integrity_and_unique_voices() -> None:
     repo = ScenarioRepository()
-    assert len(repo.dialogues) == 87
+    assert len(repo.dialogues) == 90
+    for new_id in ("a1_qa_missing_who", "b2_qa_ton_friends", "b3_wichai_stay_behind"):
+        assert new_id in repo.dialogues_by_id
     for scene_id in ("A1", "A2", "A3", "B1", "B2", "B3"):
         assert scene_id in repo.scenes
     for check_id in ("B2_WICHAI_TELL", "B3_TON_DISCLOSURE", "B4_FLOOD_PHOTO"):
@@ -685,10 +687,14 @@ def test_act_b_flow_checks_guardrails_and_ending() -> None:
     ]
     assert snap0["board_nodes"][-1]["unlocked"] is False
 
-    # In Act A room, Act B ending b_ending_to_act_c must NOT be eligible even if clues were injected
+    # In Act A room, Act B cross-scene dialogues must NOT be eligible even if clues were injected
     room_a, _, _ = mgr.add_player("ACTAONLY", "sid_a", "บี", "investigator", start_act="A")
     room_a.clues_found.append("don_house_location")
-    assert all(d["id"] != "b_ending_to_act_c" for d in mgr.get_eligible_dialogues(room_a))
+    assert all(
+        d["id"] not in {"b_ending_to_act_c", "b3_wichai_stay_behind"}
+        for d in mgr.get_eligible_dialogues(room_a)
+    )
+    assert "b3_wichai_stay_behind" in {d["id"] for d in mgr.get_eligible_dialogues(room)}
 
     _, intro_events = mgr.start_game("ACTB01")
     assert [ev["dialogue_id"] for ev in intro_events] == ["b1_intro_dm", "b1_wichai_greet"]
@@ -766,11 +772,14 @@ def test_act_b_flow_checks_guardrails_and_ending() -> None:
     assert out_flood_ok["needs_live_tts"] is False
     assert "wichai_flood_survivor" in room.clues_found
 
-    # Depart to Don's house via board map -> triggers act_b_complete & plays b_ending_to_act_c
+    # Depart to Don's house via board map -> emits Wichai farewell then b_ending_to_act_c
     end_res = mgr.move_board_node("ACTB01", "road_to_don_house", "เอม")
     assert room.ending_triggered == "act_b_complete"
     assert room.board_node == "road_to_don_house"
-    assert any(ev["dialogue_id"] == "b_ending_to_act_c" for ev in end_res["events"])
+    assert [ev["dialogue_id"] for ev in end_res["events"]] == [
+        "b3_wichai_stay_behind",
+        "b_ending_to_act_c",
+    ]
 
 
 def test_seamless_act_a_to_act_b_transition() -> None:
@@ -796,3 +805,205 @@ def test_seamless_act_a_to_act_b_transition() -> None:
     assert p1.player_token in room.players
     assert all(c in room.clues_found for c in prev_clues)
     assert [ev["dialogue_id"] for ev in b_events] == ["b1_intro_dm", "b1_wichai_greet"]
+
+
+def test_modular_data_and_categorized_audio_assets() -> None:
+    from backend.state_manager import audio_bucket_for_entry
+
+    repo = ScenarioRepository()
+    assert len(repo.dialogues) == 90
+    assert repo.count_cached_audio() == 88
+    assert repo.resolve_audio_url("a1_intro_dm") == "/audio_assets/act_a/a1_intro_dm.wav"
+    assert repo.resolve_audio_url("b1_intro_dm") == "/audio_assets/act_b/b1_intro_dm.wav"
+    assert repo.resolve_audio_url("combat_drowned_intro") == "/audio_assets/combat/combat_drowned_intro.wav"
+    assert repo.resolve_audio_url("filler_dm_think") == "/audio_assets/fillers/filler_dm_think.wav"
+
+    pending_voice_ids = {"b2_qa_ton_friends", "b3_wichai_stay_behind"}
+    assert audio_bucket_for_entry(repo.dialogues_by_id["a1_qa_missing_who"]) == "act_a"
+    assert audio_bucket_for_entry(repo.dialogues_by_id["b2_qa_ton_friends"]) == "act_b"
+    assert audio_bucket_for_entry(repo.dialogues_by_id["b3_wichai_stay_behind"]) == "act_b"
+
+    for entry in repo.dialogues:
+        if entry["id"] in pending_voice_ids:
+            continue
+        url = repo.resolve_audio_url(entry["id"])
+        assert url is not None, f"Missing audio for {entry['id']}"
+        rel = url.removeprefix("/audio_assets/")
+        assert (PROTO_DIR / "audio_assets" / rel).exists()
+
+    with TestClient(app) as client:
+        res_health = client.get("/healthz")
+        assert res_health.status_code == 200
+        assert res_health.json()["pregen_audio_count"] == 88
+        assert client.get("/audio_assets/act_b/b1_intro_dm.wav").status_code == 200
+
+
+def test_story_workspace_files_and_roundtrip_parser(tmp_path: Path) -> None:
+    import shutil
+    from scripts.import_story_edits import collect_changes, parse_markdown_dialogues
+
+    story_dir = PROTO_DIR / "story"
+    expected = (
+        "README.md",
+        "00_characters_and_voices.md",
+        "00_dm_knowledge_and_backstory.md",
+        "01_act_a_script.md",
+        "02_act_b_script.md",
+        "03_act_c_script.md",
+        "04_act_d_script.md",
+        "05_act_e_script.md",
+        "06_act_f_final_script.md",
+        "07_combat_and_endings.md",
+    )
+    for name in expected:
+        p = story_dir / name
+        assert p.exists(), f"Missing story doc {name}"
+        assert p.stat().st_size > 500
+
+    dm_doc = (story_dir / "00_dm_knowledge_and_backstory.md").read_text(encoding="utf-8")
+    for marker in (
+        "DM KNOWLEDGE",
+        "Evidence Payoff Contract",
+        "เงื่อนไขสถานะของคดี",
+        "State Snapshot",
+        "7.1 สถานะที่ใช้ในคดี",
+        "7.2 หลักฐานหลายทาง",
+    ):
+        assert marker in dm_doc, f"Missing DM section marker: {marker}"
+
+    # Synced workspace must produce 0 pending diffs
+    changes, _ = collect_changes(story_dir=story_dir, data_dir=PROTO_DIR / "data")
+    assert changes == []
+
+    # Simulate writer polishing a line in a temp copy of story/ & data/
+    tmp_story = tmp_path / "story"
+    tmp_data = tmp_path / "data"
+    shutil.copytree(story_dir, tmp_story)
+    shutil.copytree(PROTO_DIR / "data", tmp_data)
+    act_b_md = tmp_story / "02_act_b_script.md"
+    raw = act_b_md.read_text(encoding="utf-8")
+    edited = raw.replace(
+        "สวัสดีครับ ผมวิชัย ผู้ช่วยผู้ใหญ่ ผมจัดแฟ้มคนหายกับแผนที่ไว้ให้แล้วครับ อยากเริ่มดูตรงไหน บอกได้เลย",
+        "สวัสดีครับ ผมวิชัย ผู้ช่วยผู้ใหญ่ เตรียมแฟ้มกับแผนที่ไว้ให้ครบแล้วครับ เชิญดูได้เลย",
+    )
+    act_b_md.write_text(edited, encoding="utf-8")
+
+    tmp_changes, payloads = collect_changes(story_dir=tmp_story, data_dir=tmp_data)
+    assert len(tmp_changes) == 1
+    assert tmp_changes[0]["id"] == "b1_wichai_greet"
+    assert tmp_changes[0]["field"] == "text"
+    assert any("act_b" in str(p) for p in payloads)
+    assert "b1_wichai_greet" in parse_markdown_dialogues(edited)
+
+
+def test_patched_story_content_and_new_dialogues() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    engine = AIDMEngine()
+
+    # 1. Dry muggy night narration & updated lore/prompts
+    assert "อากาศแห้งอบอ้าวไร้เมฆฝน" in repo.get_dialogue("a1_intro_dm")["text"]
+    assert "ฟ้าแห้งสนิทไร้เมฆฝน" in repo.get_dialogue("b2_intro_dm")["text"]
+    assert "ผ้ายันต์หน้าประตู" in repo.clues_catalog["prasert_nervous_clue"]["detail"]
+    assert "เด็กหนุ่มช่างสงสัย" in repo.clues_catalog["missing_names"]["detail"]
+    assert "ขอดูแฟ้มในมือผู้ใหญ่ตรงข้างรถตู้เลยได้ไหมครับ?" in repo.get_scene("A1")["quick_prompts"]
+    assert "คุณวิชัยช่วยดูแลเรื่องอะไรในหมู่บ้าน แล้วเคยเข้าสวนตอนกลางคืนไหม?" in repo.get_scene("B1")["quick_prompts"]
+
+    # 2. Local fallback matches the new Q&A IDs in A1 and B2
+    room_a, _, _ = mgr.add_player("PATCH01", "p_1", "เอก", "investigator", start_act="A")
+    mgr.start_game("PATCH01")
+    d_a1 = engine._local_fallback_decision(room_a, mgr, "ดล นิด เพิ่ม เป็นใคร ทำงานอะไรครับ")
+    assert d_a1.mode == "script"
+    assert d_a1.selected_audio_id == "a1_qa_missing_who"
+
+    room_b, _, _ = mgr.add_player("PATCH02", "p_2", "พลอย", "medium", start_act="B")
+    mgr.start_game("PATCH02")
+    mgr.validate_and_apply_decision(
+        room_b, DMDecision(mode="script", character="DM", selected_audio_id="b1_inspect_files_free"), "พลอย"
+    )
+    mgr._advance_scene(room_b, "B2")
+    d_b2 = engine._local_fallback_decision(room_b, mgr, "ต้นรู้จักดลกับนิดมาก่อนไหม")
+    assert d_b2.mode == "script"
+    assert d_b2.selected_audio_id == "b2_qa_ton_friends"
+
+    # 3. Departing via script decision b_ending_to_act_c sequences Wichai farewell before ending narration
+    end_out = mgr.validate_and_apply_decision(
+        room_b, DMDecision(mode="script", character="DM", selected_audio_id="b_ending_to_act_c"), "พลอย"
+    )
+    assert end_out["primary_event"]["dialogue_id"] == "b3_wichai_stay_behind"
+    assert end_out["queued_events"][0]["dialogue_id"] == "b_ending_to_act_c"
+
+    # 4. Story draft docs preserve Epilogue and updated CASE_ACCEPTED guidance
+    story_dir = PROTO_DIR / "story"
+    endings_doc = (story_dir / "07_combat_and_endings.md").read_text(encoding="utf-8")
+    dm_doc = (story_dir / "00_dm_knowledge_and_backstory.md").read_text(encoding="utf-8")
+    assert "บท Epilogue รุ่งเช้ากับผู้ใหญ่ประเสริฐ" in endings_doc
+    assert "CASE_ACCEPTED=true" in dm_doc
+
+
+def test_trpg_combat_telegraph_assist_and_freeform_declarations() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    engine = AIDMEngine()
+
+    room, p1, _ = mgr.add_player("TRPG01", "t_1", "เอก", "investigator")
+    _, p2, _ = mgr.add_player("TRPG01", "t_2", "พลอย", "medium")
+    mgr.start_combat("TRPG01", return_scene="A3")
+
+    assert room.combat is not None
+    assert room.combat.telegraph is not None
+    assert room.combat.telegraph["target_id"] in {p1.public_id, p2.public_id}
+    assert len(room.combat.environment_features) == 3
+
+    # p2 was telegraphed or afflicted -> p1 uses assist to cover p2 and grant +2 bonus
+    p2.statuses = ["ROOTED"]
+    assist_res = mgr.perform_combat_action(
+        "TRPG01", "t_1", "assist", target_ally_id=p2.public_id
+    )
+    assert assist_res["visual_fx"] == "party_buff"
+    assert p2.statuses == []
+    assert p2.damage_reduction >= 2
+    assert p2.assisted_bonus == 2
+    assert p2.protected_by == "เอก"
+    assert room.combat.last_roll is not None and room.combat.last_roll["action_id"] == "assist"
+
+    # Freeform Thai combat declaration awards tactical bonus + custom narrations & consumes assisted_bonus
+    decl = "สาดไฟฉายแรงสูงลงกลางแอ่งโคลนแล้วพุ่งกระแทกให้มันชะงัก"
+    plan = engine._local_fallback_combat_action(room, p2, decl)
+    assert plan.action_id == "strike"
+    assert plan.tactical_bonus == 2
+    assert plan.stat_choice == "PER"
+
+    strike_res = mgr.perform_combat_action(
+        "TRPG01",
+        "t_2",
+        plan.action_id,
+        intent_text=decl,
+        stat_override=plan.stat_choice,
+        tactical_bonus=plan.tactical_bonus,
+        tactical_reason=plan.tactical_reason,
+        narration_by_tier={
+            "full": plan.narration_full,
+            "partial": plan.narration_partial,
+            "failure": plan.narration_failure,
+        },
+    )
+    assert strike_res["ready_for_ghost_turn"] is True
+    assert strike_res["roll_detail"] is not None
+    assert strike_res["roll_detail"]["bonus"] >= 4  # +2 assist +2 tactical
+    assert strike_res["roll_detail"]["stat"] == "PER"
+    assert p2.assisted_bonus == 0
+
+    # Ghost turn records ghost last_roll and refreshes telegraph for round 2
+    ghost_res = mgr.apply_ghost_turn(
+        "TRPG01",
+        GhostTurnDecision(
+            move_id="WET_CLAW",
+            target_player_id=p2.public_id,
+            narration_th="ผีเงาจมน้ำตวัดเล็บใส่พลอย!",
+        ),
+    )
+    assert ghost_res["roll_detail"]["is_ghost"] is True
+    assert room.combat is not None
+    assert room.combat.round_number == 2
+    assert room.combat.telegraph is not None
