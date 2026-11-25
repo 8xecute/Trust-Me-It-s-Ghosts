@@ -146,6 +146,7 @@ class AIDMEngine:
         self._gemini_client: Any = None
         self._gemini_paid_client: Any = None
         self._primary_cooldown_until: float = 0.0
+        self._prefer_paid_client: bool = False
 
         if self.groq_api_key:
             try:
@@ -241,15 +242,25 @@ class AIDMEngine:
             raise last_exc
 
         now = time.time()
-        if self._gemini_client is not None and now >= self._primary_cooldown_until:
+        if (
+            not self._prefer_paid_client
+            and self._gemini_client is not None
+            and now >= self._primary_cooldown_until
+        ):
             try:
                 return _call_with_retry(self._gemini_client)
             except Exception as exc:  # noqa: BLE001
-                should_failover = self._is_quota_error(exc) or self._is_transient_error(exc)
+                is_quota = self._is_quota_error(exc)
+                should_failover = is_quota or self._is_transient_error(exc)
                 if self._gemini_paid_client is not None and should_failover:
-                    if self._is_daily_quota_error(exc):
-                        self._primary_cooldown_until = time.time() + 600.0
-                    logger.info("Switching from primary GEMINI_API_KEY to GEMINI_PAID_API_KEY")
+                    if is_quota:
+                        self._prefer_paid_client = True
+                        self._primary_cooldown_until = float("inf")
+                        logger.info(
+                            "Primary GEMINI_API_KEY hit quota limit; switching to GEMINI_PAID_API_KEY for subsequent calls in this session"
+                        )
+                    else:
+                        logger.info("Switching from primary GEMINI_API_KEY to GEMINI_PAID_API_KEY after transient error")
                     return _call_with_retry(self._gemini_paid_client)
                 raise
         if self._gemini_paid_client is not None:

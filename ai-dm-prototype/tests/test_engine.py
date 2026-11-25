@@ -330,21 +330,42 @@ def test_gemini_primary_to_paid_failover() -> None:
     engine._gemini_client = "primary_client"
     engine._gemini_paid_client = "paid_client"
     engine._primary_cooldown_until = 0.0
+    engine._prefer_paid_client = False
 
-    def fake_call(client: str) -> str:
+    def fake_daily_call(client: str) -> str:
         calls.append(client)
         if client == "primary_client":
             raise RuntimeError("429 RESOURCE_EXHAUSTED: RequestsPerDay exceeded")
         return "paid_ok"
 
-    # 1st call hits primary -> daily quota 429 -> fails over to paid & cools down primary
-    assert engine._run_with_gemini_failover(fake_call) == "paid_ok"
+    # 1st call hits primary -> daily quota 429 -> fails over to paid & pins paid for session
+    assert engine._run_with_gemini_failover(fake_daily_call) == "paid_ok"
     assert calls == ["primary_client", "paid_client"]
+    assert engine._prefer_paid_client is True
     assert engine._primary_cooldown_until > time.time()
 
-    # 2nd call during cooldown goes directly to paid
+    # 2nd call goes directly to paid without waiting on primary
     calls.clear()
-    assert engine._run_with_gemini_failover(fake_call) == "paid_ok"
+    assert engine._run_with_gemini_failover(fake_daily_call) == "paid_ok"
+    assert calls == ["paid_client"]
+
+    # Reset and verify per-minute RPM 429 also permanently switches to paid for the session
+    engine._primary_cooldown_until = 0.0
+    engine._prefer_paid_client = False
+    calls.clear()
+
+    def fake_rpm_call(client: str) -> str:
+        calls.append(client)
+        if client == "primary_client":
+            raise RuntimeError("429 RESOURCE_EXHAUSTED: GenerateRequestsPerMinutePerProjectPerModel-FreeTier")
+        return "paid_rpm_ok"
+
+    assert engine._run_with_gemini_failover(fake_rpm_call) == "paid_rpm_ok"
+    assert calls == ["primary_client", "paid_client"]
+    assert engine._prefer_paid_client is True
+
+    calls.clear()
+    assert engine._run_with_gemini_failover(fake_rpm_call) == "paid_rpm_ok"
     assert calls == ["paid_client"]
 
 
