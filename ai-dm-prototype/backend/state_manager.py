@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 AUDIO_DIR = BASE_DIR / "audio_assets"
 MIC_LOCK_TIMEOUT_SECONDS = 18.0
-MAX_LIVE_TTS_PER_ROOM = 25
+MAX_LIVE_TTS_PER_ROOM = 100
 DEFAULT_EMPTY_ROOM_TTL_SECONDS = 120.0
 
 
@@ -1772,6 +1772,30 @@ class RoomManager:
                 return proposed
             return default_speaker
 
+        def _looks_like_third_person_narration(text: str, speaker_name: str) -> bool:
+            stripped = text.strip()
+            if not stripped or speaker_name == "DM":
+                return False
+            self_prefixes: dict[str, tuple[str, ...]] = {
+                "ประเสริฐ": ("ผู้ใหญ่ประเสริฐ", "ผู้ใหญ่บ้าน", "ประเสริฐ"),
+                "วิชัย": ("ผู้ช่วยวิชัย", "คุณวิชัย", "พี่วิชัย", "วิชัย"),
+                "ต้น": ("เด็กหนุ่ม", "อาสาสมัคร", "ต้น"),
+            }
+            if any(stripped.startswith(prefix) for prefix in self_prefixes.get(speaker_name, ())):
+                return True
+            dm_prefixes = (
+                "คุณเห็น",
+                "คุณสังเกต",
+                "คุณมอง",
+                "คุณรู้สึก",
+                "คุณเตรียม",
+                "สายตาของคุณ",
+                "รอบตัวคุณ",
+                "บรรยากาศรอบ",
+                "ความเงียบ",
+            )
+            return any(stripped.startswith(prefix) for prefix in dm_prefixes)
+
         scene_cfg = self.repo.get_scene(scene_before) or {}
         eligible_by_id = {d["id"]: d for d in self.get_eligible_dialogues(room)}
         was_ended = room.ending_triggered is not None
@@ -1859,8 +1883,11 @@ class RoomManager:
                 speaker = _safe_speaker(decision.character)
                 safe_text = raw_improv or "อืม... ลองตรวจดูรายละเอียดรอบ ๆ อีกครั้งนะครับ"
 
+            if _looks_like_third_person_narration(safe_text, speaker):
+                speaker = "DM"
+
             filler = self.repo.fillers_by_id.get(decision.filler_audio_id or "")
-            if not filler or filler.get("speaker") not in allowed_speakers:
+            if not filler or filler.get("speaker") != speaker or filler.get("speaker") not in allowed_speakers:
                 filler = self.repo.default_filler_for_speaker(speaker)
 
             filler_event = self._build_audio_payload(
@@ -1940,29 +1967,6 @@ class RoomManager:
             queued_events.extend(self._advance_scene(room, target_next_scene))
         else:
             room.scene_turn_count += 1
-
-        current_scene_cfg = self.repo.get_scene(room.current_scene) or {}
-        stall_limit = int(current_scene_cfg.get("anti_stall_turn_limit", 6))
-        anti_stall_id = current_scene_cfg.get("anti_stall_audio_id")
-        if (
-            not room.ending_triggered
-            and room.pending_check is None
-            and room.scene_turn_count >= stall_limit
-            and anti_stall_id
-            and anti_stall_id not in room.played_audio_ids
-        ):
-            stall_entry = self.repo.get_dialogue(anti_stall_id)
-            if stall_entry:
-                self._apply_dialogue_unlocks(room, stall_entry)
-                self.append_log(room, stall_entry["speaker"], stall_entry["text"], kind="hint")
-                queued_events.append(
-                    self._build_audio_payload(
-                        dialogue_id=stall_entry["id"],
-                        speaker=stall_entry["speaker"],
-                        text=stall_entry["text"],
-                        mode="script",
-                    )
-                )
 
         if not was_ended and room.ending_triggered:
             ending_cfg = self.repo.get_ending(room.ending_triggered)

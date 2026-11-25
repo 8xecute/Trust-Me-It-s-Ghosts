@@ -372,7 +372,6 @@ class AIDMEngine:
         game_state_snapshot = {
             "act": act,
             "current_scene": room.current_scene,
-            "scene_turn_count": room.scene_turn_count,
             "clues_found": room.clues_found,
             "inventory": room.inventory,
             "npc_trust": room.npc_trust,
@@ -432,10 +431,12 @@ class AIDMEngine:
 
 ## กฎการตัดสินใจและข้อห้ามสปอยล์ (ห้ามละเมิดข้อห้ามสปอยล์เด็ดขาด)
 {guardrails}
+- ห้ามเร่งเนื้อเรื่อง ห้ามเปลี่ยนฉาก (ตั้งค่า state_updates.current_scene หรือเลือกบทที่เปลี่ยนฉาก) และห้ามจบ Act (ตั้งค่า state_updates.ending_triggered) เองจนกว่าผู้เล่นจะบอกหรือยืนยันชัดเจนว่าต้องการไปต่อหรือย้ายจุดแล้ว หากผู้เล่นยังถามหรือสำรวจอยู่ในฉากเดิม ให้ตอบอยู่ในฉากเดิมต่อเสมอ
 - ห้ามเสกเบาะแสหรือไอเท็มนอกเหนือจากฉากปัจจุบัน และห้ามเปลี่ยนไปฉากที่ไม่อยู่ใน allowed_next_scenes ของฉากนี้
 - เลือก mode='script' และ selected_audio_id จาก dialogue_menu เฉพาะเมื่อคำถามตรงกับ topic_hint ของบทนั้น (ให้ความสำคัญกับบทที่ already_played=false ก่อน)
 - ห้ามเลือกบทที่ already_played=true ซ้ำ ยกเว้นผู้เล่นขอให้พูดซ้ำหรือทบทวนโดยตรง — หากผู้เล่นถามต่อยอดหรือถามซ้ำ ให้ใช้ mode='improvise' ตอบขยายความหรือรับมุกอย่างเป็นธรรมชาติแทน
 - เมื่อผู้เล่นถามคำถามทั่วไป สำรวจสิ่งของ/สภาพแวดล้อม (เช่น รถตู้ เฟอร์นิเจอร์ สภาพอากาศ เสื้อผ้า อาชีพเพื่อน) หรือชวนคุยเล่นในบทบาท -> ใช้ mode='improvise' (ตั้ง selected_audio_id=null) แล้วให้ character เป็น {improv_speaker_hint} ตอบตรงคำถาม 1-3 ประโยคภาษาไทยที่เป็นธรรมชาติ พร้อมเลือก filler_audio_id ที่ตรงกับผู้พูด
+- กฎแยกผู้พูด DM กับ NPC (สำคัญ): หากข้อความเป็นคำบรรยายบุคคลที่ 3 (บรรยายท่าทาง แววตา บรรยากาศ หรือขึ้นต้นด้วยชื่อตัวละครเช่น 'ผู้ใหญ่ประเสริฐ...', 'วิชัย...', 'ต้น...', 'คุณเห็น...', 'คุณสังเกต...') ต้องตั้ง character='DM' และ filler_audio_id='filler_dm_think' เท่านั้น — หากเลือก character เป็น NPC ('ประเสริฐ', 'วิชัย', 'ต้น') ข้อความ improvised_text ต้องเป็นคำพูดโต้ตอบตรงในมุมมองบุคคลที่ 1 (ผม/ฉัน/พี่) เท่านั้น ห้ามบรรยายท่าทางตัวเองแบบบุคคลที่ 3
 - ถ้าผู้เล่นขอทำแอ็กชันที่ตรงกับ trigger_hint ใน available_checks และยังไม่ได้ทอย -> ให้ตั้งค่า requested_check_id เป็น id ของ check นั้น และใช้ mode='improvise' (selected_audio_id=null) อธิบายสั้น ๆ ใน improvised_text ให้ผู้เล่นกดทอยเต๋า
 {ending_note}
 

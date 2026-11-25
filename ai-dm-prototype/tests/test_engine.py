@@ -186,8 +186,8 @@ def test_anti_stall_sanity_drop_and_automated_endings() -> None:
 
     assert last_outcome is not None
     queued_ids = [ev["dialogue_id"] for ev in last_outcome["queued_events"]]
-    assert "a1_antistall_hint" in queued_ids
-    # Anti-stall now only gives a gentle hint and does NOT force scene transition
+    # No forced scene transition and no automatic anti-stall hint after 6+ turns
+    assert "a1_antistall_hint" not in queued_ids
     assert room.current_scene == "A1"
     assert player.sanity == 10
 
@@ -1028,3 +1028,40 @@ def test_trpg_combat_telegraph_assist_and_freeform_declarations() -> None:
     assert room.combat is not None
     assert room.combat.round_number == 2
     assert room.combat.telegraph is not None
+
+
+def test_third_person_narration_coerced_to_dm_speaker() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    room, _, _ = mgr.add_player("NARR01", "sid_1", "เอก", "investigator")
+    mgr.start_game("NARR01")
+
+    # Third-person narration accidentally tagged as Prasert must be coerced to DM + DM filler
+    out_narration = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(
+            mode="improvise",
+            character="ประเสริฐ",
+            filler_audio_id="filler_prasert_hmm",
+            improvised_text="ผู้ใหญ่ประเสริฐหันมามองหน้าคุณนิ่ง ๆ แววตาสั่นระริกด้วยความกังวล",
+        ),
+        "เอก",
+    )
+    assert out_narration["live_tts_speaker"] == "DM"
+    assert out_narration["primary_event"]["character"] == "DM"
+    assert out_narration["primary_event"]["dialogue_id"] == "filler_dm_think"
+
+    # First-person Prasert line mentioning another NPC keeps ประเสริฐ as speaker
+    out_speech = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(
+            mode="improvise",
+            character="ประเสริฐ",
+            filler_audio_id="filler_prasert_hmm",
+            improvised_text="วิชัยช่วยเตรียมแฟ้มกับแผนที่รอไว้ที่บ้านแล้วครับ",
+        ),
+        "เอก",
+    )
+    assert out_speech["live_tts_speaker"] == "ประเสริฐ"
+    assert out_speech["primary_event"]["character"] == "ประเสริฐ"
+    assert out_speech["primary_event"]["dialogue_id"] == "filler_prasert_hmm"

@@ -168,6 +168,22 @@
         return;
       }
 
+      if (kind === "dice_clatter") {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        const baseFreq = 260 + Math.random() * 190;
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(110, baseFreq * 0.45), now + 0.045);
+        g.gain.setValueAtTime(0.14, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.connect(g);
+        g.connect(this.sfxGain);
+        osc.start(now);
+        osc.stop(now + 0.055);
+        return;
+      }
+
       if (kind === "dice_success" || kind === "skill_cast") {
         const freqs = kind === "skill_cast" ? [440, 587.3, 880] : [523.25, 659.25];
         freqs.forEach((f, idx) => {

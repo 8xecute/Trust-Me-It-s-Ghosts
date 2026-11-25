@@ -22,12 +22,29 @@
     audioFX.setSfxVolume(Math.min(1, ambientVolume + 0.1));
   }
 
-  // Audio Queue state
+  // Audio Queue & 2D Physical Dice Animation state
   const audioQueue = [];
   let isPlayingQueue = false;
   let activeAudioEl = null;
   let activeSubtitleTimer = null;
   let pendingGapTimer = null;
+  let isDiceRolling = false;
+  let activeDiceAnimFrame = null;
+  let diceAutoCloseTimer = null;
+  let diceRollRevealTimer = null;
+
+  // Dossier filtering & mobile tabbed navigation state
+  let activeDossierSubtab = "clues";
+  let activeClueCategory = "all";
+  let clueSearchQuery = "";
+  let cluesExpandAll = false;
+  let cluesHydrated = false;
+  const knownClueIds = new Set();
+  const recentClueIds = new Set();
+  const expandedClueIds = new Set();
+  const collapsedClueIds = new Set();
+  let unreadClueCount = 0;
+  let activeMobileTab = "play";
 
   // Push-to-Talk & Click-to-Talk (Web Speech API th-TH primary + Gemini Audio STT fallback)
   const SpeechRecognitionCtor =
@@ -61,6 +78,273 @@
     "ต้น": "/assets/characters/ton.png",
     "ผีเงาจมน้ำ": "/assets/characters/drowned_echo.png",
   };
+
+  const CLUE_CATEGORY_META = {
+    missing: { label: "คนหาย", cls: "cat-missing" },
+    location: { label: "สถานที่", cls: "cat-location" },
+    witness: { label: "พยาน/พิรุธ", cls: "cat-witness" },
+    occult: { label: "ลี้ลับ", cls: "cat-occult" },
+  };
+
+  const CLUE_CATEGORY_BY_ID = {
+    missing_names: "missing",
+    report_timeline_gap: "missing",
+    don_house_location: "missing",
+    banana_grove_area: "location",
+    headman_files_exist: "location",
+    location_headman_house: "location",
+    map_two_layers: "location",
+    flood_waterway_clue: "location",
+    flood_near_grove_clue: "location",
+    prasert_nervous_clue: "witness",
+    witnesses_at_house: "witness",
+    wichai_hand_scratch: "witness",
+    wichai_land_role: "witness",
+    wichai_suspected_tell: "witness",
+    wichai_evasive_clue: "witness",
+    wichai_flood_survivor: "witness",
+    ton_saw_person_at_grove: "witness",
+    ton_black_bundle_clue: "witness",
+    wichai_cart_suspect: "witness",
+    kaew_mention: "occult",
+    radio_still_alive: "occult",
+    radio_no_recording: "occult",
+    radio_memory_echo: "occult",
+    radio_supernatural_chill: "occult",
+    flood_photo_seen: "occult",
+    photo_water_anomaly: "occult",
+  };
+
+  function getClueCategory(clue) {
+    if (clue?.id && CLUE_CATEGORY_BY_ID[clue.id]) return CLUE_CATEGORY_BY_ID[clue.id];
+    const txt = `${clue?.label || ""} ${clue?.detail || ""}`;
+    if (/(ผี|วิญญาณ|วิทยุ|หยดน้ำ|แม่แก้ว|ชุดเขียว|ขนลุก|ลี้ลับ)/.test(txt)) return "occult";
+    if (/(บ้าน|แผนที่|สวนกล้วย|ประตูน้ำ|ลำน้ำ|ทางแยก|พิกัด)/.test(txt)) return "location";
+    if (/(คนหาย|รายชื่อ|ดล|นิด|เพิ่ม|เวลาหาย)/.test(txt)) return "missing";
+    return "witness";
+  }
+
+  function resetDossierTracking() {
+    cluesHydrated = false;
+    knownClueIds.clear();
+    recentClueIds.clear();
+    expandedClueIds.clear();
+    collapsedClueIds.clear();
+    unreadClueCount = 0;
+  }
+
+  function setDossierSubtab(subtab) {
+    activeDossierSubtab = subtab || "clues";
+    document.querySelectorAll(".dossier-subtab").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.subtab === activeDossierSubtab);
+    });
+    document.querySelectorAll(".dossier-subpane").forEach((pane) => {
+      pane.classList.toggle("active", pane.id === `dossier-pane-${activeDossierSubtab}`);
+    });
+  }
+
+  function updateMobileBadges(state) {
+    const playDot = $("mobile-badge-play");
+    if (playDot) {
+      const alertPlay = Boolean(state?.pending_check || state?.combat?.active);
+      playDot.classList.toggle("hidden", !alertPlay);
+    }
+    const cluesBadge = $("mobile-badge-clues");
+    if (cluesBadge) {
+      const total = (state?.clues_found || []).length;
+      if (unreadClueCount > 0) {
+        cluesBadge.textContent = `+${unreadClueCount}`;
+        cluesBadge.classList.remove("hidden");
+        cluesBadge.classList.add("is-new");
+      } else if (total > 0) {
+        cluesBadge.textContent = String(total);
+        cluesBadge.classList.remove("hidden", "is-new");
+      } else {
+        cluesBadge.classList.add("hidden");
+      }
+    }
+  }
+
+  function setMobileTab(tabName) {
+    activeMobileTab = tabName || "play";
+    const screen = $("game-screen");
+    if (screen) screen.dataset.mobileTab = activeMobileTab;
+    document.querySelectorAll(".mobile-nav-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mobileTab === activeMobileTab);
+    });
+
+    if (activeMobileTab === "play") {
+      document.querySelector('.stage-tab[data-view="scene"]')?.click();
+    } else if (activeMobileTab === "board") {
+      document.querySelector('.stage-tab[data-view="board"]')?.click();
+    } else if (activeMobileTab === "clues") {
+      document.querySelector('.journal-tab[data-tab="clues"]')?.click();
+      if (unreadClueCount > 0) {
+        unreadClueCount = 0;
+        updateMobileBadges(currentState);
+      }
+    } else if (activeMobileTab === "party") {
+      const activeJournal = document.querySelector(".journal-tab.active")?.dataset.tab;
+      if (!activeJournal || activeJournal === "clues") {
+        document.querySelector('.journal-tab[data-tab="players"]')?.click();
+      }
+    }
+
+    const topbar = document.querySelector(".topbar");
+    const toggleBtn = $("mobile-topbar-toggle");
+    if (topbar?.classList.contains("mobile-drawer-open")) {
+      topbar.classList.remove("mobile-drawer-open");
+      toggleBtn?.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  function renderCluesDossier(clues, act) {
+    const countEl = $("clues-count");
+    const listEl = $("clues-list");
+    const expandBtn = $("clue-expand-all-btn");
+    if (!listEl) return;
+
+    if (countEl) countEl.textContent = String(clues.length);
+
+    if (!cluesHydrated) {
+      clues.forEach((c) => knownClueIds.add(c.id));
+      cluesHydrated = true;
+    } else {
+      let addedCount = 0;
+      clues.forEach((c) => {
+        if (!knownClueIds.has(c.id)) {
+          knownClueIds.add(c.id);
+          recentClueIds.add(c.id);
+          expandedClueIds.add(c.id);
+          collapsedClueIds.delete(c.id);
+          addedCount += 1;
+        }
+      });
+      if (addedCount > 0 && activeMobileTab !== "clues") {
+        unreadClueCount += addedCount;
+      }
+    }
+
+    const catCounts = { all: clues.length, missing: 0, location: 0, witness: 0, occult: 0 };
+    clues.forEach((c) => {
+      const cat = getClueCategory(c);
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    });
+
+    const catLabels = {
+      all: "ทั้งหมด",
+      missing: "คนหาย",
+      location: "สถานที่",
+      witness: "พยาน/พิรุธ",
+      occult: "ลี้ลับ",
+    };
+    document.querySelectorAll("#clue-filter-chips .clue-filter-chip").forEach((chip) => {
+      const cat = chip.dataset.cat || "all";
+      const n = catCounts[cat] || 0;
+      chip.textContent = n > 0 ? `${catLabels[cat]} (${n})` : catLabels[cat];
+      chip.classList.toggle("active", activeClueCategory === cat);
+    });
+
+    if (expandBtn) {
+      expandBtn.textContent = cluesExpandAll ? "ย่อทั้งหมด" : "ขยายทั้งหมด";
+      expandBtn.classList.toggle("hidden", clues.length === 0);
+    }
+
+    const q = clueSearchQuery.trim().toLowerCase();
+    const newestFirst = [...clues].reverse();
+    const filtered = newestFirst.filter((c) => {
+      const cat = getClueCategory(c);
+      if (activeClueCategory !== "all" && cat !== activeClueCategory) return false;
+      if (q && !`${c.label} ${c.detail}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    const emptyCluesHint =
+      act === "B"
+        ? "ยังไม่มีเบาะแส — สอบถามวิชัย/ต้น หรือตรวจแผนที่และผนังภาพเก่า"
+        : "ยังไม่มีเบาะแส — ลองสอบถามประเสริฐหรือสังเกตพื้นที่";
+
+    if (filtered.length === 0) {
+      const emptyMsg = clues.length === 0 ? emptyCluesHint : "ไม่พบเบาะแสตามตัวกรองนี้";
+      listEl.innerHTML = `<li class="empty-note">${emptyMsg}</li>`;
+      return;
+    }
+
+    listEl.innerHTML = "";
+    filtered.forEach((c, idx) => {
+      const cat = getClueCategory(c);
+      const catMeta = CLUE_CATEGORY_META[cat] || CLUE_CATEGORY_META.witness;
+      const isRecent = recentClueIds.has(c.id);
+      const defaultOpen = idx === 0 && collapsedClueIds.size === 0 && !q;
+      const isExpanded =
+        !collapsedClueIds.has(c.id) &&
+        (cluesExpandAll || expandedClueIds.has(c.id) || Boolean(q) || defaultOpen);
+
+      const li = document.createElement("li");
+      li.className = `clue-card-item ${isExpanded ? "expanded" : "collapsed"} ${isRecent ? "is-new" : ""}`;
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "clue-card-head";
+      btn.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+
+      const leftWrap = document.createElement("div");
+      leftWrap.className = "clue-head-main";
+
+      const metaRow = document.createElement("div");
+      metaRow.className = "clue-meta-row";
+
+      const catPill = document.createElement("span");
+      catPill.className = `clue-cat-pill ${catMeta.cls}`;
+      catPill.textContent = catMeta.label;
+      metaRow.appendChild(catPill);
+
+      if (isRecent) {
+        const newTag = document.createElement("span");
+        newTag.className = "clue-new-badge";
+        newTag.textContent = "ใหม่";
+        metaRow.appendChild(newTag);
+      }
+
+      const titleEl = document.createElement("strong");
+      titleEl.className = "clue-card-title";
+      titleEl.textContent = c.label;
+
+      leftWrap.appendChild(metaRow);
+      leftWrap.appendChild(titleEl);
+
+      const chevron = document.createElement("span");
+      chevron.className = "clue-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.textContent = isExpanded ? "▾" : "▸";
+
+      btn.appendChild(leftWrap);
+      btn.appendChild(chevron);
+
+      const detailEl = document.createElement("div");
+      detailEl.className = "clue-card-detail";
+      detailEl.textContent = c.detail;
+
+      btn.addEventListener("click", () => {
+        const nextOpen = !li.classList.contains("expanded");
+        if (nextOpen) {
+          expandedClueIds.add(c.id);
+          collapsedClueIds.delete(c.id);
+        } else {
+          expandedClueIds.delete(c.id);
+          collapsedClueIds.add(c.id);
+        }
+        li.classList.toggle("expanded", nextOpen);
+        li.classList.toggle("collapsed", !nextOpen);
+        btn.setAttribute("aria-expanded", nextOpen ? "true" : "false");
+        chevron.textContent = nextOpen ? "▾" : "▸";
+      });
+
+      li.appendChild(btn);
+      li.appendChild(detailEl);
+      listEl.appendChild(li);
+    });
+  }
 
   function normalizeRoomCode(val) {
     return (val || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 16) || "BANANA01";
@@ -268,7 +552,7 @@
     const groqOk = Boolean(status?.groq_configured);
     const geminiOk = Boolean(status?.gemini_configured);
     if (groqOk && geminiOk) {
-      pill.textContent = "Voice + Gemini AI พร้อม";
+      pill.textContent = "Voice + AI Ready";
       pill.className = "pill pill-ok";
     } else if (geminiOk) {
       pill.textContent = "Gemini AI พร้อม (พิมพ์แชท)";
@@ -641,7 +925,6 @@
     $("hud-scene-subtitle").textContent = state.combat?.active
       ? "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย"
       : state.scene_subtitle;
-    $("hud-turn-pill").textContent = `เทิร์นฉากนี้ ${state.scene_turn_count}`;
     $("hud-quota-pill").textContent = `เสียงสด ${state.live_tts_used}/${state.live_tts_limit}`;
     $("demo-combat-btn")?.classList.toggle("hidden", act === "B");
     if ($("reset-room-btn")) {
@@ -744,6 +1027,8 @@
       const mod = me?.stats?.[chk.stat] ?? 0;
       $("dice-check-title").textContent = chk.title;
       $("dice-check-meta").textContent = `ค่าสถานะ: ${chk.stat} (โบนัสของคุณ +${mod}) | เป้าหมาย DC ${chk.dc}`;
+      const rollBtn = $("roll-dice-btn");
+      if (rollBtn) rollBtn.disabled = false;
       dicePanel.classList.remove("hidden");
     } else {
       dicePanel.classList.add("hidden");
@@ -767,22 +1052,8 @@
     renderNpcTrustList(act, state.npc_trust);
 
     const clues = state.clues_found || [];
-    $("clues-count").textContent = String(clues.length);
-    const cluesList = $("clues-list");
-    const emptyCluesHint =
-      act === "B"
-        ? "ยังไม่มีเบาะแส — สอบถามวิชัย/ต้น หรือตรวจแผนที่และผนังภาพเก่า"
-        : "ยังไม่มีเบาะแส — ลองสอบถามประเสริฐหรือสังเกตพื้นที่";
-    cluesList.innerHTML = clues.length
-      ? ""
-      : `<li class="empty-note">${emptyCluesHint}</li>`;
-    clues.forEach((c) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<strong></strong><span></span>`;
-      li.querySelector("strong").textContent = c.label;
-      li.querySelector("span").textContent = c.detail;
-      cluesList.appendChild(li);
-    });
+    renderCluesDossier(clues, act);
+    updateMobileBadges(state);
 
     const items = state.inventory || [];
     $("items-count").textContent = String(items.length);
@@ -955,7 +1226,220 @@
     audioFX?.setDucking(active);
   }
 
+  function cancelDiceRollAnimation() {
+    if (activeDiceAnimFrame) {
+      cancelAnimationFrame(activeDiceAnimFrame);
+      activeDiceAnimFrame = null;
+    }
+    if (diceAutoCloseTimer) {
+      clearTimeout(diceAutoCloseTimer);
+      diceAutoCloseTimer = null;
+    }
+    if (diceRollRevealTimer) {
+      clearTimeout(diceRollRevealTimer);
+      diceRollRevealTimer = null;
+    }
+    isDiceRolling = false;
+    $("dice-tray-overlay")?.classList.add("hidden");
+  }
+
+  function playPhysicalDiceRoll(opts, onReveal) {
+    cancelDiceRollAnimation();
+
+    const overlay = $("dice-tray-overlay");
+    const card = $("dice-tray-card");
+    const arena = $("dice-tray-arena");
+    const die = $("dice-tray-die");
+    const shadow = $("dice-tray-shadow");
+    const ring = $("dice-tray-ring");
+    const faceNum = $("dice-tray-face-num");
+    const statusEl = $("dice-tray-status");
+    const mathEl = $("dice-tray-math");
+    const badgeEl = $("dice-tray-badge");
+    const closeBtn = $("dice-tray-close-btn");
+
+    if (!overlay || !arena || !die || !shadow || !faceNum) {
+      if (typeof onReveal === "function") onReveal();
+      return;
+    }
+
+    isDiceRolling = true;
+    const tier = opts.tier || "partial";
+    const targetD20 = Number(opts.d20 || 10);
+
+    $("dice-tray-actor").textContent = opts.actor || "ผู้สืบสวน";
+    $("dice-tray-title").textContent = opts.title || "กำลังทอยลูกเต๋า D20";
+    $("dice-tray-target").textContent = opts.targetLabel || "D20";
+
+    card.classList.remove("tier-full", "tier-partial", "tier-failure");
+    die.classList.remove("is-nat20", "is-nat1");
+    ring?.classList.add("hidden");
+    ring?.classList.remove("tier-full", "tier-partial", "tier-failure");
+    mathEl?.classList.add("hidden");
+    badgeEl?.classList.add("hidden");
+    badgeEl?.classList.remove("tier-full", "tier-partial", "tier-failure");
+    closeBtn?.classList.add("hidden");
+    statusEl.textContent = "กำลังโยนลูกเต๋า D20 ลงบนถาดสักหลาด...";
+
+    overlay.classList.remove("hidden");
+
+    const arenaW = Math.max(arena.clientWidth || 400, 260);
+    const arenaH = Math.max(arena.clientHeight || 176, 140);
+    const floorY = arenaH * 0.66;
+    const startX = Math.max(46, arenaW * 0.14);
+    const rimX = Math.min(arenaW - 48, arenaW * 0.80);
+    const endX = arenaW * 0.54;
+    const durationMs = 3600;
+    const bounceWindows = [
+      { start: 0.0, end: 0.30, amp: 54 },
+      { start: 0.30, end: 0.56, amp: 32 },
+      { start: 0.56, end: 0.77, amp: 17 },
+      { start: 0.77, end: 0.91, amp: 7 },
+    ];
+    const startAngle = -35;
+    const totalRotations = 1260;
+
+    let lastBounceIdx = -1;
+    let nextFaceChangeAt = 0;
+    let shownFace = ((targetD20 + 6) % 20) + 1;
+    faceNum.textContent = String(shownFace);
+
+    const startTime = performance.now();
+    audioFX?.playSfx("dice_clatter");
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const u = Math.min(1, elapsed / durationMs);
+
+      // Horizontal trajectory: fast throw rightwards -> slight rim deflection -> settle center
+      let x;
+      if (u < 0.56) {
+        const p = u / 0.56;
+        const ease = 1 - Math.pow(1 - p, 2.2);
+        x = startX + (rimX - startX) * ease;
+      } else {
+        const p = (u - 0.56) / 0.44;
+        const ease = 1 - Math.pow(1 - p, 2.6);
+        x = rimX + (endX - rimX) * ease;
+      }
+
+      // Vertical parabolic bounces with decaying amplitude
+      let height = 0;
+      let activeBounceIdx = bounceWindows.length;
+      for (let i = 0; i < bounceWindows.length; i += 1) {
+        const bw = bounceWindows[i];
+        if (u >= bw.start && u < bw.end) {
+          const bp = (u - bw.start) / (bw.end - bw.start);
+          height = Math.sin(bp * Math.PI) * bw.amp;
+          activeBounceIdx = i;
+          break;
+        }
+      }
+      if (activeBounceIdx > lastBounceIdx && activeBounceIdx > 0 && u < 0.94) {
+        lastBounceIdx = activeBounceIdx;
+        audioFX?.playSfx("dice_clatter");
+      }
+
+      // Subtle lateral rock during the roll
+      const yBase = floorY + Math.sin(u * Math.PI * 2.5) * (1 - u) * 8;
+      const y = yBase - height;
+
+      // Decelerating rotation, snapping upright during final 10%
+      let angle;
+      if (u < 0.90) {
+        const ru = u / 0.90;
+        const spinEase = 1 - Math.pow(1 - ru, 2.9);
+        angle = startAngle + totalRotations * spinEase;
+      } else {
+        const settleU = (u - 0.90) / 0.10;
+        const wobble = Math.sin(settleU * Math.PI * 2) * (1 - settleU) * 10;
+        angle = wobble;
+      }
+
+      const bounceSquash = height < 4 && u > 0.25 && u < 0.91 ? 1.07 : 1;
+      const dieScaleX = bounceSquash;
+      const dieScaleY = bounceSquash > 1 ? 0.93 : 1 + Math.min(0.08, height / 520);
+
+      die.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${angle.toFixed(1)}deg) scale(${dieScaleX.toFixed(3)}, ${dieScaleY.toFixed(3)})`;
+
+      const shadowOffsetX = x + height * 0.35;
+      const shadowOffsetY = yBase + 27;
+      const shadowScale = Math.max(0.55, 1 - height / 130);
+      const shadowOpacity = Math.max(0.28, 0.85 - height / 110);
+      shadow.style.transform = `translate(${shadowOffsetX.toFixed(1)}px, ${shadowOffsetY.toFixed(1)}px) scale(${shadowScale.toFixed(3)})`;
+      shadow.style.opacity = shadowOpacity.toFixed(2);
+
+      // Slowing face-number cycling that locks onto the authoritative D20 result
+      if (u >= 0.88) {
+        faceNum.textContent = String(targetD20);
+      } else if (elapsed >= nextFaceChangeAt) {
+        let next = Math.floor(Math.random() * 20) + 1;
+        if (next === shownFace) next = (next % 20) + 1;
+        shownFace = next;
+        faceNum.textContent = String(shownFace);
+        const interval = 45 + Math.pow(u, 2.2) * 260;
+        nextFaceChangeAt = elapsed + interval;
+      }
+
+      if (u < 1) {
+        activeDiceAnimFrame = requestAnimationFrame(step);
+        return;
+      }
+
+      // Landed & reveal
+      activeDiceAnimFrame = null;
+      die.style.transform = `translate(${endX.toFixed(1)}px, ${floorY.toFixed(1)}px) rotate(0deg) scale(1, 1)`;
+      shadow.style.transform = `translate(${endX.toFixed(1)}px, ${(floorY + 27).toFixed(1)}px) scale(1)`;
+      shadow.style.opacity = "0.85";
+      faceNum.textContent = String(targetD20);
+
+      if (targetD20 === 20) die.classList.add("is-nat20");
+      else if (targetD20 === 1) die.classList.add("is-nat1");
+
+      card.classList.add(`tier-${tier}`);
+      if (ring) {
+        ring.style.left = `${endX.toFixed(1)}px`;
+        ring.style.top = `${floorY.toFixed(1)}px`;
+        ring.className = `dice-tray-ring tier-${tier}`;
+      }
+
+      audioFX?.playSfx(tier === "failure" ? "dice_fail" : "dice_success");
+
+      const natTag = targetD20 === 20 ? " (NAT 20!)" : targetD20 === 1 ? " (NAT 1!)" : "";
+      statusEl.textContent = `ลูกเต๋าหยุดที่ ${targetD20}${natTag}`;
+      if (mathEl) {
+        mathEl.textContent = opts.mathText || "";
+        mathEl.classList.toggle("hidden", !opts.mathText);
+      }
+      if (badgeEl) {
+        badgeEl.textContent = opts.tierLabel || "ผลลัพธ์";
+        badgeEl.className = `dice-tray-badge tier-${tier}`;
+      }
+      closeBtn?.classList.remove("hidden");
+
+      if (typeof onReveal === "function") {
+        onReveal();
+      }
+
+      isDiceRolling = false;
+      diceRollRevealTimer = setTimeout(() => {
+        diceRollRevealTimer = null;
+        if (!isPlayingQueue && audioQueue.length > 0) {
+          processAudioQueue();
+        }
+      }, 350);
+
+      diceAutoCloseTimer = setTimeout(() => {
+        diceAutoCloseTimer = null;
+        $("dice-tray-overlay")?.classList.add("hidden");
+      }, 1700);
+    }
+
+    activeDiceAnimFrame = requestAnimationFrame(step);
+  }
+
   function clearAudioQueue() {
+    cancelDiceRollAnimation();
     audioQueue.length = 0;
     if (activeAudioEl) {
       activeAudioEl.pause();
@@ -975,7 +1459,7 @@
 
   function enqueueAudioEvent(ev) {
     audioQueue.push(ev);
-    if (!isPlayingQueue) {
+    if (!isPlayingQueue && !isDiceRolling) {
       processAudioQueue();
     }
   }
@@ -1410,8 +1894,10 @@
         showToast(`เชื่อมต่อกลับเป็น ${payload.player.name} (${payload.player.role_name}) แล้ว`);
       }
       updateApiPill(payload.api_status);
+      resetDossierTracking();
       $("lobby-screen").classList.add("hidden");
       $("game-screen").classList.remove("hidden");
+      setMobileTab("play");
 
       const logEl = $("transcript-log");
       logEl.innerHTML = "";
@@ -1499,16 +1985,33 @@
     });
 
     socket.on("dice:result", (roll) => {
-      audioFX?.playSfx(roll.tier === "failure" ? "dice_fail" : "dice_success");
-      const banner = $("dice-result-banner");
-      banner.className = `dice-result-banner ${roll.tier}`;
-      banner.textContent =
-        `${roll.rolled_by} ทอย ${roll.stat}: D20 (${roll.d20}) + โบนัส (${roll.modifier}) = ${roll.total} / DC ${roll.dc} — ${roll.tier_label}`;
-      banner.classList.remove("hidden");
-      appendTranscriptLog(
-        "ผลทอย D20",
-        `${roll.rolled_by} ทอย ${roll.title} ได้ ${roll.total} (D20:${roll.d20}+${roll.modifier}) vs DC ${roll.dc} — ${roll.tier_label}`,
-        "hint"
+      if (window.innerWidth <= 960 && activeMobileTab !== "play") {
+        setMobileTab("play");
+      }
+      const modSign = roll.modifier >= 0 ? `+${roll.modifier}` : String(roll.modifier);
+      const mathSummary = `${roll.stat}: D20 (${roll.d20}) ${modSign} = ${roll.total} vs DC ${roll.dc}`;
+      playPhysicalDiceRoll(
+        {
+          actor: roll.rolled_by,
+          title: roll.title,
+          targetLabel: `${roll.stat} · DC ${roll.dc}`,
+          d20: roll.d20,
+          tier: roll.tier,
+          tierLabel: roll.tier_label,
+          mathText: mathSummary,
+        },
+        () => {
+          const banner = $("dice-result-banner");
+          banner.className = `dice-result-banner ${roll.tier}`;
+          banner.textContent =
+            `${roll.rolled_by} ทอย ${roll.stat}: D20 (${roll.d20}) + โบนัส (${roll.modifier}) = ${roll.total} / DC ${roll.dc} — ${roll.tier_label}`;
+          banner.classList.remove("hidden");
+          appendTranscriptLog(
+            "ผลทอย D20",
+            `${roll.rolled_by} ทอย ${roll.title} ได้ ${roll.total} (D20:${roll.d20}+${roll.modifier}) vs DC ${roll.dc} — ${roll.tier_label}`,
+            "hint"
+          );
+        }
       );
     });
 
@@ -1517,19 +2020,45 @@
     });
 
     socket.on("combat:roll", (data) => {
-      if (data?.roll) {
-        _renderCombatRollCard(data.roll, data.narration || "");
-      }
-      const ghostWrap = $("ghost-sprite-wrap");
-      const fx = data?.visual_fx;
-      if (ghostWrap && fx && fx !== "miss") {
-        ghostWrap.classList.remove("fx-hit", "fx-soothe", "fx-lunge");
-        void ghostWrap.offsetWidth;
-        const cls = fx === "ghost_hit" ? "fx-hit" : fx === "ghost_soothe" ? "fx-soothe" : fx === "ghost_lunge" ? "fx-lunge" : "";
-        if (cls) {
-          ghostWrap.classList.add(cls);
-          setTimeout(() => ghostWrap.classList.remove(cls), 650);
+      const applyCombatRollVisuals = () => {
+        if (data?.roll) {
+          _renderCombatRollCard(data.roll, data.narration || "");
         }
+        const ghostWrap = $("ghost-sprite-wrap");
+        const fx = data?.visual_fx;
+        if (ghostWrap && fx && fx !== "miss") {
+          ghostWrap.classList.remove("fx-hit", "fx-soothe", "fx-lunge");
+          void ghostWrap.offsetWidth;
+          const cls = fx === "ghost_hit" ? "fx-hit" : fx === "ghost_soothe" ? "fx-soothe" : fx === "ghost_lunge" ? "fx-lunge" : "";
+          if (cls) {
+            ghostWrap.classList.add(cls);
+            setTimeout(() => ghostWrap.classList.remove(cls), 650);
+          }
+        }
+      };
+
+      const roll = data?.roll;
+      if (roll && roll.d20 != null && !roll.is_ghost) {
+        if (window.innerWidth <= 960 && activeMobileTab !== "play") {
+          setMobileTab("play");
+        }
+        const modSign = (roll.modifier || 0) >= 0 ? `+${roll.modifier || 0}` : String(roll.modifier || 0);
+        const bonusStr = roll.bonus > 0 ? ` +โบนัส ${roll.bonus}` : "";
+        const mathSummary = `${roll.action_label} [${roll.stat}]: D20(${roll.d20}) ${modSign}${bonusStr} = ${roll.total} vs ${roll.dc_label} ${roll.target_dc}`;
+        playPhysicalDiceRoll(
+          {
+            actor: roll.actor,
+            title: roll.action_label,
+            targetLabel: `${roll.stat} · ${roll.dc_label} ${roll.target_dc}`,
+            d20: roll.d20,
+            tier: roll.tier,
+            tierLabel: roll.tier_label,
+            mathText: mathSummary,
+          },
+          applyCombatRollVisuals
+        );
+      } else {
+        applyCombatRollVisuals();
       }
     });
 
@@ -1550,6 +2079,7 @@
 
     socket.on("room:reset_done", (payload) => {
       clearAudioQueue();
+      resetDossierTracking();
       renderedNpcSignature = "";
       renderedBoardAct = "";
       const actLabel = payload?.act || "A";
@@ -1568,6 +2098,8 @@
     });
 
     socket.on("dm:error", (err) => {
+      const rollBtn = $("roll-dice-btn");
+      if (rollBtn) rollBtn.disabled = false;
       showToast(err.message || "เกิดข้อผิดพลาด");
     });
   }
@@ -1715,8 +2247,20 @@
     });
 
     $("roll-dice-btn").addEventListener("click", () => {
+      const btn = $("roll-dice-btn");
+      if (btn) btn.disabled = true;
       audioFX?.playSfx("dice_roll");
       socket?.emit("dice:roll", {});
+    });
+
+    $("dice-tray-close-btn")?.addEventListener("click", () => {
+      if (!isDiceRolling) $("dice-tray-overlay")?.classList.add("hidden");
+    });
+
+    $("dice-tray-overlay")?.addEventListener("click", (e) => {
+      if (e.target === $("dice-tray-overlay") && !isDiceRolling) {
+        $("dice-tray-overlay")?.classList.add("hidden");
+      }
     });
 
     document.querySelectorAll(".combat-btn").forEach((btn) => {
@@ -1773,6 +2317,40 @@
           pane.classList.toggle("active", pane.id === `tab-${target}`);
         });
       });
+    });
+
+    document.querySelectorAll(".dossier-subtab").forEach((btn) => {
+      btn.addEventListener("click", () => setDossierSubtab(btn.dataset.subtab));
+    });
+
+    document.querySelectorAll("#clue-filter-chips .clue-filter-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        activeClueCategory = chip.dataset.cat || "all";
+        renderCluesDossier(currentState?.clues_found || [], currentState?.act || "A");
+      });
+    });
+
+    $("clue-search-input")?.addEventListener("input", (e) => {
+      clueSearchQuery = e.target.value || "";
+      renderCluesDossier(currentState?.clues_found || [], currentState?.act || "A");
+    });
+
+    $("clue-expand-all-btn")?.addEventListener("click", () => {
+      cluesExpandAll = !cluesExpandAll;
+      collapsedClueIds.clear();
+      if (!cluesExpandAll) expandedClueIds.clear();
+      renderCluesDossier(currentState?.clues_found || [], currentState?.act || "A");
+    });
+
+    document.querySelectorAll(".mobile-nav-btn").forEach((btn) => {
+      btn.addEventListener("click", () => setMobileTab(btn.dataset.mobileTab));
+    });
+
+    $("mobile-topbar-toggle")?.addEventListener("click", () => {
+      const topbar = document.querySelector(".topbar");
+      if (!topbar) return;
+      const open = topbar.classList.toggle("mobile-drawer-open");
+      $("mobile-topbar-toggle")?.setAttribute("aria-expanded", open ? "true" : "false");
     });
 
     const pttBtn = $("ptt-btn");

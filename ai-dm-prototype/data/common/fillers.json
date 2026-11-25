@@ -5,7 +5,7 @@
       "scene": "*",
       "speaker": "DM",
       "voice": "Charon",
-      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สั้น ๆ ลึกลับ",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ อุทานครุ่นคิดสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],
         "requires_items": [],
@@ -13,7 +13,7 @@
         "once": false,
         "topic_hint": "เสียงคั่นเวลาสำหรับ DM"
       },
-      "text": "อืม... ลองดูบรรยากาศรอบตัวให้ดีนะครับ...",
+      "text": "อืม...",
       "is_filler": true,
       "unlocks": {
         "clues": [],
@@ -27,7 +27,7 @@
       "scene": "*",
       "speaker": "ประเสริฐ",
       "voice": "Algenib",
-      "style": "เสียงชายวัยกลางคน ครุ่นคิดสั้น ๆ",
+      "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว อุทานครุ่นคิดสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],
         "requires_items": [],
@@ -35,7 +35,7 @@
         "once": false,
         "topic_hint": "เสียงคั่นเวลาสำหรับประเสริฐตอนนึกคำตอบ"
       },
-      "text": "เอ่อ... ขอผมนึกดูสักครู่นะครับ...",
+      "text": "อืม...",
       "is_filler": true,
       "unlocks": {
         "clues": [],
@@ -49,7 +49,7 @@
       "scene": "*",
       "speaker": "ประเสริฐ",
       "voice": "Algenib",
-      "style": "เสียงชายวัยกลางคน ลังเล อ้ำอึ้งสั้น ๆ",
+      "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว อุทานอ้ำอึ้งสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],
         "requires_items": [],
@@ -57,7 +57,7 @@
         "once": false,
         "topic_hint": "เสียงคั่นเวลาสำหรับประเสริฐตอนอึกอัก"
       },
-      "text": "คือ... เรื่องนั้น...",
+      "text": "เอ่อ...",
       "is_filler": true,
       "unlocks": {
         "clues": [],
@@ -115,7 +115,7 @@
       "scene": "*",
       "speaker": "วิชัย",
       "voice": "Orus",
-      "style": "เสียงชายวัย 40 ปลาย ๆ สุขุม นิ่ง เหมือนกำลังนึกคำตอบสั้น ๆ",
+      "style": "เสียงชายวัย 40 ปลาย ๆ สุขุม นิ่ง อุทานครุ่นคิดสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],
         "requires_items": [],
@@ -123,7 +123,7 @@
         "once": false,
         "topic_hint": "เสียงคั่นเวลาสำหรับวิชัย"
       },
-      "text": "อืม... ขอผมดูรายละเอียดในแฟ้มสักครู่นะครับ...",
+      "text": "อืม...",
       "is_filler": true,
       "unlocks": {
         "clues": [],
@@ -137,7 +137,7 @@
       "scene": "*",
       "speaker": "ต้น",
       "voice": "Fenrir",
-      "style": "เสียงชายวัยรุ่นเจ้าถิ่น อึกอัก ประหม่าสั้น ๆ",
+      "style": "เสียงชายวัยรุ่นเจ้าถิ่น อึกอัก ประหม่า อุทานสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],
         "requires_items": [],
@@ -145,7 +145,7 @@
         "once": false,
         "topic_hint": "เสียงคั่นเวลาสำหรับต้น"
       },
-      "text": "เอ่อ... เดี๋ยวนะพี่... ขอผมนึกก่อน...",
+      "text": "เอ่อ...",
       "is_filler": true,
       "unlocks": {
         "clues": [],
