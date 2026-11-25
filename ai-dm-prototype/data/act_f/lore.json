@@ -64,7 +64,7 @@
       "npcs": [
         {
           "name": "แม่แก้ว (นางตานี)",
-          "sprite": "/assets/characters/kaew.png",
+          "sprite": "/assets/characters/kaew_boss.png",
           "visible": true
         }
       ],

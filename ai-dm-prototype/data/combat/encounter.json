@@ -130,7 +130,7 @@
     "KAEW_FINAL_BOSS": {
       "id": "KAEW_FINAL_BOSS",
       "name": "แม่แก้ว (วงป้องกันกำไลพิธี)",
-      "sprite": "/assets/characters/kaew.png",
+      "sprite": "/assets/characters/kaew_boss.png",
       "background_image": "/assets/scenes/e4_ritual_room.png",
       "base_hp_for_2": 14,
       "hp_per_extra_player": 4,
