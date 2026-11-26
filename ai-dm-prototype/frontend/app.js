@@ -15,6 +15,8 @@
   let ambientVolume = Math.max(0, Math.min(1, parseFloat(localStorage.getItem("ai_dm_ambient_vol") ?? "0.7")));
   let roomLookupTimer = null;
   let roomsPollTimer = null;
+  const ACTIVE_SESSION_KEY = "ai_dm_active_session";
+  let autoReconnectAttempted = false;
 
   const audioFX = window.AudioFXEngine ? new window.AudioFXEngine() : null;
   if (audioFX) {
@@ -484,11 +486,13 @@
         </div>
         <div class="active-room-meta"></div>
       `;
+      const hasSavedToken = Boolean(localStorage.getItem(tokenStorageKey(rm.room_code)));
+      const savedTag = hasSavedToken ? " · เคยเข้าห้องนี้" : "";
       btn.querySelector(".active-room-code").textContent = rm.room_code;
       btn.querySelector(".active-room-meta").textContent =
         isEmptyRoom && rm.closing_in_seconds != null
-          ? `ไม่มีผู้เล่นออนไลน์ · ปิดอัตโนมัติใน ${rm.closing_in_seconds} วิ · ${rm.scene_id}`
-          : `สมาชิก ${rm.player_count}/${rm.max_players} คน (ออนไลน์ ${rm.online_count}) · ${rm.scene_id}`;
+          ? `ไม่มีผู้เล่นออนไลน์ · ปิดอัตโนมัติใน ${rm.closing_in_seconds} วิ · ${rm.scene_id}${savedTag}`
+          : `สมาชิก ${rm.player_count}/${rm.max_players} คน (ออนไลน์ ${rm.online_count}) · ${rm.scene_id}${savedTag}`;
 
       btn.addEventListener("click", () => {
         $("room-code").value = rm.room_code;
@@ -526,6 +530,10 @@
       await Promise.all([refreshRoomRoles($("room-code").value), loadActiveRooms()]);
       if (!roomsPollTimer) {
         roomsPollTimer = setInterval(loadActiveRooms, 8000);
+      }
+      if (!autoReconnectAttempted) {
+        autoReconnectAttempted = true;
+        tryAutoReconnect();
       }
     } catch (err) {
       if (attempt < 6) {
@@ -2563,10 +2571,172 @@
     stopListeningNow();
   }
 
-  function connectAndJoin(playerName, roomCode, roleId, startAct = selectedStartAct) {
+  function readActiveSession() {
+    try {
+      const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.room_code || !parsed.player_token) return null;
+      return parsed;
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  function saveActiveSession(roomCode, playerName, roleId, playerToken) {
+    if (!roomCode || !playerToken) return;
+    try {
+      localStorage.setItem(
+        ACTIVE_SESSION_KEY,
+        JSON.stringify({
+          room_code: normalizeRoomCode(roomCode),
+          player_name: playerName || "ผู้สืบสวน",
+          role_id: roleId || selectedRoleId || "investigator",
+          player_token: playerToken,
+        })
+      );
+    } catch (_err) {
+      // ignore storage quota errors
+    }
+  }
+
+  function clearActiveSession() {
+    try {
+      localStorage.removeItem(ACTIVE_SESSION_KEY);
+    } catch (_err) {
+      // ignore
+    }
+  }
+
+  async function tryAutoReconnect() {
+    const sess = readActiveSession();
+    if (!sess) return;
+    const normCode = normalizeRoomCode(sess.room_code);
+    try {
+      const res = await fetch(
+        `/api/rooms/${encodeURIComponent(normCode)}/session?token=${encodeURIComponent(sess.player_token)}`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.can_reconnect) {
+        $("room-code").value = data.room_code;
+        if (data.player_name) $("player-name").value = data.player_name;
+        showToast(`พบห้องเดิม ${data.room_code} กำลังเชื่อมต่อกลับอัตโนมัติ...`);
+        connectAndJoin(
+          data.player_name || sess.player_name,
+          data.room_code,
+          data.role_id || sess.role_id,
+          data.act || "A",
+          { reconnectOnly: true }
+        );
+      } else {
+        clearActiveSession();
+        localStorage.removeItem(tokenStorageKey(normCode));
+        if (!$("player-name").value.trim() && sess.player_name) {
+          $("player-name").value = sess.player_name;
+        }
+        $("room-code").value = normCode;
+        refreshRoomRoles(normCode);
+      }
+    } catch (_err) {
+      // Keep lobby interactive if session check fails transiently
+    }
+  }
+
+  function stopAllAudioAndMic() {
+    if (activeAudioEl) {
+      try {
+        activeAudioEl.pause();
+        activeAudioEl.src = "";
+      } catch (_err) {
+        // ignore
+      }
+      activeAudioEl = null;
+    }
+    audioQueue.length = 0;
+    isPlayingQueue = false;
+    if (activeSubtitleTimer) {
+      clearTimeout(activeSubtitleTimer);
+      activeSubtitleTimer = null;
+    }
+    if (pendingGapTimer) {
+      clearTimeout(pendingGapTimer);
+      pendingGapTimer = null;
+    }
+    activeSubtitleFinishFn = null;
+    if (speechRecognition) {
+      try {
+        speechRecognition.abort();
+      } catch (_err) {
+        // ignore
+      }
+      speechRecognition = null;
+    }
+    if (isHoldingMic || isToggleListening) {
+      isHoldingMic = false;
+      isToggleListening = false;
+    }
+    if (maxRecordTimer) {
+      clearTimeout(maxRecordTimer);
+      maxRecordTimer = null;
+    }
+    if (typeof mediaRecorder !== "undefined" && mediaRecorder && mediaRecorder.state === "recording") {
+      try {
+        mediaRecorder.stop();
+      } catch (_err) {
+        // ignore
+      }
+    }
+    audioFX?.setDucking(false);
+    audioFX?.setCombatMode?.(false);
+    updateMicButtonUI(false);
+  }
+
+  function leaveRoomToMenu() {
+    const prevRoomCode = currentState?.room_code || normalizeRoomCode($("room-code").value);
+    stopAllAudioAndMic();
+    clearActiveSession();
+    setGuidelineDrawerOpen(false);
+    closeBoardExitConfirm();
+    $("ending-overlay")?.classList.add("hidden");
+    $("dice-tray-overlay")?.classList.add("hidden");
+    $("dice-panel")?.classList.add("hidden");
+    $("combat-actions-bar")?.classList.add("hidden");
+    document.querySelector(".topbar")?.classList.remove("mobile-drawer-open");
+    $("mobile-topbar-toggle")?.setAttribute("aria-expanded", "false");
+
+    const prevSocket = socket;
+    socket = null;
+    if (prevSocket) {
+      try {
+        if (prevSocket.connected) {
+          prevSocket.emit("room:leave", {});
+        }
+        prevSocket.disconnect();
+      } catch (_err) {
+        // ignore
+      }
+    }
+
+    myPlayer = null;
+    currentState = null;
+    renderedNpcSignature = "";
+    renderedBoardAct = "";
+    $("game-screen")?.classList.add("hidden");
+    $("lobby-screen")?.classList.remove("hidden");
+    if (prevRoomCode) {
+      $("room-code").value = prevRoomCode;
+      refreshRoomRoles(prevRoomCode);
+    }
+    loadActiveRooms();
+    showToast("ออกจากห้องกลับสู่หน้าเมนูแล้ว");
+  }
+
+  function connectAndJoin(playerName, roomCode, roleId, startAct = selectedStartAct, opts = {}) {
     if (socket) socket.disconnect();
     const normCode = normalizeRoomCode(roomCode);
     const savedToken = localStorage.getItem(tokenStorageKey(normCode));
+    const isReconnectOnly = Boolean(opts?.reconnectOnly);
 
     socket = io({
       transports: ["websocket", "polling"],
@@ -2582,6 +2752,7 @@
         role_id: roleId,
         player_token: savedToken || null,
         start_act: startAct || "A",
+        reconnect_only: isReconnectOnly,
       });
     });
 
@@ -2590,16 +2761,31 @@
     });
 
     socket.on("room:join_error", (err) => {
+      if (isReconnectOnly) {
+        clearActiveSession();
+        localStorage.removeItem(tokenStorageKey(normCode));
+        refreshRoomRoles(normCode);
+      }
       showToast(err.message || "ไม่สามารถเข้าห้องได้");
       takenRoles = err.taken_roles || [];
       if (scenarioMeta?.roles) renderRoles(scenarioMeta.roles);
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+      }
     });
 
     socket.on("room:joined", (payload) => {
       myPlayer = payload.player;
-      if (payload.player_token) {
-        localStorage.setItem(tokenStorageKey(payload.state.room_code), payload.player_token);
+      const effectiveToken = payload.player_token || savedToken;
+      if (effectiveToken) {
+        localStorage.setItem(tokenStorageKey(payload.state.room_code), effectiveToken);
+        saveActiveSession(
+          payload.state.room_code,
+          payload.player?.name || playerName,
+          payload.player?.role_id || roleId,
+          effectiveToken
+        );
       }
       if (payload.reconnected) {
         showToast(`เชื่อมต่อกลับเป็น ${payload.player.name} (${payload.player.role_name}) แล้ว`);
@@ -3005,6 +3191,14 @@
 
     $("reset-room-btn").addEventListener("click", () => {
       socket?.emit("room:reset", {});
+    });
+
+    $("leave-room-btn")?.addEventListener("click", () => {
+      leaveRoomToMenu();
+    });
+
+    $("ending-menu-btn")?.addEventListener("click", () => {
+      leaveRoomToMenu();
     });
 
     $("ending-next-act-btn")?.addEventListener("click", () => {

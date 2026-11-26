@@ -581,6 +581,32 @@ class RoomManager:
             )
         return summaries
 
+    def get_reconnect_session(
+        self,
+        room_code: str,
+        player_token: Optional[str],
+    ) -> Optional[dict[str, Any]]:
+        """Check whether an existing active room and player token can auto-reconnect."""
+        if not player_token:
+            return None
+        code = self.normalize_room_code(room_code)
+        room = self.rooms.get(code)
+        if not room:
+            return None
+        player = room.players.get(player_token)
+        if not player:
+            return None
+        return {
+            "can_reconnect": True,
+            "room_code": room.room_code,
+            "player_name": player.name,
+            "role_id": player.role_id,
+            "role_name": player.role_name,
+            "scene_id": room.current_scene,
+            "act": self.act_for_scene(room.current_scene),
+            "started": room.started,
+        }
+
     def add_player(
         self,
         room_code: str,
@@ -589,9 +615,16 @@ class RoomManager:
         role_id: str,
         player_token: Optional[str] = None,
         start_act: str = "A",
+        reconnect_only: bool = False,
     ) -> tuple[RoomState, PlayerInfo, bool]:
         """Join or reconnect to a room, enforcing unique investigator roles."""
-        room = self.get_or_create_room(room_code, start_act=start_act)
+        code = self.normalize_room_code(room_code)
+        if reconnect_only:
+            room = self.rooms.get(code)
+            if not room or not player_token or player_token not in room.players:
+                raise ValueError("ห้องเดิมปิดไปแล้วหรือหมดเวลาเชื่อมต่อ กรุณาเข้าห้องใหม่อีกครั้ง")
+        else:
+            room = self.get_or_create_room(code, start_act=start_act)
         clean_name = name.strip()[:32] or "ผู้สืบสวน"
 
         # 1) Reconnect existing player by token

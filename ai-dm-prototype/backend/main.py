@@ -302,6 +302,15 @@ async def get_room_taken_roles(room_code: str) -> dict[str, Any]:
     }
 
 
+@app.get("/api/rooms/{room_code}/session")
+async def get_room_reconnect_session(room_code: str, token: str = "") -> dict[str, Any]:
+    _cleanup_empty_rooms_and_locks()
+    session = room_manager.get_reconnect_session(room_code, token.strip() or None)
+    if not session:
+        return {"can_reconnect": False}
+    return session
+
+
 async def _emit_room_state(room: RoomState) -> None:
     await sio.emit("room:state", room_manager.serialize_public_state(room), room=room.room_code)
 
@@ -632,12 +641,48 @@ async def disconnect(sid: str) -> None:
         usage_tracker.pop_socket_client(sid)
 
 
+@sio.on("room:leave")
+async def on_room_leave(sid: str, _data: dict[str, Any] | None = None) -> None:
+    room, player, mic_released = room_manager.remove_player(sid)
+    if room:
+        await sio.leave_room(sid, room.room_code)
+        if mic_released:
+            await sio.emit("mic:unlocked", {}, room=room.room_code)
+        if player:
+            online_left = sum(1 for p in room.players.values() if p.connected)
+            duration_s = usage_tracker.record_leave(
+                sid, player.player_token, room.room_code, player.name, online_left
+            )
+            logger.info(
+                "[USAGE] LEAVE_MENU | room=%s | player=%s (%s) | duration=%ds | online_left=%d",
+                room.room_code,
+                player.name,
+                player.role_name,
+                duration_s,
+                online_left,
+            )
+            room_manager.append_log(
+                room,
+                "ระบบ",
+                f"{player.name} ออกจากห้องกลับไปหน้าเมนู (สามารถกลับเข้าห้องเดิมได้)",
+                kind="system",
+            )
+        await _emit_room_state(room)
+        if mic_released:
+            await _drain_input_queue(room)
+        if room.combat and room.combat.active and room_manager.check_ready_for_ghost_turn(room):
+            room.combat.phase = "ghost"
+            await _run_ghost_turn(room)
+    await sio.emit("room:left", {"ok": True}, to=sid)
+
+
 @sio.on("room:join")
 async def on_room_join(sid: str, data: dict[str, Any]) -> None:
     room_code = str(data.get("room_code") or "BANANA01")
     player_name = str(data.get("player_name") or "ผู้สืบสวน")
     role_id = str(data.get("role_id") or "investigator")
     player_token = data.get("player_token")
+    reconnect_only = bool(data.get("reconnect_only", False))
     raw_act = str(data.get("start_act") or "A").strip().upper()
     start_act = raw_act if raw_act in {"A", "B", "C", "D", "E", "F"} else "A"
 
@@ -649,6 +694,7 @@ async def on_room_join(sid: str, data: dict[str, Any]) -> None:
             role_id,
             player_token=str(player_token) if player_token else None,
             start_act=start_act,
+            reconnect_only=reconnect_only,
         )
     except ValueError as exc:
         await sio.emit(

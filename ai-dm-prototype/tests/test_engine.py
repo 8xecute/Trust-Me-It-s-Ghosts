@@ -1728,3 +1728,50 @@ def test_phase3_universal_three_pillar_dice_rules(monkeypatch: pytest.MonkeyPatc
     d_e4_byp = engine._local_fallback_decision(r_e4, mgr, "ถอดลำดับตำรากำไล")
     assert d_e4_byp.requested_check_id == "E4_BRACELET_DECODE"
     assert "ไม่ต้องทอย" in (d_e4_byp.improvised_text or "")
+
+
+def test_auto_reconnect_session_endpoint_and_leave_flow() -> None:
+    from fastapi.testclient import TestClient
+    import backend.main as main_mod
+
+    client = TestClient(main_mod.app)
+    mgr = main_mod.room_manager
+
+    # Non-existent room cannot reconnect and reconnect_only=True must not create a phantom room
+    r_none = client.get("/api/rooms/NOPE99/session?token=badtok")
+    assert r_none.status_code == 200
+    assert r_none.json()["can_reconnect"] is False
+    with pytest.raises(ValueError, match="ปิดไปแล้ว"):
+        mgr.add_player("NOPE99", "s_bad", "เอก", "investigator", player_token="badtok", reconnect_only=True)
+    assert "NOPE99" not in mgr.rooms
+
+    # Player joins room, leaves to menu (offline), session endpoint still reports can_reconnect=True
+    room, player, reconnected = mgr.add_player("RECON1", "s_rec1", "เอก", "investigator", start_act="B")
+    assert reconnected is False
+    mgr.start_game("RECON1")
+    tok = player.player_token
+
+    left_room, left_player, _ = mgr.remove_player("s_rec1")
+    assert left_room is room and left_player is player
+    assert player.connected is False
+
+    r_ok = client.get(f"/api/rooms/RECON1/session?token={tok}")
+    assert r_ok.status_code == 200
+    body = r_ok.json()
+    assert body["can_reconnect"] is True
+    assert body["room_code"] == "RECON1"
+    assert body["player_name"] == "เอก"
+    assert body["role_id"] == "investigator"
+    assert body["act"] == "B"
+    assert body["started"] is True
+
+    # Reconnecting with reconnect_only=True restores the exact same player cleanly
+    room2, player2, reconnected2 = mgr.add_player(
+        "RECON1", "s_rec2", "เอก", "investigator", player_token=tok, reconnect_only=True
+    )
+    assert room2 is room and player2 is player and reconnected2 is True
+    assert player2.connected is True and player2.sid == "s_rec2"
+
+    # Cleanup test room
+    mgr.remove_player("s_rec2")
+    mgr.rooms.pop("RECON1", None)
