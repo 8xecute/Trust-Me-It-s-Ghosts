@@ -119,23 +119,6 @@ def _ext_from_mime(mime_type: str) -> str:
     return "speech.webm"
 
 
-def _match_combat_action(text: str) -> Optional[str]:
-    lower = text.lower()
-    if any(k in lower for k in ("ท่า", "สกิล", "โฟกัส", "ยันต์", "สแกน", "ปฐมพยาบาล", "แนวป้องกัน", "จุดอ่อน")):
-        return "role_skill"
-    if any(k in lower for k in ("ช่วย", "บัง", "คุ้มกันเพื่อน", "ดึงเพื่อน", "ขวาง")):
-        return "assist"
-    if any(k in lower for k in ("กล่อม", "ปลอบ", "สวด")):
-        return "soothe"
-    if any(k in lower for k in ("ดึงสติ", "ตั้งสติ", "พัก", "หายใจ")):
-        return "steady"
-    if any(k in lower for k in ("ถอย", "หนี", "เปิดทาง")):
-        return "retreat"
-    if any(k in lower for k in ("โจมตี", "ตี", "ฟัน", "ยิง", "สู้", "ลุย")):
-        return "strike"
-    return None
-
-
 def _cleanup_empty_rooms_and_locks() -> list[str]:
     closed_codes = room_manager.cleanup_empty_rooms()
     for code in closed_codes:
@@ -167,15 +150,26 @@ async def _idle_watcher_loop() -> None:
             ):
                 room.idle_prompted = True
                 act = room_manager.act_for_scene(room.current_scene)
-                prompt_text = (
-                    "เสียงลมเย็นพัดผ่านบานประตูไม้บ้านผู้ใหญ่บ้าน... "
-                    "พวกคุณจะซักถามวิชัย ออกไปคุยกับต้น ตรวจผนังภาพเก่า หรือดูแผนที่ต่อดี?"
-                    if act == "B"
-                    else (
-                        "ลมกลางคืนพัดผ่านศาลาริมทางจนเสียงใบกล้วยไหวกรอบแกรบ... "
-                        "พวกคุณจะสอบถามประเสริฐ ตรวจเบาะแส หรือลองดูแผนที่ต่อดี?"
-                    )
+                guideline = room_manager.compute_guideline_snapshot(room)
+                scene_goal = guideline.get("scene_goal") or guideline.get("act_goal") or ""
+                pending_main = next(
+                    (l for l in guideline.get("leads", []) if l.get("kind") == "main" and not l.get("done")),
+                    None,
                 )
+                ambient_prefix = {
+                    "A": "ลมกลางคืนพัดผ่านศาลาริมทางจนใบกล้วยไกล ๆ ไหวกรอบแกรบ...",
+                    "B": "เสียงลมเย็นพัดผ่านบานประตูไม้บ้านผู้ใหญ่บ้าน...",
+                    "C": "ความเงียบยามค่ำในหมู่บ้านชวนขนลุก...",
+                    "D": "ใบกล้วยรอบทางเดินสวนขยับเสียดสีในความมืด...",
+                    "E": "เสียงไม้เก่าลั่นเบา ๆ ท่ามกลางแสงเทียนสลัว...",
+                    "F": "แรงลมเย็นพัดผ่านความมืดก่อนรุ่งสาง...",
+                }.get(act, "ความเงียบยามค่ำพัดผ่านรอบตัวคุณ...")
+                if pending_main and pending_main.get("label"):
+                    prompt_text = f"{ambient_prefix} ตอนนี้ลองดูแนวทางหลัก: {pending_main['label']} หรือสำรวจรอบ ๆ ต่อได้"
+                elif scene_goal:
+                    prompt_text = f"{ambient_prefix} เป้าหมายตอนนี้: {scene_goal}"
+                else:
+                    prompt_text = f"{ambient_prefix} พวกคุณจะสอบถาม สำรวจ หรือขยับจุดหมายต่อดี?"
                 room_manager.append_log(room, "DM", prompt_text, kind="hint")
                 await sio.emit(
                     "dm:audio",
@@ -518,7 +512,9 @@ async def _process_player_turn(room: RoomState, sid: str, player_name: str, text
                 used_fallback,
                 decision.requested_check_id,
             )
-            outcome = room_manager.validate_and_apply_decision(room, decision, player_name)
+            outcome = room_manager.validate_and_apply_decision(
+                room, decision, player_name, actor_sid=sid
+            )
             actor = room_manager.get_player_by_sid(sid)
             usage_tracker.record_turn(
                 actor.player_token if actor else None,
@@ -569,6 +565,26 @@ async def _process_player_turn(room: RoomState, sid: str, player_name: str, text
 
             for ev in outcome["queued_events"]:
                 await sio.emit("dm:audio", ev, room=room.room_code)
+
+            bypass_roll = outcome.get("bypassed_roll")
+            if bypass_roll:
+                usage_tracker.record_dice(
+                    actor.player_token if actor else None,
+                    room.room_code,
+                    bypass_roll["rolled_by"],
+                    bypass_roll["check_id"],
+                    bypass_roll["total"],
+                    bypass_roll["tier"],
+                )
+                logger.info(
+                    "[USAGE] DICE | room=%s | player=%s | check=%s | total=%d | tier=%s | bypassed=True",
+                    room.room_code,
+                    bypass_roll["rolled_by"],
+                    bypass_roll["check_id"],
+                    bypass_roll["total"],
+                    bypass_roll["tier"],
+                )
+                await sio.emit("dice:result", bypass_roll, room=room.room_code)
 
             await _emit_room_state(room)
         finally:
@@ -1013,6 +1029,34 @@ async def on_chat_message(sid: str, data: dict[str, Any]) -> None:
     await _drain_input_queue(room)
 
 
+@sio.on("dice:prep")
+async def on_dice_prep(sid: str, data: dict[str, Any] | None = None) -> None:
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    payload = data or {}
+    action = str(payload.get("action") or "").strip()
+    stat = payload.get("stat")
+    mode = payload.get("mode")
+    target_public_id = payload.get("target_public_id")
+    try:
+        res = room_manager.prep_pending_check(
+            room.room_code,
+            sid,
+            action=action,
+            stat=str(stat) if stat is not None else None,
+            mode=str(mode) if mode is not None else None,
+            target_public_id=str(target_public_id) if target_public_id is not None else None,
+        )
+    except ValueError as exc:
+        await sio.emit("dm:error", {"message": str(exc)}, to=sid)
+        return
+    if res.get("notice"):
+        room_manager.append_log(room, "ระบบ", res["notice"], kind="system")
+        await sio.emit("system:notice", {"message": res["notice"]}, room=room.room_code)
+    await _emit_room_state(room)
+
+
 @sio.on("dice:roll")
 async def on_dice_roll(sid: str, _data: dict[str, Any] | None = None) -> None:
     room = room_manager.get_room_by_sid(sid)
@@ -1071,6 +1115,26 @@ async def on_board_move(sid: str, data: dict[str, Any]) -> None:
     await _emit_room_state(room)
     for ev in result["events"]:
         await sio.emit("dm:audio", ev, room=room.room_code)
+
+
+@sio.on("dossier:inspect")
+async def on_dossier_inspect(sid: str, data: dict[str, Any]) -> None:
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    if not room.started:
+        await sio.emit("dm:error", {"message": "กรุณากดเริ่มบทก่อนสำรวจฉากและหลักฐาน"}, to=sid)
+        return
+    target_type = str((data or {}).get("target_type") or "")
+    target_id = str((data or {}).get("target_id") or "")
+    try:
+        result = room_manager.inspect_dossier_target(room.room_code, sid, target_type, target_id)
+    except ValueError as exc:
+        await sio.emit("dm:error", {"message": str(exc)}, to=sid)
+        return
+    if result.get("event"):
+        await sio.emit("dm:audio", result["event"], room=room.room_code)
+    await _emit_room_state(room)
 
 
 @sio.on("combat:start_demo")
@@ -1179,8 +1243,16 @@ async def on_room_reset(sid: str, data: dict[str, Any] | None = None) -> None:
         p.protected_by = None
         p.acted_this_round = False
 
-    fresh = RoomState(room_code=code, players=preserved_players)
-    room_manager.apply_act_start_preset(fresh, act)
+    entry_scene, entry_node = room_manager._act_entry_point(act)
+    fresh = RoomState(
+        room_code=code,
+        current_scene=entry_scene,
+        board_node=entry_node,
+        visited_scenes=[entry_scene],
+        players=preserved_players,
+    )
+    if act in {"C", "D", "E", "F"}:
+        room_manager.apply_act_start_preset(fresh, act)
     room_manager.rooms[code] = fresh
     label_map = {
         "A": "บทนำ ACT A",

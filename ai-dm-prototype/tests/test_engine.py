@@ -940,7 +940,7 @@ def test_patched_story_content_and_new_dialogues() -> None:
     assert "ฟ้าแห้งสนิทไร้เมฆฝน" in repo.get_dialogue("b2_intro_dm")["text"]
     assert "ผ้ายันต์หน้าประตู" in repo.clues_catalog["prasert_nervous_clue"]["detail"]
     assert "เด็กหนุ่มช่างสงสัย" in repo.clues_catalog["missing_names"]["detail"]
-    assert "ขอดูแฟ้มในมือผู้ใหญ่ตรงข้างรถตู้เลยได้ไหมครับ?" in repo.get_scene("A1")["quick_prompts"]
+    assert "ขอดูแฟ้มข้อมูลในมือผู้ใหญ่เพิ่มเติมหน่อยครับ" in repo.get_scene("A1")["quick_prompts"]
     assert "คุณวิชัยช่วยดูแลเรื่องอะไรในหมู่บ้าน แล้วเคยเข้าสวนตอนกลางคืนไหม?" in repo.get_scene("B1")["quick_prompts"]
 
     # 2. Local fallback matches the new Q&A IDs in A1 and B2
@@ -1241,3 +1241,490 @@ def test_act_c_to_f_local_fallback_dm_and_combat_planner() -> None:
     mgr.start_combat("FB_CF", return_scene="F1", encounter_id="KAEW_FINAL_BOSS")
     plan = engine._local_fallback_combat_action(room, p1, "คลายปมเกราะบนกำไลทองเหลืองตามตำรา")
     assert plan.action_id == "ritual"
+
+
+def test_guideline_snapshot_inspectables_combines_and_readiness() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    room, _, _ = mgr.add_player("GUIDE01", "sid_1", "เอก", "investigator", start_act="A")
+    mgr.start_game("GUIDE01")
+
+    snap0 = mgr.serialize_public_state(room)
+    g0 = snap0["guideline"]
+    assert g0["act"] == "A"
+    assert g0["scene_id"] == "A1"
+    assert g0["scene_goal"]
+    assert g0["ready_to_advance"] is False
+    assert g0["combine_hints"] == []  # No spoilers before holding required items
+    assert any(obj["id"] == "a1_folder_paper" and obj["inspected"] is False for obj in g0["inspectables"])
+
+    # Inspect scene object -> marks inspected, unlocks clues + missing_report_copy
+    res_obj = mgr.inspect_dossier_target("GUIDE01", "sid_1", "scene_object", "a1_folder_paper")
+    assert "missing_report_copy" in res_obj["unlocked_items"]
+    assert "headman_files_exist" in room.clues_found
+
+    # Inspect held inventory item
+    res_inv = mgr.inspect_dossier_target("GUIDE01", "sid_1", "inventory", "missing_report_copy")
+    assert "สำเนาใบรับแจ้ง" in res_inv["event"]["subtitle"]
+
+    # Hold both 2534 items in Act E -> combine recipe becomes ready and unlocks H1 clues
+    room_e, _, _ = mgr.add_player("GUIDE_E", "sid_e", "เอก", "investigator", start_act="E")
+    mgr.start_game("GUIDE_E")
+    g_e0 = mgr.compute_guideline_snapshot(room_e)
+    assert any("ห้องใต้ถุน" in msg for msg in g_e0["missing_recommended"])
+    assert any(c["id"] == "combine_floodgate_and_prayer_book" and c["ready"] and not c["completed"] for c in g_e0["combine_hints"])
+
+    res_comb = mgr.inspect_dossier_target("GUIDE_E", "sid_e", "combine", "combine_floodgate_and_prayer_book")
+    assert "flood_timeline_confirmed" in res_comb["unlocked_clues"]
+    g_e1 = mgr.compute_guideline_snapshot(room_e)
+    assert any(c["id"] == "combine_floodgate_and_prayer_book" and c["completed"] for c in g_e1["combine_hints"])
+
+
+def test_freedom_fixes_d4_f1_act_a_board_and_telegraphs() -> None:
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    engine = AIDMEngine()
+
+    # 1. Act A board_move syncs A1 <-> A2 and keeps board_node synced on grove warning
+    room_a, _, _ = mgr.add_player("FREE_A", "s_a", "เอก", "investigator", start_act="A")
+    mgr.start_game("FREE_A")
+    mgr.move_board_node("FREE_A", "banana_grove_edge", "เอก")
+    assert room_a.current_scene == "A1"
+    assert room_a.board_node == "sala"
+    mgr.move_board_node("FREE_A", "company_van", "เอก")
+    assert room_a.current_scene == "A2"
+    assert room_a.board_node == "company_van"
+    mgr.move_board_node("FREE_A", "sala", "เอก")
+    assert room_a.current_scene == "A1"
+    assert room_a.board_node == "sala"
+
+    # 2. A1 fallback checks INT files before generic PER observe; B1 2534 stays in B1 when eligible
+    d_int = engine._local_fallback_decision(room_a, mgr, "ตรวจดูรายละเอียดใบรับแจ้งคนหาย")
+    assert d_int.requested_check_id == "A1_INT_FILES"
+
+    room_b, _, _ = mgr.add_player("FREE_B", "s_b", "พลอย", "medium", start_act="B")
+    mgr.start_game("FREE_B")
+    room_b.clues_found.append("flood_photo_seen")
+    d_b1_2534 = engine._local_fallback_decision(room_b, mgr, "ถามวิชัยเรื่องน้ำท่วมปี 2534")
+    assert d_b1_2534.selected_audio_id == "b1_qa_wichai_flood_kaew"
+    assert room_b.current_scene == "B1"
+
+    # 3. D4 does NOT force combat on entry; F1 allows inspecting table before starting boss combat
+    room_d, _, _ = mgr.add_player("FREE_D", "s_d", "เอก", "investigator", start_act="D")
+    mgr.start_game("FREE_D")
+    mgr._advance_scene(room_d, "D3")
+    mgr.validate_and_apply_decision(
+        room_d,
+        DMDecision(mode="improvise", character="DM", state_updates=StateUpdates(current_scene="D4")),
+        "เอก",
+    )
+    assert room_d.current_scene == "D4"
+    assert room_d.combat is None
+    d_d4_neg = engine._local_fallback_decision(room_d, mgr, "เจรจาขอหยุดสู้ พวกเราจะไปช่วยคนหาย")
+    assert d_d4_neg.selected_audio_id == "d4_reconcile_to_d5"
+
+    d_d4_fight = engine._local_fallback_decision(room_d, mgr, "เปิดฉากต่อสู้รับมือแม่แก้ว")
+    assert d_d4_fight.action_kind == "combat"
+    mgr.validate_and_apply_decision(room_d, d_d4_fight, "เอก")
+    assert room_d.combat is not None and room_d.combat.encounter_id == "KAEW_SHIELDED_SHADOW"
+    assert room_d.combat.telegraph is not None
+    assert "ผีเงาจมน้ำ" not in room_d.combat.telegraph["hint"]
+    assert all("ตำรา" not in f["hint"] for f in room_d.combat.environment_features)
+
+    # 4. F1 table inspect does not force combat; combat telegraph & goal use KAEW_FINAL_BOSS & gate ritual_plan
+    room_f, _, _ = mgr.add_player("FREE_F", "s_f", "เอก", "investigator", start_act="F")
+    mgr.start_game("FREE_F")
+    room_f.case_flags["ritual_plan"] = "unknown"
+    d_f1_insp = engine._local_fallback_decision(room_f, mgr, "ดูจุดเชื่อมด้ายบนโต๊ะทั้งสามจุดก่อนลงมือ")
+    assert d_f1_insp.action_kind == "inspect"
+    mgr.validate_and_apply_decision(room_f, d_f1_insp, "เอก")
+    assert room_f.combat is None
+
+    d_f1_fight = engine._local_fallback_decision(room_f, mgr, "เข้าสู้/ทำพิธีคลายเกราะ 3 ขั้นกับแม่แก้วเลย!")
+    assert d_f1_fight.action_kind == "combat"
+    mgr.validate_and_apply_decision(room_f, d_f1_fight, "เอก")
+    assert room_f.combat is not None and room_f.combat.encounter_id == "KAEW_FINAL_BOSS"
+    assert room_f.combat.telegraph is not None
+    assert "ผีเงาจมน้ำ" not in room_f.combat.telegraph["hint"]
+    assert all("1) คุมแรงสะท้อน" not in f["hint"] for f in room_f.combat.environment_features)
+    snap_f = mgr.serialize_public_state(room_f)
+    assert snap_f["combat"]["pdef"] == 14
+    assert snap_f["combat"]["ritual_plan"] == "unknown"
+    assert "คลายเกราะ" in (snap_f["guideline"]["combat_goal"] or "")
+
+    # 5. Act A combat features never leak Mae Kaew / 2534
+    mgr.start_combat("FREE_A", return_scene="A3", encounter_id="DROWNED_ECHO")
+    assert room_a.combat is not None
+    for feat in room_a.combat.environment_features:
+        assert "แม่แก้ว" not in feat["hint"] and "2534" not in feat["sample"]
+
+
+def test_qa_round1_fixes_missing_leads_b1_fallbacks_and_dossier_guard() -> None:
+    import asyncio
+    from backend import main as app_main
+
+    repo = ScenarioRepository()
+    mgr = RoomManager(repo)
+    engine = AIDMEngine()
+
+    # 1. Pure Act-exit leads (empty done_when_*) never populate missing_recommended when ready_to_advance=True
+    exit_checks = [
+        ("EXIT_A", "A3", ["location_headman_house"]),
+        ("EXIT_C", "C5", ["boonmee_thread_warning", "knows_wichai_saved"]),
+        ("EXIT_D", "D5", ["shrine_three_names", "cart_tracks_to_house"]),
+        ("EXIT_E", "E6", ["hostages_found", "ritual_bracelet_core", "wichai_debt_evidence", "wichai_confronted"]),
+    ]
+    for code, scene_id, clues in exit_checks:
+        r, _, _ = mgr.add_player(code, f"s_{code}", "เอก", "investigator", start_act=scene_id[0])
+        mgr.start_game(code)
+        r.current_scene = scene_id
+        r.visited_scenes = [scene_id]
+        for clue_id in clues:
+            if clue_id not in r.clues_found:
+                r.clues_found.append(clue_id)
+        g = mgr.compute_guideline_snapshot(r)
+        assert g["ready_to_advance"] is True, f"{scene_id} should be ready"
+        assert g["missing_recommended"] == [], f"{scene_id} had unexpected missing: {g['missing_recommended']}"
+
+    # 2. B1 initial missing_recommended has no duplicate file lead and no B2 porch witness spoiler
+    r_b, _, _ = mgr.add_player("QA_B1", "s_b1", "เอก", "investigator", start_act="B")
+    mgr.start_game("QA_B1")
+    g_b0 = mgr.compute_guideline_snapshot(r_b)
+    assert len(g_b0["missing_recommended"]) == 1
+    assert g_b0["missing_recommended"][0] == "ตรวจแฟ้มคนหายและแผนที่บนโต๊ะกลางห้อง"
+    assert all("ชานบ้าน" not in m and "พยาน" not in m for m in g_b0["missing_recommended"])
+
+    r_b.clues_found.append("don_house_location")
+    g_b1 = mgr.compute_guideline_snapshot(r_b)
+    assert g_b1["missing_recommended"] == ["ลองเดินคุยและสำรวจมุมอื่นในบ้านผู้ใหญ่ให้ครบก่อนเดินทางต่อ"]
+
+    # 3. E6 H1 prompt triggers H1_FLOOD_TIMELINE (never ending_triggered='act_e_complete'), even if resolved
+    r_e6, _, _ = mgr.add_player("QA_E6", "s_e6", "เอก", "investigator", start_act="E")
+    mgr.start_game("QA_E6")
+    r_e6.current_scene = "E6"
+    r_e6.visited_scenes = ["E1", "E2", "E4", "E6"]
+    d_e6 = engine._local_fallback_decision(
+        r_e6, mgr, "เช็กและเทียบเอกสารปี 2534 ให้เรียบร้อยก่อนลงมือปลดกำไล"
+    )
+    assert d_e6.requested_check_id == "H1_FLOOD_TIMELINE"
+    assert not (d_e6.state_updates and d_e6.state_updates.ending_triggered)
+    r_e6.resolved_checks["H1_FLOOD_TIMELINE"] = {"success": True}
+    d_e6_after = engine._local_fallback_decision(
+        r_e6, mgr, "เช็กและเทียบเอกสารปี 2534 ให้เรียบร้อยก่อนลงมือปลดกำไล"
+    )
+    assert not (d_e6_after.state_updates and d_e6_after.state_updates.ending_triggered)
+
+    # 4. E4 combine matches combine_floodgate_and_prayer_book when multiple recipes are ready
+    r_e4, _, _ = mgr.add_player("QA_E4", "s_e4", "เอก", "investigator", start_act="E")
+    mgr.start_game("QA_E4")
+    r_e4.current_scene = "E4"
+    d_comb = engine._local_fallback_decision(r_e4, mgr, "เชื่อมโยงเอกสารปี 2534")
+    assert d_comb.action_kind == "combine"
+    assert d_comb.inspect_target_id == "combine_floodgate_and_prayer_book"
+
+    # 5. Rewritten quick_prompts & inspectables never hit local_fallback_generic
+    r_c, _, _ = mgr.add_player("QA_C", "s_c", "เอก", "investigator", start_act="C")
+    mgr.start_game("QA_C")
+    d_c1_desk = engine._local_fallback_decision(r_c, mgr, "เดินเข้าไปค้นโต๊ะทำงานและกองแฟ้มของดล")
+    assert d_c1_desk.selected_audio_id == "c1_search_desk_to_c2"
+    d_c1_desk_obj = engine._local_fallback_decision(r_c, mgr, "ค้นดูกองแฟ้มและกระดาษที่วางค้างไว้")
+    assert d_c1_desk_obj.action_kind == "inspect" and d_c1_desk_obj.inspect_target_id == "c1_desk_papers"
+
+    d_c1_hall = engine._local_fallback_decision(r_c, mgr, "ลองเดินสำรวจรอบห้องโถงและมุมอับในบ้านดูว่ามีร่องรอยอะไรอีกไหม")
+    assert d_c1_hall.state_updates and d_c1_hall.state_updates.current_scene == "C3"
+
+    r_c.current_scene = "C3"
+    d_c3_floor = engine._local_fallback_decision(r_c, mgr, "เปิดแผ่นไม้ใต้พื้นบ้านดูว่าอะไรเคาะอยู่ข้างล่าง")
+    assert d_c3_floor.action_kind == "inspect" and d_c3_floor.inspect_target_id == "c3_damp_floor"
+
+    r_c.current_scene = "C4"
+    d_c4_steady = engine._local_fallback_decision(r_c, mgr, "ตั้งหลักเผชิญหน้าหรือลองพูดเรียกสติร่างตรงหน้า")
+    assert d_c4_steady.requested_check_id == "C4_DROWNED_ECHO_VISION"
+    r_c.resolved_checks["C4_DROWNED_ECHO_VISION"] = {"success": True}
+    d_c4_steady_2 = engine._local_fallback_decision(r_c, mgr, "ตั้งหลักเผชิญหน้าหรือลองพูดเรียกสติร่างตรงหน้า")
+    assert d_c4_steady_2.reason == "local_fallback_c4_steady"
+
+    r_d, _, _ = mgr.add_player("QA_D", "s_d", "เอก", "investigator", start_act="D")
+    mgr.start_game("QA_D")
+    d_d1_back = engine._local_fallback_decision(r_d, mgr, "ถอยกลับออกไปทางหน้าสวน")
+    assert d_d1_back.reason == "local_fallback_d1_retreat"
+
+    r_d.current_scene = "D2"
+    d_d2_tags = engine._local_fallback_decision(r_d, mgr, "ดูป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องหลังโคนต้นกล้วย")
+    assert d_d2_tags.action_kind == "inspect" and d_d2_tags.inspect_target_id == "d2_shrine_tags_strap"
+
+    d_d2_back = engine._local_fallback_decision(r_d, mgr, "อ้อมไปสำรวจพื้นที่ด้านหลังศาลต่อ")
+    assert d_d2_back.selected_audio_id == "d2_move_to_d3"
+
+    r_e1, _, _ = mgr.add_player("QA_E1", "s_e1", "เอก", "investigator", start_act="E")
+    mgr.start_game("QA_E1")
+    d_e1_yard = engine._local_fallback_decision(r_e1, mgr, "ตรวจรอบเรือนไม้และจุดจอดรถเข็น")
+    assert d_e1_yard.reason == "local_fallback_e1_yard"
+
+    r_f5, _, _ = mgr.add_player("QA_F5", "s_f5", "เอก", "investigator", start_act="F")
+    mgr.start_game("QA_F5")
+    r_f5.current_scene = "F5"
+    d_f5_detain = engine._local_fallback_decision(r_f5, mgr, "คุมตัววิชัยไว้ให้พ้นทางแม่แก้ว เพื่อพาตัวไปรับโทษตามกฎหมาย")
+    assert d_f5_detain.reason == "local_fallback_f5_detain_wichai"
+
+    # 6. on_dossier_inspect rejects unstarted room without mutating clues_found
+    room_guard, _, _ = mgr.add_player("QA_UNSTARTED", "sid_unstarted", "เอก", "investigator", start_act="A")
+    assert room_guard.started is False
+    emitted: list[tuple[str, Any, dict[str, Any]]] = []
+    orig_mgr = app_main.room_manager
+    orig_emit = app_main.sio.emit
+
+    async def fake_emit(event: str, payload: Any, **kwargs: Any) -> None:
+        emitted.append((event, payload, kwargs))
+
+    app_main.room_manager = mgr
+    app_main.sio.emit = fake_emit
+    try:
+        asyncio.run(
+            app_main.on_dossier_inspect(
+                "sid_unstarted",
+                {"target_type": "scene_object", "target_id": "a1_folder_paper"},
+            )
+        )
+    finally:
+        app_main.room_manager = orig_mgr
+        app_main.sio.emit = orig_emit
+
+    assert emitted and emitted[0][0] == "dm:error"
+    assert room_guard.clues_found == []
+    assert room_guard.inspected_objects == []
+
+
+def test_phase3_universal_three_pillar_dice_rules(monkeypatch: pytest.MonkeyPatch) -> None:
+    import asyncio
+    from backend import main as app_main
+
+    repo = ScenarioRepository()
+    repo.clues_catalog["need_clue"] = {"label": "Need", "detail": "need"}
+    repo.clues_catalog["bypass_clue"] = {"label": "Bypass", "detail": "bypass"}
+    repo.clues_catalog["p3_full_clue"] = {"label": "Full", "detail": "full"}
+    repo.clues_catalog["p3_fail_consolation"] = {"label": "FailLead", "detail": "fail lead"}
+    repo.items_catalog["need_item"] = {"label": "NeedItem", "detail": "need"}
+    repo.items_catalog["extra_item"] = {"label": "ExtraItem", "detail": "extra"}
+
+    repo.dice_checks["TEST_P3_GATE"] = {
+        "id": "TEST_P3_GATE",
+        "title": "ทดสอบเงื่อนไข 3 เสาหลัก",
+        "stat": "PER",
+        "dc": 16,
+        "partial_margin": 3,
+        "requires": {
+            "clues": ["need_clue"],
+            "items": ["need_item"],
+            "min_trust": {"ประเสริฐ": 1},
+            "flags": {"need_flag": True},
+            "missing_hint": "ยังขาดเบาะแส ไอเท็ม ความไว้ใจ และธงเงื่อนไขก่อนตรวจจุดนี้",
+        },
+        "bypass_if": {
+            "clues": ["bypass_clue"],
+            "reason_th": "หลักฐานครบสมบูรณ์แล้ว จึงยืนยันผลได้ทันทีโดยไม่ต้องทอยเต๋า",
+        },
+        "alt_stats": {"INT": {"dc_delta": -2, "label": "วิเคราะห์ข้อมูลแทน (INT)"}},
+        "allow_focus": True,
+        "allow_assist": True,
+        "bonus_cap": 2,
+        "retry": {"on_failure": True, "requires_new_clue_or_item": True, "max_attempts": 2},
+        "recipient_scope": "party",
+        "audio_ids": {"full": "a1_inspect_report_free", "partial": "a1_qa_order", "failure": "a1_qa_order"},
+        "tier_effects": {
+            "full": {
+                "unlock_clues": ["p3_full_clue"],
+                "set_flags": {"p3_done": True},
+                "note_th": "ยืนยันความจริงครบถ้วนแล้ว",
+            },
+            "failure": {
+                "unlock_clues": ["p3_fail_consolation"],
+                "sanity_delta": -1,
+                "trust_delta": {"ประเสริฐ": -1},
+                "set_flags": {"p3_alert": True},
+                "note_th": "พลาดจังหวะ (-1 สติ, ความเชื่อใจประเสริฐ -1)",
+            },
+        },
+    }
+    repo.scenes["A1"]["available_checks"].append("TEST_P3_GATE")
+
+    mgr = RoomManager(repo)
+    engine = AIDMEngine()
+    room, p1, _ = mgr.add_player("P3_ROOM", "s1", "เอก", repo.roles[0]["id"], start_act="A")
+    _, p2, _ = mgr.add_player("P3_ROOM", "s2", "พลอย", repo.roles[1]["id"], start_act="A")
+    _, p3, _ = mgr.add_player("P3_ROOM", "s3", "ต้นกล้า", repo.roles[2]["id"], start_act="A")
+    mgr.start_game("P3_ROOM")
+
+    # 1. Requires blocks check cleanly with missing_hint across eligibility, apply, and prompt/fallback
+    elig0 = mgr.check_eligibility(room, "TEST_P3_GATE")
+    assert elig0["eligible"] is False and elig0["blocked_reason"] == "missing_requires"
+    assert "ยังขาดเบาะแส" in elig0["missing_hint"]
+    assert all(c["id"] != "TEST_P3_GATE" for c in mgr.get_available_checks(room))
+    assert any(b["id"] == "TEST_P3_GATE" for b in mgr.get_blocked_checks(room))
+
+    blocked_out = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(mode="improvise", character="DM", improvised_text="ลองทอยดู", requested_check_id="TEST_P3_GATE"),
+        p1.name,
+        actor_sid=p1.sid,
+    )
+    assert room.pending_check is None
+    assert "ยังขาดเบาะแส" in blocked_out["live_tts_text"]
+
+    # Empty bypass_if placeholder must NOT bypass
+    repo.dice_checks["TEST_EMPTY_BYPASS"] = {
+        "id": "TEST_EMPTY_BYPASS",
+        "title": "ทดสอบ bypass ว่าง",
+        "stat": "PER",
+        "dc": 10,
+        "bypass_if": {"clues": [], "items": [], "flags": {}},
+        "audio_ids": {"full": "a1_qa_order", "partial": "a1_qa_order", "failure": "a1_qa_order"},
+    }
+    repo.scenes["A1"]["available_checks"].append("TEST_EMPTY_BYPASS")
+    assert mgr.check_eligibility(room, "TEST_EMPTY_BYPASS")["bypassed"] is False
+
+    # Satisfy requires
+    room.clues_found.append("need_clue")
+    room.inventory.append("need_item")
+    room.npc_trust["ประเสริฐ"] = 2
+    room.case_flags["need_flag"] = True
+    elig1 = mgr.check_eligibility(room, "TEST_P3_GATE")
+    assert elig1["eligible"] is True and elig1["bypassed"] is False
+
+    # 2. Actor lock + alt_stats + Focus reservation + Assist cap/advantage + handoff + dice:prep
+    pend = mgr.trigger_check(room, "TEST_P3_GATE", p1.name, requested_by_sid=p1.sid)
+    assert pend is not None
+    assert pend["check_id"] == "TEST_P3_GATE"
+    assert pend["requested_by_sid"] == p1.sid
+    assert pend["requested_by_public_id"] == p1.public_id
+    assert [opt["stat"] for opt in pend["alt_stats"]] == ["PER", "INT"]
+
+    with pytest.raises(ValueError, match="ผู้ทอย"):
+        mgr.resolve_dice_roll("P3_ROOM", p2.sid)
+    with pytest.raises(ValueError, match="ผู้ทอย"):
+        mgr.prep_pending_check("P3_ROOM", p2.sid, "select_stat", stat="INT")
+
+    mgr.prep_pending_check("P3_ROOM", p1.sid, "select_stat", stat="INT")
+    assert room.pending_check["stat"] == "INT" and room.pending_check["dc"] == 14
+
+    mgr.prep_pending_check("P3_ROOM", p1.sid, "toggle_focus")
+    assert room.pending_check["focus_committed"] is True and room.pending_check["effective_bonus"] == 2
+    assert p1.focus == p1.max_focus  # reserved, not deducted until roll
+
+    mgr.prep_pending_check("P3_ROOM", p2.sid, "assist", mode="bonus")
+    assert room.pending_check["effective_bonus"] == 2  # non-stacking cap!
+    with pytest.raises(ValueError, match="สูงสุด 1 คน"):
+        mgr.prep_pending_check("P3_ROOM", p3.sid, "assist", mode="advantage")
+
+    mgr.prep_pending_check("P3_ROOM", p2.sid, "assist", mode="advantage")
+    assert room.pending_check["assist_mode"] == "advantage" and room.pending_check["effective_bonus"] == 2
+
+    # Handoff & hand back
+    mgr.prep_pending_check("P3_ROOM", p1.sid, "handoff", target_public_id=p2.public_id)
+    assert room.pending_check["requested_by_sid"] == p2.sid
+    assert room.pending_check["focus_committed"] is False
+    assert room.pending_check["assist_by_sid"] is None
+    mgr.prep_pending_check("P3_ROOM", p2.sid, "handoff", target_public_id=p1.public_id)
+    mgr.prep_pending_check("P3_ROOM", p1.sid, "toggle_focus")
+    mgr.prep_pending_check("P3_ROOM", p2.sid, "assist", mode="advantage")
+
+    # Test Socket.IO dice:prep event emits system:notice + room:state (and dm:error on bad action)
+    emitted: list[tuple[str, Any, dict[str, Any]]] = []
+    orig_mgr = app_main.room_manager
+    orig_emit = app_main.sio.emit
+
+    async def fake_emit(event: str, payload: Any, **kwargs: Any) -> None:
+        emitted.append((event, payload, kwargs))
+
+    app_main.room_manager = mgr
+    app_main.sio.emit = fake_emit
+    try:
+        asyncio.run(app_main.on_dice_prep(p1.sid, {"action": "select_stat", "stat": "INT"}))
+        asyncio.run(app_main.on_dice_prep(p1.sid, {"action": "assist"}))
+    finally:
+        app_main.room_manager = orig_mgr
+        app_main.sio.emit = orig_emit
+
+    assert any(ev == "system:notice" for ev, _, _ in emitted)
+    assert any(ev == "room:state" for ev, _, _ in emitted)
+    assert any(ev == "dm:error" for ev, _, _ in emitted)
+
+    # 3. Failure roll consumes 1 focus, rolls 2d20, applies failure tier_effects, snapshots evidence, gates retry
+    rolls_seq = iter([0, 1])  # d20 = [1, 2] -> max 2 (+4 INT +2 Focus = 8 < partial_min 9)
+    monkeypatch.setattr("backend.state_manager.secrets.randbelow", lambda _n: next(rolls_seq))
+    p1_san_before = p1.sanity
+    p2_san_before = p2.sanity
+    res_fail = mgr.resolve_dice_roll("P3_ROOM", p1.sid)
+    r_fail = res_fail["roll"]
+    assert r_fail["tier"] == "failure"
+    assert r_fail["d20_rolls"] == [1, 2] and r_fail["d20"] == 2
+    assert r_fail["bonus"] == 2
+    assert p1.focus == p1.max_focus - 1
+    assert p1.sanity == p1_san_before - 1 and p2.sanity == p2_san_before - 1
+    assert room.npc_trust["ประเสริฐ"] == 1
+    assert room.case_flags.get("p3_alert") is True
+    assert "p3_fail_consolation" in room.clues_found
+    assert r_fail["can_retry_hint"] != ""
+
+    # Immediate retry blocked because no new clue/item gained AFTER failure snapshot
+    elig_retry_blocked = mgr.check_eligibility(room, "TEST_P3_GATE")
+    assert elig_retry_blocked["eligible"] is False and elig_retry_blocked["blocked_reason"] == "needs_new_evidence"
+    assert mgr.trigger_check(room, "TEST_P3_GATE", p1.name) is None
+
+    # Finding a new item unlocks attempt 2; test actor-scoped damage min-1 clamp
+    room.inventory.append("extra_item")
+    elig_retry_ok = mgr.check_eligibility(room, "TEST_P3_GATE")
+    assert elig_retry_ok["eligible"] is True and elig_retry_ok["attempt"] == 2
+
+    repo.dice_checks["TEST_P3_GATE"]["recipient_scope"] = "actor"
+    p1.sanity = 1
+    mgr.trigger_check(room, "TEST_P3_GATE", p1.name, requested_by_sid=p1.sid)
+    assert room.pending_check["attempt"] == 2
+    rolls_seq2 = iter([0])
+    monkeypatch.setattr("backend.state_manager.secrets.randbelow", lambda _n: next(rolls_seq2))
+    res_fail2 = mgr.resolve_dice_roll("P3_ROOM", p1.sid)
+    assert res_fail2["roll"]["can_retry_hint"] == ""  # max_attempts=2 exhausted
+    assert p1.sanity == 1  # min-1 non-lethal horror clamp
+    assert mgr.check_eligibility(room, "TEST_P3_GATE")["blocked_reason"] == "max_attempts"
+
+    # 4. bypass_if auto-resolves without rolling & local fallback propagates missing_hint / bypass_if
+    room.resolved_checks.pop("TEST_P3_GATE", None)
+    room.npc_trust["ประเสริฐ"] = 1
+    room.clues_found.append("bypass_clue")
+    elig_bypass = mgr.check_eligibility(room, "TEST_P3_GATE")
+    assert elig_bypass["eligible"] is True and elig_bypass["bypassed"] is True
+
+    bypass_out = mgr.validate_and_apply_decision(
+        room,
+        DMDecision(mode="improvise", character="DM", improvised_text="ลองเช็กดู", requested_check_id="TEST_P3_GATE"),
+        p1.name,
+        actor_sid=p1.sid,
+    )
+    assert room.pending_check is None
+    assert bypass_out["needs_live_tts"] is False
+    assert bypass_out["bypassed_roll"]["bypassed"] is True
+    assert room.case_flags.get("p3_done") is True
+    assert "p3_full_clue" in room.clues_found
+
+    # Check _local_fallback_decision handles missing_requires & bypass_if on E4_BRACELET_DECODE
+    repo.dice_checks["E4_BRACELET_DECODE"]["requires"] = {
+        "items": ["ritual_grimoire"],
+        "missing_hint": "ต้องตรวจหาตำราพิธีบนโต๊ะก่อนจึงจะถอดลำดับได้",
+    }
+    repo.dice_checks["E4_BRACELET_DECODE"]["bypass_if"] = {
+        "clues": ["ritual_plan_prepared"],
+        "reason_th": "มีแผน 3 ขั้นอยู่แล้วจึงไม่ต้องทอยซ้ำ",
+    }
+    r_e4, _, _ = mgr.add_player("P3_E4", "s_e4p3", "เอก", "investigator", start_act="E")
+    mgr.start_game("P3_E4")
+    r_e4.current_scene = "E4"
+    r_e4.inventory = [i for i in r_e4.inventory if i != "ritual_grimoire"]
+    d_e4_miss = engine._local_fallback_decision(r_e4, mgr, "ถอดลำดับตำรากำไล")
+    assert d_e4_miss.requested_check_id is None
+    assert "ตำราพิธีบนโต๊ะ" in (d_e4_miss.improvised_text or "")
+
+    r_e4.inventory.append("ritual_grimoire")
+    r_e4.clues_found.append("ritual_plan_prepared")
+    d_e4_byp = engine._local_fallback_decision(r_e4, mgr, "ถอดลำดับตำรากำไล")
+    assert d_e4_byp.requested_check_id == "E4_BRACELET_DECODE"
+    assert "ไม่ต้องทอย" in (d_e4_byp.improvised_text or "")

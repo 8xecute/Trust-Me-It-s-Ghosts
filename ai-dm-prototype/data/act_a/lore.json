@@ -72,7 +72,7 @@
     {
       "id": "company_van",
       "name": "รถตู้บริษัท",
-      "subtitle": "ประตูข้างเปิดค้าง / วิทยุสื่อสาร",
+      "subtitle": "รถทีมสืบสวนจอดเปิดไฟหน้าริมทาง",
       "scene": "A2",
       "x": 45,
       "y": 46,
@@ -83,7 +83,7 @@
     {
       "id": "headman_house",
       "name": "บ้านผู้ใหญ่บ้าน",
-      "subtitle": "แฟ้มแผนที่ & พยาน (จบบท A)",
+      "subtitle": "แฟ้มข้อมูลและแผนที่หมู่บ้าน",
       "scene": "A3",
       "x": 76,
       "y": 30,
@@ -97,7 +97,7 @@
     {
       "id": "banana_grove_edge",
       "name": "ปากทางสวนกล้วย",
-      "subtitle": "ทางมืดไร้แผนที่ (เสี่ยงเจอผี!)",
+      "subtitle": "แนวสวนกล้วยมืดทึบหลังหมู่บ้าน",
       "scene": "A3",
       "x": 70,
       "y": 72,
@@ -147,7 +147,93 @@
         "คนหายมีใครบ้าง แล้วหายไปแถวไหนครับ?",
         "ขอดูสำเนาใบรับแจ้งคนหายหน่อยได้ไหม?",
         "ผมขอสังเกตท่าทีของผู้ใหญ่ประเสริฐและบ้านรอบ ๆ",
-        "ขอดูแฟ้มในมือผู้ใหญ่ตรงข้างรถตู้เลยได้ไหมครับ?"
+        "ขอดูแฟ้มข้อมูลในมือผู้ใหญ่เพิ่มเติมหน่อยครับ"
+      ],
+      "guideline": {
+        "main_objective": "สอบถามข้อมูลคนหายจากผู้ใหญ่ประเสริฐ และตรวจเอกสารเบื้องต้นก่อนขยับไปดูแฟ้มเพิ่มเติม",
+        "ready_label": "ได้ข้อมูลพื้นฐานครบแล้ว — ขอเปิดดูแฟ้มเพิ่มเติมเพื่อเดินเรื่องต่อ",
+        "ready_when_any_clues": [],
+        "ready_when_all_clues": [
+          "missing_names",
+          "headman_files_exist"
+        ],
+        "leads": [
+          {
+            "id": "a1_lead_missing",
+            "label": "สอบถามลำดับและบริเวณที่คนหายทั้งสามหายตัวไป",
+            "kind": "main",
+            "done_when_clues": [
+              "banana_grove_area",
+              "headman_files_exist"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "คนหายมีใครบ้าง แล้วหายไปแถวไหนครับ?"
+          },
+          {
+            "id": "a1_lead_report",
+            "label": "ขอดูสำเนาใบรับแจ้งคนหายจากผู้ใหญ่ประเสริฐ",
+            "kind": "main",
+            "done_when_clues": [
+              "headman_files_exist"
+            ],
+            "done_when_checks": [
+              "A1_INT_FILES"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ขอดูสำเนาใบรับแจ้งคนหายหน่อยได้ไหม?"
+          },
+          {
+            "id": "a1_lead_observe",
+            "label": "สังเกตท่าทีของประเสริฐและสภาพบ้านเรือนรอบศาลา",
+            "kind": "optional",
+            "done_when_clues": [
+              "prasert_nervous_clue"
+            ],
+            "done_when_checks": [
+              "A1_PER_OBSERVE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ผมขอสังเกตท่าทีของผู้ใหญ่ประเสริฐและบ้านรอบ ๆ"
+          },
+          {
+            "id": "a1_lead_open_folder",
+            "label": "ขอเปิดดูรายละเอียดในแฟ้มที่ผู้ใหญ่ถืออยู่",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "A2",
+              "A3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ขอดูแฟ้มข้อมูลในมือผู้ใหญ่เพิ่มเติมหน่อยครับ"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "a1_folder_paper",
+          "label": "สำเนาใบรับแจ้งคนหายในมือประเสริฐ",
+          "description": "กระดาษแจ้งความระบุชื่อ ดล นิด และเพิ่ม พร้อมเวลาพบตัวครั้งสุดท้ายคร่าว ๆ ส่วนแผนที่หมู่บ้านและแฟ้มเต็มอยู่ที่บ้านผู้ใหญ่",
+          "unlock_clues": [
+            "missing_names",
+            "headman_files_exist"
+          ],
+          "unlock_items": [
+            "missing_report_copy"
+          ]
+        },
+        {
+          "id": "a1_village_houses",
+          "label": "บ้านเรือนรอบศาลาที่ติดผ้ายันต์",
+          "description": "หลายหลังปิดหน้าต่างเงียบ ติดผ้ายันต์หน้าประตู และวางถุงสัมภาระกองหน้าชานคล้ายเตรียมย้ายหนี",
+          "unlock_clues": [],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามประเสริฐพูดเรื่อง 'ผู้หญิงชุดเขียว' หรือ 'แก้ว' เองเด็ดขาด เว้นแต่ผู้เล่นจะถามถึงผู้หญิงชุดเขียวโดยตรง (ใช้ a1_qa_green_lady)",
@@ -173,6 +259,7 @@
         "a2_prasert_shock"
       ],
       "allowed_next_scenes": [
+        "A1",
         "A3"
       ],
       "allowed_clues": [
@@ -191,8 +278,72 @@
       "quick_prompts": [
         "เมื่อกี้วิทยุพูดว่าอะไร เป็นเสียงใคร?",
         "ลองเปิดบันทึกย้อนหลังหรือตรวจเครื่องวิทยุ",
-        "ตั้งจิตสัมผัสพลังจากเสียงในวิทยุสื่อสาร",
-        "ไปดูแฟ้มที่บ้านผู้ใหญ่กันต่อเถอะ"
+        "ลองตั้งสมาธิสัมผัสคลื่นแปลก ๆ รอบวิทยุสื่อสาร",
+        "ออกจากตรงนี้ไปคุยต่อในที่สว่างกันไหมครับ?"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจเครื่องวิทยุสื่อสารหลังเกิดเสียงปริศนา แล้วคุยกับประเสริฐเพื่อย้ายไปคุยต่อในที่สว่าง",
+        "ready_label": "ตรวจเหตุวิทยุแล้ว — พร้อมย้ายสู่บ้านผู้ใหญ่ประเสริฐ",
+        "ready_when_any_clues": [
+          "location_headman_house"
+        ],
+        "ready_when_all_clues": [
+          "radio_no_recording"
+        ],
+        "leads": [
+          {
+            "id": "a2_lead_replay",
+            "label": "เปิดบันทึกย้อนหลังหรือตรวจเครื่องวิทยุสื่อสาร",
+            "kind": "main",
+            "done_when_clues": [
+              "radio_no_recording"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองเปิดบันทึกย้อนหลังหรือตรวจเครื่องวิทยุ"
+          },
+          {
+            "id": "a2_lead_echo",
+            "label": "สัมผัสคลื่นแปลก ๆ รอบวิทยุสื่อสาร",
+            "kind": "optional",
+            "done_when_clues": [
+              "radio_memory_echo",
+              "radio_supernatural_chill"
+            ],
+            "done_when_checks": [
+              "A2_RADIO_ECHO"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองตั้งสมาธิสัมผัสคลื่นแปลก ๆ รอบวิทยุสื่อสาร"
+          },
+          {
+            "id": "a2_lead_move",
+            "label": "คุยกับประเสริฐเพื่อย้ายไปคุยต่อในบ้านที่เปิดไฟสว่าง",
+            "kind": "main",
+            "done_when_clues": [
+              "location_headman_house"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "A3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ออกจากตรงนี้ไปคุยต่อในที่สว่างกันไหมครับ?"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "a2_van_radio",
+          "label": "เครื่องวิทยุสื่อสารหน้ารถตู้",
+          "description": "ตัวเครื่องเปิดค้างไว้ทั้งที่ไม่มีสายสนทนา เมื่อกดฟังซ้ำมีเพียงเสียงซ่า ไม่พบบันทึกเสียงพูดอยู่ในเทป",
+          "unlock_clues": [
+            "radio_no_recording"
+          ],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามเฉลยว่าเสียงในวิทยุเป็นเสียงของแม่แก้วหรือคนหายคนใด ก่อนเช็กหรือนอกบท",
@@ -215,7 +366,10 @@
       "intro_audio_ids": [
         "a3_intro_prasert"
       ],
-      "allowed_next_scenes": [],
+      "allowed_next_scenes": [
+        "A1",
+        "A2"
+      ],
       "allowed_clues": [
         "location_headman_house",
         "witnesses_at_house"
@@ -225,10 +379,53 @@
       "anti_stall_turn_limit": 6,
       "anti_stall_audio_id": "a3_antistall_hint",
       "quick_prompts": [
-        "ที่บ้านผู้ใหญ่มีใครรออยู่บ้าง?",
+        "ที่บ้านผู้ใหญ่มีใครอยู่ด้วยไหมครับ?",
         "ทำไมไม่พาเข้าสวนกล้วยไปเลยตอนนี้?",
         "ตกลง เดินเข้าไปดูแฟ้มในบ้านผู้ใหญ่กัน",
         "ไม่รอแล้ว พวกเราเดินแยกเข้าสวนกล้วยเองเลย!"
+      ],
+      "guideline": {
+        "main_objective": "เข้าบ้านผู้ใหญ่ประเสริฐเพื่อดูแผนที่และแฟ้มคนหายอย่างเป็นระบบ (หลีกเลี่ยงการบุกสวนมืดโดยไร้แผนที่)",
+        "ready_label": "พร้อมเข้าสู่บ้านผู้ใหญ่บ้าน (ACT B)",
+        "ready_when_any_clues": [
+          "location_headman_house"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "a3_lead_who",
+            "label": "สอบถามรายละเอียดก่อนก้าวเข้าบ้านผู้ใหญ่",
+            "kind": "optional",
+            "done_when_clues": [
+              "witnesses_at_house"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ที่บ้านผู้ใหญ่มีใครอยู่ด้วยไหมครับ?"
+          },
+          {
+            "id": "a3_lead_enter",
+            "label": "เดินเข้าไปดูแฟ้มและแผนที่ในบ้านผู้ใหญ่บ้าน",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ตกลง เดินเข้าไปดูแฟ้มในบ้านผู้ใหญ่กัน"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "a3_lit_house",
+          "label": "บ้านไม้สองชั้นที่เปิดไฟสว่าง",
+          "description": "ไฟห้องรับแขกเปิดรอไว้ เห็นเงาคนเตรียมเอกสารอยู่ภายใน และเป็นจุดนัดดูแผนที่หมู่บ้าน",
+          "unlock_clues": [
+            "location_headman_house"
+          ],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามหลุดความลับว่าวิชัยแอบดักฟังหรือเกี่ยวข้องกับการลักพาตัว",
@@ -250,6 +447,52 @@
         "full": "a1_check_per_full",
         "partial": "a1_check_per_partial",
         "failure": "a1_check_per_fail"
+      },
+      "alt_stats": {
+        "SOC": {
+          "dc_delta": 0,
+          "label": "ชวนประเสริฐคุยหว่านล้อมให้หลุดพิรุธ"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "จับสังเกตอาการหลบตาของประเสริฐและบรรยากาศตึงเครียดรอบหมู่บ้านได้ชัด"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "รู้ว่าชาวบ้านกำลังหวาดกลัวและประเสริฐเร่งรีบผิดปกติ แต่ยังไม่เห็นพิรุธชัด"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {
+            "ประเสริฐ": -1
+          },
+          "set_flags": {},
+          "note_th": "ประเสริฐรู้ตัวว่าถูกจ้องจับผิดจึงระวังตัวมากขึ้น (-1 ความเชื่อใจประเสริฐ)"
+        }
       }
     },
     "A1_INT_FILES": {
@@ -264,6 +507,58 @@
         "full": "a1_check_int_full",
         "partial": "a1_check_int_partial",
         "failure": "a1_check_int_fail"
+      },
+      "bypass_if": {
+        "clues": [
+          "report_timeline_gap"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "ทีมยืนยันช่องว่างลำดับเวลาคนหายจากสำเนาและแผนที่แล้ว จึงไม่ต้องทอยตรวจซ้ำ"
+      },
+      "alt_stats": {
+        "PER": {
+          "dc_delta": 0,
+          "label": "กวาดตาไล่จับจุดขาดและรอยลบในสำเนา"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ได้สำเนาใบรับแจ้งและจับช่องว่างลำดับเวลาคนหายทั้ง 3 คืนได้ครบถ้วน"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ได้สำเนาใบรับแจ้งและเห็นลำดับวันหาย แต่ต้องไปเทียบกับแฟ้มที่บ้านผู้ใหญ่ต่อ"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "หมึกในสำเนาจางเกินอ่านละเอียด แต่ยังเก็บสำเนาไว้เทียบที่บ้านผู้ใหญ่ได้"
+        }
       }
     },
     "A2_RADIO_ECHO": {
@@ -278,6 +573,50 @@
         "full": "a2_check_spi_full",
         "partial": "a2_check_spi_partial",
         "failure": "a2_check_spi_fail"
+      },
+      "alt_stats": {
+        "RES": {
+          "dc_delta": 1,
+          "label": "ตั้งจิตนิ่งต้านคลื่นเย็นเพื่อแยกที่มาของเสียง"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "คุมสติได้มั่นคงและแยกออกว่าเป็นคลื่นความทรงจำตกค้าง ไม่ใช่คนพูดสด"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "สัมผัสไอเย็นยะเยือกผ่านวิทยุจนเสียขวัญเล็กน้อย (-1 สติ)"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "สัญญาณซ่าตัดขาดท่ามกลางความกดดันจนประสาทตึงเครียด (-1 สติ)"
+        }
       }
     }
   },

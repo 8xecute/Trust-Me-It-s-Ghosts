@@ -26,7 +26,7 @@
       "id": "filler_prasert_hmm",
       "scene": "*",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว อุทานครุ่นคิดสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],
@@ -48,7 +48,7 @@
       "id": "filler_prasert_hesitate",
       "scene": "*",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว อุทานอ้ำอึ้งสั้นมากคำเดียว",
       "trigger_condition": {
         "requires_clues": [],

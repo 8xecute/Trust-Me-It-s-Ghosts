@@ -46,6 +46,16 @@
   const collapsedClueIds = new Set();
   let unreadClueCount = 0;
   let activeMobileTab = "play";
+  let isGuidelineDrawerOpen = false;
+  let pendingBoardExitNode = null;
+
+  const ACT_EXIT_NODE_IDS = new Set([
+    "headman_house",
+    "road_to_don_house",
+    "c_to_act_d_gate",
+    "d_to_act_e_house",
+    "e_to_act_f_ritual",
+  ]);
 
   // Push-to-Talk & Click-to-Talk (Web Speech API th-TH primary + Gemini Audio STT fallback)
   const SpeechRecognitionCtor =
@@ -291,9 +301,11 @@
     });
 
     const emptyCluesHint =
-      act === "B"
-        ? "ยังไม่มีเบาะแส — สอบถามวิชัย/ต้น หรือตรวจแผนที่และผนังภาพเก่า"
-        : "ยังไม่มีเบาะแส — ลองสอบถามประเสริฐหรือสังเกตพื้นที่";
+      act === "A"
+        ? "ยังไม่มีเบาะแส — สอบถามผู้ใหญ่ประเสริฐหรือสำรวจรอบศาลา"
+        : act === "B"
+          ? "ยังไม่มีเบาะแส — ตรวจแฟ้มบนโต๊ะ หรือพูดคุยกับคนในบ้านผู้ใหญ่"
+          : "ยังไม่มีเบาะแสในบทนี้ — สำรวจสภาพแวดล้อมหรือสอบถามผู้เกี่ยวข้อง";
 
     if (filtered.length === 0) {
       const emptyMsg = clues.length === 0 ? emptyCluesHint : "ไม่พบเบาะแสตามตัวกรองนี้";
@@ -453,7 +465,7 @@
       btn.type = "button";
       btn.className = `active-room-card ${rm.room_code === selectedCode ? "selected" : ""}`;
       const isEmptyRoom = rm.online_count === 0;
-      const roomAct = rm.act || (String(rm.scene_id || "").startsWith("B") ? "B" : "A");
+      const roomAct = rm.act || String(rm.scene_id || "A")[0] || "A";
       const badgeClass = rm.in_combat ? "active-room-badge combat" : "active-room-badge";
       const statusText = isEmptyRoom
         ? "ห้องว่าง"
@@ -810,6 +822,21 @@
     const lastLog = (combat.combat_log || []).slice(-1)[0] || "";
     $("combat-last-log").textContent = lastLog;
 
+    const goalBox = $("combat-goal-box");
+    const goalTextEl = $("combat-goal-text");
+    if (goalBox && goalTextEl) {
+      const primaryGoal = state.guideline?.combat_goal || combat.primary_goal_th || "";
+      const optGoal = combat.optional_goal_th || "";
+      const combinedGoal =
+        optGoal && !primaryGoal.includes(optGoal)
+          ? `${primaryGoal}${primaryGoal ? " · เสริม: " : ""}${optGoal}`
+          : primaryGoal;
+      goalBox.classList.toggle("hidden", !combinedGoal);
+      goalTextEl.textContent = combinedGoal;
+    }
+
+    const pdef = combat.pdef ?? 12;
+    const mdef = combat.mdef ?? 13;
     const strikeMod = Math.max(me?.stats?.BODY ?? 0, me?.stats?.SPI ?? 0);
     const strikeStat = (me?.stats?.BODY ?? 0) >= (me?.stats?.SPI ?? 0) ? "BODY" : "SPI";
     const sootheMod = Math.max(me?.stats?.SOC ?? 0, me?.stats?.SPI ?? 0);
@@ -817,23 +844,30 @@
     if ($("combat-strike-hint")) {
       $("combat-strike-hint").textContent = combat.ritual_shield_up
         ? "เกราะ 3 ชั้นกันดาเมจ! คลายเกราะก่อน"
-        : `ทอย ${strikeStat} +${strikeMod} vs PDEF 12`;
+        : `ทอย ${strikeStat} +${strikeMod} vs PDEF ${pdef}`;
     }
     const ritualBtn = $("combat-ritual-btn");
     if (ritualBtn) {
       ritualBtn.classList.toggle("hidden", !hasRitual);
       if (hasRitual) {
+        const planPrepared = combat.ritual_plan === "prepared";
         const stepLabels = ["1) คุมแรงสะท้อน", "2) แยกสายคำสั่ง", "3) คลายปมเกราะ"];
+        const maxSteps = combat.ritual_max_steps || 3;
+        const currentStepNum = Math.min((combat.ritual_step || 0) + 1, maxSteps);
         $("combat-ritual-btn-title").textContent = combat.ritual_shield_up
-          ? `คลายเกราะ (${stepLabels[combat.ritual_step] || "ขั้นต่อไป"})`
+          ? (planPrepared
+              ? `คลายเกราะ (${stepLabels[combat.ritual_step] || "ขั้นต่อไป"})`
+              : `คลายเกราะกำไล (ขั้นที่ ${currentStepNum}/${maxSteps})`)
           : "ปลดกำไลขั้นสุดท้าย!";
         $("combat-ritual-btn-desc").textContent = combat.ritual_shield_up
-          ? `ขั้น ${combat.ritual_step}/${combat.ritual_max_steps} · ทอย INT/SPI คลายวงป้องกัน`
+          ? (planPrepared
+              ? `ขั้น ${combat.ritual_step}/${maxSteps} · ทอย INT/SPI คลายวงป้องกันตามตำรา`
+              : `ขั้นที่ ${currentStepNum}/${maxSteps} — สังเกตจุดเชื่อมสายด้าย (INT/SPI)`)
           : "Controlled Release — หยุดพิธีโดยไม่ฆ่าแม่แก้ว";
       }
     }
     if ($("combat-soothe-hint")) {
-      $("combat-soothe-hint").textContent = `ทอย ${sootheStat} +${sootheMod} vs MDEF 13`;
+      $("combat-soothe-hint").textContent = `ทอย ${sootheStat} +${sootheMod} vs MDEF ${mdef}`;
     }
     if ($("combat-assist-hint")) {
       const targetName = combat.telegraph?.target_name;
@@ -1038,6 +1072,444 @@
     });
   }
 
+  function setGuidelineDrawerOpen(open) {
+    isGuidelineDrawerOpen = Boolean(open);
+    const banner = $("guideline-banner");
+    const drawer = $("guideline-drawer");
+    const toggleBtn = $("guideline-toggle-btn");
+    banner?.classList.toggle("drawer-open", isGuidelineDrawerOpen);
+    drawer?.classList.toggle("hidden", !isGuidelineDrawerOpen);
+    toggleBtn?.setAttribute("aria-expanded", isGuidelineDrawerOpen ? "true" : "false");
+  }
+
+  function prefillChatInput(promptText) {
+    const clean = String(promptText || "").trim();
+    if (!clean) return;
+    const input = $("chat-input");
+    if (!input) return;
+    if (input.disabled) {
+      showToast("ตอนนี้ช่องคำสั่งยังไม่พร้อมพิมพ์ กรุณารอคิวหรือรอบถัดไป");
+      return;
+    }
+    if (window.innerWidth <= 960 && activeMobileTab !== "play") {
+      setMobileTab("play");
+    }
+    setGuidelineDrawerOpen(false);
+    input.value = clean.slice(0, 300);
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+    showToast("ใส่แนวทางลงช่องแชทแล้ว — ปรับแต่งหรือกดส่งได้ทันที");
+  }
+
+  function emitDossierInspect(targetType, targetId) {
+    if (!socket || !targetId) return;
+    if (!currentState?.started) {
+      showToast("กรุณากดเริ่มบทก่อนสำรวจฉากและหลักฐาน");
+      return;
+    }
+    unlockBrowserAudio();
+    socket.emit("dossier:inspect", {
+      target_type: targetType,
+      target_id: targetId,
+    });
+  }
+
+  function closeBoardExitConfirm() {
+    pendingBoardExitNode = null;
+    $("exit-confirm-modal")?.classList.add("hidden");
+  }
+
+  function openBoardExitConfirm(node, missingLeads) {
+    const modal = $("exit-confirm-modal");
+    const titleEl = $("exit-confirm-title");
+    const listEl = $("exit-confirm-missing-list");
+    if (!modal || !listEl) {
+      socket?.emit("board:move", { node_id: node.id });
+      return;
+    }
+    pendingBoardExitNode = node;
+    if (titleEl) {
+      titleEl.textContent = `ยังไม่ครบเป้าหมายหลักก่อนไป "${node.name}"`;
+    }
+    listEl.innerHTML = "";
+    (missingLeads || []).forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      listEl.appendChild(li);
+    });
+    modal.classList.remove("hidden");
+  }
+
+  function renderLeadList(listEl, leads, emptyText) {
+    if (!listEl) return;
+    listEl.innerHTML = "";
+    if (!leads.length) {
+      const li = document.createElement("li");
+      li.className = "guideline-empty";
+      li.textContent = emptyText;
+      listEl.appendChild(li);
+      return;
+    }
+    leads.forEach((lead) => {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `guideline-lead-btn ${lead.done ? "is-done" : "is-pending"}`;
+
+      const mark = document.createElement("span");
+      mark.className = "guideline-lead-check";
+      mark.setAttribute("aria-hidden", "true");
+      mark.textContent = lead.done ? "✓" : "○";
+
+      const label = document.createElement("span");
+      label.className = "guideline-lead-label";
+      label.textContent = lead.label;
+
+      const cta = document.createElement("span");
+      cta.className = "guideline-lead-cta";
+      cta.textContent = lead.done
+        ? "สำเร็จ"
+        : lead.prompt_suggestion
+          ? "ใส่ช่องแชท ▸"
+          : "";
+
+      btn.appendChild(mark);
+      btn.appendChild(label);
+      if (cta.textContent) btn.appendChild(cta);
+      btn.addEventListener("click", () => {
+        prefillChatInput(lead.prompt_suggestion || lead.label);
+      });
+      li.appendChild(btn);
+      listEl.appendChild(li);
+    });
+  }
+
+  function renderCombineHintsSidebar(combineHints) {
+    const card = $("combine-hints-card");
+    const listEl = $("combine-hints-list");
+    const readyDot = $("items-ready-dot");
+    const hasReady = combineHints.some((c) => c.ready && !c.completed);
+    readyDot?.classList.toggle("hidden", !hasReady);
+
+    if (!card || !listEl) return;
+    if (!combineHints.length) {
+      card.classList.add("hidden");
+      listEl.innerHTML = "";
+      return;
+    }
+    card.classList.remove("hidden");
+    listEl.innerHTML = "";
+    combineHints.forEach((ch) => {
+      const li = document.createElement("li");
+      li.className = `combine-item ${ch.completed ? "is-done" : ch.ready ? "is-ready" : "is-locked"}`;
+
+      const title = document.createElement("span");
+      title.className = "combine-item-title";
+      title.textContent = ch.title;
+      li.appendChild(title);
+
+      if (ch.completed) {
+        const badge = document.createElement("span");
+        badge.className = "combine-status-tag is-done";
+        badge.textContent = "เชื่อมโยงแล้ว ✓";
+        li.appendChild(badge);
+      } else if (ch.ready) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn btn-primary btn-sm combine-btn";
+        btn.textContent = "เชื่อมโยงหลักฐาน";
+        btn.addEventListener("click", () => emitDossierInspect("combine", ch.id));
+        li.appendChild(btn);
+      } else {
+        const badge = document.createElement("span");
+        badge.className = "combine-status-tag is-locked";
+        badge.textContent = "รอหลักฐานประกอบ";
+        li.appendChild(badge);
+      }
+      listEl.appendChild(li);
+    });
+  }
+
+  function renderGuidelineHUD(state, act) {
+    const g = state?.guideline || null;
+    const actTitleEl = $("guideline-act-title");
+    const sceneGoalEl = $("guideline-scene-goal");
+    const statusPill = $("guideline-status-pill");
+    const progressEl = $("guideline-progress-count");
+    const readyDot = $("guideline-ready-dot");
+    const actGoalEl = $("guideline-act-goal");
+    const missingNoteEl = $("guideline-missing-note");
+
+    if (actTitleEl) {
+      actTitleEl.textContent = g?.act_title || `ช่วง ${act}`;
+    }
+    if (sceneGoalEl) {
+      const displayGoal =
+        state?.combat?.active && g?.combat_goal
+          ? g.combat_goal
+          : g?.scene_goal || g?.act_goal || state?.scene_subtitle || "";
+      sceneGoalEl.textContent = displayGoal;
+    }
+
+    const isReady = Boolean(g?.ready_to_advance);
+    if (statusPill) {
+      const rl = (g?.ready_label || "").trim();
+      statusPill.className = isReady ? "pill pill-ok" : "pill pill-warn";
+      statusPill.textContent = isReady
+        ? (rl ? (rl.startsWith("พร้อม") ? rl : `พร้อมไปต่อ: ${rl}`) : "พร้อมไปต่อ")
+        : "กำลังสืบสวน";
+    }
+
+    const leads = Array.isArray(g?.leads) ? g.leads : [];
+    const mainLeads = leads.filter((l) => l.kind === "main");
+    const optionalLeads = leads.filter((l) => l.kind !== "main");
+    const trackedLeads = mainLeads.length ? mainLeads : leads;
+    const doneCount = trackedLeads.filter((l) => l.done).length;
+
+    if (progressEl) {
+      progressEl.textContent = trackedLeads.length ? `${doneCount}/${trackedLeads.length}` : "0/0";
+      progressEl.classList.toggle("hidden", trackedLeads.length === 0);
+    }
+
+    const inspectables = Array.isArray(g?.inspectables) ? g.inspectables : [];
+    const combineHints = Array.isArray(g?.combine_hints) ? g.combine_hints : [];
+    const hasReadyCombine = combineHints.some((c) => c.ready && !c.completed);
+    readyDot?.classList.toggle("hidden", !(isReady || hasReadyCombine));
+
+    if (actGoalEl) {
+      actGoalEl.textContent = g?.act_goal
+        ? `เป้าหมายช่วงนี้: ${g.act_goal}`
+        : g?.scene_goal || "สำรวจพื้นที่และสอบถามข้อมูลสำคัญในฉากนี้";
+    }
+
+    const missing = Array.isArray(g?.missing_recommended) ? g.missing_recommended : [];
+    if (missingNoteEl) {
+      if (missing.length > 0) {
+        missingNoteEl.textContent = `เป้าหมายหลักที่แนะนำก่อนข้ามบท: ${missing.join(" · ")}`;
+        missingNoteEl.classList.remove("hidden");
+      } else {
+        missingNoteEl.textContent = "";
+        missingNoteEl.classList.add("hidden");
+      }
+    }
+
+    renderLeadList(
+      $("guideline-main-leads"),
+      mainLeads,
+      "ไม่มีเป้าหมายหลักเพิ่มเติมในฉากนี้"
+    );
+    renderLeadList(
+      $("guideline-optional-leads"),
+      optionalLeads,
+      "ไม่มีเบาะแสเสริมเพิ่มเติมในฉากนี้"
+    );
+
+    const interactiveRow = $("guideline-interactive-row");
+    const inspectWrap = $("guideline-inspectables-wrap");
+    const inspectList = $("guideline-inspectables-list");
+    const combineWrap = $("guideline-combines-wrap");
+    const combineList = $("guideline-combines-list");
+
+    if (inspectWrap && inspectList) {
+      inspectList.innerHTML = "";
+      inspectWrap.classList.toggle("hidden", inspectables.length === 0);
+      inspectables.forEach((obj) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `guideline-action-chip ${obj.inspected ? "is-done" : "is-ready"}`;
+        btn.textContent = obj.inspected ? `${obj.label} (ดูแล้ว ✓)` : `สำรวจ: ${obj.label}`;
+        btn.addEventListener("click", () => emitDossierInspect("scene_object", obj.id));
+        inspectList.appendChild(btn);
+      });
+    }
+
+    if (combineWrap && combineList) {
+      combineList.innerHTML = "";
+      combineWrap.classList.toggle("hidden", combineHints.length === 0);
+      combineHints.forEach((ch) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `guideline-action-chip ${ch.completed ? "is-done" : ch.ready ? "is-ready" : "is-locked"}`;
+        btn.disabled = !ch.ready || ch.completed;
+        btn.textContent = ch.completed
+          ? `${ch.title} (เชื่อมโยงแล้ว ✓)`
+          : ch.ready
+            ? `เชื่อมโยง: ${ch.title}`
+            : `${ch.title} (รอหลักฐานครบ)`;
+        btn.addEventListener("click", () => {
+          if (ch.ready && !ch.completed) emitDossierInspect("combine", ch.id);
+        });
+        combineList.appendChild(btn);
+      });
+    }
+
+    interactiveRow?.classList.toggle(
+      "hidden",
+      inspectables.length === 0 && combineHints.length === 0
+    );
+
+    renderCombineHintsSidebar(combineHints);
+  }
+
+  function renderPendingCheckPanel(state, me) {
+    const dicePanel = $("dice-panel");
+    if (!dicePanel) return;
+    if (!state.pending_check || state.combat?.active) {
+      dicePanel.classList.add("hidden");
+      return;
+    }
+
+    const chk = state.pending_check;
+    const players = state.players || [];
+    const designatedPlayer = players.find(
+      (p) =>
+        (chk.requested_by_public_id && p.id === chk.requested_by_public_id) ||
+        (chk.requested_by_sid && p.sid === chk.requested_by_sid) ||
+        (chk.requested_by && p.name === chk.requested_by)
+    );
+    const designatedConnected = Boolean(designatedPlayer && designatedPlayer.connected);
+    const hasDesignatedActor = Boolean(
+      chk.requested_by_public_id || chk.requested_by_sid || chk.requested_by
+    );
+    const isMyPublicId = Boolean(
+      me?.id && chk.requested_by_public_id && me.id === chk.requested_by_public_id
+    );
+    const isMySid = Boolean(
+      socket?.id && chk.requested_by_sid && socket.id === chk.requested_by_sid
+    );
+    const isMyNameFallback = Boolean(
+      !chk.requested_by_public_id &&
+        !chk.requested_by_sid &&
+        chk.requested_by &&
+        me?.name === chk.requested_by
+    );
+    const isRoller =
+      !hasDesignatedActor || !designatedConnected || isMyPublicId || isMySid || isMyNameFallback;
+
+    const actorName = chk.requested_by || designatedPlayer?.name || "";
+    const lockEl = $("dice-actor-lock");
+    if (lockEl) {
+      if (actorName) {
+        lockEl.textContent = isRoller ? `ผู้ทอย: ${actorName}` : `รอ ${actorName} ทอย`;
+        lockEl.className = `dice-actor-lock ${isRoller ? "is-self" : "is-locked"}`;
+      } else {
+        lockEl.className = "dice-actor-lock hidden";
+        lockEl.textContent = "";
+      }
+    }
+
+    const mod = me?.stats?.[chk.stat] ?? 0;
+    const rollerStats = designatedPlayer?.stats?.[chk.stat];
+    const effectiveBonus = Number(chk.effective_bonus ?? (chk.focus_committed ? 2 : 0));
+    const bonusParts = [];
+    if (effectiveBonus > 0) bonusParts.push(`โบนัสเตรียมตัว +${effectiveBonus}`);
+    if (chk.assist_mode === "advantage" && chk.assist_by_name) {
+      bonusParts.push(`ได้เปรียบ 2d20 (${chk.assist_by_name} ช่วย)`);
+    } else if (chk.assist_by_name && !effectiveBonus) {
+      bonusParts.push(`${chk.assist_by_name} ช่วย`);
+    }
+    const attemptPart =
+      (chk.attempt || 1) > 1 ? ` · ครั้งที่ ${chk.attempt}/${chk.max_attempts || 2}` : "";
+    const statPart = isRoller
+      ? `ค่าสถานะ: ${chk.stat} (${mod >= 0 ? `+${mod}` : mod})`
+      : `ค่าสถานะ: ${chk.stat}${rollerStats != null ? ` (${rollerStats >= 0 ? `+${rollerStats}` : rollerStats})` : ""}`;
+
+    $("dice-check-title").textContent = chk.title;
+    $("dice-check-meta").textContent =
+      `${statPart}${bonusParts.length ? ` · ${bonusParts.join(" · ")}` : ""} | เป้าหมาย DC ${chk.dc}${attemptPart}`;
+
+    const focusBtn = $("dice-focus-btn");
+    if (focusBtn) {
+      const showFocus = Boolean(isRoller && chk.allow_focus !== false);
+      focusBtn.classList.toggle("hidden", !showFocus);
+      if (showFocus) {
+        const committed = Boolean(chk.focus_committed);
+        const myFocus = me?.focus ?? 0;
+        focusBtn.classList.toggle("is-active", committed);
+        focusBtn.textContent = committed ? "✓ ใช้ 1 โฟกัส (+2)" : "ใช้ 1 โฟกัส (+2)";
+        focusBtn.disabled = !committed && myFocus < 1;
+        focusBtn.title =
+          !committed && myFocus < 1
+            ? "โฟกัสไม่พอ (ต้องมีอย่างน้อย 1 แต้ม)"
+            : "ทุ่ม 1 โฟกัสเพื่อรับโบนัส +2 (ไม่ซ้อนกับช่วยเพื่อนแบบ +2)";
+      }
+    }
+
+    const assistBtn = $("dice-assist-btn");
+    if (assistBtn) {
+      const showAssist = Boolean(!isRoller && chk.allow_assist !== false);
+      assistBtn.classList.toggle("hidden", !showAssist);
+      if (showAssist) {
+        const isAssistingMe = Boolean(
+          (socket?.id && chk.assist_by_sid === socket.id) ||
+            (me?.name && chk.assist_by_name === me.name)
+        );
+        const otherAssisting = Boolean(chk.assist_by_name && !isAssistingMe);
+        assistBtn.classList.toggle("is-active", isAssistingMe);
+        assistBtn.disabled = otherAssisting;
+        assistBtn.textContent = isAssistingMe
+          ? "✓ กำลังช่วย (ได้เปรียบ 2d20)"
+          : otherAssisting
+            ? `${chk.assist_by_name} ช่วยอยู่แล้ว`
+            : "ช่วยเพื่อน (ได้เปรียบ 2d20)";
+      }
+    }
+
+    const rollBtn = $("roll-dice-btn");
+    if (rollBtn) {
+      rollBtn.disabled = !isRoller;
+      rollBtn.textContent = !isRoller
+        ? `รอ ${actorName || "ผู้ทอย"}...`
+        : chk.assist_mode === "advantage"
+          ? "ทอย 2d20"
+          : "ทอย D20";
+    }
+
+    const altWrap = $("dice-alt-stats");
+    if (altWrap) {
+      const rawAlts = Array.isArray(chk.alt_stats) ? chk.alt_stats : [];
+      const baseStat = chk.base_stat || chk.stat;
+      const baseDc = chk.base_dc ?? chk.dc;
+      const approaches = [];
+      if (rawAlts.length > 0) {
+        if (!rawAlts.some((a) => a.stat === baseStat)) {
+          approaches.push({
+            stat: baseStat,
+            dc: baseDc,
+            label: `วิธีหลัก (${baseStat})`,
+          });
+        }
+        rawAlts.forEach((a) => approaches.push(a));
+      }
+
+      altWrap.innerHTML = "";
+      if (isRoller && approaches.length > 1) {
+        altWrap.classList.remove("hidden");
+        const prefix = document.createElement("span");
+        prefix.className = "dice-alt-label";
+        prefix.textContent = "แนวทาง:";
+        altWrap.appendChild(prefix);
+
+        approaches.forEach((app) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `dice-alt-pill ${app.stat === chk.stat ? "active" : ""}`;
+          btn.textContent = `${app.label} (${app.stat} · DC ${app.dc})`;
+          btn.addEventListener("click", () => {
+            if (app.stat === chk.stat) return;
+            socket?.emit("dice:prep", { action: "select_stat", stat: app.stat });
+          });
+          altWrap.appendChild(btn);
+        });
+      } else {
+        altWrap.classList.add("hidden");
+      }
+    }
+
+    dicePanel.classList.remove("hidden");
+  }
+
   function renderState(state) {
     currentState = state;
     const scenePrefix = String(state.current_scene || "A1")[0];
@@ -1050,14 +1522,20 @@
       ? `เผชิญหน้า: ${state.combat.enemy_name}`
       : state.scene_title;
     $("hud-scene-subtitle").textContent = state.combat?.active
-      ? (state.combat.ritual_max_steps > 0
-          ? "ปะทะผลัดเทิร์น 1 Action/รอบ — คลายเกราะกำไล 3 ขั้นแล้วปลดกำไลขั้นสุดท้าย"
-          : "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย")
+      ? (state.guideline?.combat_goal ||
+          (state.combat.ritual_max_steps > 0
+            ? "ปะทะผลัดเทิร์น 1 Action/รอบ — คลายเกราะกำไล 3 ขั้นแล้วปลดกำไลขั้นสุดท้าย"
+            : "ปะทะแบบผลัดเทิร์น 1 Action ต่อรอบ — เลือกว่าจะขับไล่ กล่อม หรือเปิดทางถอย"))
       : state.scene_subtitle;
     $("hud-quota-pill").textContent = `เสียงสด ${state.live_tts_used}/${state.live_tts_limit}`;
     $("demo-combat-btn")?.classList.toggle("hidden", act === "B" || act === "E");
     if ($("reset-room-btn")) {
       $("reset-room-btn").title = `เริ่มเล่นช่วง ACT ${act} ใหม่`;
+    }
+
+    renderGuidelineHUD(state, act);
+    if (state.ending || state.combat?.active || (pendingBoardExitNode && pendingBoardExitNode.act !== act)) {
+      closeBoardExitConfirm();
     }
 
     if (!state.combat?.active) {
@@ -1071,10 +1549,10 @@
       const introCopy = {
         A: ["บทนำ ACT A", "พร้อมเข้าสู่หมู่บ้านหนองตาล", "กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดคดี A1", "เริ่มบทนำ ACT A"],
         B: ["บทที่ 2 · ACT B", "ก้าวเข้าสู่บ้านผู้ใหญ่บ้าน", "กดปุ่มด้านล่างเพื่อให้ผู้ดำเนินเกมเริ่มเล่าเปิดฉาก B1", "เริ่มบท ACT B"],
-        C: ["บทที่ 3 · ACT C", "ก้าวเข้าสู่บ้านดลและทางแยกศาล", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT C (ระบบซับไตเติ้ล + AI DM)", "เริ่มบท ACT C"],
-        D: ["บทที่ 4 · ACT D", "เข้าสู่สวนกล้วยและศาลด้ายดำ", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT D (ระบบซับไตเติ้ล + AI DM)", "เริ่มบท ACT D"],
-        E: ["บทที่ 5 · ACT E", "ถึงเรือนไม้ร้างท้ายสวนกล้วย", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT E ช่วยตัวประกันและเปิดโปงวิชัย", "เริ่มบท ACT E"],
-        F: ["บทสุดท้าย · FINAL ACT F", "วงป้องกันกำไลแม่แก้วกำลังทำงาน", "กดปุ่มด้านล่างเพื่อเข้าสู่ศึกสุดท้ายและบทส่งท้าย Ending A–D", "เริ่มบทสุดท้าย FINAL"],
+        C: ["บทที่ 3 · ACT C", "ก้าวเข้าสู่บ้านดลและพื้นที่ชายสวน", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT C (ระบบซับไตเติ้ล + AI DM)", "เริ่มบท ACT C"],
+        D: ["บทที่ 4 · ACT D", "เข้าสู่แนวสวนกล้วยยามค่ำ", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT D (ระบบซับไตเติ้ล + AI DM)", "เริ่มบท ACT D"],
+        E: ["บทที่ 5 · ACT E", "ถึงเรือนไม้ร้างท้ายสวนกล้วย", "กดปุ่มด้านล่างเพื่อเริ่มบท ACT E และสำรวจพื้นที่รอบเรือนไม้", "เริ่มบท ACT E"],
+        F: ["บทสุดท้าย · FINAL ACT F", "ช่วงคลี่คลายคดีบ้านหนองตาล", "กดปุ่มด้านล่างเพื่อเข้าสู่บทสุดท้ายและสรุปคดี", "เริ่มบทสุดท้าย FINAL"],
       }[act] || ["บทนำ ACT A", "พร้อมเข้าสู่หมู่บ้านหนองตาล", "กดปุ่มด้านล่างเพื่อเริ่มต้น", `เริ่มบท ACT ${act}`];
       $("start-overlay-crest").textContent = introCopy[0];
       $("start-overlay-title").textContent = introCopy[1];
@@ -1089,9 +1567,9 @@
         act_a_complete: ["B", "ไปต่อ ACT B: เข้าบ้านผู้ใหญ่บ้าน"],
         act_a_combat_clear: ["B", "ไปต่อ ACT B: เข้าบ้านผู้ใหญ่บ้าน"],
         act_b_complete: ["C", "ไปต่อ ACT C: มุ่งหน้าสู่บ้านดล"],
-        act_c_complete: ["D", "ไปต่อ ACT D: เข้าสวนกล้วยและศาลด้ายดำ"],
-        act_d_complete: ["E", "ไปต่อ ACT E: บุกเรือนไม้ร้างช่วยตัวประกัน"],
-        act_e_complete: ["F", "ไปต่อ FINAL ACT F: คลายเกราะกำไลแม่แก้ว"],
+        act_c_complete: ["D", "ไปต่อ ACT D: มุ่งหน้าเข้าสู่แนวสวนกล้วย"],
+        act_d_complete: ["E", "ไปต่อ ACT E: สำรวจเรือนไม้ร้างท้ายสวน"],
+        act_e_complete: ["F", "ไปต่อ FINAL ACT F: ช่วงคลี่คลายขั้นสุดท้าย"],
       };
       const nextInfo = nextActByEnding[state.ending.id] || null;
       const endingActLabel = state.ending.id.startsWith("ending_")
@@ -1145,21 +1623,75 @@
     const nodesLayer = $("board-nodes-layer");
     nodesLayer.innerHTML = "";
     let activeNodeName = state.board_node;
+    const visitedScenes = Array.isArray(state.visited_scenes) ? state.visited_scenes : [];
+    const missingRecommended = state.guideline?.missing_recommended || [];
+    const readyToAdvance = Boolean(state.guideline?.ready_to_advance);
+
     (state.board_nodes || []).forEach((node) => {
       const isActive = node.id === state.board_node;
       if (isActive) activeNodeName = node.name;
+      const isExit = Boolean(node.is_exit || ACT_EXIT_NODE_IDS.has(node.id));
+      const isVisited = Boolean(node.visited || visitedScenes.includes(node.scene) || isActive);
+
+      let statusLabel = "เข้าได้";
+      let statusCls = "is-open";
+      if (isActive) {
+        statusLabel = "อยู่ตรงนี้";
+        statusCls = "is-current";
+      } else if (!node.unlocked) {
+        statusLabel = "ล็อก";
+        statusCls = "is-locked";
+      } else if (isExit) {
+        if (readyToAdvance) {
+          statusLabel = "พร้อมข้ามบท";
+          statusCls = "is-ready";
+        } else if (missingRecommended.length > 0) {
+          statusLabel = "มีเป้าหมายค้าง";
+          statusCls = "is-warn";
+        } else {
+          statusLabel = "ทางไปต่อ";
+          statusCls = "is-exit";
+        }
+      } else if (isVisited) {
+        statusLabel = "สำรวจแล้ว";
+        statusCls = "is-visited";
+      }
+
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `board-node-btn ${isActive ? "active" : ""} ${node.unlocked ? "" : "locked"}`;
+      btn.className = `board-node-btn ${isActive ? "active" : ""} ${node.unlocked ? "" : "locked"} ${isExit ? "is-exit-node" : ""}`;
       btn.style.left = `${node.x}%`;
       btn.style.top = `${node.y}%`;
       btn.disabled = !node.unlocked || Boolean(state.combat?.active);
-      btn.innerHTML = `
-        <div class="board-node-title">${node.name}</div>
-        <div class="board-node-sub">${node.unlocked ? node.subtitle : `${node.subtitle} (ยังไม่ปลดล็อก)`}</div>
-      `;
+
+      const headEl = document.createElement("div");
+      headEl.className = "board-node-head";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "board-node-title";
+      titleEl.textContent = node.name;
+
+      const statusEl = document.createElement("span");
+      statusEl.className = `board-node-status ${statusCls}`;
+      statusEl.textContent = statusLabel;
+
+      headEl.appendChild(titleEl);
+      headEl.appendChild(statusEl);
+
+      const subEl = document.createElement("div");
+      subEl.className = "board-node-sub";
+      subEl.textContent = node.unlocked ? node.subtitle : `${node.subtitle} (ยังไม่ปลดล็อก)`;
+
+      btn.appendChild(headEl);
+      btn.appendChild(subEl);
+
       btn.addEventListener("click", () => {
         if (!socket || !node.unlocked) return;
+        const missing = currentState?.guideline?.missing_recommended || [];
+        if (isExit && missing.length > 0) {
+          openBoardExitConfirm(node, missing);
+          return;
+        }
         socket.emit("board:move", { node_id: node.id });
       });
       nodesLayer.appendChild(btn);
@@ -1167,18 +1699,7 @@
     $("board-current-label").textContent = `ตำแหน่งปัจจุบัน: ${activeNodeName}`;
 
     // Dice Check panel
-    const dicePanel = $("dice-panel");
-    if (state.pending_check && !state.combat?.active) {
-      const chk = state.pending_check;
-      const mod = me?.stats?.[chk.stat] ?? 0;
-      $("dice-check-title").textContent = chk.title;
-      $("dice-check-meta").textContent = `ค่าสถานะ: ${chk.stat} (โบนัสของคุณ +${mod}) | เป้าหมาย DC ${chk.dc}`;
-      const rollBtn = $("roll-dice-btn");
-      if (rollBtn) rollBtn.disabled = false;
-      dicePanel.classList.remove("hidden");
-    } else {
-      dicePanel.classList.add("hidden");
-    }
+    renderPendingCheckPanel(state, me);
 
     // Quick prompts
     const promptsWrap = $("quick-prompts");
@@ -1209,9 +1730,28 @@
       : `<li class="empty-note">ยังไม่มีเอกสารหรือไอเท็ม</li>`;
     items.forEach((it) => {
       const li = document.createElement("li");
-      li.innerHTML = `<strong></strong><span></span>`;
-      li.querySelector("strong").textContent = it.label;
-      li.querySelector("span").textContent = it.detail;
+      li.className = "item-card-row";
+
+      const topRow = document.createElement("div");
+      topRow.className = "item-row-top";
+
+      const labelEl = document.createElement("strong");
+      labelEl.textContent = it.label;
+
+      const inspectBtn = document.createElement("button");
+      inspectBtn.type = "button";
+      inspectBtn.className = "btn btn-ghost btn-sm item-inspect-btn";
+      inspectBtn.textContent = "ตรวจสอบ/ใช้";
+      inspectBtn.addEventListener("click", () => emitDossierInspect("inventory", it.id));
+
+      topRow.appendChild(labelEl);
+      topRow.appendChild(inspectBtn);
+
+      const detailEl = document.createElement("span");
+      detailEl.textContent = it.detail;
+
+      li.appendChild(topRow);
+      li.appendChild(detailEl);
       itemsList.appendChild(li);
     });
 
@@ -1367,7 +1907,11 @@
     });
     const ghostWrap = $("ghost-sprite-wrap");
     if (ghostWrap) {
-      ghostWrap.classList.toggle("speaking", Boolean(active && speaker === "ผีเงาจมน้ำ"));
+      const enemyName = currentState?.combat?.enemy_name;
+      const isEnemySpeaker = Boolean(
+        active && ((enemyName && speaker === enemyName) || speaker === "ผีเงาจมน้ำ")
+      );
+      ghostWrap.classList.toggle("speaking", isEnemySpeaker);
     }
     audioFX?.setDucking(active);
   }
@@ -2062,6 +2606,8 @@
       }
       updateApiPill(payload.api_status);
       resetDossierTracking();
+      setGuidelineDrawerOpen(false);
+      closeBoardExitConfirm();
       $("lobby-screen").classList.add("hidden");
       $("game-screen").classList.remove("hidden");
       setMobileTab("play");
@@ -2073,12 +2619,12 @@
       });
       if (!payload.state?.started) {
         const joinedAct =
-          payload.state?.act || (String(payload.state?.current_scene || "").startsWith("B") ? "B" : "A");
+          payload.state?.act || String(payload.state?.current_scene || "A1")[0] || "A";
         $("subtitle-speaker").textContent = "ระบบ";
         $("subtitle-text").textContent =
-          joinedAct === "B"
-            ? "ยินดีต้อนรับสู่แฟ้มคดี ACT B: บ้านผู้ใหญ่บ้าน กด 'เริ่มบท ACT B' เพื่อเริ่มฟังเสียงบรรยาย"
-            : "ยินดีต้อนรับสู่แฟ้มคดีบ้านหนองตาล กด 'เริ่มบทนำ ACT A' เพื่อเริ่มฟังเสียงบรรยายจากผู้ดำเนินเกม";
+          joinedAct === "A"
+            ? "ยินดีต้อนรับสู่แฟ้มคดีบ้านหนองตาล กด 'เริ่มบทนำ ACT A' เพื่อเริ่มฟังเสียงบรรยายจากผู้ดำเนินเกม"
+            : `ยินดีต้อนรับสู่แฟ้มคดี ACT ${joinedAct} กดปุ่ม 'เริ่มบท ACT ${joinedAct}' บนหน้าจอเพื่อเริ่มฟังเสียงบรรยาย`;
       }
       renderState(payload.state);
     });
@@ -2155,8 +2701,62 @@
       if (window.innerWidth <= 960 && activeMobileTab !== "play") {
         setMobileTab("play");
       }
-      const modSign = roll.modifier >= 0 ? `+${roll.modifier}` : String(roll.modifier);
-      const mathSummary = `${roll.stat}: D20 (${roll.d20}) ${modSign} = ${roll.total} vs DC ${roll.dc}`;
+      const isBypassed = Boolean(roll.bypassed || roll.d20 == null);
+      const rollsArr = Array.isArray(roll.d20_rolls) && roll.d20_rolls.length ? roll.d20_rolls : (roll.d20 != null ? [roll.d20] : []);
+      const rollPart =
+        rollsArr.length > 1
+          ? `2d20 (${rollsArr.join(", ")} → ${roll.d20})`
+          : `D20 (${roll.d20})`;
+      const modVal = Number(roll.modifier || 0);
+      const modSign = modVal >= 0 ? `+${modVal}` : String(modVal);
+      const bonusVal = Number(roll.bonus || 0);
+      const reasons = Array.isArray(roll.bonus_reasons) ? roll.bonus_reasons.filter(Boolean) : [];
+      const bonusPart =
+        bonusVal > 0
+          ? ` +${bonusVal}${reasons.length ? ` (${reasons.join(", ")})` : ""}`
+          : "";
+
+      const renderBannerAndLog = () => {
+        const banner = $("dice-result-banner");
+        if (banner) {
+          banner.className = `dice-result-banner ${roll.tier || "full"}`;
+          banner.innerHTML = "";
+
+          const mainLine = document.createElement("div");
+          mainLine.className = "dice-banner-main";
+          mainLine.textContent = isBypassed
+            ? `${roll.rolled_by || "ทีม"} ผ่านเงื่อนไขอัตโนมัติ (ไม่ต้องทอย) — ${roll.tier_label || "สำเร็จ"}`
+            : `${roll.rolled_by} ทอย ${roll.stat}: ${rollPart} ${modSign}${bonusPart} = ${roll.total} / DC ${roll.dc} — ${roll.tier_label}`;
+          banner.appendChild(mainLine);
+
+          if (roll.consequence_th) {
+            const consEl = document.createElement("div");
+            consEl.className = "dice-banner-consequence";
+            consEl.textContent = `ผลสืบเนื่อง: ${roll.consequence_th}`;
+            banner.appendChild(consEl);
+          }
+          if (roll.can_retry_hint) {
+            const retryEl = document.createElement("div");
+            retryEl.className = "dice-banner-retry";
+            retryEl.textContent = `ลองใหม่ได้: ${roll.can_retry_hint}`;
+            banner.appendChild(retryEl);
+          }
+          banner.classList.remove("hidden");
+        }
+
+        const logMsg = isBypassed
+          ? `${roll.rolled_by || "ทีม"} ผ่าน ${roll.title} อัตโนมัติ (ไม่ต้องทอย)${roll.consequence_th ? ` · ${roll.consequence_th}` : ""}`
+          : `${roll.rolled_by} ทอย ${roll.title} ได้ ${roll.total} (${rollPart} ${modSign}${bonusPart}) vs DC ${roll.dc} — ${roll.tier_label}${roll.consequence_th ? ` · ${roll.consequence_th}` : ""}`;
+        appendTranscriptLog("ผลทอย D20", logMsg, "hint");
+      };
+
+      if (isBypassed) {
+        audioFX?.playSfx("dice_success");
+        renderBannerAndLog();
+        return;
+      }
+
+      const mathSummary = `${roll.stat}: ${rollPart} ${modSign}${bonusPart} = ${roll.total} vs DC ${roll.dc}`;
       playPhysicalDiceRoll(
         {
           actor: roll.rolled_by,
@@ -2167,18 +2767,7 @@
           tierLabel: roll.tier_label,
           mathText: mathSummary,
         },
-        () => {
-          const banner = $("dice-result-banner");
-          banner.className = `dice-result-banner ${roll.tier}`;
-          banner.textContent =
-            `${roll.rolled_by} ทอย ${roll.stat}: D20 (${roll.d20}) + โบนัส (${roll.modifier}) = ${roll.total} / DC ${roll.dc} — ${roll.tier_label}`;
-          banner.classList.remove("hidden");
-          appendTranscriptLog(
-            "ผลทอย D20",
-            `${roll.rolled_by} ทอย ${roll.title} ได้ ${roll.total} (D20:${roll.d20}+${roll.modifier}) vs DC ${roll.dc} — ${roll.tier_label}`,
-            "hint"
-          );
-        }
+        renderBannerAndLog
       );
     });
 
@@ -2231,6 +2820,8 @@
 
     socket.on("room:act_changed", (payload) => {
       clearAudioQueue();
+      setGuidelineDrawerOpen(false);
+      closeBoardExitConfirm();
       $("dice-result-banner").classList.add("hidden");
       renderedNpcSignature = "";
       renderedBoardAct = "";
@@ -2238,10 +2829,10 @@
       const actLabel = payload?.act || "B";
       const actMsgMap = {
         B: "เข้าสู่บทที่ 2 (ACT B): บ้านผู้ใหญ่บ้าน — ห้องรับแขกและโต๊ะแผนที่",
-        C: "เข้าสู่บทที่ 3 (ACT C): บ้านดลและบ้านยายบุญมีก่อนทางแยก",
-        D: "เข้าสู่บทที่ 4 (ACT D): เข้าสวนกล้วยและศาลด้ายดำ",
-        E: "เข้าสู่บทที่ 5 (ACT E): เรือนไม้ร้าง ตัวประกัน และหลักฐานวิชัย",
-        F: "เข้าสู่บทสุดท้าย (ACT F): ศึกคลายเกราะกำไลแม่แก้วและบทส่งท้าย",
+        C: "เข้าสู่บทที่ 3 (ACT C): บ้านดลและพื้นที่ชายสวน",
+        D: "เข้าสู่บทที่ 4 (ACT D): แนวสวนกล้วยยามค่ำ",
+        E: "เข้าสู่บทที่ 5 (ACT E): เรือนไม้ร้างท้ายสวนกล้วย",
+        F: "เข้าสู่บทสุดท้าย (ACT F): ช่วงคลี่คลายคดีบ้านหนองตาล",
       };
       const msg = actMsgMap[actLabel] || `เข้าสู่ช่วง ACT ${actLabel} แล้ว`;
       appendTranscriptLog("ระบบ", msg, "system");
@@ -2251,6 +2842,8 @@
     socket.on("room:reset_done", (payload) => {
       clearAudioQueue();
       resetDossierTracking();
+      setGuidelineDrawerOpen(false);
+      closeBoardExitConfirm();
       renderedNpcSignature = "";
       renderedBoardAct = "";
       const actLabel = payload?.act || "A";
@@ -2270,8 +2863,19 @@
 
     socket.on("dm:error", (err) => {
       const rollBtn = $("roll-dice-btn");
-      if (rollBtn) rollBtn.disabled = false;
+      if (rollBtn && currentState?.pending_check) {
+        renderPendingCheckPanel(
+          currentState,
+          (currentState.players || []).find((p) => p.id === myPlayer?.id || p.sid === socket?.id)
+        );
+      } else if (rollBtn) {
+        rollBtn.disabled = false;
+      }
       showToast(err.message || "เกิดข้อผิดพลาด");
+    });
+
+    socket.on("system:notice", (data) => {
+      if (data?.message) showToast(data.message);
     });
   }
 
@@ -2432,6 +3036,14 @@
       socket?.emit("dice:roll", {});
     });
 
+    $("dice-focus-btn")?.addEventListener("click", () => {
+      socket?.emit("dice:prep", { action: "toggle_focus" });
+    });
+
+    $("dice-assist-btn")?.addEventListener("click", () => {
+      socket?.emit("dice:prep", { action: "assist", mode: "advantage" });
+    });
+
     $("dice-tray-close-btn")?.addEventListener("click", () => {
       if (!isDiceRolling) $("dice-tray-overlay")?.classList.add("hidden");
     });
@@ -2530,6 +3142,47 @@
       if (!topbar) return;
       const open = topbar.classList.toggle("mobile-drawer-open");
       $("mobile-topbar-toggle")?.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    $("guideline-toggle-btn")?.addEventListener("click", () => {
+      setGuidelineDrawerOpen(!isGuidelineDrawerOpen);
+    });
+
+    $("guideline-close-btn")?.addEventListener("click", () => {
+      setGuidelineDrawerOpen(false);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!isGuidelineDrawerOpen) return;
+      const banner = $("guideline-banner");
+      if (banner && !banner.contains(e.target)) {
+        setGuidelineDrawerOpen(false);
+      }
+    });
+
+    $("exit-confirm-cancel-btn")?.addEventListener("click", () => {
+      closeBoardExitConfirm();
+    });
+
+    $("exit-confirm-proceed-btn")?.addEventListener("click", () => {
+      const target = pendingBoardExitNode;
+      closeBoardExitConfirm();
+      if (target && socket && target.unlocked) {
+        socket.emit("board:move", { node_id: target.id });
+      }
+    });
+
+    $("exit-confirm-modal")?.addEventListener("click", (e) => {
+      if (e.target === $("exit-confirm-modal")) {
+        closeBoardExitConfirm();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (isGuidelineDrawerOpen) setGuidelineDrawerOpen(false);
+        if (pendingBoardExitNode) closeBoardExitConfirm();
+      }
     });
 
     const pttBtn = $("ptt-btn");

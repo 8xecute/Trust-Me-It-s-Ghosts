@@ -59,8 +59,8 @@
     },
     {
       "id": "cellar_room",
-      "name": "ห้องใต้ถุน (ตัวประกัน 3 คน)",
-      "subtitle": "ช่วยดล นิด เพิ่ม และฟังคำให้การ",
+      "name": "ห้องใต้ถุนเรือนไม้",
+      "subtitle": "หลังประตูไม้ที่มีกระสอบข้าววางกั้น",
       "scene": "E2",
       "x": 45,
       "y": 68,
@@ -70,8 +70,8 @@
     },
     {
       "id": "ritual_upstairs",
-      "name": "ห้องพิธีชั้นสอง",
-      "subtitle": "กำไลทองเหลือง ตำรา หลักฐานวิชัย & จุดปะทะ",
+      "name": "ห้องชั้นสอง",
+      "subtitle": "ห้องไม้ที่มีแสงเทียนสีส้มลอดออกมา",
       "scene": "E4",
       "x": 66,
       "y": 36,
@@ -81,8 +81,8 @@
     },
     {
       "id": "e_to_act_f_ritual",
-      "name": "เริ่มคลายกำไล (เข้าสู่ FINAL F)",
-      "subtitle": "ลงมือปลดแกนกำไล — เปิดวงป้องกันแม่แก้ว",
+      "name": "จุดคลี่คลายบนชั้นสอง",
+      "subtitle": "ต้องตรวจค้นชั้นบนให้พบต้นตอเสียก่อน",
       "scene": "E6",
       "x": 86,
       "y": 54,
@@ -111,9 +111,72 @@
       "allowed_items": [],
       "available_checks": [],
       "quick_prompts": [
-        "ย้ายกระสอบข้าวแล้วเปิดประตูใต้ถุนลงไปช่วยคน (E2)",
-        "เดินขึ้นบันไดไปดูห้องชั้นสองที่มีแสงเทียนก่อน (E4)",
+        "ย้ายกระสอบข้าวแล้วเปิดประตูใต้ถุนดูว่าใครเคาะอยู่ข้างใน",
+        "ย่องขึ้นบันไดไปสำรวจห้องชั้นสองที่มีแสงเทียน",
         "ตรวจรอบเรือนไม้และจุดจอดรถเข็น"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจดูเสียงเคาะหลังประตูใต้ถุนและห้องชั้นสองที่มีแสงเทียนให้ครบทั้งสองส่วน",
+        "ready_label": "เลือกเปิดประตูใต้ถุนหรือขึ้นสำรวจชั้นสองได้ทันที",
+        "ready_when_any_clues": [
+          "hostages_found",
+          "ritual_bracelet_core"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "e1_lead_cellar",
+            "label": "ย้ายกระสอบข้าวและเปิดประตูใต้ถุนตรวจดูต้นตอเสียงเคาะ",
+            "kind": "main",
+            "done_when_clues": [
+              "hostages_found"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "E2",
+              "E3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ย้ายกระสอบข้าวแล้วเปิดประตูใต้ถุนดูว่าใครเคาะอยู่ข้างใน"
+          },
+          {
+            "id": "e1_lead_upstairs",
+            "label": "ขึ้นบันไดไปสำรวจห้องชั้นสองที่มีแสงเทียน",
+            "kind": "main",
+            "done_when_clues": [
+              "ritual_bracelet_core"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "E4",
+              "E5",
+              "E6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ย่องขึ้นบันไดไปสำรวจห้องชั้นสองที่มีแสงเทียน"
+          },
+          {
+            "id": "e1_lead_yard",
+            "label": "ตรวจบริเวณรอบเรือนไม้และจุดที่รอยล้อสิ้นสุด",
+            "kind": "optional",
+            "done_when_clues": [
+              "cart_tracks_to_house"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ตรวจรอบเรือนไม้และจุดจอดรถเข็น"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "e1_rice_sacks",
+          "label": "กองกระสอบข้าวบังประตูไม้ใต้ถุน",
+          "description": "เศษกระสอบข้าวแบบเดียวกับที่ตกตามกิ่งกล้วยวางซ้อนบังบานประตูไม้ใต้ถุน มีเสียงเคาะเบา ๆ ดังลอดออกมาจากข้างใน",
+          "unlock_clues": [],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามเฉลยจำนวนคนหายใต้ถุนหรือเนื้อหาตำราชั้นบนก่อนผู้เล่นเข้าไปจริง",
@@ -149,9 +212,54 @@
         "E2_DOOR_BREAK"
       ],
       "quick_prompts": [
-        "คลายเชือกและแก้ผ้าปิดปากให้ดล นิด และเพิ่ม (เข้าสู่ E3)",
-        "ใช้กำลังพังกลอนประตูที่ฝืดติดอยู่ (ทอย BODY)",
-        "จัดคนช่วยพยุงตัวประกันแล้วเตรียมขึ้นไปดูชั้นสอง (E4)"
+        "รีบแก้มัดเชือกและดึงผ้าปิดปากให้ดล นิด และตาเพิ่ม",
+        "หากกลอนประตูติดฝืด ลองใช้กำลังงัดหรือกระแทกเปิดให้กว้าง",
+        "ตรวจอาการและช่วยพยุงทั้งสามคนให้ปลอดภัยก่อนขยับต่อ"
+      ],
+      "guideline": {
+        "main_objective": "แก้มัดเชือกและแก้ผ้าปิดปากช่วยเหลือคนหายทั้งสามคนในห้องใต้ถุน",
+        "ready_label": "พบทั้งสามคนแล้ว — แก้มัดเพื่อสอบถามข้อมูลและดูแลความปลอดภัย",
+        "ready_when_any_clues": [
+          "hostages_found"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "e2_lead_untie",
+            "label": "แก้มัดเชือกและแก้ผ้าปิดปากให้ดล นิด และตาเพิ่ม",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "E3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "รีบแก้มัดเชือกและดึงผ้าปิดปากให้ดล นิด และตาเพิ่ม"
+          },
+          {
+            "id": "e2_lead_door",
+            "label": "งัดหรือพังกลอนประตูที่ฝืดให้เปิดกว้าง (หากยังไม่เปิด)",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [
+              "E2_DOOR_BREAK"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "หากกลอนประตูติดฝืด ลองใช้กำลังงัดหรือกระแทกเปิดให้กว้าง"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "e2_nid_cloth",
+          "label": "เศษผ้าเชิ้ตสีเข้มในมือนิดและด้ายที่ข้อเท้าตาเพิ่ม",
+          "description": "นิดกำเศษผ้าเชิ้ตสีเข้มไว้แน่นและมือมีรอยเล็บฉีก ส่วนข้อเท้าของตาเพิ่มมีเส้นด้ายดำพันไว้แน่นต่างจากเชือกธรรมดา จึงยังไม่ควรดึงกระชาก",
+          "unlock_clues": [
+            "hostages_found"
+          ],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "นิดหวาดกลัวไม่พูด และเพิ่มอ่อนแรงใช้ได้แค่ท่าทาง มีเฉพาะดลที่พูดสั้น ๆ ได้หลังแก้ผ้าปิดปาก",
@@ -175,6 +283,7 @@
         "e3_don_confirm"
       ],
       "allowed_next_scenes": [
+        "E1",
         "E2",
         "E4"
       ],
@@ -187,10 +296,47 @@
         "E3_HOSTAGES_ORDER"
       ],
       "quick_prompts": [
-        "ช่วยตั้งสติและเรียบเรียงลำดับเหตุการณ์กับดล (ทอย SOC)",
+        "ช่วยปลอบให้ดลตั้งสติ แล้วถามลำดับเหตุการณ์ตอนถูกจับ",
         "เอาสมุดปกดำจากบ้านดลให้ดลดูและถามเรื่องชั้นบน",
-        "พาตัวประกันไปยังจุดพักคุ้มกันแล้วขึ้นไปห้องพิธีชั้นสอง (E4)"
+        "พาตัวประกันไปหลบในจุดปลอดภัยแล้วขึ้นไปสำรวจชั้นสอง"
       ],
+      "guideline": {
+        "main_objective": "รับฟังคำให้การของดล จัดให้ตัวประกันอยู่ในจุดปลอดภัย แล้วขึ้นไปสำรวจห้องชั้นสอง",
+        "ready_label": "ได้คำยืนยันตัวผู้ก่อเหตุแล้ว — ขึ้นไปตรวจห้องชั้นสองต่อได้",
+        "ready_when_any_clues": [
+          "wichai_kidnapper_confirmed"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "e3_lead_order",
+            "label": "ปลอบให้ดลตั้งสติและถามลำดับเหตุการณ์ตอนถูกจับ",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [
+              "E3_HOSTAGES_ORDER"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ช่วยปลอบให้ดลตั้งสติ แล้วถามลำดับเหตุการณ์ตอนถูกจับ"
+          },
+          {
+            "id": "e3_lead_upstairs",
+            "label": "จัดจุดคุ้มกันให้ทั้งสามคนแล้วขึ้นไปสำรวจห้องชั้นสอง",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "E4",
+              "E5",
+              "E6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "พาตัวประกันไปหลบในจุดปลอดภัยแล้วขึ้นไปสำรวจชั้นสอง"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "ห้ามสร้างบทพูดให้นิดหรือเพิ่ม ดลรู้เพียงว่าวิชัยขังไว้และมีเสียงผู้หญิงร้องข้างบน ไม่รู้เนื้อหาตำรา E4"
       ]
@@ -198,13 +344,14 @@
     "E4": {
       "id": "E4",
       "title": "E4: ห้องพิธีชั้นสอง — กำไล ตำรา และหลักฐานวิชัย",
-      "subtitle": "กล่องไม้ใส่กำไลทองเหลือง 'แก้ว' ตำราอาคม และกระเป๋าเอกสารใต้โต๊ะ",
+      "subtitle": "กล่องไม้ใส่กำไลทองเหลือง 'แก้ว' ตำราเก่า และข้าวของใต้ผ้าคลุมโต๊ะ",
       "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [],
       "intro_audio_ids": [
         "e4_intro_dm"
       ],
       "allowed_next_scenes": [
+        "E1",
         "E2",
         "E3",
         "E5",
@@ -226,10 +373,99 @@
         "H1_FLOOD_TIMELINE"
       ],
       "quick_prompts": [
-        "เปิดอ่านตำราข้างกล่องและถอดลำดับการคลายกำไล (ทอย INT)",
-        "ค้นใต้ผ้าคลุมโต๊ะและเปิดดูแฟ้มหลักฐานหนี้สินของวิชัย",
-        "เทียบเวลาเวรประตูน้ำปี 2534 กับสมุดยายบุญมี (ทอย INT · H1)",
-        "เตรียมรับมือเสียงฝีเท้าที่กำลังเดินขึ้นมา (วิชัย E5)"
+        "เปิดอ่านตำราเก่าข้างกล่องกำไลเพื่อดูว่าพิธีนี้ทำงานยังไง",
+        "เปิดผ้าคลุมใต้โต๊ะดูว่ามีข้าวของอะไรซ่อนอยู่บ้าง",
+        "หยิบบันทึกเวรประตูน้ำปี 2534 มาเทียบเวลากับสมุดของยายบุญมี",
+        "ตรวจดูบันไดและรอบห้องเพื่อระวังว่าจะมีใครตามขึ้นมา"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจอ่านตำราข้างกำไลและเปิดผ้าคลุมใต้โต๊ะเพื่อหาหลักฐานให้ครบ (และอย่าลืมช่วยคนข้างล่างหากยังไม่ได้ตรวจ)",
+        "ready_label": "ได้หลักฐานชั้นบนครบแล้ว — เตรียมรับมือสถานการณ์และคลายกำไล",
+        "ready_when_any_clues": [],
+        "ready_when_all_clues": [
+          "ritual_bracelet_core",
+          "wichai_debt_evidence"
+        ],
+        "leads": [
+          {
+            "id": "e4_lead_grimoire",
+            "label": "อ่านตำราเก่าข้างกล่องกำไลเพื่อศึกษากลไกของพิธี",
+            "kind": "main",
+            "done_when_clues": [
+              "ritual_plan_prepared"
+            ],
+            "done_when_checks": [
+              "E4_BRACELET_DECODE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เปิดอ่านตำราเก่าข้างกล่องกำไลเพื่อดูว่าพิธีนี้ทำงานยังไง"
+          },
+          {
+            "id": "e4_lead_cloth",
+            "label": "เปิดผ้าคลุมใต้โต๊ะดูว่ามีข้าวของอะไรซ่อนอยู่",
+            "kind": "main",
+            "done_when_clues": [
+              "wichai_debt_evidence"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เปิดผ้าคลุมใต้โต๊ะดูว่ามีข้าวของอะไรซ่อนอยู่บ้าง"
+          },
+          {
+            "id": "e4_lead_h1",
+            "label": "เทียบบันทึกเวรประตูน้ำปี 2534 กับสมุดยายบุญมี",
+            "kind": "optional",
+            "done_when_clues": [
+              "flood_timeline_confirmed"
+            ],
+            "done_when_checks": [
+              "H1_FLOOD_TIMELINE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "หยิบบันทึกเวรประตูน้ำปี 2534 มาเทียบเวลากับสมุดของยายบุญมี"
+          },
+          {
+            "id": "e4_lead_stairs",
+            "label": "ตรวจทางบันไดและเตรียมรับมือความเคลื่อนไหว",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "E5",
+              "E6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ตรวจดูบันไดและรอบห้องเพื่อระวังว่าจะมีใครตามขึ้นมา"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "e4_table_box",
+          "label": "กล่องไม้ใส่กำไลทองเหลืองและตำราเก่า",
+          "description": "กำไลทองเหลืองสลักชื่อ 'แก้ว' เป็นจุดรวมสายด้ายดำจากขื่อคาน โดยมีตำราเก่าเปิดวางอยู่ข้างเปลวเทียน",
+          "unlock_clues": [
+            "ritual_bracelet_core"
+          ],
+          "unlock_items": [
+            "brass_bracelet_kaew",
+            "ritual_grimoire"
+          ]
+        },
+        {
+          "id": "e4_under_table_cloth",
+          "label": "ข้าวของใต้ผ้าคลุมสีหม่นใต้โต๊ะ",
+          "description": "ใต้ผ้าคลุมพบกระเป๋าเดินทางแพ็กครึ่งหนึ่ง หนังสือทวงหนี้ สัญญาซื้อขายที่ดินขอบสวน บันทึกปี 2534 และโน้ตชื่อ ดล–นิด–เพิ่ม",
+          "unlock_clues": [
+            "wichai_debt_evidence"
+          ],
+          "unlock_items": [
+            "wichai_debt_docs"
+          ]
+        }
       ],
       "spoiler_guardrails": [
         "เพียงอ่านตำราหรือเห็นกำไลยังไม่หยุดพิธี และยังไม่เปิด F1 จนกว่าทีมจะเริ่มลงมือปลดกำไลจริง",
@@ -239,7 +475,7 @@
     "E5": {
       "id": "E5",
       "title": "E5: วิชัยจนตรอกในห้องพิธี",
-      "subtitle": "วิชัยโผล่ขึ้นมาเพื่อเก็บหลักฐานหนีและชะงักเมื่อเห็นทีมอยู่หน้าโต๊ะพิธี",
+      "subtitle": "วิชัยโผล่ขึ้นมาตามบันไดและชะงักค้างเมื่อเห็นทีมอยู่หน้าโต๊ะ",
       "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [
         {
@@ -266,10 +502,57 @@
         "H1_FLOOD_TIMELINE"
       ],
       "quick_prompts": [
-        "ยื่นสมุดดลกับแฟ้มหนี้สินจี้ถาม: ทำไมถึงจับคนหายและหลอกแม่แก้ว?",
-        "เจรจากดดันให้วิชัยยอมจำนนและเปิดทางคุมตัว (ทอย SOC)",
-        "จับกุมคุมตัววิชัยไว้ให้พ้นระยะกำไล แล้วเตรียมคลายพิธี (E6)"
+        "เอาหลักฐานที่มีจี้ถามวิชัยตรง ๆ ว่าทำทั้งหมดนี้ไปทำไม?",
+        "พูดกดดันให้วิชัยยอมจำนนและถอยออกจากห้อง",
+        "ช่วยกันคุมตัววิชัยไว้ให้ห่างจากโต๊ะแล้วเตรียมจัดการกำไลต่อ"
       ],
+      "guideline": {
+        "main_objective": "ใช้หลักฐานกดดันและคุมตัววิชัยไว้ให้ห่างจากโต๊ะก่อนลงมือกับกำไล",
+        "ready_label": "กดดันวิชัยแล้ว — คุมตัวเขาให้เรียบร้อยเพื่อเข้าขั้นเตรียมปลดกำไล",
+        "ready_when_any_clues": [
+          "wichai_confronted"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "e5_lead_confront",
+            "label": "ใช้หลักฐานที่มีจี้ถามวิชัยตรง ๆ",
+            "kind": "main",
+            "done_when_clues": [
+              "wichai_confronted"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เอาหลักฐานที่มีจี้ถามวิชัยตรง ๆ ว่าทำทั้งหมดนี้ไปทำไม?"
+          },
+          {
+            "id": "e5_lead_negotiate",
+            "label": "เจรจากดดันให้วิชัยยอมจำนน",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [
+              "E5_WICHAI_NEGOTIATE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "พูดกดดันให้วิชัยยอมจำนนและถอยออกจากห้อง"
+          },
+          {
+            "id": "e5_lead_capture",
+            "label": "คุมตัววิชัยไว้ให้ห่างจากโต๊ะแล้วเตรียมจัดการกำไลต่อ",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "E6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ช่วยกันคุมตัววิชัยไว้ให้ห่างจากโต๊ะแล้วเตรียมจัดการกำไลต่อ"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "วิชัยไม่มีมีดและไม่ฆ่าตัวประกันโดยอัตโนมัติจากการทอยพลาด",
         "เมื่อวิชัยถูกคุมตัวหรือแยกห่างแล้ว เตรียมเข้า E6 เพื่อลงมือปลดกำไลเข้าสู่ ACT F"
@@ -278,7 +561,7 @@
     "E6": {
       "id": "E6",
       "title": "E6: ก่อนปลดกำไล — วงป้องกันเตรียมตอบโต้",
-      "subtitle": "ทุกอย่างพร้อมแล้ว: ทันทีที่เริ่มปลดกำไล วงป้องกันจะดึงแม่แก้วกลับร่างเพื่อเข้าสู่ศึกสุดท้าย",
+      "subtitle": "ทุกอย่างพร้อมแล้ว: ทันทีที่เริ่มปลดกำไล วงป้องกันจะดึงแม่แก้วกลับร่างเพื่อต้านทาน",
       "background_image": "/assets/scenes/e4_ritual_room.png",
       "npcs": [
         {
@@ -291,6 +574,8 @@
         "e6_intro_dm"
       ],
       "allowed_next_scenes": [
+        "E2",
+        "E3",
         "E4",
         "E5"
       ],
@@ -302,9 +587,47 @@
         "H1_FLOOD_TIMELINE"
       ],
       "quick_prompts": [
-        "เทียบหลักฐานปี 2534 ให้ครบก่อนเริ่มปลดกำไล (ทอย INT · H1)",
-        "วางมือลงบนวงด้ายและเริ่มปลดกำไลทองเหลืองเลย (เข้าสู่ FINAL ACT F!)"
+        "เช็กและเทียบเอกสารปี 2534 ให้เรียบร้อยก่อนลงมือปลดกำไล",
+        "เตรียมตัวให้พร้อม แล้วลงมือคลายกำไลทองเหลืองบนโต๊ะได้เลย"
       ],
+      "guideline": {
+        "main_objective": "ตรวจเอกสารและสภาพทีมให้เรียบร้อยก่อนวางมือคลายกำไลทองเหลือง (เมื่อเริ่มคลาย วงป้องกันจะทำงานทันที)",
+        "ready_label": "พร้อมลงมือคลายกำไลทองเหลือง (เข้าสู่ ACT F)",
+        "ready_when_any_clues": [
+          "ritual_bracelet_core"
+        ],
+        "ready_when_all_clues": [
+          "hostages_found",
+          "wichai_debt_evidence"
+        ],
+        "leads": [
+          {
+            "id": "e6_lead_h1",
+            "label": "เทียบบันทึกประตูน้ำกับสมุดยายบุญมีให้เรียบร้อยก่อนเริ่มพิธี",
+            "kind": "optional",
+            "done_when_clues": [
+              "flood_timeline_confirmed"
+            ],
+            "done_when_checks": [
+              "H1_FLOOD_TIMELINE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เช็กและเทียบเอกสารปี 2534 ให้เรียบร้อยก่อนลงมือปลดกำไล"
+          },
+          {
+            "id": "e6_lead_release",
+            "label": "วางมือลงมือคลายกำไลทองเหลืองบนโต๊ะ",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เตรียมตัวให้พร้อม แล้วลงมือคลายกำไลทองเหลืองบนโต๊ะได้เลย"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "อย่าเข้าฉาก F จนกว่าผู้เล่นจะประกาศลงมือปลดกำไลจริง"
       ]
@@ -323,6 +646,50 @@
         "full": "e2_check_body_full",
         "partial": "e2_check_body_partial",
         "failure": "e2_check_body_fail"
+      },
+      "alt_stats": {
+        "INT": {
+          "dc_delta": 0,
+          "label": "งัดสลักกลอนสนิมอย่างถูกเหลี่ยมโดยไม่เสียแรง"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ประตูห้องขังเปิดกว้างในครั้งเดียว เข้าแก้มัดตัวประกันทั้งสามคนได้ทันที"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "กลอนเหล็กคลายจนแง้มประตูออก พอแก้มัดและช่วยกันเปิดต่อได้"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": -1,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "กลอนยังติดแน่นและแรงกระแทกทำให้เจ็บไหล่ (-1 HP) แต่เห็นจุดงัดสำหรับเปิดแล้ว"
+        }
       }
     },
     "E3_HOSTAGES_ORDER": {
@@ -337,6 +704,50 @@
         "full": "e3_check_soc_full",
         "partial": "e3_check_soc_partial",
         "failure": "e3_check_soc_fail"
+      },
+      "alt_stats": {
+        "INT": {
+          "dc_delta": 0,
+          "label": "จดไล่ลำดับเวลาและคำให้การของดลอย่างเป็นระบบ"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": false,
+        "requires_new_clue_or_item": false,
+        "max_attempts": 1
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ดลตั้งสติได้ครบถ้วน ยืนยันลำดับการจับตัวและตัววิชัยอย่างชัดเจน"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ดลจำวันไม่ชัดนัก แต่ยืนยันแล้วว่าวิชัยเป็นคนจับขังและอยู่ชั้นบน"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ดลยังตกใจเสียงฝีเท้าชั้นบน แต่คำพูดของเขาก็ยืนยันชื่อวิชัยแล้ว"
+        }
       }
     },
     "E4_BRACELET_DECODE": {
@@ -351,6 +762,68 @@
         "full": "e4_check_int_full",
         "partial": "e4_check_int_partial",
         "failure": "e4_check_int_fail"
+      },
+      "requires": {
+        "clues": [],
+        "items": [
+          "ritual_grimoire",
+          "brass_bracelet_kaew"
+        ],
+        "min_trust": {},
+        "flags": {},
+        "missing_hint": "ต้องตรวจกล่องบนโต๊ะเพื่อหยิบกำไลทองเหลืองและตำราพิธีมากางเทียบกันก่อน"
+      },
+      "bypass_if": {
+        "clues": [
+          "ritual_plan_prepared"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "ทีมได้เชื่อมโยงตำราพิธีกับกำไลทองเหลืองจนได้ลำดับปลดแกนครบ 3 ขั้นแล้ว ไม่ต้องทอยซ้ำ"
+      },
+      "alt_stats": {
+        "SPI": {
+          "dc_delta": 0,
+          "label": "สัมผัสจุดเชื่อมอาคมบนกำไลเทียบตามตำรา"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ถอดลำดับคลายเกราะ 3 ขั้นสำเร็จ พร้อมรับมือวงป้องกันในบทสุดท้าย"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นจุดเชื่อมด้ายดำกับกำไล แต่ยังอ่านขั้นตอนรับแรงสะท้อนได้ไม่ครบ 3 ขั้น"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "อักขระอาคมซับซ้อนจนปวดขมับ (-1 สติ) แต่ยังสามารถนำตำรากับกำไลมารวมวิเคราะห์ในคลังหลักฐานได้"
+        }
       }
     },
     "E5_WICHAI_NEGOTIATE": {
@@ -365,6 +838,67 @@
         "full": "e5_check_soc_full",
         "partial": "e5_check_soc_partial",
         "failure": "e5_check_soc_fail"
+      },
+      "requires": {
+        "clues": [],
+        "items": [
+          "wichai_debt_docs"
+        ],
+        "min_trust": {},
+        "flags": {},
+        "missing_hint": "วิชัยยังปฏิเสธเสียงแข็งเพราะคุณยังไม่มีหลักฐานมัดตัวโดยตรง ลองค้นหลักฐานรอบห้องพิธีชั้นสองให้ครบก่อน หรือช่วยกันคุมตัวไว้ก่อน"
+      },
+      "alt_stats": {
+        "RES": {
+          "dc_delta": 0,
+          "label": "ยืนกรานกดดันด้วยท่าทีนิ่งแน่วแน่ไม่ถอย"
+        },
+        "INT": {
+          "dc_delta": 0,
+          "label": "กางหลักฐานหนี้สินและข้อเท็จจริงต้อนให้จนมุม"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {
+            "wichai_status": "captured"
+          },
+          "note_th": "วิชัยยอมถอยห่างและเปิดทางให้คุมตัวได้โดยไม่ต้องปะทะ"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "วิชัยยอมถอยห่างจากโต๊ะพิธี แต่ยังต่อรองเงื่อนไขอยู่"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {
+            "วิชัย": -1
+          },
+          "set_flags": {},
+          "note_th": "วิชัยตึงเครียดและไม่ยอมเจรจา (-1 ความเชื่อใจวิชัย) — ยังสามารถช่วยกันคุมตัวไว้ได้"
+        }
       }
     },
     "H1_FLOOD_TIMELINE": {
@@ -379,6 +913,67 @@
         "full": "h1_check_int_full",
         "partial": "h1_check_int_partial",
         "failure": "h1_check_int_fail"
+      },
+      "requires": {
+        "clues": [],
+        "items": [
+          "floodgate_duty_log_copy"
+        ],
+        "min_trust": {},
+        "flags": {},
+        "missing_hint": "ยังขาดสำเนาบันทึกเวรประตูน้ำปี 2534 สำหรับนำมาเทียบเวลากับสมุดของยายบุญมี"
+      },
+      "bypass_if": {
+        "clues": [
+          "flood_timeline_confirmed"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "ทีมได้เชื่อมโยงบันทึกเวรประตูน้ำปี 2534 กับสมุดยายบุญมีในคลังหลักฐานเรียบร้อยแล้ว จึงยืนยันเส้นเวลาได้ทันที"
+      },
+      "alt_stats": {
+        "PER": {
+          "dc_delta": 1,
+          "label": "ไล่เทียบตัวเลขเวลาและลายมือในเอกสารทีละบรรทัด"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ยืนยันเส้นเวลาเปิดประตูน้ำก่อนอพยพครบถ้วน พร้อมยื่นเปิดโปงต่อผู้ใหญ่บ้าน"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "พบจุดเวลาที่ไม่สอดคล้องกันในเอกสารทั้งสองชุด เก็บไว้เป็นหลักฐานต่อหลังจบพิธี"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "สำเนาเก่าเลือนจนเรียงเวลาไม่ลงตัวในตอนนี้ แต่ยังถือเอกสารทั้งคู่ไปต่อได้"
+        }
       }
     }
   },

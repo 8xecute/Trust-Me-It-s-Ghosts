@@ -34,6 +34,10 @@ class StateUpdates(BaseModel):
         default=None,
         description="รหัสจุดบนกระดานแผนที่หากทีมย้ายตำแหน่งในเทิร์นนี้",
     )
+    start_combat: Optional[bool] = Field(
+        default=None,
+        description="ตั้งเป็น true เฉพาะในฉาก D4 หรือ F1 เมื่อผู้เล่นประกาศเปิดฉากต่อสู้/ลงมือปลดเกราะกำไลจริงเท่านั้น",
+    )
     ending_triggered: Optional[
         Literal[
             "act_a_complete",
@@ -61,10 +65,23 @@ class DMDecision(BaseModel):
     """Strict structured response returned by Gemini DM Decision Engine."""
 
     mode: Literal["script", "improvise"] = Field(
-        description="ใช้ 'script' เมื่อมีบทในข้อมูลเกม (data/) ที่ตรงกับคำถาม/การกระทำ หรือ 'improvise' เฉพาะเมื่อผู้เล่นถามนอกบท"
+        description=(
+            "ใช้ 'script' เมื่อมีบทในข้อมูลเกม (data/) ที่ตรงกับเจตนาของผู้เล่นและยังไม่เคยเล่น "
+            "หรือใช้ 'improvise' เมื่อผู้เล่นสำรวจสภาพแวดล้อม บลัฟ/เจรจา ใช้ไอเท็ม-ผสานเบาะแส ใช้ทักษะอาชีพ หรือถามต่อยอดอย่างอิสระ"
+        )
+    )
+    action_kind: Optional[
+        Literal["dialogue", "inspect", "persuade", "bluff", "combine", "combat", "improvise", "advance"]
+    ] = Field(
+        default=None,
+        description="ประเภทการกระทำของผู้เล่นในเทิร์นนี้เพื่อช่วยให้ระบบตอบสนองได้แม่นยำ",
+    )
+    inspect_target_id: Optional[str] = Field(
+        default=None,
+        description="รหัสจุดสำรวจ (inspectable) หรือ recipe ผสานเบาะแสที่ผู้เล่นโต้ตอบด้วยในเทิร์นนี้ (ถ้ามี)",
     )
     character: str = Field(
-        description="ชื่อตัวละครที่พูดในเทิร์นนี้ เช่น 'DM', 'ประเสริฐ' (เฉพาะ ACT A), 'วิชัย' (ACT B), 'ต้น' (ACT B), หรือ 'เสียงวิทยุ'"
+        description="ชื่อตัวละครที่พูดในเทิร์นนี้ เช่น 'DM', 'ประเสริฐ' (เฉพาะ ACT A), 'วิชัย', 'ต้น', 'ยายบุญมี', 'ดล', 'แม่แก้ว (นางตานี)', หรือ 'เสียงวิทยุ'"
     )
     selected_audio_id: Optional[str] = Field(
         default=None,
@@ -76,11 +93,11 @@ class DMDecision(BaseModel):
     )
     improvised_text: Optional[str] = Field(
         default=None,
-        description="บทพูดภาษาไทยสั้น ๆ 1-2 ประโยคตามบุคลิกตัวละครและกฎกันสปอยล์ เมื่อ mode == 'improvise' เท่านั้น",
+        description="บทพูดภาษาไทย 1-3 ประโยคตามบุคลิกตัวละครและกฎกันสปอยล์ เมื่อ mode == 'improvise' เท่านั้น",
     )
     requested_check_id: Optional[str] = Field(
         default=None,
-        description="รหัส Dice Check จากฉากปัจจุบัน เฉพาะเมื่อผู้เล่นระบุการกระทำที่ตรงเงื่อนไขทอยและยังไม่เคยทอยมาก่อน",
+        description="รหัส Dice Check จากฉากปัจจุบัน เฉพาะเมื่อผู้เล่นขอทำแอ็กชันที่ตรงกับ trigger_hint และผ่านเงื่อนไข (ห้ามใส่หากอยู่ใน blocked_checks)",
     )
     state_updates: StateUpdates = Field(
         default_factory=StateUpdates,

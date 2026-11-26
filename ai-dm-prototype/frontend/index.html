@@ -29,7 +29,7 @@
 
       <h1 class="lobby-title">เสียงร้องจากสวนกล้วย</h1>
       <p class="lobby-subtitle">
-        คดีที่ 001: ACT A (ศาลาริมทางและรถตู้) & ACT B (บ้านผู้ใหญ่บ้าน)
+        คดีที่ 001: ปริศนาคนหายบ้านหนองตาล (ACT A – ACT F)
         <br />
         สนทนาวางแผนร่วมกันแล้วพูดหรือพิมพ์ส่งคำสั่งให้ผู้ดำเนินเกม (หนึ่งอาชีพต่อหนึ่งผู้เล่น)
       </p>
@@ -56,27 +56,27 @@
           <div class="act-toggle-group" role="group" aria-label="เลือกบทเริ่มต้น">
             <button type="button" class="act-toggle-btn selected" data-act="A">
               <strong>ACT A · ศาลาริมทาง</strong>
-              <span>ผู้ใหญ่ประเสริฐ & วิทยุรถตู้ (A1–A3)</span>
+              <span>บทนำ: ศาลาริมทางบ้านหนองตาล (A1–A3)</span>
             </button>
             <button type="button" class="act-toggle-btn" data-act="B">
               <strong>ACT B · บ้านผู้ใหญ่บ้าน</strong>
-              <span>วิชัย ต้น และภาพเก่า 2534 (B1–B3)</span>
+              <span>บ้านผู้ใหญ่บ้าน &amp; แฟ้มคดี (B1–B3)</span>
             </button>
             <button type="button" class="act-toggle-btn" data-act="C">
-              <strong>ACT C · บ้านดล & ยายบุญมี</strong>
-              <span>สมุดปกดำ เสียงเคาะ และประวัติแก้ว (C1–C5)</span>
+              <strong>ACT C · แกะรอยในหมู่บ้าน</strong>
+              <span>ตามรอยเบาะแสในหมู่บ้าน (C1–C5)</span>
             </button>
             <button type="button" class="act-toggle-btn" data-act="D">
-              <strong>ACT D · ศาลด้ายดำในสวน</strong>
-              <span>แม่แก้ว 3 ป้ายชื่อ และรอยล้อ (D1–D5)</span>
+              <strong>ACT D · แนวสวนกล้วย</strong>
+              <span>เข้าสู่แนวสวนกล้วยยามค่ำ (D1–D5)</span>
             </button>
             <button type="button" class="act-toggle-btn" data-act="E">
-              <strong>ACT E · เรือนไม้ร้าง & H1</strong>
-              <span>ช่วยตัวประกัน 3 คน กำไล และวิชัย (E1–E6)</span>
+              <strong>ACT E · เรือนไม้ร้าง</strong>
+              <span>เรือนไม้ร้างท้ายสวน (E1–E6)</span>
             </button>
             <button type="button" class="act-toggle-btn" data-act="F">
-              <strong>ACT F · FINAL & ตอนจบ</strong>
-              <span>คลายเกราะ 3 ขั้น รุ่งเช้า Ending A–D (F1–F6)</span>
+              <strong>ACT F · บทสุดท้าย</strong>
+              <span>บทสรุปคดีบ้านหนองตาล (F1–F6)</span>
             </button>
           </div>
         </div>
@@ -104,10 +104,10 @@
             <summary>คำอธิบายค่าสถานะและค่าพลัง</summary>
             <div class="stat-legend-grid">
               <div><b>BODY (ร่างกาย)</b> โจมตีกายภาพและป้องกันแรงปะทะ (PDEF)</div>
-              <div><b>PER (การสังเกต)</b> สังเกตพิรุธและรายละเอียดฉาก (ทอยใน A1, B1)</div>
-              <div><b>INT (เชาวน์ปัญญา)</b> วิเคราะห์เอกสารและหลักฐาน (ทอยใน A1, B3)</div>
-              <div><b>SOC (การเข้าสังคม)</b> เจรจา ซักถามพยาน (B2) และกล่อมวิญญาณ</div>
-              <div><b>SPI (จิตวิญญาณ)</b> สัมผัสคลื่นผีและต้านพลังหลอน (MDEF, ทอยใน A2)</div>
+              <div><b>PER (การสังเกต)</b> สังเกตรายละเอียดฉากและพิรุธ</div>
+              <div><b>INT (เชาวน์ปัญญา)</b> วิเคราะห์เอกสารและหลักฐาน</div>
+              <div><b>SOC (การเข้าสังคม)</b> เจรจา ซักถาม และกล่อมวิญญาณ</div>
+              <div><b>SPI (จิตวิญญาณ)</b> สัมผัสคลื่นลี้ลับและต้านพลังหลอน (MDEF)</div>
               <div><b>RES (ความต้านทาน)</b> ต้านทานความเสียหายทั้งร่างกายและจิตใจ</div>
               <div><b>พลังชีวิต (HP)</b> สูงสุด 15 — หากเหลือ 0 จะหมดสติในฉากต่อสู้</div>
               <div><b>สติ (Sanity)</b> สูงสุด 10 — ลดลงจากเหตุหลอน หากเหลือ 0 จะเสียขวัญ</div>
@@ -158,11 +158,69 @@
         </div>
 
         <div class="topbar-actions">
-          <button id="demo-combat-btn" class="btn btn-danger-ghost btn-sm" type="button" title="ทดสอบฉากปะทะผีเงาจมน้ำ">ทดสอบฉากต่อสู้</button>
+          <button id="demo-combat-btn" class="btn btn-danger-ghost btn-sm" type="button" title="ทดสอบฉากปะทะลี้ลับ">ทดสอบฉากต่อสู้</button>
           <button id="reset-room-btn" class="btn btn-ghost btn-sm" type="button" title="เริ่มเล่นช่วง ACT A ใหม่">เริ่มคดีใหม่</button>
         </div>
       </div>
     </header>
+
+    <!-- MISSION COMPASS ("เข็มทิศภารกิจ") -->
+    <section id="guideline-banner" class="guideline-banner" aria-label="เข็มทิศภารกิจ">
+      <div class="guideline-bar">
+        <div class="guideline-summary">
+          <span class="guideline-kicker">เข็มทิศภารกิจ</span>
+          <span id="guideline-act-title" class="guideline-act-title">บทที่ 1 · ศาลาริมทาง</span>
+          <span id="guideline-scene-goal" class="guideline-scene-goal">สอบถามข้อมูลเบื้องต้นและสังเกตรอบพื้นที่</span>
+        </div>
+        <div class="guideline-actions">
+          <span id="guideline-status-pill" class="pill pill-warn">กำลังสืบสวน</span>
+          <button
+            id="guideline-toggle-btn"
+            class="btn btn-ghost btn-sm guideline-toggle-btn"
+            type="button"
+            aria-expanded="false"
+            aria-controls="guideline-drawer"
+          >
+            <span id="guideline-toggle-label">แนวทาง</span>
+            <span id="guideline-progress-count" class="guideline-progress-count">0/0</span>
+            <span id="guideline-ready-dot" class="guideline-ready-dot hidden" aria-hidden="true"></span>
+            <span class="guideline-chevron" aria-hidden="true">▾</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="guideline-drawer" class="guideline-drawer hidden" role="region" aria-label="เป้าหมายและเบาะแสประจำฉาก">
+        <div class="guideline-drawer-head">
+          <div class="guideline-drawer-meta">
+            <div id="guideline-act-goal" class="guideline-act-goal"></div>
+            <div id="guideline-missing-note" class="guideline-missing-note hidden"></div>
+          </div>
+          <button id="guideline-close-btn" class="icon-mini-btn" type="button" aria-label="ปิดเข็มทิศภารกิจ">ปิด</button>
+        </div>
+
+        <div class="guideline-sections-grid">
+          <div class="guideline-section">
+            <h4 class="guideline-section-title">เป้าหมายหลัก <span class="guideline-kind-tag main">สำคัญ</span></h4>
+            <ul id="guideline-main-leads" class="guideline-list"></ul>
+          </div>
+          <div class="guideline-section">
+            <h4 class="guideline-section-title">เบาะแสเสริม <span class="guideline-kind-tag optional">ทางเลือก</span></h4>
+            <ul id="guideline-optional-leads" class="guideline-list"></ul>
+          </div>
+        </div>
+
+        <div id="guideline-interactive-row" class="guideline-interactive-row hidden">
+          <div id="guideline-inspectables-wrap" class="guideline-subblock hidden">
+            <h4 class="guideline-section-title">จุดสังเกตในฉาก <span class="guideline-hint-inline">คลิกเพื่อตรวจดูทันที</span></h4>
+            <div id="guideline-inspectables-list" class="guideline-chip-list"></div>
+          </div>
+          <div id="guideline-combines-wrap" class="guideline-subblock hidden">
+            <h4 class="guideline-section-title">เชื่อมโยงหลักฐาน <span class="guideline-hint-inline">รวมเอกสาร/ไอเท็ม</span></h4>
+            <div id="guideline-combines-list" class="guideline-chip-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="workspace-grid">
       <!-- CENTER TABLETOP STAGE -->
@@ -194,7 +252,7 @@
                   <span id="combat-round-badge" class="combat-round-badge">รอบที่ 1 · ตาผู้สืบสวน</span>
                   <span id="combat-tags" class="combat-tags"></span>
                 </div>
-                <div class="combat-enemy-name" id="combat-enemy-name">ผีเงาจมน้ำ</div>
+                <div class="combat-enemy-name" id="combat-enemy-name">เป้าหมายลี้ลับ</div>
                 <div class="combat-meters">
                   <div class="meter-row">
                     <span>พลังชีวิตผี</span>
@@ -234,7 +292,7 @@
               </div>
 
               <div id="ghost-sprite-wrap" class="ghost-sprite-wrap">
-                <img id="ghost-sprite-img" src="/assets/characters/drowned_echo.png" alt="ผีเงาจมน้ำ" class="ghost-sprite" />
+                <img id="ghost-sprite-img" src="/assets/characters/drowned_echo.png" alt="ร่างลี้ลับ" class="ghost-sprite" />
               </div>
             </div>
 
@@ -290,6 +348,22 @@
                 <g id="board-routes-layer"></g>
               </svg>
               <div id="board-nodes-layer" class="board-nodes-layer"></div>
+            </div>
+
+            <!-- NON-BLOCKING ACT-EXIT CONFIRM MODAL -->
+            <div id="exit-confirm-modal" class="exit-confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="exit-confirm-title">
+              <div class="exit-confirm-card">
+                <div class="exit-confirm-badge">คำเตือนก่อนข้ามช่วงเนื้อเรื่อง</div>
+                <h3 id="exit-confirm-title" class="exit-confirm-title">ยังมีเป้าหมายหลักที่ยังไม่ได้ตรวจสอบ</h3>
+                <p id="exit-confirm-desc" class="exit-confirm-desc">
+                  หากมุ่งหน้าต่อไปยังจุดหมายนี้ทันที อาจพลาดเบาะแสสำคัญของช่วงปัจจุบัน:
+                </p>
+                <ul id="exit-confirm-missing-list" class="exit-confirm-missing-list"></ul>
+                <div class="exit-confirm-actions">
+                  <button id="exit-confirm-cancel-btn" class="btn btn-ghost btn-sm" type="button">อยู่สำรวจต่อ</button>
+                  <button id="exit-confirm-proceed-btn" class="btn btn-primary btn-sm" type="button">ยืนยันเดินทางต่อ</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -354,6 +428,10 @@
             <span id="combat-turn-status">เลือก 1 การกระทำในรอบนี้ หรือพิมพ์/พูดบรรยายวิธีรับมือ</span>
             <span id="combat-last-log" class="combat-last-log"></span>
           </div>
+          <div id="combat-goal-box" class="combat-goal-box hidden">
+            <span class="combat-goal-badge">เป้าหมายการปะทะ</span>
+            <span id="combat-goal-text" class="combat-goal-text"></span>
+          </div>
           <div id="combat-party-turn-strip" class="combat-party-turn-strip"></div>
           <div id="combat-roll-card" class="combat-roll-card hidden">
             <div id="combat-roll-die" class="combat-roll-die">20</div>
@@ -388,7 +466,7 @@
             </button>
             <button type="button" id="combat-ritual-btn" class="btn combat-btn ritual hidden" data-action="ritual">
               <strong id="combat-ritual-btn-title">คลายเกราะ 3 ขั้น</strong>
-              <span id="combat-ritual-btn-desc">คุมแรง -> แยกสาย -> คลายปมกำไล (INT/SPI)</span>
+              <span id="combat-ritual-btn-desc">ขั้นที่ 1/3 — สังเกตจุดเชื่อมสายด้าย (INT/SPI)</span>
             </button>
             <button type="button" class="btn combat-btn retreat" data-action="retreat">
               <strong>คุ้มกันถอยทัพ</strong>
@@ -400,18 +478,29 @@
 
         <!-- DICE CHECK PANEL -->
         <div id="dice-panel" class="dice-panel hidden">
-          <div class="dice-info">
-            <svg class="d20-icon" viewBox="0 0 40 40" width="32" height="32" aria-hidden="true">
-              <polygon points="20,2 37,12 37,28 20,38 3,28 3,12" fill="rgba(212,168,83,0.12)" stroke="#d4a853" stroke-width="1.5" />
-              <polygon points="20,9 31,26 9,26" fill="none" stroke="#d4a853" stroke-width="1.2" />
-              <text x="20" y="23.5" text-anchor="middle" fill="#efe9de" font-size="8.5" font-weight="600">20</text>
-            </svg>
-            <div>
-              <div class="dice-label-row"><span class="dice-badge">ทอยเต๋า D20</span> <span id="dice-check-title" class="dice-title">ตรวจสอบเบาะแส</span></div>
-              <div id="dice-check-meta" class="dice-meta">ค่าสถานะ PER · เป้าหมาย DC 12</div>
+          <div class="dice-panel-main">
+            <div class="dice-info">
+              <svg class="d20-icon" viewBox="0 0 40 40" width="32" height="32" aria-hidden="true">
+                <polygon points="20,2 37,12 37,28 20,38 3,28 3,12" fill="rgba(212,168,83,0.12)" stroke="#d4a853" stroke-width="1.5" />
+                <polygon points="20,9 31,26 9,26" fill="none" stroke="#d4a853" stroke-width="1.2" />
+                <text x="20" y="23.5" text-anchor="middle" fill="#efe9de" font-size="8.5" font-weight="600">20</text>
+              </svg>
+              <div class="dice-info-text">
+                <div class="dice-label-row">
+                  <span class="dice-badge">ทอยเต๋า D20</span>
+                  <span id="dice-check-title" class="dice-title">ตรวจสอบเบาะแส</span>
+                  <span id="dice-actor-lock" class="dice-actor-lock hidden"></span>
+                </div>
+                <div id="dice-check-meta" class="dice-meta">ค่าสถานะ PER · เป้าหมาย DC 12</div>
+              </div>
+            </div>
+            <div class="dice-panel-actions">
+              <button id="dice-focus-btn" class="btn btn-ghost btn-sm dice-prep-btn hidden" type="button">ใช้ 1 โฟกัส (+2)</button>
+              <button id="dice-assist-btn" class="btn btn-ghost btn-sm dice-prep-btn hidden" type="button">ช่วยเพื่อน (ได้เปรียบ 2d20)</button>
+              <button id="roll-dice-btn" class="btn btn-dice" type="button">ทอย D20</button>
             </div>
           </div>
-          <button id="roll-dice-btn" class="btn btn-dice" type="button">ทอย D20</button>
+          <div id="dice-alt-stats" class="dice-alt-stats hidden" role="group" aria-label="เลือกแนวทางการทอย"></div>
         </div>
 
         <div id="dice-result-banner" class="dice-result-banner hidden"></div>
@@ -475,6 +564,7 @@
               </button>
               <button class="dossier-subtab" type="button" data-subtab="items">
                 ไอเท็ม <span id="items-count" class="subtab-count">0</span>
+                <span id="items-ready-dot" class="subtab-ready-dot hidden" aria-hidden="true"></span>
               </button>
               <button class="dossier-subtab" type="button" data-subtab="trust">
                 ท่าที NPC
@@ -500,7 +590,7 @@
                 <button class="clue-filter-chip" type="button" data-cat="occult">ลี้ลับ</button>
               </div>
               <ul id="clues-list" class="clue-accordion-list">
-                <li class="empty-note">ยังไม่มีเบาะแส — สอบถามประเสริฐหรือสังเกตพื้นที่</li>
+                <li class="empty-note">ยังไม่มีเบาะแส — สอบถามผู้ใหญ่ประเสริฐหรือสำรวจรอบศาลา</li>
               </ul>
             </div>
 
@@ -510,6 +600,10 @@
                 <ul id="items-list" class="item-list">
                   <li class="empty-note">ยังไม่มีเอกสารหรือไอเท็ม</li>
                 </ul>
+              </div>
+              <div id="combine-hints-card" class="journal-card hidden">
+                <h3>เชื่อมโยงหลักฐาน</h3>
+                <ul id="combine-hints-list" class="combine-list"></ul>
               </div>
             </div>
 

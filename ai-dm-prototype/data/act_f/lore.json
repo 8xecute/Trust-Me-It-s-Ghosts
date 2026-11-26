@@ -30,8 +30,8 @@
     },
     {
       "id": "reconcile_spot_f5",
-      "name": "วงด้ายที่คลายแล้ว (F5)",
-      "subtitle": "เจรจากับแม่แก้วหลังเป็นอิสระ",
+      "name": "จุดคลี่คลายเหตุการณ์",
+      "subtitle": "รอให้พิธีกรรมตรงหน้ายุติลงก่อน",
       "scene": "F5",
       "x": 62,
       "y": 46,
@@ -43,8 +43,8 @@
     },
     {
       "id": "dawn_road_epilogue",
-      "name": "ถนนหน้าหมู่บ้านยามฟ้าสาง",
-      "subtitle": "บทส่งท้าย: ส่งมอบหลักฐานให้ประเสริฐ & สรุปตอนจบ",
+      "name": "ทางออกหน้าหมู่บ้าน",
+      "subtitle": "เส้นทางกลับสู่ถนนใหญ่หลังจบภารกิจ",
       "scene": "F6",
       "x": 84,
       "y": 64,
@@ -82,9 +82,55 @@
       "allowed_items": [],
       "available_checks": [],
       "quick_prompts": [
-        "เข้าสู้/ทำพิธีคลายเกราะ 3 ขั้นกับแม่แก้วเลย!",
-        "พวกเราเคยช่วย/ฟังคุณที่ศาล — ช่วยต้านด้ายเอาไว้!",
+        "ลงมือรับมือและหาทางคลายเกราะสามชั้นบนโต๊ะเลย!",
+        "แม่แก้ว พวกเราจะไม่ทำร้ายคุณ พยายามต้านแรงด้ายไว้ก่อน!",
         "ดูจุดเชื่อมด้ายบนโต๊ะทั้งสามจุดก่อนลงมือ"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจสายด้ายทั้งสามจุดบนโต๊ะและคลายเกราะ 3 ขั้นเพื่อปลดกำไลทองเหลืองให้แม่แก้วเป็นอิสระ",
+        "ready_label": "เกราะพิธีสลายแล้ว — พร้อมเข้าสู่ช่วงคลี่คลาย",
+        "ready_when_any_clues": [
+          "ritual_stopped"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "f1_lead_inspect",
+            "label": "ดูจุดเชื่อมด้ายบนโต๊ะทั้งสามจุดก่อนลงมือ",
+            "kind": "optional",
+            "done_when_clues": [
+              "ritual_stopped"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ดูจุดเชื่อมด้ายบนโต๊ะทั้งสามจุดก่อนลงมือ"
+          },
+          {
+            "id": "f1_lead_unseal",
+            "label": "คลายเกราะ 3 ขั้นและปลดกำไลทองเหลือง",
+            "kind": "main",
+            "done_when_clues": [
+              "ritual_stopped"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "F5",
+              "F6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลงมือรับมือและหาทางคลายเกราะสามชั้นบนโต๊ะเลย!"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "f1_table_knots",
+          "label": "สายด้ายสามจุดบนโต๊ะพิธี",
+          "description": "บนโต๊ะเห็นสายตึงรับแรง ด้ายป้ายชื่อทั้งสามเส้น และปมบังคับที่รัดรอบกำไลทองเหลืองซึ่งต้องแก้ทีละขั้นก่อนปลดแกน",
+          "unlock_clues": [],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ระหว่างเกราะพิธีเปิดอยู่ (F1-F3) ดาเมจใส่แม่แก้วจะไม่เข้าจนกว่าจะคลายเกราะครบ 3 ขั้น",
@@ -124,10 +170,59 @@
         "F5_KAEW_RECONCILE"
       ],
       "quick_prompts": [
-        "แสดงหลักฐานและเจรจาให้แม่แก้วยอมสงบ เราจะตีแผ่ความจริงให้ (ทอย SOC/SPI)",
-        "ยืนขวางปกป้องวิชัยจากการลงทัณฑ์ของแม่แก้วเพื่อนำส่งตำรวจ",
-        "พาดล นิด เพิ่ม และวิชัยออกไปหน้าถนนยามฟ้าสางเพื่อเปิดเผยหลักฐาน (Epilogue F6)"
+        "แสดงหลักฐานที่มีและรับปากกับแม่แก้วว่าจะเปิดเผยความจริงให้ชาวบ้านรู้",
+        "คุมตัววิชัยไว้ให้พ้นทางแม่แก้ว เพื่อพาตัวไปรับโทษตามกฎหมาย",
+        "พาตัวประกันทั้งหมด วิชัย และหลักฐานออกจากเรือนไม้กลับไปยังถนนหน้าหมู่บ้าน"
       ],
+      "guideline": {
+        "main_objective": "เจรจากับแม่แก้วหลังเป็นอิสระ คุมตัววิชัยไว้ให้เรียบร้อย แล้วพาทุกคนออกไปยังถนนหน้าหมู่บ้าน",
+        "ready_label": "พร้อมพาผู้รอดชีวิตและหลักฐานออกสู่ถนนหน้าหมู่บ้าน",
+        "ready_when_any_clues": [
+          "kaew_reconciled"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "f5_lead_reconcile",
+            "label": "แสดงหลักฐานและเจรจาให้แม่แก้วยอมสงบ",
+            "kind": "main",
+            "done_when_clues": [
+              "kaew_reconciled"
+            ],
+            "done_when_checks": [
+              "F5_KAEW_RECONCILE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "แสดงหลักฐานที่มีและรับปากกับแม่แก้วว่าจะเปิดเผยความจริงให้ชาวบ้านรู้"
+          },
+          {
+            "id": "f5_lead_protect",
+            "label": "คุมตัววิชัยให้พ้นทางแม่แก้วเพื่อนำส่งตำรวจ",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "F6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "คุมตัววิชัยไว้ให้พ้นทางแม่แก้ว เพื่อพาตัวไปรับโทษตามกฎหมาย"
+          },
+          {
+            "id": "f5_lead_exit",
+            "label": "พาตัวประกัน วิชัย และหลักฐานออกจากเรือนไม้กลับถนนหน้าหมู่บ้าน",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "F6"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "พาตัวประกันทั้งหมด วิชัย และหลักฐานออกจากเรือนไม้กลับไปยังถนนหน้าหมู่บ้าน"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "สัญญาปากเปล่าไม่พอสำหรับ Ending A — ต้องพาผู้รอดชีวิตและหลักฐานไปส่งมอบจริงในบทส่งท้าย (F6) หรือกดสรุปตอนจบ",
         "ถ้าแม่แก้วยังไม่ได้รับการเกลี้ยกล่อมและทีมไม่ออกหน้าปกป้อง เธออาจลงมือกับวิชัย (Ending B Vigilante)"
@@ -136,7 +231,7 @@
     "F6": {
       "id": "F6",
       "title": "Epilogue: รุ่งเช้าหน้าถนนกับผู้ใหญ่ประเสริฐ",
-      "subtitle": "นำผู้รอดชีวิตและหลักฐานปี 2534 ออกมาส่งมอบยามฟ้าสางเพื่อสรุปผลคดี CASE 001",
+      "subtitle": "นำผู้รอดชีวิตและหลักฐานปี 2534 ออกมาส่งมอบยามฟ้าสางเพื่อสรุปผลคดี",
       "background_image": "/assets/scenes/f6_dawn_road.png",
       "npcs": [
         {
@@ -155,10 +250,43 @@
       "allowed_items": [],
       "available_checks": [],
       "quick_prompts": [
-        "ยื่นสมุดยายบุญมี บันทึกประตูน้ำ และหลักฐานทั้งหมดให้ประเสริฐกับตำรวจ (เปิดเผยความจริง)",
+        "ยื่นเอกสารปี 2534 และหลักฐานทั้งหมดที่รวบรวมได้ให้ผู้ใหญ่ประเสริฐกับตำรวจ",
         "พาผู้รอดชีวิตส่งโรงพยาบาลและปิดงานโดยไม่เปิดเผยแฟ้มปี 2534",
-        "สรุปผลปิดคดี CASE 001"
+        "ปิดงานและส่งมอบรายงานสรุปคดีทั้งหมด"
       ],
+      "guideline": {
+        "main_objective": "ตัดสินใจว่าจะส่งมอบหลักฐานปี 2534 ให้ประเสริฐและเจ้าหน้าที่หรือไม่ แล้วสรุปผลปิดงาน",
+        "ready_label": "ส่งมอบหลักฐานเรียบร้อย — พร้อมสรุปปิดงาน",
+        "ready_when_any_clues": [
+          "flood_truth_disclosed"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "f6_lead_disclose",
+            "label": "ยื่นเอกสารปี 2534 และหลักฐานทั้งหมดให้ประเสริฐกับตำรวจ",
+            "kind": "main",
+            "done_when_clues": [
+              "flood_truth_disclosed"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ยื่นเอกสารปี 2534 และหลักฐานทั้งหมดที่รวบรวมได้ให้ผู้ใหญ่ประเสริฐกับตำรวจ"
+          },
+          {
+            "id": "f6_lead_close",
+            "label": "สรุปผลและปิดงานสืบสวน",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ปิดงานและส่งมอบรายงานสรุปคดีทั้งหมด"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "ถ้าทีมยื่นหลักฐานปี 2534 จริง ให้ประเสริฐยอมรับและตั้ง flood_truth_disclosed=true ก่อนปิดคดีด้วย Ending Resolver"
       ]
@@ -177,6 +305,61 @@
         "full": "f5_check_full",
         "partial": "f5_check_partial",
         "failure": "f5_check_fail"
+      },
+      "alt_stats": {
+        "SPI": {
+          "dc_delta": 0,
+          "label": "ส่งเจตนาจริงใจผ่านกระแสวิญญาณให้แม่แก้วรับรู้"
+        },
+        "INT": {
+          "dc_delta": 1,
+          "label": "ลำดับหลักฐานทั้งหมดพิสูจน์แผนเปิดโปงคนร้าย"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {
+            "kaew_trust": "high",
+            "kaew_final": "calm"
+          },
+          "note_th": "แม่แก้วยอมรับคำมั่นว่าจะเปิดเผยความจริงและยอมสงบลง (ความเชื่อใจแม่แก้วเพิ่ม)"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {
+            "kaew_final": "calm"
+          },
+          "note_th": "แม่แก้วกังขาแต่ยอมให้โอกาสนำหลักฐานไปตีแผ่ต่อหน้าทุกคนก่อนฟ้าสาง"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {
+            "แม่แก้ว (นางตานี)": -1
+          },
+          "set_flags": {},
+          "note_th": "แม่แก้วไม่เชื่อคำสัญญาเปล่า ๆ (-1 สติ, -1 ความเชื่อใจแม่แก้ว) — ยังสามารถพาทุกคนออกสู่ถนนใหญ่ได้"
+        }
       }
     }
   },

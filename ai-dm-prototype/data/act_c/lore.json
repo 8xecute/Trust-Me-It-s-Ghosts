@@ -63,8 +63,8 @@
     },
     {
       "id": "don_desk",
-      "name": "โต๊ะทำงานและสมุดดล",
-      "subtitle": "ปฏิทิน โน้ตตาเพิ่ม และสมุดปกดำ",
+      "name": "โต๊ะทำงานของดล",
+      "subtitle": "กองเอกสารและกระดาษที่วางค้างไว้",
       "scene": "C2",
       "x": 45,
       "y": 30,
@@ -74,8 +74,8 @@
     },
     {
       "id": "don_floor_echo",
-      "name": "มุมพื้นไม้เสียงเคาะ",
-      "subtitle": "คราบชื้นประหลาดและสัญญาณผีเงาจมน้ำ",
+      "name": "มุมห้องโถงบ้านดล",
+      "subtitle": "พื้นไม้และผนังด้านในบ้าน",
       "scene": "C3",
       "x": 46,
       "y": 68,
@@ -85,8 +85,8 @@
     },
     {
       "id": "grove_boonmee_house",
-      "name": "บ้านยายบุญมี (ก่อนทางแยก)",
-      "subtitle": "ผู้ดูแลศาลและสมุดอพยพปี 2534",
+      "name": "บ้านไม้ก่อนทางแยก",
+      "subtitle": "เรือนไม้เปิดไฟริมทางเข้าสวน",
       "scene": "C5",
       "x": 72,
       "y": 46,
@@ -96,8 +96,8 @@
     },
     {
       "id": "c_to_act_d_gate",
-      "name": "ทางแยกเข้าสวนกล้วย (จบบท C)",
-      "subtitle": "มุ่งหน้าสู่สวนกล้วยและศาลเก่าใน ACT D",
+      "name": "ทางแยกเข้าสวนกล้วย",
+      "subtitle": "เส้นทางสู่แนวสวนกล้วยยามค่ำ",
       "scene": "C5",
       "x": 88,
       "y": 72,
@@ -135,8 +135,68 @@
       "quick_prompts": [
         "เดินเข้าไปค้นโต๊ะทำงานและกองแฟ้มของดล",
         "ตรวจดูอาหารบนโต๊ะ ประตูบ้าน และรอยเท้า",
-        "เปิดแผ่นไม้ใต้พื้นบ้านดูว่ามีคนซ่อนอยู่ไหม",
-        "ออกไปทางบ้านยายบุญมีก่อนทางแยกเข้าสวนเลย"
+        "ลองเดินสำรวจรอบห้องโถงและมุมอับในบ้านดูว่ามีร่องรอยอะไรอีกไหม",
+        "ออกไปสำรวจบริเวณทางแยกเข้าสวนกล้วยต่อ"
+      ],
+      "guideline": {
+        "main_objective": "สำรวจสภาพบ้านดลและเข้าตรวจค้นโต๊ะทำงานเพื่อหาเบาะแสที่ดลทิ้งไว้",
+        "ready_label": "ค้นโต๊ะทำงานพบเบาะแสแล้ว — สำรวจต่อหรือมุ่งหน้าไปทางแยกเข้าสวน",
+        "ready_when_any_clues": [
+          "don_table_found",
+          "don_notebook_found"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "c1_lead_desk",
+            "label": "เดินเข้าไปค้นโต๊ะทำงานและกองแฟ้มของดล",
+            "kind": "main",
+            "done_when_clues": [
+              "don_table_found",
+              "don_notebook_found"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "C2"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เดินเข้าไปค้นโต๊ะทำงานและกองแฟ้มของดล"
+          },
+          {
+            "id": "c1_lead_house",
+            "label": "ตรวจอาหารบนโต๊ะ ประตูบ้าน และมุมอับในห้องโถง",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "C3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ตรวจดูอาหารบนโต๊ะ ประตูบ้าน และรอยเท้า"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "c1_dining_and_door",
+          "label": "ประตูมุ้งลวดและจานอาหารบนโต๊ะ",
+          "description": "ประตูแง้มอยู่โดยไม่มีร่องรอยงัดแงะ อาหารบนโต๊ะแห้งเริ่มเสียและถ้วยจับฝุ่นเหมือนไม่มีคนอยู่มาหลายวัน",
+          "unlock_clues": [],
+          "unlock_items": []
+        },
+        {
+          "id": "c1_desk_papers",
+          "label": "โต๊ะทำงานที่มีกระดาษวางค้าง",
+          "description": "ข้างโต๊ะมีปฏิทินวงนัดนิดคุยเรื่องรูปแถวศาล โน้ตตาเพิ่มเตือนเรื่องคนเข็นรถแปลก ๆ แถวปากสวน และใต้กองแฟ้มมีสมุดปกดำของดล",
+          "unlock_clues": [
+            "don_table_found",
+            "don_notebook_found"
+          ],
+          "unlock_items": [
+            "note_from_phoem",
+            "don_black_notebook"
+          ]
+        }
       ],
       "spoiler_guardrails": [
         "ดลยังหายตัวอยู่ ห้ามสวมบทดลตอบคำถามใน ACT C และห้ามให้ประเสริฐ/วิชัยปรากฏตัว",
@@ -170,9 +230,71 @@
       ],
       "quick_prompts": [
         "ในสมุดดลเขียนอะไรไว้บ้าง อ่านทุกหน้าเลย",
-        "ลองวิเคราะห์รูปแบบวันที่ข่าวผีกับราคาซื้อขายที่ดิน (ทอย INT)",
+        "ลองเรียงเทียบวันที่ข่าวผีกับราคาซื้อขายที่ดินในสมุดดู",
         "เศษด้ายดำที่สันสมุดมาจากไหน?",
-        "ฟังเสียงรอบห้องต่อ / ออกไปหายายบุญมีก่อนทางแยก"
+        "สำรวจมุมอื่น ๆ ในบ้านดลต่อ หรือออกไปหายายบุญมีก่อนทางแยก"
+      ],
+      "guideline": {
+        "main_objective": "อ่านรายละเอียดในสมุดปกดำของดลให้ครบ เพื่อตามเบาะแสไปยังผู้ดูแลศาลก่อนทางแยก",
+        "ready_label": "ได้ข้อมูลจากสมุดดลแล้ว — สำรวจบ้านต่อหรือไปหายายบุญมีก่อนทางแยก",
+        "ready_when_any_clues": [
+          "don_notebook_found"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "c2_lead_read",
+            "label": "เปิดอ่านรายละเอียดทั้งหมดในสมุดปกดำของดล",
+            "kind": "main",
+            "done_when_clues": [
+              "don_notebook_found"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ในสมุดดลเขียนอะไรไว้บ้าง อ่านทุกหน้าเลย"
+          },
+          {
+            "id": "c2_lead_pattern",
+            "label": "เทียบวันที่ข่าวผีกับราคาซื้อขายที่ดินในสมุด",
+            "kind": "optional",
+            "done_when_clues": [
+              "land_price_pattern"
+            ],
+            "done_when_checks": [
+              "C2_LAND_PATTERN"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองเรียงเทียบวันที่ข่าวผีกับราคาซื้อขายที่ดินในสมุดดู"
+          },
+          {
+            "id": "c2_lead_next",
+            "label": "สำรวจมุมอื่นในบ้านดลหรือเดินทางไปหายายบุญมี",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "C3",
+              "C5"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "สำรวจมุมอื่น ๆ ในบ้านดลต่อ หรือออกไปหายายบุญมีก่อนทางแยก"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "c2_black_notebook",
+          "label": "สมุดปกดำของดลและเศษด้ายดำ",
+          "description": "สมุดจดรายชื่อเจ้าของที่ดิน ชื่อวิชัย วันนัดขายที่ โน้ตสงสัยเรื่องข่าวผี และระบุว่า 'ยายบุญมีดูแลศาล อยู่บ้านก่อนทางแยกเข้าสวน'",
+          "unlock_clues": [
+            "don_notebook_found"
+          ],
+          "unlock_items": [
+            "don_black_notebook"
+          ]
+        }
       ],
       "spoiler_guardrails": [
         "อ่านเนื้อหาในสมุดได้ครบฟรีเมื่อเปิดค้น (ชื่อวิชัย ข่าวทวงหนี้ที่ต้องตรวจสอบ ชื่อย้ายบุญมี และคำถามเรื่องศาล)",
@@ -203,9 +325,66 @@
       ],
       "quick_prompts": [
         "เปิดแผ่นไม้ใต้พื้นบ้านดูว่าอะไรเคาะอยู่ข้างล่าง",
-        "ตั้งจิตสัมผัสพลังเย็นจากเศษด้ายดำและคราบน้ำ (ทอย SPI)",
-        "ขยับเข้าใกล้เสียงเคาะเพื่อดูว่ามีร่างอะไรซ่อนอยู่ไหม",
+        "ลองตรวจสัมผัสไอเย็นผิดปกติตรงคราบน้ำและรอยต่อไม้",
+        "ลองก้มฟังเสียงเคาะและตามดูคราบชื้นตรงมุมผนังใกล้ ๆ",
         "รีบออกจากบ้านดลไปหายายบุญมีที่ทางแยกสวน"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจที่มาของเสียงเคาะใต้พื้นและคราบน้ำเย็น ก่อนตัดสินใจออกจากบ้านดลมุ่งหน้าสู่ทางแยกสวน",
+        "ready_label": "ตรวจมุมห้องแล้ว — เดินทางต่อไปยังเรือนไม้ก่อนทางแยกได้",
+        "ready_when_any_clues": [
+          "black_thread_clue"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "c3_lead_floor",
+            "label": "เปิดแผ่นไม้ใต้พื้นดูว่ามีอะไรอยู่ข้างล่าง",
+            "kind": "main",
+            "done_when_clues": [
+              "black_thread_clue"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เปิดแผ่นไม้ใต้พื้นบ้านดูว่าอะไรเคาะอยู่ข้างล่าง"
+          },
+          {
+            "id": "c3_lead_sense",
+            "label": "สัมผัสไอเย็นผิดปกติตรงคราบน้ำและรอยต่อไม้",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [
+              "C3_SPIRIT_RESIDUE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองตรวจสัมผัสไอเย็นผิดปกติตรงคราบน้ำและรอยต่อไม้"
+          },
+          {
+            "id": "c3_lead_leave",
+            "label": "ออกจากบ้านดลไปตามหาผู้ดูแลศาลก่อนทางแยก",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "C5"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "รีบออกจากบ้านดลไปหายายบุญมีที่ทางแยกสวน"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "c3_damp_floor",
+          "label": "แผ่นไม้ใต้พื้นและคราบชื้นเย็นเยียบ",
+          "description": "คราบน้ำเย็นผิดปกติซึมตามรอยต่อไม้และผนังทั้งที่ข้างนอกแห้งสนิท เมื่อลองงัดตรวจใต้พื้นไม่พบห้องขังหรือคนหายถูกกักตัว",
+          "unlock_clues": [
+            "black_thread_clue"
+          ],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามบังคับ Combat ทันทีใน C3 — ทีมมีสิทธิ์เปิดพื้น (ไม่พบคนขัง) ถอยออก หรือตั้งใจเข้าใกล้จนเกิด C4",
@@ -228,6 +407,8 @@
         "c4_intro_dm"
       ],
       "allowed_next_scenes": [
+        "C1",
+        "C2",
         "C3",
         "C5"
       ],
@@ -239,10 +420,47 @@
         "C4_DROWNED_ECHO_VISION"
       ],
       "quick_prompts": [
-        "ตั้งจิตติดต่อขอเศษภาพความทรงจำจากผีเงาจมน้ำ (ทอย SPI)",
-        "เตรียมสู้หรือกล่อมผีเงาจมน้ำตรงนี้เลย",
+        "ลองตั้งสติสื่อสารหรือจับสัมผัสจากร่างเปียกโชกตรงหน้า",
+        "ตั้งหลักเผชิญหน้าหรือลองพูดเรียกสติร่างตรงหน้า",
         "ถอยออกจากบ้านดลไปหายายบุญมีที่ปากทางเข้าสวน"
       ],
+      "guideline": {
+        "main_objective": "รับมือร่างเปียกโชกตรงหน้า — เลือกสื่อสาร เผชิญหน้า หรือถอยออกทางประตูไปทางเข้าสวน",
+        "ready_label": "ทางออกหน้าบ้านยังเปิดอยู่ — มุ่งหน้าสู่บ้านก่อนทางแยกได้",
+        "ready_when_any_clues": [
+          "spirit_echo_vision"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "c4_lead_contact",
+            "label": "ตั้งสติสื่อสารหรือจับสัมผัสจากร่างเปียกโชก",
+            "kind": "optional",
+            "done_when_clues": [
+              "spirit_echo_vision"
+            ],
+            "done_when_checks": [
+              "C4_DROWNED_ECHO_VISION"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองตั้งสติสื่อสารหรือจับสัมผัสจากร่างเปียกโชกตรงหน้า"
+          },
+          {
+            "id": "c4_lead_escape",
+            "label": "ถอยออกจากบ้านดลไปทางบ้านยายบุญมีที่ปากทางเข้าสวน",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "C5"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ถอยออกจากบ้านดลไปหายายบุญมีที่ปากทางเข้าสวน"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "ผีเงาจมน้ำไม่พูดตอบเป็นประโยค มีเพียงเสียงสำลักน้ำและภาพนิมิต (ไม่เห็นหน้าคนร้าย)",
         "ห้ามบังคับสู้หากผู้เล่นเลือกถอยออกทางประตูสู่ C5"
@@ -266,7 +484,8 @@
       ],
       "allowed_next_scenes": [
         "C1",
-        "C2"
+        "C2",
+        "C3"
       ],
       "allowed_clues": [
         "knows_wichai_saved",
@@ -280,10 +499,78 @@
         "C5_EVACUATION_RECORDS"
       ],
       "quick_prompts": [
-        "ยายรู้จักแม่แก้วไหม แล้วเหตุการณ์ปี 2534 แก้วช่วยใครไว้?",
-        "เรื่องด้ายดำที่ศาลกับประตูน้ำปี 2534 ยายรู้อะไรบ้าง?",
-        "ขอดูสมุดจดชื่ออพยพมาเทียบกับเวรประตูน้ำ (ทอย INT)",
-        "ขอบคุณยายแล้วเดินเข้าสวนกล้วยต่อ (จบบท ACT C)"
+        "ยายดูแลศาลมานานแล้ว พอจะเล่าเรื่องศาลกับเรื่องเล่าเก่า ๆ แถวนี้ให้ฟังได้ไหมครับ?",
+        "ด้ายดำที่ยายเตือนมันมาได้ยังไงครับ แล้วเรื่องคืนน้ำท่วมปี 2534 ยายจำอะไรได้บ้าง?",
+        "คืนน้ำท่วมปี 2534 มีบันทึกหรือรายชื่อคนที่อพยพออกมาเก็บไว้บ้างไหมครับ?",
+        "ขอบคุณยายมากครับ พวกเราขอตัวเดินเข้าไปดูทางสวนกล้วยต่อ"
+      ],
+      "guideline": {
+        "main_objective": "สอบถามยายบุญมีเรื่องศาล ด้ายดำ และเหตุการณ์เก่า ก่อนเดินเข้าสวนกล้วยต่อ",
+        "ready_label": "คุยกับยายบุญมีครบแล้ว — พร้อมเดินเข้าสู่สวนกล้วย (ACT D)",
+        "ready_when_any_clues": [],
+        "ready_when_all_clues": [
+          "boonmee_thread_warning",
+          "knows_wichai_saved"
+        ],
+        "leads": [
+          {
+            "id": "c5_lead_shrine_story",
+            "label": "สอบถามยายบุญมีเรื่องศาลและเหตุการณ์ในอดีต",
+            "kind": "main",
+            "done_when_clues": [
+              "knows_wichai_saved"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ยายดูแลศาลมานานแล้ว พอจะเล่าเรื่องศาลกับเรื่องเล่าเก่า ๆ แถวนี้ให้ฟังได้ไหมครับ?"
+          },
+          {
+            "id": "c5_lead_thread_warn",
+            "label": "ถามที่มาของด้ายดำที่ศาลและคืนน้ำท่วมปี 2534",
+            "kind": "main",
+            "done_when_clues": [
+              "boonmee_thread_warning"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ด้ายดำที่ยายเตือนมันมาได้ยังไงครับ แล้วเรื่องคืนน้ำท่วมปี 2534 ยายจำอะไรได้บ้าง?"
+          },
+          {
+            "id": "c5_lead_evac",
+            "label": "สอบถามหาบันทึกหรือรายชื่อผู้อพยพคืนน้ำท่วมปี 2534",
+            "kind": "optional",
+            "done_when_clues": [
+              "evac_gap_discovered"
+            ],
+            "done_when_checks": [
+              "C5_EVACUATION_RECORDS"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "คืนน้ำท่วมปี 2534 มีบันทึกหรือรายชื่อคนที่อพยพออกมาเก็บไว้บ้างไหมครับ?"
+          },
+          {
+            "id": "c5_lead_enter_grove",
+            "label": "บอกลายายบุญมีแล้วเดินเข้าสวนกล้วยต่อ",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ขอบคุณยายมากครับ พวกเราขอตัวเดินเข้าไปดูทางสวนกล้วยต่อ"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "c5_green_cloth_tray",
+          "label": "ผ้าสีเขียวพับเรียบร้อยและถาดธูป",
+          "description": "ผ้าสีเขียวสะอาดและธูปสมุนไพรที่ยายบุญมีเตรียมไว้ไหว้ศาลประจำหมู่บ้าน สะท้อนว่ายายดูแลศาลด้วยความเคารพมาตลอด",
+          "unlock_clues": [],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "มีเฉพาะยายบุญมีและ DM ห้ามประเสริฐ/วิชัย/ต้นปรากฏตัว",
@@ -305,6 +592,58 @@
         "full": "c2_check_int_full",
         "partial": "c2_check_int_partial",
         "failure": "c2_check_int_fail"
+      },
+      "bypass_if": {
+        "clues": [
+          "land_price_pattern"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "ทีมเชื่อมโยงแผนที่หมู่บ้านกับสมุดปกดำจนเห็นรูปแบบราคาที่ดินชัดเจนแล้ว จึงไม่ต้องทอยซ้ำ"
+      },
+      "alt_stats": {
+        "PER": {
+          "dc_delta": 1,
+          "label": "ไล่จับจุดซ้ำของวันที่และตัวเลขทีละหน้า"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เรียงลำดับวันที่ข่าวผีกับราคาที่ดินที่ตกลงผิดปกติได้อย่างเป็นระบบ"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นแนวโน้มราคาที่ดินช่วงข่าวผีระบาด แต่ยังต้องเทียบกับหลักฐานแหล่งอื่นต่อ"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ข้อมูลกระจัดกระจายเกินกว่าจะสรุปรูปแบบทันที แต่ยังอ่านบันทึกดลครบทุกหน้า"
+        }
       }
     },
     "C3_SPIRIT_RESIDUE": {
@@ -319,6 +658,50 @@
         "full": "c3_check_spi_full",
         "partial": "c3_check_spi_partial",
         "failure": "c3_check_spi_fail"
+      },
+      "alt_stats": {
+        "PER": {
+          "dc_delta": 1,
+          "label": "ตามรอยคราบชื้นและเศษด้ายดำหาจุดรวมเสียง"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "จับวงพลังรอบเศษด้ายดำและแยกได้ทันท่วงทีว่าไม่ใช่คนถูกขังใต้พื้น"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ไอเย็นชื้นพุ่งปะทะจนใจหวิวแม้ยังจับตำแหน่งก่อตัวไม่ชัด (-1 สติ)"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เสียงเคาะถี่รัวและเสียงสำลักน้ำกดดันประสาทจนพร่าเลือน (-1 สติ)"
+        }
       }
     },
     "C4_DROWNED_ECHO_VISION": {
@@ -333,6 +716,50 @@
         "full": "c4_check_spi_full",
         "partial": "c4_check_spi_partial",
         "failure": "c4_check_spi_fail"
+      },
+      "alt_stats": {
+        "RES": {
+          "dc_delta": 0,
+          "label": "ข่มความกลัวและยืนหยัดรับภาพจำตรงหน้า"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ประคองสติรับภาพความทรงจำเรื่องรถเข็นมุ่งหน้าเรือนไม้ท้ายสวนได้ชัดเจน"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นเงาล้อรถบดโคลนแวบเดียวก่อนถูกเสียงน้ำกลบจนหายใจติดขัด (-1 สติ)"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เสียงสำลักน้ำก้องในหัวจนภาพแตกกระจาย (-1 สติ) — ยังถอยออกไปหายายบุญมีได้"
+        }
       }
     },
     "C5_EVACUATION_RECORDS": {
@@ -347,6 +774,69 @@
         "full": "c5_check_int_full",
         "partial": "c5_check_int_partial",
         "failure": "c5_check_int_fail"
+      },
+      "requires": {
+        "clues": [],
+        "items": [
+          "floodgate_duty_log_copy"
+        ],
+        "min_trust": {},
+        "flags": {},
+        "missing_hint": "ต้องมีสำเนาบันทึกเวรประตูน้ำปี 2534 จากบ้านผู้ใหญ่บ้านมาเทียบเวลากับสมุดยายบุญมีก่อน"
+      },
+      "bypass_if": {
+        "clues": [
+          "evac_gap_discovered"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "คุณได้ยืนยันความคลาดเคลื่อนเวลาในคืนน้ำท่วมปี 2534 เรียบร้อยแล้ว ไม่ต้องทอยเทียบซ้ำ"
+      },
+      "alt_stats": {
+        "SOC": {
+          "dc_delta": 0,
+          "label": "ชวนยายบุญมีช่วยกันไล่ทวนรายชื่อคืนน้ำท่วม"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {
+            "ยายบุญมี": 1
+          },
+          "set_flags": {},
+          "note_th": "เทียบเวลาประตูน้ำกับสมุดอพยพจนพบช่องโหว่ชัดเจน (+1 ความเชื่อใจยายบุญมี)"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นความไม่ลงตัวของเวลาในบันทึก แต่ยังสรุปผู้สั่งเปิดประตูน้ำไม่ได้"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "หน้ากระดาษเก่าเลือนมาก ยายบุญมีให้เก็บสมุดสวดมนต์ติดตัวไปเทียบต่อภายหลัง"
+        }
       }
     }
   },

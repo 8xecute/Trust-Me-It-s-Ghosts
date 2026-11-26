@@ -43,8 +43,8 @@
     },
     {
       "id": "banana_shrine_d2",
-      "name": "ศาลผ้าเขียว & ด้ายดำ",
-      "subtitle": "ป้ายชื่อ ดล นิด เพิ่ม และสายกล้องนิด",
+      "name": "ศาลเก่ากลางดงกล้วย",
+      "subtitle": "ศาลผ้าสีเขียวลึกเข้าไปในสวน",
       "scene": "D2",
       "x": 45,
       "y": 42,
@@ -54,8 +54,8 @@
     },
     {
       "id": "kaew_shrine_d3",
-      "name": "หลังเสาศาล (พบแม่แก้ว)",
-      "subtitle": "เจรจาหรือรับมือหญิงชุดเขียว",
+      "name": "พื้นที่หลังเสาศาล",
+      "subtitle": "จุดอับสายตาหลังตัวศาลเก่า",
       "scene": "D3",
       "x": 58,
       "y": 64,
@@ -65,8 +65,8 @@
     },
     {
       "id": "cart_tracks_d5",
-      "name": "แนวรอยล้อหลังศาล",
-      "subtitle": "รอยรถเข็น เศษกระสอบ มุ่งหน้าท้ายสวน",
+      "name": "ทางดินด้านหลังศาล",
+      "subtitle": "แนวทางเดินต่อลึกเข้าไปในสวน",
       "scene": "D5",
       "x": 76,
       "y": 36,
@@ -76,8 +76,8 @@
     },
     {
       "id": "d_to_act_e_house",
-      "name": "ทางสู่เรือนไม้ร้าง (จบบท D)",
-      "subtitle": "ตามรอยล้อไปเรือนไม้ท้ายสวนใน ACT E",
+      "name": "ปลายทางท้ายสวน",
+      "subtitle": "ต้องแกะรอยหลังศาลให้พบเสียก่อน",
       "scene": "D5",
       "x": 88,
       "y": 72,
@@ -109,9 +109,54 @@
       "allowed_items": [],
       "available_checks": [],
       "quick_prompts": [
-        "ส่องไฟดูรอยยุบบนพื้นดินแล้วเดินต่อไปยังศาลเก่า (D2)",
-        "สังเกตรอบแนวต้นกล้วยและเสียงกระซิบ",
+        "ส่องไฟดูรอยยุบบนพื้นดินแล้วเดินต่อไปยังศาลเก่า",
+        "ลองหยุดสังเกตรอบแนวต้นกล้วยและความผิดปกติรอบทางเดิน",
         "ถอยกลับออกไปทางหน้าสวน"
+      ],
+      "guideline": {
+        "main_objective": "ส่องไฟสังเกตรอยยุบบนทางดินในสวนกล้วย แล้วเดินตรงเข้าไปตรวจสอบศาลเก่าข้างหน้า",
+        "ready_label": "พบรอยกดคู่และทางสู่ศาลแล้ว — เดินหน้าเข้าตรวจศาลเก่าได้",
+        "ready_when_any_clues": [
+          "double_track_clue"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "d1_lead_shrine",
+            "label": "ส่องไฟดูรอยยุบบนพื้นดินแล้วเดินไปยังศาลเก่า",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "D2"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ส่องไฟดูรอยยุบบนพื้นดินแล้วเดินต่อไปยังศาลเก่า"
+          },
+          {
+            "id": "d1_lead_observe",
+            "label": "สังเกตแนวต้นกล้วยและความผิดปกติรอบทางเดิน",
+            "kind": "optional",
+            "done_when_clues": [
+              "double_track_clue"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองหยุดสังเกตรอบแนวต้นกล้วยและความผิดปกติรอบทางเดิน"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "d1_mud_tracks",
+          "label": "รอยดินยุบเป็นเส้นคู่ริมทางเดิน",
+          "description": "พื้นดินชื้นมีรอยกดเป็นเส้นคู่ทอดลึกเข้าไปทางศาล แต่กอกล้วยทึบยังบังปลายทางไว้",
+          "unlock_clues": [
+            "double_track_clue"
+          ],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามระบุว่ารอยดินเป็นของรถเข็นหรือของวิชัยจนกว่าจะตรวจ D5",
@@ -144,9 +189,71 @@
       ],
       "quick_prompts": [
         "ดูป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องหลังโคนต้นกล้วย",
-        "วิเคราะห์โครงสร้างการพันด้ายดำของพิธี (ทอย INT)",
-        "เงยดูด้ายดำและเดินผ่านศาลต่อไป (พบแม่แก้ว D3)",
-        "อ้อมไปสำรวจพื้นดินหลังศาล (D5)"
+        "สังเกตรูปแบบปมด้ายดำที่พันเสาศาลว่าเชื่อมโยงไปทางไหน",
+        "มองตามแนวเส้นด้ายขึ้นไปด้านบน แล้วลองก้าวอ้อมผ่านเสาศาลเข้าไปดู",
+        "อ้อมไปสำรวจพื้นที่ด้านหลังศาลต่อ"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจป้ายผ้าและสิ่งของบริเวณศาลอย่างระมัดระวัง (ห้ามตัดหรือกระชากด้าย) แล้วเดินผ่านหรืออ้อมตรวจหลังศาล",
+        "ready_label": "ตรวจศาลแล้ว — ก้าวผ่านเสาศาลหรืออ้อมไปสำรวจด้านหลังศาลได้",
+        "ready_when_any_clues": [
+          "shrine_three_names"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "d2_lead_tags",
+            "label": "ตรวจป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องตกโคลน",
+            "kind": "main",
+            "done_when_clues": [
+              "shrine_three_names"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ดูป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องหลังโคนต้นกล้วย"
+          },
+          {
+            "id": "d2_lead_knots",
+            "label": "สังเกตโครงสร้างและทิศทางการพันของปมด้ายดำ",
+            "kind": "optional",
+            "done_when_clues": [
+              "shrine_binding_core"
+            ],
+            "done_when_checks": [
+              "D2_BINDING_PATTERN"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "สังเกตรูปแบบปมด้ายดำที่พันเสาศาลว่าเชื่อมโยงไปทางไหน"
+          },
+          {
+            "id": "d2_lead_advance",
+            "label": "ก้าวผ่านเสาศาลหรืออ้อมไปสำรวจพื้นที่ด้านหลังศาล",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "D3",
+              "D5"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "มองตามแนวเส้นด้ายขึ้นไปด้านบน แล้วลองก้าวอ้อมผ่านเสาศาลเข้าไปดู"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "d2_shrine_tags_strap",
+          "label": "ป้ายผ้า 3 ชื่อและสายคล้องกล้องตกโคลน",
+          "description": "ป้ายผ้าเปื้อนดินเขียนชื่อ ดล นิด เพิ่ม ขึงปมด้ายดำแน่น ส่วนโคนต้นกล้วยหลังศาลมีสายคล้องกล้องถ่ายรูปขาดตกจมโคลนอยู่",
+          "unlock_clues": [
+            "shrine_three_names"
+          ],
+          "unlock_items": [
+            "camera_strap_mud"
+          ]
+        }
       ],
       "spoiler_guardrails": [
         "เห็นชื่อ ดล นิด เพิ่ม ได้ฟรี แต่ห้ามสรุปว่าทั้งสามตายแล้วหรือบอกว่ากำไลอยู่ที่เรือนไม้",
@@ -170,6 +277,7 @@
         "d3_kaew_greet"
       ],
       "allowed_next_scenes": [
+        "D1",
         "D2",
         "D4",
         "D5"
@@ -182,11 +290,72 @@
         "D3_KAEW_CONTACT"
       ],
       "quick_prompts": [
-        "คุณจับคนหายไปขังไว้หรือเปล่า? ทำไมถึงออกมาหลอกชาวบ้าน?",
-        "ใครเป็นคนผูกด้ายบังคับคุณ? คุณรู้จักวิชัยไหม?",
-        "ตั้งจิตสัมผัสความรู้สึกของแม่แก้วผ่านด้าย (ทอย SPI)",
-        "รับปากว่าจะช่วยตามหาของให้ แล้วขอผ่านไปหลังศาล (D5)"
+        "คนหายทั้งสามคนอยู่ที่ไหน? คุณเป็นคนพาพวกเขาไปหรือเปล่า?",
+        "เส้นด้ายดำที่ข้อมือคุณมาจากไหน ใครเป็นคนเอามาผูกไว้?",
+        "ตั้งสมาธิสัมผัสความรู้สึกและแรงกดดันรอบตัวแม่แก้ว",
+        "พวกเราอยากช่วยคนที่หายไปจริง ๆ ขอทางให้พวกเราเดินสำรวจต่อได้ไหม?"
       ],
+      "guideline": {
+        "main_objective": "เจรจาสอบถามหญิงชุดเขียวตรงหน้าเรื่องคนหายและเส้นด้ายดำ แล้วขอทางสำรวจพื้นที่หลังศาลต่อ",
+        "ready_label": "รับรู้ความจริงที่ศาลแล้ว — ขอทางเดินอ้อมไปตรวจด้านหลังศาลได้",
+        "ready_when_any_clues": [
+          "kaew_coerced_truth"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "d3_lead_missing",
+            "label": "ถามถึงคนหายทั้งสามคนและสาเหตุที่เธอยืนขวางทาง",
+            "kind": "main",
+            "done_when_clues": [
+              "kaew_coerced_truth"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "คนหายทั้งสามคนอยู่ที่ไหน? คุณเป็นคนพาพวกเขาไปหรือเปล่า?"
+          },
+          {
+            "id": "d3_lead_thread",
+            "label": "ถามที่มาของเส้นด้ายดำที่ข้อมือเธอ",
+            "kind": "optional",
+            "done_when_clues": [
+              "kaew_coerced_truth"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เส้นด้ายดำที่ข้อมือคุณมาจากไหน ใครเป็นคนเอามาผูกไว้?"
+          },
+          {
+            "id": "d3_lead_sense",
+            "label": "สัมผัสความรู้สึกและแรงกดดันรอบตัวแม่แก้ว",
+            "kind": "optional",
+            "done_when_clues": [
+              "kaew_coerced_truth"
+            ],
+            "done_when_checks": [
+              "D3_KAEW_CONTACT"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ตั้งสมาธิสัมผัสความรู้สึกและแรงกดดันรอบตัวแม่แก้ว"
+          },
+          {
+            "id": "d3_lead_pass",
+            "label": "ขอทางเพื่อเดินอ้อมไปสำรวจพื้นที่หลังศาลต่อ",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "D5"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "พวกเราอยากช่วยคนที่หายไปจริง ๆ ขอทางให้พวกเราเดินสำรวจต่อได้ไหม?"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "แม่แก้วจำเด็กที่เคยช่วยจากน้ำได้ แต่ด้ายดำจะรัดคอทันทีก่อนเธอจะพูดชื่อวิชัยว่าเป็นคนทำพิธีได้เต็มคำ",
         "แม่แก้วไม่รู้ตำแหน่งห้องขังหรือกำไล ห้ามเฉลยตำแหน่งเรือนไม้ล่วงหน้า"
@@ -208,6 +377,7 @@
         "d4_intro_dm"
       ],
       "allowed_next_scenes": [
+        "D2",
         "D3",
         "D5"
       ],
@@ -219,8 +389,43 @@
       "quick_prompts": [
         "เจรจาขอหยุดสู้: พวกเราจะไม่ทำร้ายคุณ เราจะไปช่วยคนหาย!",
         "เปิดฉากต่อสู้ / คุ้มกันทีมรับมือร่างแม่แก้ว",
-        "ถอยอ้อมแนวเถาวัลย์ไปตรวจทางหลังศาล (D5)"
+        "ถอยอ้อมแนวเถาวัลย์ออกไปทางหลังศาล"
       ],
+      "guideline": {
+        "main_objective": "รับมือเหตุเผชิญหน้า — เจรจายุติการปะทะ ตั้งรับ หรือถอยอ้อมไปสำรวจทางหลังศาล",
+        "ready_label": "พร้อมมุ่งหน้าไปตรวจทางหลังศาล",
+        "ready_when_any_clues": [
+          "kaew_coerced_truth"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "d4_lead_negotiate",
+            "label": "เจรจาบอกเจตนาเพื่อหลีกเลี่ยงการปะทะรุนแรง",
+            "kind": "main",
+            "done_when_clues": [
+              "kaew_coerced_truth"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เจรจาขอหยุดสู้: พวกเราจะไม่ทำร้ายคุณ เราจะไปช่วยคนหาย!"
+          },
+          {
+            "id": "d4_lead_bypass",
+            "label": "ถอยอ้อมแนวเถาวัลย์ออกไปตรวจทางหลังศาล",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "D5"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ถอยอ้อมแนวเถาวัลย์ออกไปทางหลังศาล"
+          }
+        ]
+      },
+      "inspectables": [],
       "spoiler_guardrails": [
         "D4 เป็นฉากทางเลือก ทีมเลือกเจรจา ถอย หรือสู้ก็ได้ — ถึงสลายร่างที่นี่กำไลก็ยังไม่หยุด",
         "ห้ามทำให้แม่แก้วตายถาวรหรือเฉลยตำแหน่งกำไล"
@@ -236,6 +441,7 @@
         "d5_intro_dm"
       ],
       "allowed_next_scenes": [
+        "D1",
         "D2",
         "D3"
       ],
@@ -247,9 +453,55 @@
         "D5_CART_TRACKS"
       ],
       "quick_prompts": [
-        "ตรวจรายละเอียดรอยล้อ เศษกระสอบ และรอยรองเท้า (ทอย PER)",
+        "ก้มส่องไฟตรวจรอยล้อรถเข็นและเศษกระสอบบนพื้นดินให้ละเอียด",
         "รอยล้อหนักแบบนี้ชี้ไปที่ไหน บอกตัวคนเข็นได้ไหม?",
-        "เดินตามรอยล้อตรงไปยังเรือนไม้ร้างท้ายสวนเลย (จบบท ACT D)"
+        "เดินตามรอยล้อตรงไปยังเรือนไม้ร้างท้ายสวน"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจร่องรอยหลังศาลแล้วเดินตามรอยล้อรถเข็นไปยังเรือนไม้ร้างท้ายสวน",
+        "ready_label": "พบรอยล้อตรงไปเรือนไม้ร้างแล้ว — พร้อมเดินทางต่อ (ACT E)",
+        "ready_when_any_clues": [
+          "cart_tracks_to_house"
+        ],
+        "ready_when_all_clues": [
+          "shrine_three_names",
+          "cart_tracks_to_house"
+        ],
+        "leads": [
+          {
+            "id": "d5_lead_tracks",
+            "label": "ตรวจรายละเอียดรอยล้อรถเข็นและเศษกระสอบบนพื้นดิน",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [
+              "D5_CART_TRACKS"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ก้มส่องไฟตรวจรอยล้อรถเข็นและเศษกระสอบบนพื้นดินให้ละเอียด"
+          },
+          {
+            "id": "d5_lead_follow",
+            "label": "เดินตามแนวรอยล้อไปยังเรือนไม้ร้างท้ายสวน",
+            "kind": "main",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เดินตามรอยล้อตรงไปยังเรือนไม้ร้างท้ายสวน"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "d5_cart_path",
+          "label": "รอยล้อกดลึกและเศษกระสอบข้าวบนกิ่งกล้วย",
+          "description": "รอยล้อรถเข็นหนักสองแนวพร้อมเศษกระสอบข้าวทอดตรงจากหลังศาลไปยังเรือนไม้ยกพื้นร้างท้ายสวน",
+          "unlock_clues": [
+            "cart_tracks_to_house"
+          ],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "การเดินตามรอยล้อไปยังเรือนไม้ได้ฟรี ไม่ล็อกหลังผลทอย PER11",
@@ -270,6 +522,50 @@
         "full": "d2_check_int_full",
         "partial": "d2_check_int_partial",
         "failure": "d2_check_int_fail"
+      },
+      "alt_stats": {
+        "SPI": {
+          "dc_delta": 0,
+          "label": "สัมผัสทิศทางกระแสอาคมที่ไหลผ่านปมด้ายดำ"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "อ่านโครงสร้างปมด้ายออกว่าศาลนี้เป็นเพียงจุดส่งคำสั่ง แกนพิธีอยู่ที่อื่น"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "รู้ว่าด้ายดำใช้บังคับจากระยะไกล แต่ยังไม่ระบุตำแหน่งแกนควบคุม"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ปมด้ายซ้อนกันจนลายตาและไออาคมตีกลับเบา ๆ (-1 สติ) — ยังเดินอ้อมหลังศาลต่อได้"
+        }
       }
     },
     "D3_KAEW_CONTACT": {
@@ -284,6 +580,62 @@
         "full": "d3_check_spi_full",
         "partial": "d3_check_spi_partial",
         "failure": "d3_check_spi_fail"
+      },
+      "bypass_if": {
+        "clues": [
+          "kaew_coerced_truth"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "แม่แก้วได้เปิดใจเผยแล้วว่าถูกบังคับด้วยด้ายดำจากคนบงการ จึงไม่ต้องฝืนสัมผัสด้ายอีก"
+      },
+      "alt_stats": {
+        "SOC": {
+          "dc_delta": 0,
+          "label": "เอ่ยถามด้วยความเห็นใจเพื่อรับฟังแม่แก้วตรง ๆ"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {
+            "kaew_trust": "high"
+          },
+          "note_th": "รับรู้ความเจ็บปวดและเจตนาถูกบังคับของแม่แก้วได้ชัดเจน (ความเชื่อใจแม่แก้วเพิ่ม)"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "สัมผัสได้ว่าเธอถูกบังคับขืนใจ ก่อนแรงต้านด้ายดำจะสะท้อนกลับ (-1 สติ)"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": -1,
+          "trust_delta": {
+            "แม่แก้ว (นางตานี)": -1
+          },
+          "set_flags": {},
+          "note_th": "การฝืนเจาะจิตทำให้แม่แก้วเจ็บปวดและผลักจิตกลับ (-1 สติ, -1 ความเชื่อใจแม่แก้ว)"
+        }
       }
     },
     "D5_CART_TRACKS": {
@@ -298,6 +650,50 @@
         "full": "d5_check_per_full",
         "partial": "d5_check_per_partial",
         "failure": "d5_check_per_fail"
+      },
+      "alt_stats": {
+        "INT": {
+          "dc_delta": 0,
+          "label": "คำนวณน้ำหนักบรรทุกและทิศทางล้อบนดินเลน"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": false,
+        "requires_new_clue_or_item": false,
+        "max_attempts": 1
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ยืนยันได้ทั้งรอยล้อรถเข็นหนัก เศษกระสอบ และรอยรองเท้าคนเป็นมุ่งสู่เรือนไม้"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ตามรอยล้อไปทางเรือนไม้ท้ายสวนได้ชัด แต่ยังแยกรายละเอียดรองเท้าไม่ชัด"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "แยกชนิดรถเข็นไม่ออก แต่แนวทางดินยังพาเดินตามรอยไปเรือนไม้ท้ายสวนได้"
+        }
       }
     }
   },

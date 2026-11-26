@@ -83,8 +83,8 @@
     },
     {
       "id": "headman_porch",
-      "name": "ชานบ้านหน้าประตู",
-      "subtitle": "แยกคุยกับต้นให้พ้นหูวิชัย",
+      "name": "ชานบ้านด้านหน้า",
+      "subtitle": "พื้นที่ด้านนอกห้องรับแขก",
       "scene": "B2",
       "x": 24,
       "y": 66,
@@ -94,8 +94,8 @@
     },
     {
       "id": "headman_archive_wall",
-      "name": "ผนังภาพเก่าและตู้แฟ้ม",
-      "subtitle": "ภาพประตูน้ำปี 2534 & กองแฟ้มเก่า",
+      "name": "มุมผนังและตู้เอกสาร",
+      "subtitle": "กรอบรูปและกองแฟ้มเก่าในห้องรับแขก",
       "scene": "B3",
       "x": 68,
       "y": 36,
@@ -105,8 +105,8 @@
     },
     {
       "id": "road_to_don_house",
-      "name": "ทางไปบ้านดล",
-      "subtitle": "ออกตามรอยสมุดดล (จบบท B)",
+      "name": "เส้นทางสืบสวนถัดไป",
+      "subtitle": "ต้องได้พิกัดจุดหมายจากแฟ้มก่อน",
       "scene": "B3",
       "x": 82,
       "y": 72,
@@ -164,7 +164,84 @@
         "ขอดูแฟ้มคนหายกับแผนที่บนโต๊ะหน่อยครับ",
         "สังเกตท่าทีและตัวคุณวิชัยใกล้ ๆ",
         "คุณวิชัยช่วยดูแลเรื่องอะไรในหมู่บ้าน แล้วเคยเข้าสวนตอนกลางคืนไหม?",
-        "ขอออกไปคุยกับต้นที่ชานบ้าน หรือเดินไปดูภาพเก่าบนผนัง"
+        "ลองชวนหนุ่มอาสาข้างประตูคุย หรือเดินสำรวจรอบห้องรับแขก"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจแฟ้มคนหายและแผนที่บนโต๊ะเพื่อหาพิกัดจุดเริ่มตามรอย พร้อมซักถามวิชัยและสำรวจรอบบ้าน",
+        "ready_label": "ได้พิกัดบ้านดลแล้ว — ออกเดินทางต่อได้ หรือสำรวจพยานและเอกสารเก่าต่อ",
+        "ready_when_any_clues": [
+          "don_house_location"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "b1_lead_files",
+            "label": "ตรวจแฟ้มคนหายและแผนที่บนโต๊ะกลางห้อง",
+            "kind": "main",
+            "done_when_clues": [
+              "don_house_location",
+              "map_two_layers"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ขอดูแฟ้มคนหายกับแผนที่บนโต๊ะหน่อยครับ"
+          },
+          {
+            "id": "b1_lead_wichai_qa",
+            "label": "ซักถามวิชัยเรื่องหน้าที่ในหมู่บ้านและการเข้าพื้นที่",
+            "kind": "optional",
+            "done_when_clues": [
+              "wichai_land_role"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "คุณวิชัยช่วยดูแลเรื่องอะไรในหมู่บ้าน แล้วเคยเข้าสวนตอนกลางคืนไหม?"
+          },
+          {
+            "id": "b1_lead_wichai_tell",
+            "label": "สังเกตท่าทีและพิรุธของวิชัยระหว่างซักถาม",
+            "kind": "optional",
+            "done_when_clues": [
+              "wichai_suspected_tell",
+              "wichai_evasive_clue"
+            ],
+            "done_when_checks": [
+              "B2_WICHAI_TELL"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "สังเกตท่าทีและตัวคุณวิชัยใกล้ ๆ"
+          },
+          {
+            "id": "b1_lead_explore",
+            "label": "ชวนหนุ่มอาสาข้างประตูคุย หรือเดินสำรวจรอบห้องรับแขก",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "B2",
+              "B3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองชวนหนุ่มอาสาข้างประตูคุย หรือเดินสำรวจรอบห้องรับแขก"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "b1_table_map",
+          "label": "แฟ้มคนหายและแผนที่สองชั้นบนโต๊ะ",
+          "description": "แผนที่หมู่บ้านมีหมุดแดงจุดพบคนหายทับกับวงแปลงที่ดินสีน้ำเงินที่มีชื่อวิชัยรับผิดชอบ พร้อมโน้ตระบุตำแหน่งบ้านดล",
+          "unlock_clues": [
+            "don_house_location",
+            "map_two_layers"
+          ],
+          "unlock_items": [
+            "village_map_copy"
+          ]
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามให้ประเสริฐมีบทพูดใน ACT B เด็ดขาด เขาออกไปช่วยสายตรวจดูจุดตั้งด่านหน้าหมู่บ้านแล้ว",
@@ -205,10 +282,70 @@
       "anti_stall_turn_limit": 6,
       "anti_stall_audio_id": "b2_antistall_hint",
       "quick_prompts": [
-        "คืนนั้นต้นเห็นอะไรแถวทางเข้าสวนกล้วย?",
+        "ช่วงที่คนหายไป คุณพอเห็นหรือได้ยินอะไรแปลก ๆ แถวหมู่บ้านบ้างไหม?",
         "ทำไมต้นดูระแวงพี่วิชัยขนาดนั้น?",
-        "ไม่ต้องห่วง ตรงนี้ไม่มีใครได้ยิน เล่ามาให้หมดเลย",
+        "ตรงนี้คุยกันส่วนตัวได้ มีอะไรที่ยังไม่อยากพูดข้างในหรือเปล่า?",
         "กลับเข้าไปดูข้างในบ้านผู้ใหญ่กันต่อ"
+      ],
+      "guideline": {
+        "main_objective": "สอบถามสิ่งที่อาสาสมัครพบเห็นโดยไม่ให้คนในห้องรับแขกได้ยิน",
+        "ready_label": "สอบถามพยานที่ชานบ้านแล้ว — กลับเข้าห้องหรือสำรวจจุดอื่นต่อได้",
+        "ready_when_any_clues": [
+          "ton_saw_person_at_grove",
+          "ton_black_bundle_clue"
+        ],
+        "ready_when_all_clues": [],
+        "leads": [
+          {
+            "id": "b2_lead_baseline",
+            "label": "ถามต้นว่าพบเห็นเหตุการณ์ผิดปกติอะไรบ้างช่วงคนหาย",
+            "kind": "main",
+            "done_when_clues": [
+              "ton_saw_person_at_grove"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ช่วงที่คนหายไป คุณพอเห็นหรือได้ยินอะไรแปลก ๆ แถวหมู่บ้านบ้างไหม?"
+          },
+          {
+            "id": "b2_lead_disclosure",
+            "label": "สร้างความมั่นใจให้ต้นยอมเล่าสิ่งที่เห็นเพิ่มเติม",
+            "kind": "optional",
+            "done_when_clues": [
+              "ton_black_bundle_clue",
+              "wichai_cart_suspect"
+            ],
+            "done_when_checks": [
+              "B3_TON_DISCLOSURE"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ตรงนี้คุยกันส่วนตัวได้ มีอะไรที่ยังไม่อยากพูดข้างในหรือเปล่า?"
+          },
+          {
+            "id": "b2_lead_return",
+            "label": "กลับเข้าไปสำรวจในบ้านผู้ใหญ่ต่อ",
+            "kind": "optional",
+            "done_when_clues": [],
+            "done_when_checks": [],
+            "done_when_scenes": [
+              "B1",
+              "B3"
+            ],
+            "visible_if_clues": [],
+            "prompt_suggestion": "กลับเข้าไปดูข้างในบ้านผู้ใหญ่กันต่อ"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "b2_window_shadow",
+          "label": "หน้าต่างห้องรับแขกและรถมอเตอร์ไซค์",
+          "description": "จากชานบ้านมองเห็นเงาของวิชัยชำเลืองผ่านหน้าต่างเป็นระยะ ส่วนลมจากฝั่งสวนพัดมาเย็นชื้นผิดกับท้องฟ้าแห้ง",
+          "unlock_clues": [],
+          "unlock_items": []
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามแจกข้อมูลรถเข็น ห่อผ้าดำ หรือความสงสัยต่อวิชัยฟรี ต้องผ่านเช็ก B3_TON_DISCLOSURE (SOC DC14) ก่อนเสมอ",
@@ -219,7 +356,7 @@
     "B3": {
       "id": "B3",
       "title": "B3: ผนังภาพเก่าปี 2534 & สรุปทางไปบ้านดล",
-      "subtitle": "ตรวจภาพประตูน้ำปี 2534 กองแฟ้มเก่า และตัดสินใจออกเดินทางสู่ ACT C",
+      "subtitle": "ตรวจภาพประตูน้ำปี 2534 กองแฟ้มเก่า และวางแผนออกเดินทางต่อ",
       "background_image": "/assets/scenes/b3_archive_wall.png",
       "npcs": [],
       "intro_audio_ids": [
@@ -247,7 +384,76 @@
         "ลองยกดูภาพถ่ายเก่าปี 2534 กับกรอบรูปใกล้ ๆ",
         "ลองรื้อดูแฟ้มเอกสารเก่าบนตู้ใต้ภาพ",
         "เอาภาพประตูน้ำไปเทียบกับแผนที่หมู่บ้านดูสิ",
-        "ข้อมูลพอแล้ว ออกเดินทางไปบ้านดลกันเลย!"
+        "กลับไปตรวจโต๊ะแผนที่ให้ครบ หรือออกเดินทางตามเบาะแสต่อดี?"
+      ],
+      "guideline": {
+        "main_objective": "ตรวจกรอบรูปเก่าและกองแฟ้มเอกสาร แล้วรวบรวมข้อมูลก่อนออกเดินทางตามพิกัดที่ได้",
+        "ready_label": "พร้อมออกเดินทางสู่บ้านดล (ACT C)",
+        "ready_when_any_clues": [],
+        "ready_when_all_clues": [
+          "don_house_location"
+        ],
+        "leads": [
+          {
+            "id": "b3_lead_frame",
+            "label": "ตรวจดูกรอบรูปถ่ายเก่าปี 2534 อย่างใกล้ชิด",
+            "kind": "optional",
+            "done_when_clues": [
+              "photo_water_anomaly"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "ลองยกดูภาพถ่ายเก่าปี 2534 กับกรอบรูปใกล้ ๆ"
+          },
+          {
+            "id": "b3_lead_compare",
+            "label": "เทียบภาพประตูน้ำปี 2534 กับแผนที่หมู่บ้าน",
+            "kind": "optional",
+            "done_when_clues": [
+              "flood_waterway_clue",
+              "flood_near_grove_clue"
+            ],
+            "done_when_checks": [
+              "B4_FLOOD_PHOTO"
+            ],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "เอาภาพประตูน้ำไปเทียบกับแผนที่หมู่บ้านดูสิ"
+          },
+          {
+            "id": "b3_lead_depart",
+            "label": "ตรวจสอบพิกัดในแฟ้มบนโต๊ะให้ครบแล้วออกเดินทางต่อ",
+            "kind": "main",
+            "done_when_clues": [
+              "don_house_location"
+            ],
+            "done_when_checks": [],
+            "done_when_scenes": [],
+            "visible_if_clues": [],
+            "prompt_suggestion": "กลับไปตรวจโต๊ะแผนที่ให้ครบ หรือออกเดินทางตามเบาะแสต่อดี?"
+          }
+        ]
+      },
+      "inspectables": [
+        {
+          "id": "b3_old_frame",
+          "label": "กรอบภาพถ่ายเก่าปี 2534",
+          "description": "ทันทีที่ยกกรอบรูปขึ้น หยดน้ำใสไหลลงมาด้านในกระจกก่อนหยุดนิ่งราวถูกแช่แข็ง ทั้งที่ด้านหลังกรอบแห้งสนิท",
+          "unlock_clues": [
+            "photo_water_anomaly"
+          ],
+          "unlock_items": []
+        },
+        {
+          "id": "b3_archive_cabinet",
+          "label": "ตู้กองแฟ้มเอกสารเก่าปี 2530–2535",
+          "description": "ในกองแฟ้มที่ถูกปัดฝุ่นใหม่กว่าเล่มอื่น พบสำเนาบันทึกเวรประตูน้ำปี 2534 ระบุเวลาเปิดผันน้ำชัด แต่ไม่มีชื่อผู้สั่งการสูงสุด",
+          "unlock_clues": [],
+          "unlock_items": [
+            "floodgate_duty_log_copy"
+          ]
+        }
       ],
       "spoiler_guardrails": [
         "ห้ามสวมบทประเสริฐพูดในฉากนี้หรือในผลทอย B4_FLOOD_PHOTO ให้ DM บรรยายเท่านั้น",
@@ -270,6 +476,56 @@
         "full": "b1_check_per_full",
         "partial": "b1_check_per_partial",
         "failure": "b1_check_per_fail"
+      },
+      "alt_stats": {
+        "SOC": {
+          "dc_delta": 0,
+          "label": "ถามจี้จุดอย่างเป็นธรรมชาติเพื่อจับจังหวะตอบ"
+        },
+        "INT": {
+          "dc_delta": 1,
+          "label": "ไล่เทียบคำพูดวิชัยกับข้อมูลในแฟ้มทันที"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นจังหวะชะงักและสายตาที่วิชัยตวัดมองไปทางต้นอย่างชัดเจน"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นว่าวิชัยพยายามเลี่ยงประเด็นคืนเกิดเหตุ แต่ยังจับคำโกหกไม่ติด"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {
+            "วิชัย": -1
+          },
+          "set_flags": {},
+          "note_th": "วิชัยคุมสีหน้าได้สนิทและรู้ตัวว่าคุณกำลังจับผิด (-1 ความเชื่อใจวิชัย)"
+        }
       }
     },
     "B3_TON_DISCLOSURE": {
@@ -284,6 +540,59 @@
         "full": "b2_check_soc_full",
         "partial": "b2_check_soc_partial",
         "failure": "b2_check_soc_fail"
+      },
+      "requires": {
+        "clues": [],
+        "items": [],
+        "min_trust": {
+          "ต้น": -1
+        },
+        "flags": {},
+        "missing_hint": "ต้นยังผวาจากคำข่มขู่เมื่อครู่ ลองพูดปลอบให้เขาสบายใจขึ้นก่อนแล้วค่อยถามใหม่"
+      },
+      "alt_stats": {
+        "PER": {
+          "dc_delta": 1,
+          "label": "จับอาการลังเลของต้นแล้วค่อย ๆ จี้ถามให้ถูกจุด"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ต้นเปิดใจเล่าเบาะแสคนเสื้อเชิ้ตและรถเข็นห่อผ้าดำ (ความเชื่อใจต้นเพิ่ม)"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ต้นยอมเล่าเรื่องคนเข็นห่อผ้าดำ แต่ยังไม่กล้าระบุชื่อผู้ต้องสงสัย"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ต้นกลัวเดือดร้อนจึงปิดปากเงียบและถอยห่าง (ความเชื่อใจต้นลดลง)"
+        }
       }
     },
     "B4_FLOOD_PHOTO": {
@@ -298,6 +607,67 @@
         "full": "b3_check_int_full",
         "partial": "b3_check_int_partial",
         "failure": "b3_check_int_fail"
+      },
+      "requires": {
+        "clues": [],
+        "items": [
+          "village_map_copy"
+        ],
+        "min_trust": {},
+        "flags": {},
+        "missing_hint": "ยังไม่มีสำเนาแผนที่หมู่บ้านสำหรับวางเทียบแนวทางน้ำ ลองกลับไปดูแผนที่บนโต๊ะกลางห้องรับแขกก่อน"
+      },
+      "bypass_if": {
+        "clues": [
+          "flood_timeline_confirmed"
+        ],
+        "items": [],
+        "flags": {},
+        "reason_th": "ทีมยืนยันเส้นทางน้ำและเหตุการณ์ปี 2534 ได้ครบแล้ว จึงไม่ต้องทอยเทียบภาพซ้ำ"
+      },
+      "alt_stats": {
+        "PER": {
+          "dc_delta": 0,
+          "label": "เทียบจุดสังเกตในรูปเก่ากับเส้นทางบนแผนที่"
+        }
+      },
+      "allow_focus": true,
+      "allow_assist": true,
+      "bonus_cap": 2,
+      "retry": {
+        "on_failure": true,
+        "requires_new_clue_or_item": true,
+        "max_attempts": 2
+      },
+      "recipient_scope": "party",
+      "tier_effects": {
+        "full": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เทียบแนวคันดินกับทางน้ำเก่าที่ไหลเข้าสวนกล้วยได้แม่นยำ"
+        },
+        "partial": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "เห็นว่าจุดประตูน้ำอยู่ใกล้สวนกล้วย แต่ยังต้องหาเอกสารเวรประตูน้ำมายืนยันต่อ"
+        },
+        "failure": {
+          "unlock_clues": [],
+          "unlock_items": [],
+          "hp_delta": 0,
+          "sanity_delta": 0,
+          "trust_delta": {},
+          "set_flags": {},
+          "note_th": "ภาพเก่าเลือนเกินกว่าจะฟันธงทิศทางน้ำได้ แต่ยังตรวจตู้เอกสารข้างใต้ต่อได้"
+        }
       }
     }
   },

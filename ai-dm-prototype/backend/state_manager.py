@@ -107,6 +107,8 @@ def load_scenario_files(data_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]
         lore_raw = {
             "case_id": case_meta.get("case_id", "CASE001"),
             "case_title": case_meta.get("case_title", "CASE 001"),
+            "act_objectives": case_meta.get("act_objectives", {}),
+            "combine_recipes": case_meta.get("combine_recipes", []),
             "roles": roles_raw.get("roles", []),
             "clues_catalog": clues_catalog,
             "items_catalog": items_catalog,
@@ -147,6 +149,11 @@ class ScenarioRepository:
 
         self.lore: dict[str, Any] = lore_raw
         self.case_title: str = lore_raw.get("case_title", "CASE 001")
+        self.act_objectives: dict[str, dict[str, Any]] = lore_raw.get("act_objectives", {})
+        self.combine_recipes: list[dict[str, Any]] = lore_raw.get("combine_recipes", [])
+        self.combine_recipes_by_id: dict[str, dict[str, Any]] = {
+            r["id"]: r for r in self.combine_recipes if isinstance(r, dict) and r.get("id")
+        }
         self.roles: list[dict[str, Any]] = lore_raw.get("roles", [])
         self.roles_by_id: dict[str, dict[str, Any]] = {r["id"]: r for r in self.roles}
         self.clues_catalog: dict[str, dict[str, str]] = lore_raw.get("clues_catalog", {})
@@ -344,6 +351,9 @@ class RoomState:
         default_factory=lambda: {"ประเสริฐ": 0, "วิชัย": 0, "ต้น": 0}
     )
     played_audio_ids: list[str] = field(default_factory=list)
+    visited_scenes: list[str] = field(default_factory=list)
+    inspected_objects: list[str] = field(default_factory=list)
+    completed_combines: list[str] = field(default_factory=list)
     resolved_checks: dict[str, dict[str, Any]] = field(default_factory=dict)
     pending_check: Optional[dict[str, Any]] = None
     ending_triggered: Optional[str] = None
@@ -484,6 +494,7 @@ class RoomManager:
                 room_code=code,
                 current_scene=scene_id,
                 board_node=node_id,
+                visited_scenes=[scene_id],
             )
             if norm_act in {"C", "D", "E", "F"}:
                 self.apply_act_start_preset(new_room, norm_act)
@@ -764,23 +775,46 @@ class RoomManager:
             room.transcript_log = room.transcript_log[-150:]
         return entry
 
+    def _meets_condition(
+        self,
+        room: RoomState,
+        cond: Optional[dict[str, Any]],
+        default_speaker: Optional[str] = None,
+    ) -> bool:
+        """Generic data-driven check for clues, items, case_flags, and NPC trust thresholds."""
+        if not cond:
+            return True
+        req_clues = cond.get("clues") or cond.get("requires_clues") or []
+        for clue_id in req_clues:
+            if clue_id not in room.clues_found:
+                return False
+        req_items = cond.get("items") or cond.get("requires_items") or []
+        for item_id in req_items:
+            if item_id not in room.inventory:
+                return False
+        for flag_key, expected_val in (cond.get("flags") or {}).items():
+            actual_val = room.case_flags.get(flag_key)
+            if isinstance(expected_val, bool):
+                if bool(actual_val) != expected_val:
+                    return False
+            elif actual_val != expected_val:
+                return False
+        min_trust = cond.get("min_trust")
+        if isinstance(min_trust, dict):
+            for npc_name, threshold in min_trust.items():
+                if room.npc_trust.get(npc_name, 0) < int(threshold):
+                    return False
+        elif min_trust is not None:
+            trust_npc = default_speaker if default_speaker in room.npc_trust else "ประเสริฐ"
+            if room.npc_trust.get(trust_npc, 0) < int(min_trust):
+                return False
+        return True
+
     def _meets_trigger_condition(self, room: RoomState, entry: dict[str, Any]) -> bool:
         cond = entry.get("trigger_condition") or {}
         if cond.get("once") and entry["id"] in room.played_audio_ids:
             return False
-        for clue_id in cond.get("requires_clues", []):
-            if clue_id not in room.clues_found:
-                return False
-        for item_id in cond.get("requires_items", []):
-            if item_id not in room.inventory:
-                return False
-        min_trust = cond.get("min_trust")
-        if min_trust is not None:
-            speaker = entry.get("speaker")
-            trust_npc = speaker if speaker in room.npc_trust else "ประเสริฐ"
-            if room.npc_trust.get(trust_npc, 0) < min_trust:
-                return False
-        return True
+        return self._meets_condition(room, cond, default_speaker=entry.get("speaker"))
 
     def get_eligible_dialogues(self, room: RoomState, include_endings: bool = True) -> list[dict[str, Any]]:
         eligible: list[dict[str, Any]] = []
@@ -806,16 +840,146 @@ class RoomManager:
                 eligible.append(entry)
         return eligible
 
+    def check_eligibility(self, room: RoomState, check_id: str) -> dict[str, Any]:
+        """Evaluate generic 3-pillar eligibility, bypass_if readiness, and gated retry rules."""
+        scene = self.repo.get_scene(room.current_scene) or {}
+        chk = self.repo.get_check(check_id)
+        if not chk or check_id not in scene.get("available_checks", []):
+            return {
+                "check_id": check_id,
+                "eligible": False,
+                "bypassed": False,
+                "bypass_reason_th": "",
+                "blocked_reason": "wrong_scene",
+                "missing_hint": "",
+                "attempt": 1,
+                "max_attempts": 2,
+                "can_retry_hint": "",
+            }
+
+        retry_cfg = chk.get("retry") or {}
+        on_failure = bool(retry_cfg.get("on_failure", True))
+        requires_new = bool(retry_cfg.get("requires_new_clue_or_item", True))
+        max_attempts = max(1, int(retry_cfg.get("max_attempts", 2)))
+
+        prev = room.resolved_checks.get(check_id)
+        attempt = 1
+        if prev is not None:
+            prev_tier = prev.get("tier")
+            is_prev_failure = prev_tier == "failure" or (prev_tier is None and prev.get("success") is False)
+            prev_attempt = max(1, int(prev.get("attempt", 1)))
+            if not is_prev_failure or not on_failure:
+                return {
+                    "check_id": check_id,
+                    "eligible": False,
+                    "bypassed": False,
+                    "bypass_reason_th": "",
+                    "blocked_reason": "already_resolved",
+                    "missing_hint": "",
+                    "attempt": prev_attempt,
+                    "max_attempts": max_attempts,
+                    "can_retry_hint": "",
+                }
+            if prev_attempt >= max_attempts:
+                return {
+                    "check_id": check_id,
+                    "eligible": False,
+                    "bypassed": False,
+                    "bypass_reason_th": "",
+                    "blocked_reason": "max_attempts",
+                    "missing_hint": "",
+                    "attempt": prev_attempt,
+                    "max_attempts": max_attempts,
+                    "can_retry_hint": "ใช้โอกาสตรวจสอบจุดนี้ครบจำนวนสูงสุดแล้ว ลองหาวิธีหรือเบาะแสอื่นต่อแทน",
+                }
+            if requires_new:
+                prev_clues = int(prev.get("clues_count", 0))
+                prev_items = int(prev.get("items_count", 0))
+                has_new_evidence = (len(room.clues_found) > prev_clues) or (len(room.inventory) > prev_items)
+                if not has_new_evidence:
+                    return {
+                        "check_id": check_id,
+                        "eligible": False,
+                        "bypassed": False,
+                        "bypass_reason_th": "",
+                        "blocked_reason": "needs_new_evidence",
+                        "missing_hint": "",
+                        "attempt": prev_attempt,
+                        "max_attempts": max_attempts,
+                        "can_retry_hint": "ต้องพบเบาะแสหรือไอเท็มใหม่เพิ่มก่อน จึงจะกลับมาลองตรวจสอบจุดนี้ซ้ำได้",
+                    }
+            attempt = prev_attempt + 1
+
+        req_cfg = chk.get("requires") or {}
+        if req_cfg and not self._meets_condition(room, req_cfg):
+            return {
+                "check_id": check_id,
+                "eligible": False,
+                "bypassed": False,
+                "bypass_reason_th": "",
+                "blocked_reason": "missing_requires",
+                "missing_hint": str(req_cfg.get("missing_hint") or "ยังขาดหลักฐานหรือเงื่อนไขสำคัญก่อนตรวจสอบจุดนี้"),
+                "attempt": attempt,
+                "max_attempts": max_attempts,
+                "can_retry_hint": "",
+            }
+
+        bypass_cfg = chk.get("bypass_if") or {}
+        has_bypass = bool(
+            (bypass_cfg.get("clues") or [])
+            or (bypass_cfg.get("items") or [])
+            or (bypass_cfg.get("flags") or {})
+        )
+        bypassed = bool(has_bypass and self._meets_condition(room, bypass_cfg))
+        bypass_reason_th = (
+            str(bypass_cfg.get("reason_th") or "หลักฐานครบถ้วนแล้ว จึงยืนยันข้อเท็จจริงได้ทันทีโดยไม่ต้องเสี่ยงทอยเต๋า")
+            if bypassed
+            else ""
+        )
+        return {
+            "check_id": check_id,
+            "eligible": True,
+            "bypassed": bypassed,
+            "bypass_reason_th": bypass_reason_th,
+            "blocked_reason": "",
+            "missing_hint": "",
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+            "can_retry_hint": "",
+        }
+
     def get_available_checks(self, room: RoomState) -> list[dict[str, Any]]:
         scene = self.repo.get_scene(room.current_scene) or {}
         checks: list[dict[str, Any]] = []
         for cid in scene.get("available_checks", []):
-            if cid in room.resolved_checks:
+            elig = self.check_eligibility(room, cid)
+            if not elig["eligible"]:
                 continue
             chk = self.repo.get_check(cid)
             if chk:
-                checks.append(chk)
+                enriched = dict(chk)
+                enriched["_eligibility"] = elig
+                checks.append(enriched)
         return checks
+
+    def get_blocked_checks(self, room: RoomState) -> list[dict[str, Any]]:
+        """Return current scene checks blocked by unmet requires or gated retry."""
+        scene = self.repo.get_scene(room.current_scene) or {}
+        blocked: list[dict[str, Any]] = []
+        for cid in scene.get("available_checks", []):
+            elig = self.check_eligibility(room, cid)
+            if elig["blocked_reason"] in {"missing_requires", "needs_new_evidence"}:
+                chk = self.repo.get_check(cid) or {}
+                blocked.append(
+                    {
+                        "id": cid,
+                        "title": chk.get("title", cid),
+                        "trigger_hint": chk.get("trigger_hint", ""),
+                        "blocked_reason": elig["blocked_reason"],
+                        "hint": elig["missing_hint"] or elig["can_retry_hint"],
+                    }
+                )
+        return blocked
 
     def _build_audio_payload(
         self,
@@ -835,35 +999,48 @@ class RoomManager:
             "is_filler": is_filler,
         }
 
+    def _grant_clue(self, room: RoomState, clue_id: str) -> bool:
+        """Record clue_id if valid and synchronize derived case_flags."""
+        if clue_id not in self.repo.clues_catalog:
+            return False
+        added = clue_id not in room.clues_found
+        if added:
+            room.clues_found.append(clue_id)
+        if clue_id == "hostages_found":
+            room.case_flags["hostages_found"] = True
+            room.case_flags["hostages_safe"] = max(int(room.case_flags.get("hostages_safe", 0)), 3)
+        elif clue_id == "ritual_plan_prepared":
+            room.case_flags["ritual_plan"] = "prepared"
+        elif clue_id == "wichai_confronted":
+            if room.case_flags.get("wichai_status") == "free":
+                room.case_flags["wichai_status"] = "captured"
+        elif clue_id == "ritual_stopped":
+            room.case_flags["ritual_status"] = "stopped"
+        elif clue_id == "kaew_reconciled":
+            room.case_flags["kaew_final"] = "calm"
+        elif clue_id == "flood_truth_disclosed":
+            room.case_flags["flood_truth_disclosed"] = True
+        elif clue_id == "kaew_coerced_truth":
+            if room.case_flags.get("kaew_d_result") == "not_met":
+                room.case_flags["kaew_d_result"] = "talked"
+                room.case_flags["kaew_trust"] = "high"
+        return added
+
+    def _grant_item(self, room: RoomState, item_id: str) -> bool:
+        if item_id not in self.repo.items_catalog or item_id in room.inventory:
+            return False
+        room.inventory.append(item_id)
+        return True
+
     def _apply_dialogue_unlocks(self, room: RoomState, entry: dict[str, Any]) -> Optional[str]:
         did = entry["id"]
         first_time = did not in room.played_audio_ids
 
         unlocks = entry.get("unlocks") or {}
         for clue_id in unlocks.get("clues", []):
-            if clue_id in self.repo.clues_catalog and clue_id not in room.clues_found:
-                room.clues_found.append(clue_id)
-            if clue_id == "hostages_found":
-                room.case_flags["hostages_found"] = True
-                room.case_flags["hostages_safe"] = max(int(room.case_flags.get("hostages_safe", 0)), 3)
-            elif clue_id == "ritual_plan_prepared":
-                room.case_flags["ritual_plan"] = "prepared"
-            elif clue_id == "wichai_confronted":
-                if room.case_flags.get("wichai_status") == "free":
-                    room.case_flags["wichai_status"] = "captured"
-            elif clue_id == "ritual_stopped":
-                room.case_flags["ritual_status"] = "stopped"
-            elif clue_id == "kaew_reconciled":
-                room.case_flags["kaew_final"] = "calm"
-            elif clue_id == "flood_truth_disclosed":
-                room.case_flags["flood_truth_disclosed"] = True
-            elif clue_id == "kaew_coerced_truth":
-                if room.case_flags.get("kaew_d_result") == "not_met":
-                    room.case_flags["kaew_d_result"] = "talked"
-                    room.case_flags["kaew_trust"] = "high"
+            self._grant_clue(room, clue_id)
         for item_id in unlocks.get("items", []):
-            if item_id in self.repo.items_catalog and item_id not in room.inventory:
-                room.inventory.append(item_id)
+            self._grant_item(room, item_id)
         for npc, delta in (unlocks.get("trust_delta") or {}).items():
             cur = room.npc_trust.get(npc, 0)
             room.npc_trust[npc] = max(-3, min(5, cur + int(delta)))
@@ -895,6 +1072,8 @@ class RoomManager:
             return events
 
         room.current_scene = next_scene
+        if next_scene not in room.visited_scenes:
+            room.visited_scenes.append(next_scene)
         room.scene_turn_count = 0
         room.pending_check = None
         node_by_scene = {
@@ -954,6 +1133,8 @@ class RoomManager:
             return room, []
 
         room.started = True
+        if room.current_scene not in room.visited_scenes:
+            room.visited_scenes.append(room.current_scene)
         events: list[dict[str, Any]] = []
         scene_cfg = self.repo.get_scene(room.current_scene) or {}
         for intro_id in scene_cfg.get("intro_audio_ids", []):
@@ -993,6 +1174,8 @@ class RoomManager:
         entry_scene, entry_node = self._act_entry_point(norm_act)
         room.current_scene = entry_scene
         room.board_node = entry_node
+        if entry_scene not in room.visited_scenes:
+            room.visited_scenes.append(entry_scene)
         for npc_name in ("ประเสริฐ", "วิชัย", "ต้น", "ยายบุญมี", "แม่แก้ว"):
             room.npc_trust.setdefault(npc_name, 0)
 
@@ -1020,26 +1203,351 @@ class RoomManager:
         """Transition an existing room into Act B (headman's house B1), preserving players & Act A progress."""
         return self.advance_to_act(room_code, "B")
 
-    def trigger_check(self, room: RoomState, check_id: str, requested_by: str) -> Optional[dict[str, Any]]:
-        scene_cfg = self.repo.get_scene(room.current_scene) or {}
-        if check_id not in scene_cfg.get("available_checks", []):
-            return None
-        if check_id in room.resolved_checks:
+    def _recompute_pending_bonuses(self, pending: dict[str, Any]) -> None:
+        bonus_cap = max(0, int(pending.get("bonus_cap", 2)))
+        focus_bonus = 2 if pending.get("focus_committed") else 0
+        assist_bonus = int(pending.get("assist_bonus", 0)) if pending.get("assist_mode") == "bonus" else 0
+        pending["assist_bonus"] = assist_bonus
+        pending["effective_bonus"] = min(bonus_cap, focus_bonus + assist_bonus)
+
+    def _build_alt_stat_options(self, chk: dict[str, Any]) -> list[dict[str, Any]]:
+        raw_alt = chk.get("alt_stats") or {}
+        if not raw_alt:
+            return []
+        base_stat = str(chk["stat"]).upper()
+        base_dc = int(chk["dc"])
+        base_cfg = raw_alt.get(base_stat) if isinstance(raw_alt.get(base_stat), dict) else {}
+        options: list[dict[str, Any]] = [
+            {
+                "stat": base_stat,
+                "dc": max(2, base_dc + int(base_cfg.get("dc_delta", 0))),
+                "label": str(base_cfg.get("label") or chk.get("base_stat_label") or f"วิธีหลัก ({base_stat})"),
+            }
+        ]
+        seen = {base_stat}
+        for alt_stat, cfg in raw_alt.items():
+            s_code = str(alt_stat or "").strip().upper()
+            if not s_code or s_code in seen:
+                continue
+            seen.add(s_code)
+            cfg_dict = cfg if isinstance(cfg, dict) else {}
+            dc_delta = int(cfg_dict.get("dc_delta", 0))
+            options.append(
+                {
+                    "stat": s_code,
+                    "dc": max(2, base_dc + dc_delta),
+                    "label": str(cfg_dict.get("label") or f"เปลี่ยนวิธี ({s_code})"),
+                }
+            )
+        return options
+
+    def _apply_check_tier_effects(
+        self,
+        room: RoomState,
+        chk: dict[str, Any],
+        tier: str,
+        actor: Optional[PlayerInfo],
+        recipient_scope: str,
+    ) -> str:
+        eff = (chk.get("tier_effects") or {}).get(tier) or {}
+        for clue_id in eff.get("unlock_clues") or []:
+            self._grant_clue(room, clue_id)
+        for item_id in eff.get("unlock_items") or []:
+            self._grant_item(room, item_id)
+        for flag_k, flag_v in (eff.get("set_flags") or {}).items():
+            room.case_flags[flag_k] = flag_v
+
+        trust_cfg = eff.get("trust_delta")
+        delta_notes: list[str] = []
+        if isinstance(trust_cfg, dict):
+            for npc, td in trust_cfg.items():
+                delta_i = int(td)
+                if delta_i != 0:
+                    cur = room.npc_trust.get(npc, 0)
+                    room.npc_trust[npc] = max(-3, min(5, cur + delta_i))
+                    delta_notes.append(f"ความเชื่อใจ {npc} {'+' if delta_i > 0 else ''}{delta_i}")
+
+        hp_delta = int(eff.get("hp_delta") or 0)
+        sanity_delta = int(eff.get("sanity_delta") or 0)
+        targets = (
+            [actor]
+            if recipient_scope == "actor" and actor is not None
+            else list(room.players.values())
+        )
+        if hp_delta != 0:
+            for p in targets:
+                if hp_delta < 0 and p.hp > 0:
+                    p.hp = max(1, p.hp + hp_delta)
+                elif hp_delta > 0:
+                    p.hp = min(p.max_hp, p.hp + hp_delta)
+            delta_notes.append(f"HP {'+' if hp_delta > 0 else ''}{hp_delta}")
+        if sanity_delta != 0:
+            for p in targets:
+                if sanity_delta < 0 and p.sanity > 0:
+                    p.sanity = max(1, p.sanity + sanity_delta)
+                elif sanity_delta > 0:
+                    p.sanity = min(p.max_sanity, p.sanity + sanity_delta)
+            delta_notes.append(f"สติ {'+' if sanity_delta > 0 else ''}{sanity_delta}")
+
+        note_th = str(eff.get("note_th") or "").strip()
+        consequence_th = note_th or (" | ".join(delta_notes) if delta_notes else "")
+        if consequence_th and (hp_delta != 0 or sanity_delta != 0 or bool(delta_notes)):
+            self.append_log(room, "ระบบ", consequence_th, kind="system")
+        return consequence_th
+
+    def resolve_bypassed_check(
+        self,
+        room: RoomState,
+        check_id: str,
+        actor_name: str,
+        actor_sid: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Auto-resolve a check whose bypass_if condition is satisfied without rolling."""
+        chk = self.repo.get_check(check_id)
+        if not chk:
+            raise ValueError("ไม่พบข้อมูลการ์ดทอยเต๋า")
+        elig = self.check_eligibility(room, check_id)
+        actor = self.get_player_by_sid(actor_sid) if actor_sid else next(
+            (p for p in room.players.values() if p.name == actor_name), None
+        )
+        recipient_scope = str(chk.get("recipient_scope") or "party")
+        reason_th = elig.get("bypass_reason_th") or "หลักฐานครบถ้วนแล้ว จึงผ่านจุดนี้ได้โดยไม่ต้องทอยเต๋า"
+
+        outcome_audio_id = (chk.get("audio_ids") or {}).get("full")
+        outcome_entry = self.repo.get_dialogue(outcome_audio_id) if outcome_audio_id else None
+        audio_event: Optional[dict[str, Any]] = None
+        if outcome_entry:
+            self._apply_dialogue_unlocks(room, outcome_entry)
+            self.append_log(room, outcome_entry["speaker"], outcome_entry["text"], kind="check")
+            audio_event = self._build_audio_payload(
+                dialogue_id=outcome_entry["id"],
+                speaker=outcome_entry["speaker"],
+                text=outcome_entry["text"],
+                mode="script",
+            )
+
+        consequence_th = self._apply_check_tier_effects(room, chk, "full", actor, recipient_scope) or reason_th
+        if not outcome_entry:
+            self.append_log(room, "DM", consequence_th, kind="check")
+            audio_event = self._build_audio_payload(None, "DM", consequence_th, mode="script")
+
+        dc = int(chk["dc"])
+        attempt = int(elig.get("attempt", 1))
+        max_attempts = int(elig.get("max_attempts", 2))
+        room.resolved_checks[chk["id"]] = {
+            "tier": "full",
+            "tier_label": "ผ่านอัตโนมัติ (หลักฐานครบ)",
+            "d20": 0,
+            "d20_rolls": [],
+            "modifier": 0,
+            "bonus": 0,
+            "bonus_reasons": [reason_th],
+            "total": dc,
+            "dc": dc,
+            "stat": chk["stat"],
+            "rolled_by": actor_name,
+            "attempt": attempt,
+            "clues_count": len(room.clues_found),
+            "items_count": len(room.inventory),
+            "bypassed": True,
+            "consequence_th": consequence_th,
+        }
+        room.pending_check = None
+        room.last_activity_at = time.time()
+
+        return {
+            "roll": {
+                "check_id": chk["id"],
+                "title": chk["title"],
+                "stat": chk["stat"],
+                "d20": 0,
+                "d20_rolls": [],
+                "modifier": 0,
+                "bonus": 0,
+                "bonus_reasons": [reason_th],
+                "total": dc,
+                "dc": dc,
+                "tier": "full",
+                "tier_label": "ผ่านอัตโนมัติ (หลักฐานครบ)",
+                "rolled_by": actor_name,
+                "bypassed": True,
+                "consequence_th": consequence_th,
+                "can_retry_hint": "",
+                "attempt": attempt,
+                "max_attempts": max_attempts,
+                "recipient_scope": recipient_scope,
+            },
+            "audio_event": audio_event,
+        }
+
+    def trigger_check(
+        self,
+        room: RoomState,
+        check_id: str,
+        requested_by: str,
+        requested_by_sid: Optional[str] = None,
+    ) -> Optional[dict[str, Any]]:
+        elig = self.check_eligibility(room, check_id)
+        if not elig["eligible"]:
             return None
         chk = self.repo.get_check(check_id)
         if not chk:
             return None
 
+        if elig["bypassed"]:
+            bypass_res = self.resolve_bypassed_check(
+                room, check_id, requested_by, actor_sid=requested_by_sid
+            )
+            return {
+                "id": chk["id"],
+                "check_id": chk["id"],
+                "bypassed": True,
+                "roll": bypass_res["roll"],
+                "audio_event": bypass_res["audio_event"],
+            }
+
+        actor = None
+        if requested_by_sid:
+            cand = self.get_player_by_sid(requested_by_sid)
+            if cand and cand.player_token in room.players:
+                actor = cand
+        if actor is None:
+            actor = next((p for p in room.players.values() if p.name == requested_by), None)
+
+        base_stat = str(chk["stat"]).upper()
+        base_dc = int(chk["dc"])
         pending = {
             "id": chk["id"],
+            "check_id": chk["id"],
             "title": chk["title"],
-            "stat": chk["stat"],
-            "dc": chk["dc"],
-            "partial_margin": chk.get("partial_margin", 3),
-            "requested_by": requested_by,
+            "stat": base_stat,
+            "base_stat": base_stat,
+            "dc": base_dc,
+            "base_dc": base_dc,
+            "partial_margin": int(chk.get("partial_margin", 3)),
+            "requested_by": actor.name if actor else requested_by,
+            "requested_by_sid": actor.sid if actor else None,
+            "requested_by_public_id": actor.public_id if actor else None,
+            "allow_focus": bool(chk.get("allow_focus", True)),
+            "allow_assist": bool(chk.get("allow_assist", True)),
+            "bonus_cap": int(chk.get("bonus_cap", 2)),
+            "focus_committed": False,
+            "assist_by_sid": None,
+            "assist_by_name": None,
+            "assist_mode": None,
+            "assist_bonus": 0,
+            "effective_bonus": 0,
+            "alt_stats": self._build_alt_stat_options(chk),
+            "attempt": int(elig["attempt"]),
+            "max_attempts": int(elig["max_attempts"]),
+            "recipient_scope": str(chk.get("recipient_scope") or "party"),
         }
         room.pending_check = pending
         return pending
+
+    def prep_pending_check(
+        self,
+        room_code: str,
+        sid: str,
+        action: str,
+        stat: Optional[str] = None,
+        mode: Optional[str] = None,
+        target_public_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Handle pre-roll check preparations: select_stat, toggle_focus, assist, handoff."""
+        room = self.get_or_create_room(room_code)
+        if not room.pending_check:
+            raise ValueError("ขณะนี้ยังไม่มีการทอยเต๋าที่รอผลอยู่")
+        player = self.get_player_by_sid(sid)
+        if not player or player.player_token not in room.players:
+            raise ValueError("ไม่พบผู้เล่นในห้อง")
+
+        pending = room.pending_check
+        lock_sid = pending.get("requested_by_sid")
+        lock_connected = any(p.sid == lock_sid and p.connected for p in room.players.values()) if lock_sid else False
+        is_roller = (sid == lock_sid) if lock_connected else True
+        norm_action = str(action or "").strip().lower()
+        room.last_activity_at = time.time()
+
+        if norm_action == "select_stat":
+            if not is_roller:
+                raise ValueError("มีเพียงผู้ทอยที่รับผิดชอบจุดนี้เท่านั้นที่เลือกแนวทางทอยได้")
+            req_stat = str(stat or "").strip().upper()
+            options = pending.get("alt_stats") or []
+            matched = next((opt for opt in options if opt.get("stat") == req_stat), None)
+            if not matched and req_stat == pending.get("base_stat"):
+                matched = {"stat": pending["base_stat"], "dc": pending["base_dc"], "label": req_stat}
+            if not matched:
+                raise ValueError("แนวทางทอยที่เลือกไม่ถูกต้องสำหรับจุดนี้")
+            pending["stat"] = matched["stat"]
+            pending["dc"] = int(matched["dc"])
+            return {"pending_check": pending, "notice": f"{player.name} เลือกแนวทาง {pending['stat']} (DC {pending['dc']})"}
+
+        if norm_action == "toggle_focus":
+            if not is_roller:
+                raise ValueError("มีเพียงผู้ทอยหลักเท่านั้นที่ใช้โฟกัสเสริมการทอยนี้ได้")
+            if not pending.get("allow_focus", True):
+                raise ValueError("จุดตรวจสอบนี้ไม่สามารถทุ่มโฟกัสเสริมได้")
+            if not pending.get("focus_committed"):
+                if player.focus < 1:
+                    raise ValueError("โฟกัสของคุณไม่พอสำหรับทุ่มเสริม (+2)")
+                pending["focus_committed"] = True
+                notice = f"{player.name} เตรียมทุ่ม 1 โฟกัส (+2)"
+            else:
+                pending["focus_committed"] = False
+                notice = f"{player.name} ยกเลิกการทุ่มโฟกัส"
+            self._recompute_pending_bonuses(pending)
+            return {"pending_check": pending, "notice": notice}
+
+        if norm_action == "assist":
+            if lock_connected and sid == lock_sid:
+                raise ValueError("ผู้ทอยหลักไม่สามารถกดช่วยตัวเองได้ ให้เพื่อนร่วมทีมช่วยแทน")
+            if not pending.get("allow_assist", True):
+                raise ValueError("จุดตรวจสอบนี้ต้องประเมินคนเดียว ไม่สามารถช่วยเพื่อนได้")
+            if not player.is_conscious:
+                raise ValueError("ตัวละครของคุณหมดสติ ไม่สามารถช่วยเพื่อนได้")
+            existing_sid = pending.get("assist_by_sid")
+            if existing_sid and existing_sid != sid:
+                raise ValueError(f"{pending.get('assist_by_name') or 'เพื่อนร่วมทีม'} กำลังช่วยการทอยนี้อยู่แล้ว (ช่วยได้สูงสุด 1 คน)")
+            req_mode = "bonus" if str(mode or "advantage").strip().lower() == "bonus" else "advantage"
+            if existing_sid == sid and (mode is None or pending.get("assist_mode") == req_mode):
+                pending["assist_by_sid"] = None
+                pending["assist_by_name"] = None
+                pending["assist_mode"] = None
+                pending["assist_bonus"] = 0
+                notice = f"{player.name} ยกเลิกการช่วยทอย"
+            else:
+                pending["assist_by_sid"] = sid
+                pending["assist_by_name"] = player.name
+                pending["assist_mode"] = req_mode
+                pending["assist_bonus"] = 2 if req_mode == "bonus" else 0
+                mode_label = "ได้เปรียบ 2d20" if req_mode == "advantage" else "ช่วยเสริม +2"
+                notice = f"{player.name} เข้าช่วย {pending.get('requested_by', 'เพื่อน')} ({mode_label})"
+            self._recompute_pending_bonuses(pending)
+            return {"pending_check": pending, "notice": notice}
+
+        if norm_action == "handoff":
+            if not is_roller:
+                raise ValueError("มีเพียงผู้ทอยปัจจุบันเท่านั้นที่ส่งต่อสิทธิ์การทอยให้เพื่อนได้")
+            target = next(
+                (p for p in room.players.values() if p.connected and p.public_id == target_public_id),
+                None,
+            )
+            if not target:
+                raise ValueError("ไม่พบเพื่อนร่วมทีมที่ต้องการส่งต่อสิทธิ์ทอย")
+            pending["requested_by"] = target.name
+            pending["requested_by_sid"] = target.sid
+            pending["requested_by_public_id"] = target.public_id
+            pending["focus_committed"] = False
+            if pending.get("assist_by_sid") == target.sid:
+                pending["assist_by_sid"] = None
+                pending["assist_by_name"] = None
+                pending["assist_mode"] = None
+                pending["assist_bonus"] = 0
+            self._recompute_pending_bonuses(pending)
+            return {"pending_check": pending, "notice": f"{player.name} ส่งต่อหน้าที่ทอยเต๋าให้ {target.name}"}
+
+        raise ValueError("คำสั่งเตรียมทอยเต๋าไม่ถูกต้อง")
 
     def resolve_dice_roll(self, room_code: str, sid: str) -> dict[str, Any]:
         room = self.get_or_create_room(room_code)
@@ -1052,15 +1560,47 @@ class RoomManager:
             room.pending_check = None
             raise ValueError("ไม่พบข้อมูลการ์ดทอยเต๋า")
 
-        player = self.get_player_by_sid(sid)
-        roller_name = player.name if player else "ผู้สืบสวน"
-        stat_name = chk["stat"]
-        modifier = int(player.stats.get(stat_name, 0)) if player else 0
+        expected_sid = chk_meta.get("requested_by_sid")
+        expected_connected = any(p.sid == expected_sid and p.connected for p in room.players.values()) if expected_sid else False
+        if expected_connected and sid != expected_sid:
+            raise ValueError(
+                f"จุดนี้กำหนดให้ {chk_meta.get('requested_by', 'ผู้เล่นที่ประกาศแอ็กชัน')} เป็นผู้ทอยเต๋า (หรือกดส่งต่อสิทธิ์ให้เพื่อน)"
+            )
 
-        d20 = secrets.randbelow(20) + 1
-        total = d20 + modifier
-        dc = int(chk["dc"])
-        partial_min = dc - int(chk.get("partial_margin", 3))
+        player = self.get_player_by_sid(sid)
+        roller_name = player.name if player else str(chk_meta.get("requested_by") or "ผู้สืบสวน")
+        stat_name = str(chk_meta.get("stat") or chk["stat"]).upper()
+        modifier = int(player.stats.get(stat_name, 0)) if player else 0
+        dc = int(chk_meta.get("dc") or chk["dc"])
+        partial_margin = int(chk_meta.get("partial_margin", chk.get("partial_margin", 3)))
+        bonus_cap = max(0, int(chk_meta.get("bonus_cap", chk.get("bonus_cap", 2))))
+
+        raw_bonus = 0
+        bonus_reasons: list[str] = []
+        if chk_meta.get("focus_committed") and (not expected_sid or sid == expected_sid) and player and player.focus >= 1:
+            player.focus -= 1
+            raw_bonus += 2
+            bonus_reasons.append(f"{player.name} ทุ่ม 1 โฟกัส (+2)")
+
+        assist_mode = chk_meta.get("assist_mode")
+        assist_by_sid = chk_meta.get("assist_by_sid")
+        assist_by_name = chk_meta.get("assist_by_name") or "เพื่อนร่วมทีม"
+        if assist_by_sid and assist_by_sid != sid and assist_mode == "advantage":
+            d1 = secrets.randbelow(20) + 1
+            d2 = secrets.randbelow(20) + 1
+            d20_rolls = [d1, d2]
+            d20 = max(d1, d2)
+            bonus_reasons.append(f"{assist_by_name} ช่วย (ได้เปรียบ 2d20: {d1}, {d2})")
+        else:
+            d20 = secrets.randbelow(20) + 1
+            d20_rolls = [d20]
+            if assist_by_sid and assist_by_sid != sid and assist_mode == "bonus":
+                raw_bonus += int(chk_meta.get("assist_bonus", 2))
+                bonus_reasons.append(f"{assist_by_name} ช่วยเสริม (+2)")
+
+        bonus = min(bonus_cap, raw_bonus)
+        total = d20 + modifier + bonus
+        partial_min = dc - partial_margin
 
         if total >= dc:
             tier = "full"
@@ -1072,21 +1612,8 @@ class RoomManager:
             tier = "failure"
             tier_label = "ล้มเหลว (Failure)"
 
-        room.resolved_checks[chk["id"]] = {
-            "tier": tier,
-            "tier_label": tier_label,
-            "d20": d20,
-            "modifier": modifier,
-            "total": total,
-            "dc": dc,
-            "stat": stat_name,
-            "rolled_by": roller_name,
-        }
-        room.pending_check = None
-        room.last_activity_at = time.time()
-
-        outcome_audio_id = chk["audio_ids"][tier]
-        outcome_entry = self.repo.get_dialogue(outcome_audio_id)
+        outcome_audio_id = (chk.get("audio_ids") or {}).get(tier)
+        outcome_entry = self.repo.get_dialogue(outcome_audio_id) if outcome_audio_id else None
         audio_event: Optional[dict[str, Any]] = None
         if outcome_entry:
             self._apply_dialogue_unlocks(room, outcome_entry)
@@ -1098,18 +1625,68 @@ class RoomManager:
                 mode="script",
             )
 
+        recipient_scope = str(chk_meta.get("recipient_scope") or chk.get("recipient_scope") or "party")
+        consequence_th = self._apply_check_tier_effects(room, chk, tier, player, recipient_scope)
+        if not outcome_entry and consequence_th:
+            self.append_log(room, "DM", consequence_th, kind="check")
+            audio_event = self._build_audio_payload(None, "DM", consequence_th, mode="script")
+
+        retry_cfg = chk.get("retry") or {}
+        on_failure = bool(retry_cfg.get("on_failure", True))
+        requires_new = bool(retry_cfg.get("requires_new_clue_or_item", True))
+        attempt = int(chk_meta.get("attempt", 1))
+        max_attempts = max(1, int(chk_meta.get("max_attempts", retry_cfg.get("max_attempts", 2))))
+        can_retry_hint = ""
+        if tier == "failure" and on_failure and attempt < max_attempts:
+            can_retry_hint = (
+                "สามารถค้นพบเบาะแสหรือไอเท็มใหม่เพิ่ม แล้วกลับมาลองตรวจสอบจุดนี้ซ้ำได้ (เหลือโอกาสอีกครั้ง)"
+                if requires_new
+                else "สามารถเปลี่ยนแนวทางแล้วกลับมาลองตรวจสอบจุดนี้อีกครั้งได้"
+            )
+
+        # Snapshot evidence count AFTER unlocks & tier_effects so check failure unlocks don't self-enable retries.
+        room.resolved_checks[chk["id"]] = {
+            "tier": tier,
+            "tier_label": tier_label,
+            "d20": d20,
+            "d20_rolls": d20_rolls,
+            "modifier": modifier,
+            "bonus": bonus,
+            "bonus_reasons": bonus_reasons,
+            "total": total,
+            "dc": dc,
+            "stat": stat_name,
+            "rolled_by": roller_name,
+            "attempt": attempt,
+            "clues_count": len(room.clues_found),
+            "items_count": len(room.inventory),
+            "bypassed": False,
+            "consequence_th": consequence_th,
+        }
+        room.pending_check = None
+        room.last_activity_at = time.time()
+
         return {
             "roll": {
                 "check_id": chk["id"],
                 "title": chk["title"],
                 "stat": stat_name,
                 "d20": d20,
+                "d20_rolls": d20_rolls,
                 "modifier": modifier,
+                "bonus": bonus,
+                "bonus_reasons": bonus_reasons,
                 "total": total,
                 "dc": dc,
                 "tier": tier,
                 "tier_label": tier_label,
                 "rolled_by": roller_name,
+                "bypassed": False,
+                "consequence_th": consequence_th,
+                "can_retry_hint": can_retry_hint,
+                "attempt": attempt,
+                "max_attempts": max_attempts,
+                "recipient_scope": recipient_scope,
             },
             "audio_event": audio_event,
         }
@@ -1134,13 +1711,12 @@ class RoomManager:
             {
                 "id": "banana_grove_trails",
                 "label": "แนวต้นกล้วยรกทึบ",
-                "hint": "ใช้ดงกล้วยกำบังแนวถอยหรือตั้งสติเรียกความทรงจำแม่แก้ว",
-                "sample": "ตะโกนถามเสียงในวิทยุเรื่องคืนน้ำท่วมปี 2534 เพื่อเรียกสติมัน",
+                "hint": "ใช้แนวต้นกล้วยกำบังตัวหรือส่งเสียงถามเพื่อทำให้เงาจมน้ำชะงัก",
+                "sample": "ใช้แนวต้นกล้วยกำบัง แล้วตะโกนถามเสียงในวิทยุว่าใครยังติดอยู่ตรงนี้",
             },
         ]
 
-    @staticmethod
-    def _prepare_round_telegraph(room: RoomState) -> None:
+    def _prepare_round_telegraph(self, room: RoomState) -> None:
         combat = room.combat
         if not combat:
             return
@@ -1150,23 +1726,50 @@ class RoomManager:
             combat.telegraph = None
             return
 
-        if combat.retreat_progress >= 1:
-            move_id = "UNDERFLOOR_HAND"
-            move_name = "มือจากใต้พื้น"
+        enc = self.repo.get_combat_encounter(combat.encounter_id)
+        moves = enc.get("moves", [])
+        root_move = next((m for m in moves if m.get("condition") == "ROOTED"), None)
+        shaken_move = next((m for m in moves if m.get("condition") == "SHAKEN"), None)
+        default_move = moves[0] if moves else {
+            "id": "WET_CLAW",
+            "name_th": "เล็บเปียกน้ำ",
+        }
+        enc_id = combat.encounter_id
+
+        if combat.retreat_progress >= 1 and root_move:
+            move_id = root_move["id"]
+            move_name = root_move["name_th"]
             target = max(pool, key=lambda p: p.hp)
-            hint = f"โคลนรอบเท้าของ {target.name} เริ่มขยับยวบยาบ คล้ายมีมือซีดกำลังจะผุดขึ้นมาคว้าข้อเท้า!"
-            counter_tip = "ช่วยเพื่อนดึงขาหลุด / กางยันต์คุ้มภัย หรือตั้งแนวรับก่อนถอย"
-        elif combat.soothe_progress >= 1 or min(p.sanity for p in pool) <= 6:
-            move_id = "DROWNED_WHISPER"
-            move_name = "เสียงเรียกจากคราบน้ำ"
+            if enc_id in {"KAEW_FINAL_BOSS", "KAEW_SHIELDED_SHADOW"}:
+                hint = f"เส้นด้ายดำจาก {combat.enemy_name} ขยับตึงเล็งคว้าข้อเท้าและตัดแนวตั้งรับของ {target.name}!"
+            else:
+                hint = f"โคลนรอบเท้าของ {target.name} เริ่มขยับยวบยาบ คล้ายมีมือซีดกำลังจะผุดขึ้นมาคว้าข้อเท้า!"
+            counter_tip = "ช่วยเพื่อนดึงหลุด / กางยันต์คุ้มภัย หรือตั้งแนวรับก่อนถอย"
+        elif (
+            combat.soothe_progress >= 1
+            or combat.ritual_step >= 1
+            or min(p.sanity for p in pool) <= 6
+        ) and shaken_move:
+            move_id = shaken_move["id"]
+            move_name = shaken_move["name_th"]
             target = min(pool, key=lambda p: p.sanity)
-            hint = f"ผีเงาจมน้ำหันหน้ามาทาง {target.name} เสียงหายใจสำลักน้ำดังก้องเตรียมบั่นทอนสติ!"
+            if enc_id == "KAEW_FINAL_BOSS":
+                hint = f"วงอาคมรอบ {combat.enemy_name} สั่นสะเทือน ส่งคลื่นคำสั่งกดทับสติของ {target.name}!"
+            elif enc_id == "KAEW_SHIELDED_SHADOW":
+                hint = f"แรงอาคมบีบให้ {combat.enemy_name} เปล่งเสียงสะท้อนกดทับสติของ {target.name}!"
+            else:
+                hint = f"{combat.enemy_name} หันหน้ามาทาง {target.name} เสียงหายใจสำลักน้ำดังก้องเตรียมบั่นทอนสติ!"
             counter_tip = "ใช้ 'กล่อมวิญญาณ' หรือ 'ช่วยเพื่อน / คุ้มกัน' เพื่อยืนขวางและเรียกสติ"
         else:
-            move_id = "WET_CLAW"
-            move_name = "เล็บเปียกน้ำ"
+            move_id = default_move["id"]
+            move_name = default_move["name_th"]
             target = min(pool, key=lambda p: p.hp)
-            hint = f"ผีเงาจมน้ำย่อตัวกางกรงเล็บเปียกโคลน เล็งจะพุ่งตะปบใส่ {target.name}!"
+            if enc_id == "KAEW_FINAL_BOSS":
+                hint = f"เส้นด้ายรอบกำไลของ {combat.enemy_name} ตวัดพุ่งเล็งใส่ {target.name}!"
+            elif enc_id == "KAEW_SHIELDED_SHADOW":
+                hint = f"รากกล้วยและด้ายดำหน้าศาลพุ่งกระชากใส่ {target.name}!"
+            else:
+                hint = f"{combat.enemy_name} ย่อตัวกางกรงเล็บเปียกโคลน เล็งจะพุ่งตะปบใส่ {target.name}!"
             counter_tip = "สาดไฟฉายเปิดจุดอ่อน ใช้ 'ช่วยเพื่อน / คุ้มกัน' หรือ 'ตั้งแนวป้องกัน' รับแรงปะทะ"
 
         combat.telegraph = {
@@ -1202,30 +1805,78 @@ class RoomManager:
         if room.active_speaker_sid:
             self.release_mic(room.room_code, room.active_speaker_sid, force=True)
 
-        features = (
-            [
+        if enc_id == "KAEW_FINAL_BOSS":
+            is_prepared = room.case_flags.get("ritual_plan") == "prepared"
+            knows_2534 = "knows_wichai_saved" in room.clues_found
+            features = [
                 {
                     "id": "ritual_threads",
-                    "label": "ด้ายบังคับ 3 ชั้น & สายป้ายชื่อ",
-                    "hint": "ใช้แอ็กชันคลายพิธี: 1) คุมแรงสะท้อน -> 2) แยกสายคำสั่ง -> 3) คลายปมเกราะ",
-                    "sample": "คุมแรงสะท้อนของด้ายบนโต๊ะและเริ่มแยกสายคำสั่งตามตำรา",
+                    "label": "ปมด้าย 3 ชั้น & สายป้ายชื่อบนโต๊ะ",
+                    "hint": (
+                        "ใช้ลำดับคลายพิธีตามตำรา: 1) คุมแรงสะท้อน -> 2) แยกสายคำสั่ง -> 3) คลายปมเกราะ"
+                        if is_prepared
+                        else "สังเกตจุดเชื่อมสายด้ายสามจุดบนโต๊ะแล้วค่อย ๆ คลายทีละจุด (INT/SPI)"
+                    ),
+                    "sample": (
+                        "คุมแรงสะท้อนของด้ายบนโต๊ะและเริ่มแยกสายคำสั่งตามตำรา"
+                        if is_prepared
+                        else "เพ่งสังเกตปมด้ายที่ตึงที่สุดบนโต๊ะแล้วลองคลายแรงสะท้อนทีละจุด"
+                    ),
                 },
                 {
                     "id": "kaew_memory",
-                    "label": "ความทรงจำคืนน้ำท่วมปี 2534",
-                    "hint": "กล่อมเรียกสติแม่แก้วด้วยเหตุการณ์คืนช่วยเด็กวิชัย",
-                    "sample": "ตะโกนเตือนสติแม่แก้วว่าพวกเรามาเปิดเผยความจริงปี 2534",
+                    "label": "ความทรงจำคืนน้ำท่วมปี 2534" if knows_2534 else "สติและเสียงพูดของแม่แก้ว",
+                    "hint": (
+                        "กล่อมเรียกสติแม่แก้วด้วยเหตุการณ์คืนช่วยชีวิตเด็กในน้ำท่วม"
+                        if knows_2534
+                        else "พูดปลอบประโลมให้แม่แก้วต้านแรงด้ายดำที่บังคับอยู่"
+                    ),
+                    "sample": (
+                        "ตะโกนเตือนสติแม่แก้วว่าพวกเรามาเปิดเผยความจริงปี 2534"
+                        if knows_2534
+                        else "ตะโกนบอกแม่แก้วว่าพวกเราจะหยุดกำไลให้เธอเป็นอิสระ"
+                    ),
                 },
                 {
                     "id": "ritual_table",
                     "label": "โต๊ะไม้และมุมกำบังในห้องพิธี",
-                    "hint": "ช่วยเพื่อนคุ้มกันคนปลดกำไลระหว่างที่รากกล้วยฟาดขึ้นมา",
+                    "hint": "ช่วยเพื่อนคุ้มกันคนที่กำลังคลายปมกำไลระหว่างที่รากกล้วยฟาดขึ้นมา",
                     "sample": "ยืนขวางหน้ารากไม้เพื่อคุ้มกันเพื่อนที่กำลังคลายปมกำไล",
                 },
             ]
-            if enc_id in {"KAEW_FINAL_BOSS", "KAEW_SHIELDED_SHADOW"}
-            else self._default_combat_features()
-        )
+        elif enc_id == "KAEW_SHIELDED_SHADOW":
+            knows_2534 = "knows_wichai_saved" in room.clues_found
+            features = [
+                {
+                    "id": "shrine_pillar",
+                    "label": "เสาศาลเก่าและเงากอกล้วย",
+                    "hint": "ใช้เสาศาลและกอกล้วยกำบังจังหวะด้ายดำตวัด",
+                    "sample": "หลบเข้าหลังเสาศาลแล้วเรียกสติแม่แก้วว่าพวกเราไม่คิดทำร้าย",
+                },
+                {
+                    "id": "kaew_bound_threads",
+                    "label": "เส้นด้ายดำที่ข้อมือ",
+                    "hint": "ด้ายถูกบังคับจากที่อื่น ลองเจรจาหรือตั้งรับแทนการตัดด้ายตรงนี้",
+                    "sample": "สังเกตแรงตึงของด้ายดำที่ข้อมือแล้วตั้งแนวคุ้มกันให้เพื่อน",
+                },
+                (
+                    {
+                        "id": "kaew_past_echo",
+                        "label": "ความทรงจำคืนน้ำท่วมปี 2534",
+                        "hint": "เตือนสติแม่แก้วด้วยเหตุการณ์คืนน้ำท่วมปี 2534 ที่ยายบุญมีเล่า",
+                        "sample": "ตะโกนเรียกสติแม่แก้วถึงคืนน้ำท่วมปี 2534 ว่าพวกเราจะช่วยเปิดเผยความจริง",
+                    }
+                    if knows_2534
+                    else {
+                        "id": "flashlight_shrine",
+                        "label": "ลำแสงไฟฉายภาคสนาม",
+                        "hint": "สาดไฟฉายเปิดทางถอยหรือตัดจังหวะรากไม้รอบศาล",
+                        "sample": "สาดไฟฉายตัดแนวรากกล้วยเพื่อช่วยเปิดทางให้เพื่อนร่วมทีม",
+                    }
+                ),
+            ]
+        else:
+            features = self._default_combat_features()
         start_msg = (
             f"เริ่มการเผชิญหน้ากับ {enc.get('name', 'ศัตรู')}! "
             + (
@@ -2151,6 +2802,7 @@ class RoomManager:
         room: RoomState,
         decision: DMDecision,
         actor_name: str,
+        actor_sid: Optional[str] = None,
     ) -> dict[str, Any]:
         """Strictly enforce scene/spoiler guardrails on LLM output and advance room state."""
         room.last_activity_at = time.time()
@@ -2242,11 +2894,33 @@ class RoomManager:
             }
 
         if (
+            scene_before == "D4"
+            and not room.combat
+            and not room.ending_triggered
+            and (decision.action_kind == "combat" or decision.state_updates.start_combat)
+        ):
+            combat_events = self.start_combat(
+                room.room_code,
+                return_scene="D4",
+                encounter_id="KAEW_SHIELDED_SHADOW",
+            )
+            primary = combat_events[0] if combat_events else self._build_audio_payload(
+                None, "DM", "เส้นด้ายดำและรากกล้วยหน้าศาลพุ่งเข้าต้านทีมสืบสวน!", mode="script"
+            )
+            return {
+                "primary_event": primary,
+                "queued_events": combat_events[1:],
+                "needs_live_tts": False,
+                "live_tts_speaker": "DM",
+                "live_tts_text": "",
+            }
+
+        if (
             scene_before == "F1"
             and not room.combat
             and not room.ending_triggered
             and "ritual_stopped" not in room.clues_found
-            and decision.selected_audio_id not in {"f1_intro_dm", "f1_kaew_forced"}
+            and (decision.action_kind == "combat" or decision.state_updates.start_combat)
             and decision.state_updates.current_scene not in {"F5", "F6"}
         ):
             combat_events = self.start_combat(
@@ -2271,9 +2945,32 @@ class RoomManager:
         needs_live_tts = False
         live_tts_speaker = "DM"
         live_tts_text = ""
+        bypassed_roll: Optional[dict[str, Any]] = None
+        bypass_primary_event: Optional[dict[str, Any]] = None
+        blocked_check_hint: Optional[str] = None
 
         if decision.requested_check_id and room.pending_check is None:
-            self.trigger_check(room, decision.requested_check_id, actor_name)
+            elig = self.check_eligibility(room, decision.requested_check_id)
+            if not elig["eligible"]:
+                if elig["blocked_reason"] in {"missing_requires", "needs_new_evidence", "max_attempts"}:
+                    blocked_check_hint = elig["missing_hint"] or elig["can_retry_hint"]
+            else:
+                trig = self.trigger_check(
+                    room, decision.requested_check_id, actor_name, requested_by_sid=actor_sid
+                )
+                if trig and trig.get("bypassed"):
+                    bypassed_roll = trig.get("roll")
+                    bypass_audio = trig.get("audio_event")
+                    if decision.mode == "script" and decision.selected_audio_id in eligible_by_id:
+                        if bypass_audio:
+                            queued_events.append(bypass_audio)
+                    else:
+                        bypass_primary_event = bypass_audio or self._build_audio_payload(
+                            None,
+                            "DM",
+                            (bypassed_roll or {}).get("consequence_th") or "ผ่านการตรวจสอบโดยไม่ต้องทอยเต๋า",
+                            mode="script",
+                        )
 
         if decision.mode == "script" and decision.selected_audio_id in eligible_by_id:
             entry = eligible_by_id[decision.selected_audio_id]
@@ -2312,9 +3009,15 @@ class RoomManager:
                     room.ending_triggered = "act_e_complete"
                 elif entry["id"] == "ending_a_epilogue" and room.ending_triggered is None:
                     room.ending_triggered = self.resolve_final_ending(room)
+        elif bypass_primary_event is not None:
+            primary_event = bypass_primary_event
+            needs_live_tts = False
         else:
             raw_improv = (decision.improvised_text or "").strip()[:450]
-            if decision.mode == "script" and decision.selected_audio_id is None and raw_improv:
+            if blocked_check_hint:
+                speaker = "DM"
+                safe_text = blocked_check_hint
+            elif decision.mode == "script" and decision.selected_audio_id is None and raw_improv:
                 speaker = _safe_speaker(decision.character)
                 safe_text = raw_improv
             elif decision.mode == "script" and decision.selected_audio_id is None and room.pending_check is not None:
@@ -2332,11 +3035,11 @@ class RoomManager:
                 elif speaker == "ต้น":
                     safe_text = "เอ่อ... เรื่องนั้นผมไม่รู้จริง ๆ ครับพี่ เอาเท่าที่ผมเห็นก่อนนะ"
                 elif speaker == "ยายบุญมี":
-                    safe_text = "เรื่องนั้นยายก็ไม่กล้าพูดมั่วหรอกลูก ลองดูสมุดสวดมนต์กับเรื่องคืนน้ำท่วมก่อนดีกว่า"
+                    safe_text = "เรื่องนั้นยายก็ไม่กล้าพูดมั่วหรอกลูก ลองถามเรื่องศาลหรือคืนน้ำท่วมปี 2534 ก่อนดีกว่า"
                 elif speaker == "แม่แก้ว (นางตานี)":
                     safe_text = "เสียงลมจากต้นกล้วยสั่นระริก — ข้าพูดมากไปกว่านี้ไม่ได้... เส้นด้ายดำยังรั้งคออยู่"
                 elif speaker == "ดล":
-                    safe_text = "ผมจำได้เท่าที่เห็นตอนถูกขังครับพี่ รีบขึ้นไปเช็กกำไลกับหลักฐานข้างบนเถอะ!"
+                    safe_text = "ผมจำได้เท่าที่เห็นตอนถูกขังครับพี่ รีบขึ้นไปดูข้างบนเถอะครับ!"
                 elif act_before == "B":
                     safe_text = "ยังไม่พบเบาะแสเพิ่มเติมในจุดนั้น ลองตรวจดูแฟ้ม ภาพเก่า หรือเปิดแผนที่เลือกจุดหมายต่อได้"
                 elif act_before in {"C", "D", "E", "F"}:
@@ -2378,20 +3081,34 @@ class RoomManager:
 
         updates = decision.state_updates
         for clue_id in updates.add_clues:
-            if (
-                clue_id in scene_cfg.get("allowed_clues", [])
-                and clue_id in self.repo.clues_catalog
-                and clue_id not in room.clues_found
-            ):
-                room.clues_found.append(clue_id)
+            if clue_id in scene_cfg.get("allowed_clues", []):
+                self._grant_clue(room, clue_id)
 
         for item_id in updates.add_inventory:
-            if (
-                item_id in scene_cfg.get("allowed_items", [])
-                and item_id in self.repo.items_catalog
-                and item_id not in room.inventory
-            ):
-                room.inventory.append(item_id)
+            if item_id in scene_cfg.get("allowed_items", []):
+                self._grant_item(room, item_id)
+
+        if decision.inspect_target_id:
+            insp = next(
+                (it for it in scene_cfg.get("inspectables", []) if it.get("id") == decision.inspect_target_id),
+                None,
+            )
+            if insp:
+                if insp["id"] not in room.inspected_objects:
+                    room.inspected_objects.append(insp["id"])
+                for cid in insp.get("unlock_clues", []):
+                    self._grant_clue(room, cid)
+                for iid in insp.get("unlock_items", []):
+                    self._grant_item(room, iid)
+            else:
+                recipe = self.repo.combine_recipes_by_id.get(decision.inspect_target_id)
+                if recipe and all(i in room.inventory for i in recipe.get("requires_items", [])) and all(
+                    c in room.clues_found for c in recipe.get("requires_clues", [])
+                ):
+                    if recipe["id"] not in room.completed_combines:
+                        room.completed_combines.append(recipe["id"])
+                    for cid in recipe.get("unlock_clues", []):
+                        self._grant_clue(room, cid)
 
         if updates.npc_trust_delta:
             delta = max(-1, min(1, int(updates.npc_trust_delta)))
@@ -2482,14 +3199,6 @@ class RoomManager:
         room.total_turn_count += 1
         if target_next_scene and target_next_scene != scene_before and not room.ending_triggered:
             queued_events.extend(self._advance_scene(room, target_next_scene))
-            if target_next_scene == "D4" and "kaew_coerced_truth" not in room.clues_found and not room.combat:
-                queued_events.extend(
-                    self.start_combat(
-                        room.room_code,
-                        return_scene="D4",
-                        encounter_id="KAEW_SHIELDED_SHADOW",
-                    )
-                )
         else:
             room.scene_turn_count += 1
 
@@ -2534,6 +3243,7 @@ class RoomManager:
             "needs_live_tts": needs_live_tts,
             "live_tts_speaker": live_tts_speaker,
             "live_tts_text": live_tts_text,
+            "bypassed_roll": bypassed_roll,
         }
 
     def resolve_final_ending(self, room: RoomState) -> str:
@@ -2579,6 +3289,11 @@ class RoomManager:
         if not self._is_board_node_unlocked(room, node):
             raise ValueError("ยังไม่มีข้อมูลตำแหน่งนี้ กรุณาสอบถามหรือตรวจแฟ้มก่อน")
 
+        scene_node_map = {
+            "A1": "sala",
+            "A2": "company_van",
+            "A3": "sala",
+        }
         room.board_node = node_id
         room.last_activity_at = time.time()
         events: list[dict[str, Any]] = []
@@ -2587,6 +3302,7 @@ class RoomManager:
             if room.current_scene == "A3" and not room.ending_triggered:
                 events.extend(self.start_combat(room.room_code, return_scene="A3"))
             else:
+                room.board_node = scene_node_map.get(room.current_scene, "sala")
                 warn_text = (
                     f"{actor_name} ชี้ไปทางปากทางสวนกล้วยที่มืดทึบ — "
                     "ประเสริฐเตือนให้ดูแฟ้มข้อมูลก่อนเพื่อไม่ให้เดินหลงทาง"
@@ -2600,6 +3316,9 @@ class RoomManager:
                         mode="script",
                     )
                 )
+        elif node_id == "sala" and not room.ending_triggered:
+            if room.current_scene != "A1":
+                events.extend(self._advance_scene(room, "A1"))
         elif node_id == "headman_house" and not room.ending_triggered:
             if room.current_scene != "A3":
                 events.extend(self._advance_scene(room, "A3"))
@@ -2617,19 +3336,22 @@ class RoomManager:
                         mode="script",
                     )
                 )
-        elif node_id == "company_van" and room.current_scene == "A1":
-            open_entry = self.repo.get_dialogue("a1_open_folder_to_a2")
-            if open_entry and open_entry["id"] not in room.played_audio_ids:
-                self._apply_dialogue_unlocks(room, open_entry)
-                self.append_log(room, open_entry["speaker"], open_entry["text"], kind="narration")
-                events.append(
-                    self._build_audio_payload(
-                        dialogue_id=open_entry["id"],
-                        speaker=open_entry["speaker"],
-                        text=open_entry["text"],
-                        mode="script",
+        elif node_id == "company_van":
+            if room.current_scene == "A1":
+                open_entry = self.repo.get_dialogue("a1_open_folder_to_a2")
+                if open_entry and open_entry["id"] not in room.played_audio_ids:
+                    self._apply_dialogue_unlocks(room, open_entry)
+                    self.append_log(room, open_entry["speaker"], open_entry["text"], kind="narration")
+                    events.append(
+                        self._build_audio_payload(
+                            dialogue_id=open_entry["id"],
+                            speaker=open_entry["speaker"],
+                            text=open_entry["text"],
+                            mode="script",
+                        )
                     )
-                )
+                events.extend(self._advance_scene(room, "A2"))
+            elif room.current_scene != "A2" and not room.ending_triggered:
                 events.extend(self._advance_scene(room, "A2"))
         elif node_id == "headman_living_room":
             if room.current_scene != "B1":
@@ -2748,11 +3470,252 @@ class RoomManager:
 
         return {"board_node": room.board_node, "events": events}
 
+    def compute_guideline_snapshot(self, room: RoomState) -> dict[str, Any]:
+        """Compute spoiler-free deterministic mission objectives, leads, inspectables, and combine hints."""
+        current_act = self.act_for_scene(room.current_scene)
+        scene_cfg = self.repo.get_scene(room.current_scene) or {}
+        act_meta = self.repo.act_objectives.get(current_act, {})
+        default_act_titles = {
+            "A": "บทนำ: ศาลาริมทางบ้านหนองตาล",
+            "B": "บ้านผู้ใหญ่บ้าน & แฟ้มคดี",
+            "C": "ตามรอยเบาะแสในหมู่บ้าน",
+            "D": "เข้าสู่แนวสวนกล้วยยามค่ำ",
+            "E": "เรือนไม้ร้างท้ายสวน",
+            "F": "บทสรุปคดีบ้านหนองตาล",
+        }
+        act_title = act_meta.get("title") or default_act_titles.get(current_act, f"ACT {current_act}")
+        act_goal = act_meta.get("main_goal") or scene_cfg.get("subtitle", "")
+
+        g_cfg = scene_cfg.get("guideline") or {}
+        scene_goal = g_cfg.get("main_objective") or scene_cfg.get("subtitle", "")
+
+        leads_out: list[dict[str, Any]] = []
+        trackable_main_leads: list[dict[str, Any]] = []
+        for lead in g_cfg.get("leads", []):
+            vis_clues = lead.get("visible_if_clues") or []
+            if vis_clues and not all(c in room.clues_found for c in vis_clues):
+                continue
+            done_clues = lead.get("done_when_clues") or []
+            done_checks = lead.get("done_when_checks") or []
+            done_scenes = lead.get("done_when_scenes") or []
+            done_items = lead.get("done_when_items") or []
+            has_done_condition = bool(done_clues or done_checks or done_scenes or done_items)
+            is_done = (
+                any(c in room.clues_found for c in done_clues)
+                or any(cid in room.resolved_checks for cid in done_checks)
+                or any(sid in room.visited_scenes for sid in done_scenes)
+                or any(iid in room.inventory for iid in done_items)
+            )
+            entry = {
+                "id": lead.get("id", ""),
+                "label": lead.get("label", ""),
+                "kind": "optional" if lead.get("kind") == "optional" else "main",
+                "done": bool(is_done),
+                "prompt_suggestion": lead.get("prompt_suggestion", ""),
+            }
+            leads_out.append(entry)
+            if entry["kind"] == "main" and has_done_condition:
+                trackable_main_leads.append(entry)
+
+        any_clues = g_cfg.get("ready_when_any_clues") or []
+        all_clues = g_cfg.get("ready_when_all_clues") or []
+        if any_clues or all_clues:
+            any_ok = (not any_clues) or any(c in room.clues_found for c in any_clues)
+            all_ok = (not all_clues) or all(c in room.clues_found for c in all_clues)
+            ready_to_advance = any_ok and all_ok
+        else:
+            main_leads = trackable_main_leads or [l for l in leads_out if l["kind"] == "main"]
+            ready_to_advance = all(l["done"] for l in main_leads) if main_leads else True
+
+        ready_label = g_cfg.get("ready_label") or (
+            "พร้อมก้าวสู่จุดถัดไปแล้ว" if ready_to_advance else "กำลังสืบสวนเบาะแสหลัก"
+        )
+
+        # Exclude pure Act-exit leads (empty done_when_*) so unlocking the exit never flags itself as missing.
+        missing_recommended: list[str] = [
+            l["label"] for l in trackable_main_leads if not l["done"] and l["label"]
+        ]
+        act_safeguards: list[str] = []
+        if current_act == "B":
+            if room.current_scene != "B1" and "don_house_location" not in room.clues_found:
+                act_safeguards.append("กลับไปตรวจแฟ้มคนหายและแผนที่ในห้องรับแขกเพื่อหาจุดหมายถัดไป")
+            if "don_house_location" in room.clues_found and "B2" not in room.visited_scenes:
+                act_safeguards.append("ลองเดินคุยและสำรวจมุมอื่นในบ้านผู้ใหญ่ให้ครบก่อนเดินทางต่อ")
+        elif current_act == "E":
+            if "hostages_found" not in room.clues_found:
+                act_safeguards.append("ตรวจสอบเสียงเคาะหลังประตูห้องใต้ถุนให้เรียบร้อย")
+            if "ritual_bracelet_core" in room.clues_found and "wichai_debt_evidence" not in room.clues_found:
+                act_safeguards.append("ตรวจค้นใต้ผ้าคลุมโต๊ะบนชั้นสองให้ครบก่อน")
+        elif current_act == "F" and room.current_scene == "F5":
+            if "kaew_reconciled" not in room.clues_found:
+                act_safeguards.append("เจรจาทำความเข้าใจกับแม่แก้วก่อนออกสู่ถนนใหญ่")
+        for msg in act_safeguards:
+            if msg not in missing_recommended:
+                missing_recommended.append(msg)
+
+        inspectables_out: list[dict[str, Any]] = []
+        for obj in scene_cfg.get("inspectables", []):
+            vis = obj.get("visible_if_clues") or []
+            if vis and not all(c in room.clues_found for c in vis):
+                continue
+            inspectables_out.append(
+                {
+                    "id": obj["id"],
+                    "label": obj["label"],
+                    "inspected": obj["id"] in room.inspected_objects,
+                }
+            )
+
+        combine_hints: list[dict[str, Any]] = []
+        for recipe in self.repo.combine_recipes:
+            if not isinstance(recipe, dict) or not recipe.get("id"):
+                continue
+            req_items = recipe.get("requires_items") or []
+            req_clues = recipe.get("requires_clues") or []
+            ready = all(i in room.inventory for i in req_items) and all(
+                c in room.clues_found for c in req_clues
+            )
+            completed = recipe["id"] in room.completed_combines
+            if ready or completed:
+                combine_hints.append(
+                    {
+                        "id": recipe["id"],
+                        "title": recipe["title"],
+                        "ready": bool(ready),
+                        "completed": bool(completed),
+                    }
+                )
+
+        combat_goal: Optional[str] = None
+        combat_optional_goal: Optional[str] = None
+        if room.combat and room.combat.active:
+            c = room.combat
+            enc = self.repo.get_combat_encounter(c.encounter_id)
+            if c.encounter_id == "KAEW_FINAL_BOSS":
+                if c.ritual_shield_up:
+                    combat_goal = (
+                        f"เป้าหมายหลัก: คลายเกราะกำไล 3 ขั้น ({c.ritual_step}/{c.ritual_max_steps}) "
+                        "— ระหว่างเกราะอยู่การโจมตีปกติจะไม่เข้า!"
+                    )
+                else:
+                    combat_goal = (
+                        "เป้าหมายหลัก: เกราะสลายแล้ว! กดปุ่ม 'ปลดกำไลขั้นสุดท้าย' เพื่อยุติพิธีโดยไม่ทำร้ายแม่แก้ว"
+                    )
+            else:
+                combat_goal = enc.get("primary_goal_th") or (
+                    f"เป้าหมายหลัก: รับมือ {c.enemy_name} "
+                    f"(โจมตี / กล่อม {c.soothe_progress}/{c.soothe_goal} / ถอย {c.retreat_progress}/{c.retreat_goal})"
+                )
+            combat_optional_goal = enc.get("optional_goal_th") or (
+                "ทางเลือกเสริม: ใช้สภาพแวดล้อมในฉากหรือช่วยคุ้มกันเพื่อนเพื่อรับโบนัส +2"
+            )
+
+        return {
+            "act": current_act,
+            "act_title": act_title,
+            "act_goal": act_goal,
+            "scene_id": room.current_scene,
+            "scene_goal": scene_goal,
+            "ready_to_advance": bool(ready_to_advance),
+            "ready_label": ready_label,
+            "missing_recommended": missing_recommended,
+            "leads": leads_out,
+            "inspectables": inspectables_out,
+            "combine_hints": combine_hints,
+            "combat_goal": combat_goal,
+            "combat_optional_goal": combat_optional_goal,
+        }
+
+    def inspect_dossier_target(
+        self,
+        room_code: str,
+        sid: str,
+        target_type: str,
+        target_id: str,
+    ) -> dict[str, Any]:
+        """Inspect a scene object, held inventory item, or combine ready items/clues."""
+        room = self.get_or_create_room(room_code)
+        player = self.get_player_by_sid(sid)
+        actor_name = player.name if player else "ผู้สืบสวน"
+        room.last_activity_at = time.time()
+        room.idle_prompted = False
+
+        if target_type == "inventory":
+            if target_id not in room.inventory or target_id not in self.repo.items_catalog:
+                raise ValueError("ไม่พบเอกสารหรือไอเท็มชิ้นนี้ในสัมภาระของทีม")
+            item = self.repo.items_catalog[target_id]
+            text = f"{actor_name} ตรวจดู [{item['label']}]: {item['detail']}"
+            self.append_log(room, "DM", text, kind="narration")
+            return {
+                "event": self._build_audio_payload(None, "DM", text, mode="script"),
+                "unlocked_clues": [],
+                "unlocked_items": [],
+            }
+
+        if room.combat and room.combat.active:
+            raise ValueError("กำลังเผชิญหน้าอยู่! จัดการการต่อสู้รอบนี้ให้จบก่อน")
+        if room.ending_triggered:
+            raise ValueError("บทนี้จบลงแล้ว กรุณากดดำเนินการต่อหรือเริ่มใหม่")
+
+        if target_type == "scene_object":
+            scene_cfg = self.repo.get_scene(room.current_scene) or {}
+            obj = next(
+                (it for it in scene_cfg.get("inspectables", []) if it.get("id") == target_id),
+                None,
+            )
+            if not obj:
+                raise ValueError("ไม่พบจุดสำรวจนี้ในฉากปัจจุบัน")
+            vis = obj.get("visible_if_clues") or []
+            if vis and not all(c in room.clues_found for c in vis):
+                raise ValueError("ยังไม่พบเงื่อนไขที่มองเห็นจุดสำรวจนี้")
+
+            if target_id not in room.inspected_objects:
+                room.inspected_objects.append(target_id)
+            unlocked_clues = [cid for cid in obj.get("unlock_clues", []) if self._grant_clue(room, cid)]
+            unlocked_items = [iid for iid in obj.get("unlock_items", []) if self._grant_item(room, iid)]
+
+            text = obj["description"]
+            self.append_log(room, "DM", text, kind="narration")
+            return {
+                "event": self._build_audio_payload(None, "DM", text, mode="script"),
+                "unlocked_clues": unlocked_clues,
+                "unlocked_items": unlocked_items,
+            }
+
+        if target_type == "combine":
+            recipe = self.repo.combine_recipes_by_id.get(target_id)
+            if not recipe:
+                raise ValueError("ไม่พบชุดหลักฐานที่จะนำมาเชื่อมโยง")
+            req_items = recipe.get("requires_items") or []
+            req_clues = recipe.get("requires_clues") or []
+            if not (all(i in room.inventory for i in req_items) and all(c in room.clues_found for c in req_clues)):
+                raise ValueError("ยังรวบรวมเอกสารหรือเบาะแสที่ใช้เทียบกันไม่ครบ")
+
+            if target_id not in room.completed_combines:
+                room.completed_combines.append(target_id)
+            unlocked_clues = [cid for cid in recipe.get("unlock_clues", []) if self._grant_clue(room, cid)]
+            text = recipe.get("result_text") or f"เชื่อมโยงหลักฐาน '{recipe['title']}' เรียบร้อยแล้ว"
+            self.append_log(room, "DM", text, kind="narration")
+            return {
+                "event": self._build_audio_payload(None, "DM", text, mode="script"),
+                "unlocked_clues": unlocked_clues,
+                "unlocked_items": [],
+            }
+
+        raise ValueError("ประเภทการตรวจสอบไม่ถูกต้อง")
+
     def serialize_public_state(self, room: RoomState) -> dict[str, Any]:
         """Return strictly spoiler-free room snapshot for clients (never leaks other players' tokens)."""
         self._expire_stale_mic_lock(room)
         current_act = self.act_for_scene(room.current_scene)
         scene_cfg = self.repo.get_scene(room.current_scene) or {}
+        exit_node_ids = {
+            "headman_house",
+            "road_to_don_house",
+            "c_to_act_d_gate",
+            "d_to_act_e_house",
+            "e_to_act_f_ritual",
+        }
         board_nodes = [
             {
                 "id": n["id"],
@@ -2763,6 +3726,8 @@ class RoomManager:
                 "x": n["x"],
                 "y": n["y"],
                 "unlocked": self._is_board_node_unlocked(room, n),
+                "visited": n["scene"] in room.visited_scenes,
+                "is_exit": n["id"] in exit_node_ids,
             }
             for n in self.repo.board_nodes
             if n.get("act", "A") == current_act
@@ -2790,6 +3755,7 @@ class RoomManager:
         combat_dict = None
         if room.combat and room.combat.active:
             c = room.combat
+            enc = self.repo.get_combat_encounter(c.encounter_id)
             combat_dict = {
                 "active": c.active,
                 "round_number": c.round_number,
@@ -2801,6 +3767,10 @@ class RoomManager:
                 "background_image": c.background_image,
                 "enemy_hp": c.enemy_hp,
                 "enemy_max_hp": c.enemy_max_hp,
+                "pdef": int(enc.get("pdef", 12)),
+                "mdef": int(enc.get("mdef", 13)),
+                "ritual_dc": int(enc.get("ritual_dc", 12)),
+                "ritual_plan": room.case_flags.get("ritual_plan"),
                 "soothe_progress": c.soothe_progress,
                 "soothe_goal": c.soothe_goal,
                 "retreat_progress": c.retreat_progress,
@@ -2818,6 +3788,8 @@ class RoomManager:
                 "combat_log": c.combat_log[-10:],
             }
 
+        guideline = self.compute_guideline_snapshot(room)
+
         return {
             "room_code": room.room_code,
             "act": current_act,
@@ -2831,6 +3803,8 @@ class RoomManager:
             "quick_prompts": scene_cfg.get("quick_prompts", []),
             "board_node": room.board_node,
             "board_nodes": board_nodes,
+            "guideline": guideline,
+            "visited_scenes": list(room.visited_scenes),
             "scene_turn_count": room.scene_turn_count,
             "anti_stall_turn_limit": int(scene_cfg.get("anti_stall_turn_limit", 6)),
             "total_turn_count": room.total_turn_count,

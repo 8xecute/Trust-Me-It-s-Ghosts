@@ -26,7 +26,7 @@
       "id": "a1_prasert_greet",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว สุขุม เคร่งเครียด เหนื่อยล้า แต่พยายามพูดอย่างสุภาพกับทีมสืบสวน",
       "trigger_condition": {
         "requires_clues": [],
@@ -50,7 +50,7 @@
       "id": "a1_qa_order",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว ตอบตรงประเด็น แต่น้ำเสียงหนักใจ",
       "trigger_condition": {
         "requires_clues": [],
@@ -74,7 +74,7 @@
       "id": "a1_qa_location",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายวัยกลางคน จริงจัง ชี้ทางไปทางสวนและบ้านผู้ใหญ่",
       "trigger_condition": {
         "requires_clues": [],
@@ -99,7 +99,7 @@
       "id": "a1_qa_police",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว ตอบเรียบ ๆ เหมือนเล่าข้อเท็จจริง",
       "trigger_condition": {
         "requires_clues": [],
@@ -121,7 +121,7 @@
       "id": "a1_qa_why_company",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว กังวลใจกับความกลัวของชาวบ้าน",
       "trigger_condition": {
         "requires_clues": [],
@@ -143,7 +143,7 @@
       "id": "a1_qa_fee",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายวัยกลางคน ตอบสั้น ๆ สุภาพ",
       "trigger_condition": {
         "requires_clues": [],
@@ -165,7 +165,7 @@
       "id": "a1_qa_green_lady",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว ชะงักเล็กน้อย กดเสียงต่ำอย่างระมัดระวัง",
       "trigger_condition": {
         "requires_clues": [],
@@ -189,7 +189,7 @@
       "id": "a1_qa_hiding_secret",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายวัยกลางคน อึดอัดใจและพยายามตัดบทกลับไปเรื่องช่วยคนหาย",
       "trigger_condition": {
         "requires_clues": [],
@@ -433,7 +433,7 @@
       "id": "a1_qa_missing_who",
       "scene": "A1",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว เล่าถึงลูกบ้านด้วยความห่วงใย",
       "trigger_condition": {
         "requires_clues": [],
@@ -503,7 +503,7 @@
       "id": "a2_prasert_shock",
       "scene": "A2",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว ตกใจ เสียงสั่นเล็กน้อย",
       "trigger_condition": {
         "requires_clues": [],
@@ -663,7 +663,7 @@
       "id": "a2_move_to_a3",
       "scene": "A2",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว เร่งเร้าให้เดินทางต่อ",
       "trigger_condition": {
         "requires_clues": [],
@@ -687,7 +687,7 @@
       "id": "a2_antistall_hint",
       "scene": "A2",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว เร่งชวนออกเดินทาง",
       "trigger_condition": {
         "requires_clues": [],
@@ -711,7 +711,7 @@
       "id": "a3_intro_prasert",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายวัยกลางคน ชี้ทางด้วยความกังวล",
       "trigger_condition": {
         "requires_clues": [],
@@ -735,7 +735,7 @@
       "id": "a3_qa_who_waiting",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายวัยกลางคน อธิบายชัดเจน",
       "trigger_condition": {
         "requires_clues": [],
@@ -759,7 +759,7 @@
       "id": "a3_qa_why_not_grove",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว เตือนด้วยเหตุผล",
       "trigger_condition": {
         "requires_clues": [],
@@ -781,7 +781,7 @@
       "id": "a3_qa_why_wichai_knows",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายวัยกลางคน ตอบเรียบ ๆ",
       "trigger_condition": {
         "requires_clues": [],
@@ -803,7 +803,7 @@
       "id": "a3_antistall_hint",
       "scene": "A3",
       "speaker": "ประเสริฐ",
-      "voice": "Algenib",
+      "voice": "Schedar",
       "style": "เสียงชายไทยวัย 50 ปีขึ้นไป ทุ้มต่ำ แหบห้าว กวักมือเรียกเข้าไปในบ้าน",
       "trigger_condition": {
         "requires_clues": [],
