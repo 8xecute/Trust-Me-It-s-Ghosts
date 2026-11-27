@@ -834,23 +834,23 @@ def test_modular_data_and_categorized_audio_assets() -> None:
     from backend.state_manager import audio_bucket_for_entry
 
     repo = ScenarioRepository()
-    subtitle_only_buckets = {"act_c", "act_d", "act_e", "act_f"}
+    subtitle_only_buckets = {"act_d", "act_e", "act_f"}
     voiced_entries = [
         entry for entry in repo.dialogues if audio_bucket_for_entry(entry) not in subtitle_only_buckets
     ]
     subtitle_entries = [
         entry for entry in repo.dialogues if audio_bucket_for_entry(entry) in subtitle_only_buckets
     ]
-    assert len(voiced_entries) == 90
-    assert len(subtitle_entries) >= 90
-    assert repo.count_cached_audio() == 88
+    assert len(voiced_entries) == 118
+    assert len(subtitle_entries) == 72
+    assert repo.count_cached_audio() == 118
     assert repo.resolve_audio_url("a1_intro_dm") == "/audio_assets/act_a/a1_intro_dm.wav"
     assert repo.resolve_audio_url("b1_intro_dm") == "/audio_assets/act_b/b1_intro_dm.wav"
+    assert repo.resolve_audio_url("c1_intro_dm") == "/audio_assets/act_c/c1_intro_dm.wav"
     assert repo.resolve_audio_url("combat_drowned_intro") == "/audio_assets/combat/combat_drowned_intro.wav"
     assert repo.resolve_audio_url("filler_dm_think") == "/audio_assets/fillers/filler_dm_think.wav"
-    assert repo.resolve_audio_url("c1_intro_dm") is None
+    assert repo.resolve_audio_url("d1_intro_dm") is None
 
-    pending_voice_ids = {"b2_qa_ton_friends", "b3_wichai_stay_behind"}
     assert audio_bucket_for_entry(repo.dialogues_by_id["a1_qa_missing_who"]) == "act_a"
     assert audio_bucket_for_entry(repo.dialogues_by_id["b2_qa_ton_friends"]) == "act_b"
     assert audio_bucket_for_entry(repo.dialogues_by_id["b3_wichai_stay_behind"]) == "act_b"
@@ -858,8 +858,6 @@ def test_modular_data_and_categorized_audio_assets() -> None:
     assert audio_bucket_for_entry(repo.dialogues_by_id["f6_dawn_dm"]) == "act_f"
 
     for entry in voiced_entries:
-        if entry["id"] in pending_voice_ids:
-            continue
         url = repo.resolve_audio_url(entry["id"])
         assert url is not None, f"Missing audio for {entry['id']}"
         rel = url.removeprefix("/audio_assets/")
@@ -868,8 +866,9 @@ def test_modular_data_and_categorized_audio_assets() -> None:
     with TestClient(app) as client:
         res_health = client.get("/healthz")
         assert res_health.status_code == 200
-        assert res_health.json()["pregen_audio_count"] == 88
+        assert res_health.json()["pregen_audio_count"] == 118
         assert client.get("/audio_assets/act_b/b1_intro_dm.wav").status_code == 200
+        assert client.get("/audio_assets/act_c/c1_intro_dm.wav").status_code == 200
 
 
 def test_story_workspace_files_and_roundtrip_parser(tmp_path: Path) -> None:
@@ -1107,7 +1106,7 @@ def test_lobby_presets_and_full_act_a_to_f_progression() -> None:
     _, ev_c = mgr.advance_to_act("FULLRUN", "C")
     assert room.current_scene == "C1"
     assert [ev["dialogue_id"] for ev in ev_c] == ["c1_intro_dm"]
-    assert ev_c[0]["audio_url"] is None
+    assert ev_c[0]["audio_url"] == "/audio_assets/act_c/c1_intro_dm.wav"
 
     # Move to C5 Boonmee -> improvise emits silent subtitle filler (dialogue_id=None) instead of male DM filler
     mgr.move_board_node("FULLRUN", "grove_boonmee_house", "ฟรังก์")
@@ -1132,6 +1131,7 @@ def test_lobby_presets_and_full_act_a_to_f_progression() -> None:
     _, ev_d = mgr.advance_to_act("FULLRUN", "D")
     assert room.current_scene == "D1"
     assert ev_d[0]["dialogue_id"] == "d1_intro_dm"
+    assert ev_d[0]["audio_url"] is None
 
     mgr.move_board_node("FULLRUN", "cart_tracks_d5", "ฟรังก์")
     room.clues_found.extend(["shrine_three_names", "cart_tracks_to_house"])
