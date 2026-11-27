@@ -485,6 +485,142 @@
       "text": "ยายบุญมีพยักหน้าช้า ๆ พร้อมชี้แนวทางเดินข้างชานบ้านที่ทอดลึกเข้าสู่สวนกล้วยมืดทึบ เสียงกอไผ่และใบกล้วยเงียบสงัดลงผิดปกติทันทีที่พวกคุณก้าวพ้นแสงไฟ...",
       "is_filler": false,
       "unlocks": { "clues": ["boonmee_thread_warning"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c1_move_to_c3",
+      "scene": "C1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ขนลุก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเดินสำรวจรอบห้องโถงและมุมอับในบ้านดลจนพบคราบชื้นและเสียงเคาะ (C3)"
+      },
+      "text": "คุณเดินสำรวจรอบห้องโถงและตามมุมอับในบ้านดล ก่อนจะสะดุดตากับคราบชื้นเย็นเยียบที่ซึมตามรอยต่อแผ่นไม้ พร้อมเสียงเคาะเบา ๆ สามครั้งดังลอดขึ้นมาจากใต้พื้น",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C3", "trust_delta": {} }
+    },
+    {
+      "id": "c1_move_to_c5",
+      "scene": "C1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเดินออกจากบ้านดลมุ่งหน้าไปยังทางแยกเข้าสวนกล้วยและบ้านยายบุญมี (C5)"
+      },
+      "text": "พวกคุณเดินออกจากบ้านดลลัดเลาะไปตามทางดินแคบ ๆ จนถึงเรือนไม้หลังเล็กที่เปิดไฟสว่างอยู่ก่อนทางแยกเข้าสวนกล้วย",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C5", "trust_delta": {} }
+    },
+    {
+      "id": "c2_qa_black_thread",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ลึกลับ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามว่าเศษด้ายดำที่ติดตรงสันสมุดปกดำของดลมาจากไหน"
+      },
+      "text": "คุณหยิบเศษด้ายสีดำเส้นเล็กที่ติดอยู่ตรงสันสมุดขึ้นมาส่องไฟ เส้นด้ายมีกลิ่นอับชื้นและเนื้อหยาบคล้ายด้ายผูกพิธีแบบโบราณ ไม่ใช่ด้ายเย็บผ้าทั่วไป เหมือนดลไปปัดโดนมาจากแถวศาลก่อนกลับเข้าบ้าน",
+      "is_filler": false,
+      "unlocks": { "clues": ["black_thread_clue"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c2_move_to_c5",
+      "scene": "C2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเก็บสมุดปกดำแล้วเดินออกจากบ้านดลไปหายายบุญมีก่อนทางแยก (C5)"
+      },
+      "text": "คุณเก็บสมุดปกดำของดลติดตัวไว้ แล้วเดินออกจากบ้านมุ่งหน้าไปยังบ้านไม้ของยายบุญมีที่อยู่ก่อนทางแยกเข้าสวนกล้วย",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C5", "trust_delta": {} }
+    },
+    {
+      "id": "c3_inspect_floor_under",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ กดดัน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเปิดแผ่นไม้ใต้พื้นบ้านดลตรวจดูว่าอะไรเคาะอยู่ข้างล่าง"
+      },
+      "text": "คุณลองงัดแผ่นไม้ชื้นบริเวณที่มีเสียงเคาะขึ้นส่องไฟดูใต้ถุน กลับพบเพียงความมืดและดินเย็นชื้นที่ว่างเปล่า ไม่มีห้องขังหรือผู้สูญหายอยู่ข้างล่าง แต่คราบน้ำเย็นยังคงซึมตามรอยต่อไม้ไม่หยุด",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c3_leave_to_c5",
+      "scene": "C3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ เร่งรีบ",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นรีบออกจากบ้านดลไปหายายบุญมีที่ปากทางเข้าสวน (C5)"
+      },
+      "text": "พวกคุณตัดสินใจไม่เสี่ยงอยู่ในบ้านดลต่อ รีบเดินพ้นประตูมุ่งหน้าไปยังบ้านของยายบุญมีที่ปากทางแยกเข้าสวนกล้วย",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": "C5", "trust_delta": {} }
+    },
+    {
+      "id": "c4_steady_stand",
+      "scene": "C4",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ตึงเครียด",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นตั้งหลักเผชิญหน้าหรือพูดเรียกสติร่างเงาเปียกโชกตรงหน้า"
+      },
+      "text": "เสียงเรียกสติของพวกคุณทำให้เงาเปียกโชกหยุดชะงัก ไอเย็นจางลงเผยให้เห็นทิศทางของร่องรอยมุ่งไปทางเรือนไม้ท้ายสวน ก่อนทุกอย่างจะสงบลงพอให้ถอยไปหายายบุญมีได้",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "c5_qa_black_thread_warning",
+      "scene": "C5",
+      "speaker": "ยายบุญมี",
+      "voice": "Gacrux",
+      "style": "เสียงหญิงชรา 70+ เมตตา ขลัง พูดเนิบช้า",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ถามยายบุญมีว่าด้ายดำที่เตือนมาได้ยังไง และเรื่องคืนน้ำท่วมปี 2534"
+      },
+      "text": "เมื่อก่อนศาลแม่แก้วมีแต่ผ้าเขียวกับพวงมาลัย ไม่เคยมีด้ายดำแบบนี้หรอกลูก เพิ่งจะมีคนแอบเอาด้ายผูกปมมาพันเสาศาลเมื่อไม่นานมานี้เอง ยายเห็นแล้วใจคอไม่ดี... ตั้งแต่คืนน้ำท่วมปีสามสี่ที่แม่แก้วสิ้นใจเพราะช่วยเด็กขึ้นจากน้ำ ชาวบ้านก็ไหว้ด้วยความเคารพ ไม่เคยมีใครทำพิธีแปลก ๆ แบบนี้มาก่อน",
+      "is_filler": false,
+      "unlocks": { "clues": ["boonmee_thread_warning"], "items": [], "next_scene": null, "trust_delta": {} }
     }
   ]
 }

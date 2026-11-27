@@ -412,6 +412,74 @@
       "text": "พวกคุณเดินตามรอยล้อหนักและเศษกระสอบข้าวฝ่าความมืดลึกเข้าไปท้ายสวน จนเห็นเงาเรือนไม้ยกพื้นหลังเก่าตั้งโดดเดี่ยว มีแสงเทียนวับแวมลอดตามรอยฝาชั้นบน...",
       "is_filler": false,
       "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d1_qa_observe_path",
+      "scene": "D1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชวนระทึก",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นหยุดสังเกตรอบแนวต้นกล้วยและความผิดปกติรอบทางเดิน"
+      },
+      "text": "คุณหยุดฟังเสียงรอบแนวต้นกล้วย ลมกลางคืนพัดใบกล้วยไหวผิดจังหวะจนเงียบสนิทผิดธรรมชาติ บนทางดินชื้นมีรอยยุบเส้นคู่ลากยาวลึกเข้าไปทางศาลเก่า",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d1_retreat_entrance",
+      "scene": "D1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นถอยกลับออกไปตั้งหลักทางหน้าสวน"
+      },
+      "text": "คุณชะลอฝีเท้าแล้วถอยกลับมาตั้งหลักบริเวณทางเข้าหน้าสวนกล้วย ลมกลางคืนยังพัดใบกล้วยไหวผิดจังหวะ เมื่อพร้อมแล้วสามารถส่องไฟตรวจรอยดินแล้วเดินหน้าต่อได้",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d2_inspect_tags_strap",
+      "scene": "D2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นดูป้ายชื่อ ดล นิด เพิ่ม และสายคล้องกล้องหลังโคนต้นกล้วย"
+      },
+      "text": "ป้ายผ้าเปื้อนดินเขียนชื่อ ดล นิด เพิ่ม ขึงปมด้ายดำแน่น ส่วนโคนต้นกล้วยหลังศาลมีสายคล้องกล้องถ่ายรูปขาดตกจมโคลนอยู่",
+      "is_filler": false,
+      "unlocks": { "clues": ["shrine_three_names"], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "d5_qa_tracks_direction",
+      "scene": "D5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นถามว่ารอยล้อหนักชี้ไปที่ไหนและบอกตัวคนเข็นได้ไหม"
+      },
+      "text": "รอยล้อรถเข็นหนักกดลึกเป็นร่องคู่มุ่งตรงลัดแนวต้นกล้วยไปยังเรือนไม้ร้างท้ายสวนอย่างชัดเจน แต่หากอยากระบุลักษณะคนเข็นต้องก้มส่องไฟตรวจร่องรอยบนพื้นดินให้ละเอียดกว่านี้",
+      "is_filler": false,
+      "unlocks": { "clues": ["cart_tracks_to_house"], "items": [], "next_scene": null, "trust_delta": {} }
     }
   ]
 }

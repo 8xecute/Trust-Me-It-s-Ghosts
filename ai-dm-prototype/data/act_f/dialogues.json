@@ -186,6 +186,57 @@
       "text": "ตอนรถตู้บริษัทแล่นออกจากหมู่บ้าน ที่นั่งหนึ่งกลับว่างอยู่ รายงานภารกิจ BS-001 ต้องมีบรรทัดใหม่ว่ามีเจ้าหน้าที่เสียชีวิตระหว่างปฏิบัติหน้าที่",
       "is_filler": false,
       "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f1_talk_kaew",
+      "scene": "F1",
+      "speaker": "แม่แก้ว (นางตานี)",
+      "voice": "Vindemiatrix",
+      "style": "เสียงวิญญาณหญิงโบราณ นุ่มทุ้ม เศร้าสร้อย โหยหวน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นพูดกับแม่แก้วขอให้ต้านแรงด้ายไว้และบอกว่าจะไม่ทำร้าย"
+      },
+      "text": "ข้าพยายามรั้งมือไว้แล้ว... แต่ตราบใดที่ด้ายกำไลบนโต๊ะยังไม่ถูกคลาย ข้าก็ต้านแรงสั่งนี้ได้ไม่นาน!",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f1_inspect_table",
+      "scene": "F1",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นดูจุดเชื่อมด้ายบนโต๊ะทั้งสามจุดก่อนลงมือคลายเกราะ"
+      },
+      "text": "คุณกวาดตาดูสายด้ายบนโต๊ะทั้งสามจุดที่โยงเข้าสู่กำไลทองเหลือง — สายหนึ่งตึงรับแรงสะท้อน สายหนึ่งเชื่อมป้ายชื่อทั้งสาม และอีกสายรั้งปมหลักอยู่ พร้อมเมื่อไรสามารถเริ่มคลายเกราะได้ทันที",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
+    },
+    {
+      "id": "f5_detain_wichai",
+      "scene": "F5",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ สุขุม",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นคุมตัววิชัยไว้ให้พ้นทางแม่แก้วเพื่อพาตัวไปรับโทษตามกฎหมาย"
+      },
+      "text": "ทีมช่วยกันคุมตัววิชัยแยกออกมาให้พ้นระยะของแม่แก้วและเตรียมส่งตัวดำเนินคดีตามกฎหมาย แม่แก้วมองวิชัยด้วยสายตาเย็นชาแต่ไม่พุ่งเข้ามาทำร้าย ก่อนรอฟังคำตอบจากพวกคุณเรื่องการเปิดเผยความจริงก่อนรุ่งเช้า",
+      "is_filler": false,
+      "unlocks": { "clues": [], "items": [], "next_scene": null, "trust_delta": {} }
     }
   ]
 }

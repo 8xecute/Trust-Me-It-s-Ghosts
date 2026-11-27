@@ -4,7 +4,7 @@
   let socket = null;
   let scenarioMeta = null;
   let selectedRoleId = "investigator";
-  let selectedStartAct = "A";
+  const selectedStartAct = "A";
   let takenRoles = [];
   let myPlayer = null;
   let currentState = null;
@@ -3112,16 +3112,6 @@
     $("room-code").addEventListener("input", (e) => {
       clearTimeout(roomLookupTimer);
       roomLookupTimer = setTimeout(() => refreshRoomRoles(e.target.value), 250);
-    });
-
-    document.querySelectorAll(".act-toggle-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const actVal = String(btn.dataset.act || "A").toUpperCase();
-        selectedStartAct = ["A", "B", "C", "D", "E", "F"].includes(actVal) ? actVal : "A";
-        document.querySelectorAll(".act-toggle-btn").forEach((b) => {
-          b.classList.toggle("selected", b === btn);
-        });
-      });
     });
 
     $("join-form").addEventListener("submit", (e) => {

@@ -885,6 +885,50 @@
         "next_scene": null,
         "trust_delta": {}
       }
+    },
+    {
+      "id": "b2_return_to_b1",
+      "scene": "B2",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นเดินกลับจากชานบ้านเข้าไปยังห้องรับแขกบ้านผู้ใหญ่ (B1)"
+      },
+      "text": "คุณพยักหน้าให้ต้นก่อนเดินกลับเข้าห้องรับแขกบ้านผู้ใหญ่ แสงไฟในห้องยังส่องลงบนโต๊ะแผนที่และกองแฟ้มที่รอให้ตรวจสอบต่อ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": "B1",
+        "trust_delta": {}
+      }
+    },
+    {
+      "id": "b3_return_to_b1",
+      "scene": "B3",
+      "speaker": "DM",
+      "voice": "Charon",
+      "style": "เสียงผู้บรรยายชายทุ้มต่ำ ชัดเจน",
+      "trigger_condition": {
+        "requires_clues": [],
+        "requires_items": [],
+        "min_trust": null,
+        "once": false,
+        "topic_hint": "ผู้เล่นผละจากผนังภาพถ่ายเก่ากลับไปที่โต๊ะแผนที่ในห้องรับแขก (B1)"
+      },
+      "text": "คุณผละจากผนังภาพถ่ายเก่าเดินกลับมายังโต๊ะแผนที่กลางห้องรับแขก เพื่อทบทวนเบาะแสที่มีทั้งหมดหรือเตรียมตัวออกเดินทางต่อ",
+      "is_filler": false,
+      "unlocks": {
+        "clues": [],
+        "items": [],
+        "next_scene": "B1",
+        "trust_delta": {}
+      }
     }
   ]
 }

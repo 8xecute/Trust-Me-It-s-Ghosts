@@ -683,8 +683,7 @@ async def on_room_join(sid: str, data: dict[str, Any]) -> None:
     role_id = str(data.get("role_id") or "investigator")
     player_token = data.get("player_token")
     reconnect_only = bool(data.get("reconnect_only", False))
-    raw_act = str(data.get("start_act") or "A").strip().upper()
-    start_act = raw_act if raw_act in {"A", "B", "C", "D", "E", "F"} else "A"
+    start_act = "A"
 
     try:
         room, player, reconnected = room_manager.add_player(

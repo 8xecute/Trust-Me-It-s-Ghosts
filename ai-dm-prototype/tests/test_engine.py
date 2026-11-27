@@ -841,9 +841,9 @@ def test_modular_data_and_categorized_audio_assets() -> None:
     subtitle_entries = [
         entry for entry in repo.dialogues if audio_bucket_for_entry(entry) in subtitle_only_buckets
     ]
-    assert len(voiced_entries) == 118
-    assert len(subtitle_entries) == 72
-    assert repo.count_cached_audio() == 118
+    assert len(voiced_entries) == 128
+    assert len(subtitle_entries) == 81
+    assert repo.count_cached_audio() == 128
     assert repo.resolve_audio_url("a1_intro_dm") == "/audio_assets/act_a/a1_intro_dm.wav"
     assert repo.resolve_audio_url("b1_intro_dm") == "/audio_assets/act_b/b1_intro_dm.wav"
     assert repo.resolve_audio_url("c1_intro_dm") == "/audio_assets/act_c/c1_intro_dm.wav"
@@ -866,7 +866,7 @@ def test_modular_data_and_categorized_audio_assets() -> None:
     with TestClient(app) as client:
         res_health = client.get("/healthz")
         assert res_health.status_code == 200
-        assert res_health.json()["pregen_audio_count"] == 118
+        assert res_health.json()["pregen_audio_count"] == 128
         assert client.get("/audio_assets/act_b/b1_intro_dm.wav").status_code == 200
         assert client.get("/audio_assets/act_c/c1_intro_dm.wav").status_code == 200
 
@@ -1775,3 +1775,89 @@ def test_auto_reconnect_session_endpoint_and_leave_flow() -> None:
     # Cleanup test room
     mgr.remove_player("s_rec2")
     mgr.rooms.pop("RECON1", None)
+
+
+def test_quick_prompts_scripted_audio_coverage_and_locked_act_start() -> None:
+    import asyncio
+    from fastapi.testclient import TestClient
+    import backend.main as main_mod
+
+    repo = ScenarioRepository()
+    engine = AIDMEngine()
+    scenes = repo.scenes if isinstance(repo.scenes, dict) else {s["id"]: s for s in repo.scenes}
+
+    # 1. Every quick_prompt across Acts A-F never falls into local_fallback_generic;
+    #    every non-check, non-combat prompt in Acts A-C resolves to mode='script' with cached .wav on disk.
+    for scene_id, scene in scenes.items():
+        for idx, qp in enumerate(scene.get("quick_prompts", [])):
+            mgr = RoomManager(repo)
+            room, _, _ = mgr.add_player(f"Q_{scene_id}_{idx}", "s1", "เอก", "investigator", start_act=scene_id[0])
+            room.started = True
+            room.current_scene = scene_id
+            dec = engine._local_fallback_decision(room, mgr, qp)
+            assert dec.reason != "local_fallback_generic", f"{scene_id}[{idx}] fell back to generic: {qp}"
+
+            is_check = dec.requested_check_id is not None or "_missing_requires" in (dec.reason or "")
+            is_combat = bool(dec.state_updates and dec.state_updates.start_combat) or dec.action_kind == "combat"
+            if scene_id[0] in {"A", "B", "C"} and not is_check and not is_combat:
+                assert dec.mode == "script" and dec.selected_audio_id, (
+                    f"{scene_id}[{idx}] should resolve to scripted dialogue: {dec}"
+                )
+                url = repo.resolve_audio_url(dec.selected_audio_id)
+                assert url is not None, f"{scene_id}[{idx}] ({dec.selected_audio_id}) missing WAV"
+                assert (PROTO_DIR / "audio_assets" / url.removeprefix("/audio_assets/")).exists()
+
+    # Verify previously collided quick_prompt routes
+    def _eval_qp(scene_id: str, idx: int) -> Any:
+        mgr = RoomManager(repo)
+        r, _, _ = mgr.add_player(f"FIX_{scene_id}_{idx}", "s1", "เอก", "investigator", start_act=scene_id[0])
+        r.started = True
+        r.current_scene = scene_id
+        return engine._local_fallback_decision(r, mgr, scenes[scene_id]["quick_prompts"][idx])
+
+    assert _eval_qp("A3", 1).selected_audio_id == "a3_qa_why_not_grove"
+    d_b2 = _eval_qp("B2", 3)
+    assert d_b2.selected_audio_id == "b2_return_to_b1"
+    assert d_b2.state_updates and d_b2.state_updates.current_scene == "B1"
+    assert _eval_qp("B3", 0).selected_audio_id == "b3_inspect_frame_droplet"
+    assert _eval_qp("E3", 1).selected_audio_id == "e3_don_confirm"
+    d_f1_0 = _eval_qp("F1", 0)
+    assert d_f1_0.state_updates and d_f1_0.state_updates.start_combat is True
+
+    # 2. Lobby HTML has no act selector, and server on_room_join ignores client start_act and starts at A1
+    client = TestClient(main_mod.app)
+    html = client.get("/").text
+    assert "act-toggle-btn" not in html
+    assert "act-selector" not in html
+
+    mgr = main_mod.room_manager
+    orig_enter = main_mod.sio.enter_room
+    orig_emit = main_mod.sio.emit
+
+    async def _noop_enter(*_args: Any, **_kwargs: Any) -> None:
+        return None
+
+    async def _noop_emit(*_args: Any, **_kwargs: Any) -> None:
+        return None
+
+    main_mod.sio.enter_room = _noop_enter  # type: ignore[assignment]
+    main_mod.sio.emit = _noop_emit  # type: ignore[assignment]
+    try:
+        asyncio.run(
+            main_mod.on_room_join(
+                "sid_locked_act",
+                {
+                    "room_code": "LOCKACT01",
+                    "player_name": "เอก",
+                    "role_id": "investigator",
+                    "start_act": "D",
+                },
+            )
+        )
+        locked_room = mgr.rooms["LOCKACT01"]
+        assert locked_room.current_scene == "A1"
+    finally:
+        main_mod.sio.enter_room = orig_enter  # type: ignore[assignment]
+        main_mod.sio.emit = orig_emit  # type: ignore[assignment]
+        mgr.remove_player("sid_locked_act")
+        mgr.rooms.pop("LOCKACT01", None)

@@ -691,14 +691,25 @@ class AIDMEngine:
                 )
             return None
 
-        def pick_script(did: str, speaker: str = "ประเสริฐ", check_id: Optional[str] = None, ending: Optional[str] = None) -> DMDecision:
+        def pick_script(
+            did: str,
+            speaker: str = "ประเสริฐ",
+            check_id: Optional[str] = None,
+            ending: Optional[str] = None,
+            current_scene: Optional[str] = None,
+            action_kind: Optional[str] = None,
+            inspect_target_id: Optional[str] = None,
+            reason: str = "local_fallback_keyword",
+        ) -> DMDecision:
             return DMDecision(
                 mode="script",
                 character=speaker,
                 selected_audio_id=did,
+                action_kind=action_kind,
+                inspect_target_id=inspect_target_id,
                 requested_check_id=check_id,
-                state_updates=StateUpdates(ending_triggered=ending),  # type: ignore[arg-type]
-                reason="local_fallback_keyword",
+                state_updates=StateUpdates(current_scene=current_scene, ending_triggered=ending),  # type: ignore[arg-type]
+                reason=reason,
             )
 
         if scene == "A1":
@@ -761,12 +772,12 @@ class AIDMEngine:
         elif scene == "A3":
             if any(k in text for k in ("เข้าบ้าน", "ดูแฟ้ม", "ตกลง", "เข้าไป")) and "a3_ending_true" in eligible_ids:
                 return pick_script("a3_ending_true", "DM", ending="act_a_complete")
+            if any(k in text for k in ("ทำไมไม่", "พาเข้าสวน")) and "a3_qa_why_not_grove" in eligible_ids:
+                return pick_script("a3_qa_why_not_grove", "ประเสริฐ")
             if any(k in text for k in ("เข้าสวน", "แยกเดิน", "ไม่รอ", "บุกสวน")) and "a3_ending_bad" in eligible_ids:
                 return pick_script("a3_ending_bad", "DM", ending="lost_in_grove")
             if any(k in text for k in ("ใครรอ", "มีใคร", "ใครอยู่", "พยาน", "วิชัย", "ต้น")) and "a3_qa_who_waiting" in eligible_ids:
                 return pick_script("a3_qa_who_waiting", "ประเสริฐ")
-            if any(k in text for k in ("ทำไมไม่", "พาเข้าสวน")) and "a3_qa_why_not_grove" in eligible_ids:
-                return pick_script("a3_qa_why_not_grove", "ประเสริฐ")
 
         elif scene in {"B1", "B2", "B3"}:
             if any(k in text for k in ("บ้านดล", "ไปบ้านดล", "ออกเดินทาง", "ข้อมูลพอแล้ว")) and "b_ending_to_act_c" in eligible_ids:
@@ -802,7 +813,20 @@ class AIDMEngine:
                     state_updates=StateUpdates(current_scene="B3"),
                     reason="local_fallback_move_b3",
                 )
-            if scene != "B1" and any(k in text for k in ("ห้องรับแขก", "กลับเข้าบ้าน", "โต๊ะแผนที่", "ไปหาวิชัย")):
+            if scene == "B2" and any(k in text for k in ("กลับเข้าไป", "กลับเข้าบ้าน", "ห้องรับแขก", "โต๊ะแผนที่", "ไปหาวิชัย", "ข้างในบ้านผู้ใหญ่")):
+                if "b2_return_to_b1" in eligible_ids:
+                    return pick_script("b2_return_to_b1", "DM", current_scene="B1", reason="local_fallback_move_b1")
+                return DMDecision(
+                    mode="improvise",
+                    character="DM",
+                    filler_audio_id="filler_dm_think",
+                    improvised_text="คุณเดินกลับเข้ามาที่โต๊ะแผนที่ในห้องรับแขกบ้านผู้ใหญ่",
+                    state_updates=StateUpdates(current_scene="B1"),
+                    reason="local_fallback_move_b1",
+                )
+            if scene == "B3" and any(k in text for k in ("กลับไป", "กลับเข้าบ้าน", "ห้องรับแขก", "โต๊ะแผนที่", "ไปหาวิชัย")):
+                if "b3_return_to_b1" in eligible_ids:
+                    return pick_script("b3_return_to_b1", "DM", current_scene="B1", reason="local_fallback_move_b1")
                 return DMDecision(
                     mode="improvise",
                     character="DM",
@@ -876,8 +900,14 @@ class AIDMEngine:
                     )
                     if chk_dec:
                         return chk_dec
-                if any(k in text for k in ("ยกกรอบ", "แตะกรอบ", "ดูใกล้", "หยดน้ำ", "กระจก")) and "b3_inspect_frame_droplet" in eligible_ids:
-                    return pick_script("b3_inspect_frame_droplet", "DM")
+                if any(k in text for k in ("ยกกรอบ", "แตะกรอบ", "ดูใกล้", "หยดน้ำ", "กระจก", "ยกดู", "กรอบรูป", "ภาพถ่ายเก่า")) and "b3_inspect_frame_droplet" in eligible_ids:
+                    return pick_script(
+                        "b3_inspect_frame_droplet",
+                        "DM",
+                        action_kind="inspect",
+                        inspect_target_id="b3_old_frame",
+                        reason="local_fallback_inspectable",
+                    )
                 if any(k in text for k in ("รื้อ", "ตู้แฟ้ม", "เอกสารเก่า", "บันทึกเวร")) and "b3_open_old_folder_free" in eligible_ids:
                     return pick_script("b3_open_old_folder_free", "DM")
                 if any(k in text for k in ("ใครในรูป", "ประเสริฐ", "อพยพ", "เก็บแฟ้ม")) and "b3_qa_photo_prasert" in eligible_ids:
@@ -910,6 +940,12 @@ class AIDMEngine:
                 any(k in text for k in ("ไปบ้านยาย", "ไปหายาย", "เรือนยาย", "ทางแยก", "ออกไปหายาย", "c5"))
                 or (scene == "C1" and any(k in text for k in ("ยาย", "บุญมี")))
             ):
+                if scene == "C1" and "c1_move_to_c5" in eligible_ids:
+                    return pick_script("c1_move_to_c5", "DM", current_scene="C5", reason="local_fallback_move_c5")
+                if scene == "C2" and "c2_move_to_c5" in eligible_ids:
+                    return pick_script("c2_move_to_c5", "DM", current_scene="C5", reason="local_fallback_move_c5")
+                if scene == "C3" and "c3_leave_to_c5" in eligible_ids:
+                    return pick_script("c3_leave_to_c5", "DM", current_scene="C5", reason="local_fallback_move_c5")
                 if scene == "C4" and "c4_leave_to_c5" in eligible_ids:
                     return pick_script("c4_leave_to_c5", "DM")
                 return DMDecision(
@@ -929,7 +965,7 @@ class AIDMEngine:
                     k in text for k in ("โต๊ะทำงาน", "กองแฟ้ม", "สมุด")
                 ):
                     if "c1_move_to_c3" in eligible_ids:
-                        return pick_script("c1_move_to_c3", "DM")
+                        return pick_script("c1_move_to_c3", "DM", current_scene="C3", reason="local_fallback_c1_to_c3")
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -947,10 +983,20 @@ class AIDMEngine:
                     )
                     if chk_dec:
                         return chk_dec
+                if any(k in text for k in ("ด้ายดำ", "สันสมุด")) and "c2_qa_black_thread" in eligible_ids:
+                    return pick_script("c2_qa_black_thread", "DM")
                 if any(k in text for k in ("อ่าน", "สมุด", "รายละเอียด")) and "c2_qa_read_all" in eligible_ids:
                     return pick_script("c2_qa_read_all", "DM")
             elif scene == "C3":
                 if any(k in text for k in ("แผ่นไม้", "ใต้พื้น", "งัดพื้น", "ข้างล่าง", "อะไรเคาะ")):
+                    if "c3_inspect_floor_under" in eligible_ids:
+                        return pick_script(
+                            "c3_inspect_floor_under",
+                            "DM",
+                            action_kind="inspect",
+                            inspect_target_id="c3_damp_floor",
+                            reason="local_fallback_c3_inspect_floor",
+                        )
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -998,6 +1044,8 @@ class AIDMEngine:
                 if any(k in text for k in ("ถอย", "ไป", "ยาย", "c5")) and "c4_leave_to_c5" in eligible_ids:
                     return pick_script("c4_leave_to_c5", "DM")
                 if any(k in text for k in ("ตั้งหลัก", "เผชิญหน้า", "เรียกสติ", "ร่างตรงหน้า", "ตั้งจิต", "นิมิต", "สื่อสาร", "พูด")):
+                    if "c4_steady_stand" in eligible_ids:
+                        return pick_script("c4_steady_stand", "DM", reason="local_fallback_c4_steady")
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -1017,6 +1065,8 @@ class AIDMEngine:
                         return chk_dec
                 if any(k in text for k in ("ช่วยใคร", "เด็ก", "วิชัย")) and "c5_qa_which_child" in eligible_ids:
                     return pick_script("c5_qa_which_child", "ยายบุญมี")
+                if any(k in text for k in ("ด้ายดำ", "ที่ยายเตือน")) and "c5_qa_black_thread_warning" in eligible_ids:
+                    return pick_script("c5_qa_black_thread_warning", "ยายบุญมี")
                 if any(k in text for k in ("สมุด", "ด้ายดำ", "ศาล", "บันทึก", "รายชื่อ", "อพยพ")) and not any(k in text for k in ("ดูแลศาล", "เรื่องเล่า")) and "c5_qa_floodgate_book" in eligible_ids:
                     return pick_script("c5_qa_floodgate_book", "ยายบุญมี")
                 if any(k in text for k in ("แม่แก้ว", "แก้ว", "น้ำท่วม", "2534", "ดูแลศาล", "เรื่องเล่า")) and "c5_qa_kaew_story" in eligible_ids:
@@ -1027,6 +1077,8 @@ class AIDMEngine:
                 return pick_script("d_ending_to_act_e", "DM", ending="act_d_complete")
             if scene == "D1":
                 if any(k in text for k in ("ถอย", "กลับ", "หน้าสวน", "ตั้งหลัก")) and not any(k in text for k in ("ศาล", "เดินต่อ")):
+                    if "d1_retreat_entrance" in eligible_ids:
+                        return pick_script("d1_retreat_entrance", "DM", reason="local_fallback_d1_retreat")
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -1034,10 +1086,20 @@ class AIDMEngine:
                         improvised_text="คุณชะลอฝีเท้าแล้วถอยกลับมาตั้งหลักบริเวณทางเข้าหน้าสวนกล้วย ลมกลางคืนยังพัดใบกล้วยไหวผิดจังหวะ เมื่อพร้อมแล้วสามารถส่องไฟตรวจรอยดินแล้วเดินหน้าต่อได้",
                         reason="local_fallback_d1_retreat",
                     )
+                if any(k in text for k in ("สังเกต", "ความผิดปกติ", "แนวต้นกล้วย")) and "d1_qa_observe_path" in eligible_ids:
+                    return pick_script("d1_qa_observe_path", "DM")
                 if any(k in text for k in ("ศาล", "ผ้าเขียว", "เดิน", "d2")) and "d1_move_to_d2" in eligible_ids:
                     return pick_script("d1_move_to_d2", "DM")
             if scene == "D2":
                 if any(k in text for k in ("ป้ายชื่อ", "ป้ายผ้า", "ดล นิด เพิ่ม", "สายคล้องกล้อง", "โคนต้นกล้วย")) and "ปมด้าย" not in text:
+                    if "d2_inspect_tags_strap" in eligible_ids:
+                        return pick_script(
+                            "d2_inspect_tags_strap",
+                            "DM",
+                            action_kind="inspect",
+                            inspect_target_id="d2_shrine_tags_strap",
+                            reason="local_fallback_d2_inspect_tags",
+                        )
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -1108,6 +1170,8 @@ class AIDMEngine:
                         reason="local_fallback_d4_start_combat",
                     )
             if scene == "D5":
+                if any(k in text for k in ("ชี้ไปที่ไหน", "บอกตัวคนเข็น", "ไปที่ไหน")) and "d5_qa_tracks_direction" in eligible_ids:
+                    return pick_script("d5_qa_tracks_direction", "DM")
                 if any(k in text for k in ("สำรวจ", "รอยล้อ", "per", "กระสอบ", "รองเท้า")):
                     chk_dec = check_or_hint(
                         "D5_CART_TRACKS",
@@ -1154,6 +1218,8 @@ class AIDMEngine:
                 if any(k in text for k in ("ใต้ถุน", "กระสอบ", "ประตู", "e2")) and "e1_open_cellar_to_e2" in eligible_ids:
                     return pick_script("e1_open_cellar_to_e2", "DM")
                 if any(k in text for k in ("ชั้นสอง", "ข้างบน", "บันได", "e4")):
+                    if "e1_move_to_e4" in eligible_ids:
+                        return pick_script("e1_move_to_e4", "DM", current_scene="E4", reason="local_fallback_move_e4")
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -1163,6 +1229,8 @@ class AIDMEngine:
                         reason="local_fallback_move_e4",
                     )
                 if any(k in text for k in ("รอบเรือน", "รถเข็น", "รอยล้อ", "ลานบ้าน")):
+                    if "e1_inspect_yard" in eligible_ids:
+                        return pick_script("e1_inspect_yard", "DM", reason="local_fallback_e1_yard")
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -1182,6 +1250,10 @@ class AIDMEngine:
                 if any(k in text for k in ("ช่วย", "แก้มัด", "เข้าไป", "e3")) and "e2_untie_to_e3" in eligible_ids:
                     return pick_script("e2_untie_to_e3", "DM")
             if scene == "E3":
+                if any(k in text for k in ("ใครทำ", "วิชัย", "ถามดล", "สมุดปกดำ", "ให้ดลดู", "เรื่องชั้นบน")) and not any(
+                    k in text for k in ("พาตัวประกัน", "ไปหลบ")
+                ) and "e3_don_confirm" in eligible_ids:
+                    return pick_script("e3_don_confirm", "ดล")
                 if any(k in text for k in ("ปลอบ", "เรียงลำดับ", "soc", "ดล")):
                     chk_dec = check_or_hint(
                         "E3_HOSTAGES_ORDER",
@@ -1191,8 +1263,6 @@ class AIDMEngine:
                     )
                     if chk_dec:
                         return chk_dec
-                if any(k in text for k in ("ใครทำ", "วิชัย", "ถามดล")) and "e3_don_confirm" in eligible_ids:
-                    return pick_script("e3_don_confirm", "ดล")
                 if any(k in text for k in ("ชั้นสอง", "ขึ้นข้างบน", "ห้องพิธี", "e4")) and "e3_upstairs_to_e4" in eligible_ids:
                     return pick_script("e3_upstairs_to_e4", "DM")
             if scene == "E4":
@@ -1225,26 +1295,9 @@ class AIDMEngine:
 
         elif scene.startswith("F"):
             if scene == "F1":
-                if any(k in text for k in ("จุดเชื่อม", "โต๊ะ", "สังเกต", "ตรวจดู", "ดูจุด")):
-                    return DMDecision(
-                        mode="improvise",
-                        character="DM",
-                        action_kind="inspect",
-                        filler_audio_id="filler_dm_think",
-                        improvised_text="คุณกวาดตาดูสายด้ายบนโต๊ะทั้งสามจุดที่โยงเข้าสู่กำไลทองเหลือง — สายหนึ่งตึงรับแรงสะท้อน สายหนึ่งเชื่อมป้ายชื่อทั้งสาม และอีกสายรั้งปมหลักอยู่ พร้อมเมื่อไรสามารถเริ่มคลายเกราะได้ทันที",
-                        reason="local_fallback_f1_inspect_table",
-                    )
-                if any(k in text for k in ("แม่แก้ว", "ไม่ทำร้าย", "ช่วย", "ฟัง", "ต้านด้าย")) and not any(
-                    k in text for k in ("เข้าสู้", "คลายเกราะ", "ปลดกำไล", "ลงมือ", "ปะทะ")
+                if any(k in text for k in ("ลงมือรับมือ", "เข้าสู้", "สู้", "คลายเกราะ", "ปลดกำไล", "ปะทะ")) or (
+                    "ลงมือ" in text and "ก่อนลงมือ" not in text
                 ):
-                    return DMDecision(
-                        mode="improvise",
-                        character="แม่แก้ว (นางตานี)",
-                        filler_audio_id=None,
-                        improvised_text="ข้าพยายามรั้งมือไว้แล้ว... แต่ตราบใดที่ด้ายกำไลบนโต๊ะยังไม่ถูกคลาย ข้าก็ต้านแรงสั่งนี้ได้ไม่นาน!",
-                        reason="local_fallback_f1_talk_kaew",
-                    )
-                if any(k in text for k in ("สู้", "คลายเกราะ", "ปลดกำไล", "ลงมือ", "ปะทะ", "เริ่ม")):
                     return DMDecision(
                         mode="improvise",
                         character="DM",
@@ -1253,6 +1306,34 @@ class AIDMEngine:
                         improvised_text="คุณยื่นมือเข้าหาวงด้ายบนโต๊ะเพื่อเริ่มคลายเกราะ 3 ขั้นของแม่แก้ว!",
                         state_updates=StateUpdates(start_combat=True),
                         reason="local_fallback_f1_start_combat",
+                    )
+                if any(k in text for k in ("จุดเชื่อม", "โต๊ะ", "สังเกต", "ตรวจดู", "ดูจุด")):
+                    if "f1_inspect_table" in eligible_ids:
+                        return pick_script(
+                            "f1_inspect_table",
+                            "DM",
+                            action_kind="inspect",
+                            inspect_target_id="f1_table_knots",
+                            reason="local_fallback_f1_inspect_table",
+                        )
+                    return DMDecision(
+                        mode="improvise",
+                        character="DM",
+                        action_kind="inspect",
+                        inspect_target_id="f1_table_knots",
+                        filler_audio_id="filler_dm_think",
+                        improvised_text="คุณกวาดตาดูสายด้ายบนโต๊ะทั้งสามจุดที่โยงเข้าสู่กำไลทองเหลือง — สายหนึ่งตึงรับแรงสะท้อน สายหนึ่งเชื่อมป้ายชื่อทั้งสาม และอีกสายรั้งปมหลักอยู่ พร้อมเมื่อไรสามารถเริ่มคลายเกราะได้ทันที",
+                        reason="local_fallback_f1_inspect_table",
+                    )
+                if any(k in text for k in ("แม่แก้ว", "ไม่ทำร้าย", "ช่วย", "ฟัง", "ต้านด้าย", "ต้านแรงด้าย")):
+                    if "f1_talk_kaew" in eligible_ids:
+                        return pick_script("f1_talk_kaew", "แม่แก้ว (นางตานี)", reason="local_fallback_f1_talk_kaew")
+                    return DMDecision(
+                        mode="improvise",
+                        character="แม่แก้ว (นางตานี)",
+                        filler_audio_id=None,
+                        improvised_text="ข้าพยายามรั้งมือไว้แล้ว... แต่ตราบใดที่ด้ายกำไลบนโต๊ะยังไม่ถูกคลาย ข้าก็ต้านแรงสั่งนี้ได้ไม่นาน!",
+                        reason="local_fallback_f1_talk_kaew",
                     )
             if scene == "F5":
                 if any(k in text for k in ("เจรจา", "ปรองดอง", "ขอร้อง", "soc", "เปิดเผย")):
@@ -1265,6 +1346,8 @@ class AIDMEngine:
                     if chk_dec:
                         return chk_dec
                 if any(k in text for k in ("คุมตัว", "รับโทษ", "กฎหมาย", "พ้นทาง", "มัดวิชัย", "กันวิชัย")):
+                    if "f5_detain_wichai" in eligible_ids:
+                        return pick_script("f5_detain_wichai", "DM", reason="local_fallback_f5_detain_wichai")
                     return DMDecision(
                         mode="improvise",
                         character="DM",
